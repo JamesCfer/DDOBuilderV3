@@ -199,11 +199,59 @@ Remaining read/write-fidelity gaps:
 
 - ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (this PR).
 
+- ❌ **X7 — `weaponDamage` forum export section far narrower than V2.** V2
+  `ForumExportDlg.cpp:1681-1733 AddWeaponDamage` emits ~12 lines: Melee/Ranged
+  Power, Doublestrike%, Strikethrough%, main/off-hand damage-ability
+  multipliers, Off-Hand attack chance%, Fortification Bypass%, Dodge Bypass%,
+  Helpless Damage%, Doubleshot%, Sneak Attack (bonus + dice), per-weapon crit
+  text. V3's `weaponDamage` section (`webapp/src/lib/export/sections.ts:360-374`)
+  emits only weapon name/dice/crit/to-hit/damage/doublestrike — 3-4 lines.
+  Several source stat keys already exist and are unused here (`melee.strikethrough`,
+  `helpless`, `melee.sneakDice`); Melee/Ranged Power keys and Fort/Dodge-bypass
+  keys need confirming/adding in `useBuildStats.ts`.
+- ❌ **X8 — `spells` forum export missing School/CL/MCL/DC/Damage columns.**
+  V2 `ForumExportDlg.cpp:1523-1646 AddSpells`/`AddSpellList` renders a BBCode
+  `[TABLE]` with Level/Name/School/CL/MCL/DC/Average Damage/Critical Damage
+  per spell. V3's `spells` section (`sections.ts:339-358`) is a flat
+  `Level N: name, name, ...` list with none of those per-spell computed
+  values, even though `spellMath.ts` already computes CL/DC/damage elsewhere
+  in the app.
+- ❌ **X9 — `characterHeader` forum export missing compact defensive-stat
+  table.** V2 `ForumExportDlg.cpp:312-392` interleaves the ability-score grid
+  with HP, PRR, MRR, AC, Dodge%/cap, Fortification%, SR, BAB, DR list,
+  Immunities, Healing/Repair Amp, Incorporeality%, Displacement%, Unconscious
+  Range. V3's `characterHeader` (`sections.ts:43-57`) emits only
+  name/race/alignment/classes/total level — none of the defensive stats,
+  even though `hp`/`ac`/`prr`/`mrr`/`bab`/`dodge` etc. are all already in the
+  stat map.
+
 ---
 
 ## High-priority remaining — numerical correctness
 
 - ✅ **N6 — WeaponProficiencyClass grants class-based weapon proficiency** — done (this PR).
+
+- ❌ **N7 — `Weapon_CriticalRange` effect routes to a dead stat key.**
+  `effectParser.ts:1418` and `:2314` route the (ungated, general) `Weapon_CriticalRange`
+  effect to `weapon.critRange` — a key nothing in the app reads. The
+  `BreakdownsPanel` "Threat Range" row reads `weapon.threatRange`
+  (`BreakdownsPanel.tsx:422/429`, fed by the sibling `ThreatRange`/
+  `ImprovedCritical` case at `effectParser.ts:920-922`), and `CombatPanel`
+  reads `melee.crit.range` (fed only by the weapon-class-gated
+  `WeaponCriticalRangeClass` case at `effectParser.ts:1450-1452`). V2's
+  `BreakdownItemWeaponCriticalThreatRange::AffectsUs`
+  (`DDOBuilder/BreakdownItemWeaponCriticalThreatRange.cpp:52-75`) feeds
+  `Effect_Weapon_CriticalRange`, `Effect_Weapon_Keen`, and
+  `Effect_WeaponCriticalRangeClass` into **one** total. Any gear/feat granting
+  a flat (non-class-gated) critical-range bonus via `Weapon_CriticalRange` —
+  e.g. Kensei "Keen Edge", Rogue Assassin "Knife Specialization", several
+  racial/Warpriest/Ravager/Shintao/DeepwoodStalker/BattleEngineer enhancements
+  (31 trees total) — is silently dropped from the Breakdowns display. Fix:
+  reroute `Weapon_CriticalRange` to `weapon.threatRange` to match the sibling
+  `ThreatRange`/`ImprovedCritical` case (same pool `BreakdownsPanel` already
+  reads). Note: `weapon.threatRange` (Breakdowns) and `melee.crit.range`
+  (Combat) remain two separate pools post-fix — a pre-existing, smaller
+  architectural split not part of this item's minimum fix.
 
 ---
 
@@ -234,6 +282,23 @@ Remaining read/write-fidelity gaps:
 
 ## Medium-priority remaining
 
+### Computed-but-invisible stats (breakdown display completeness)
+- ❌ **U11 — Arcane Spell Failure never displayed.** `ArcaneSpellFailure`/
+  `ArcaneSpellFailureShields` parse into `arcaneSpellFailure`/
+  `arcaneSpellFailureShield` stat keys (`effectParser.ts:978-982`,
+  `1962-1966`), but no panel reads either key, and armor's own base ASF
+  property is never folded in at all. V2 shows two dedicated breakdown nodes
+  (armor ASF, shield ASF) in `BreakdownsPane.cpp:~1639-1665`. Highest-impact
+  item in this group — ASF% is a build-defining number for arcane casters in
+  armor.
+- ❌ **U12 — Sneak Attack sub-bonuses parsed but dead.** Beyond
+  `melee.sneakDice`/`melee.sneakAttack` (both already shown/consumed),
+  `effectParser.ts` also parses `melee.sneakDamage`, `melee.sneakRange`,
+  `ranged.sneakDamage`, `ranged.sneakRange` (lines 1038-1047, 2014-2026) —
+  none of the four are read by `BreakdownsPanel` or the combat/DPR math, so
+  any effect using those sub-types is silently a no-op. V2 shows all four as
+  separate breakdown nodes under Sneak Attack.
+
 ### Subsystems V3 hasn't ported
 - ✅ **Combat simulator with attack chains** — done (#70).
 - ➖ **Gear optimizer / auto-equip** — phantom: V2 has no such feature.
@@ -260,6 +325,14 @@ Remaining read/write-fidelity gaps:
 - ✅ **Keyboard shortcuts / print layout / auto-save / drag-and-drop import** —
   done (#69).
 - ✅ **L1 — Build history log (V2 `LogPane`)** — `lib/buildLog.ts` exports `actionToLogMessage` mapping key reducer action types to human-readable log strings (feat trained, class changed, gear equipped, enhancement selected, etc.); `BuildLogContext.tsx` wraps `CharacterProvider`'s dispatch to capture a session-only (non-persisted) `LogEntry[]`; `BuildHistoryPanel.tsx` renders entries in reverse-chronological order with Copy-to-Clipboard and Clear buttons (V2 `CLogPane::OnCopyLogToClipboard`/`OnClearLog` parity). Registered in Sidebar and Dashboard. 14 regression tests.
+- ❌ **L2 — Two minor Combat/Breakdowns display rows missing.** (a) Offhand
+  doublestrike is correctly derived (50%/65% of mainhand,
+  `attackEntry.ts:106,208-209`) and used in the DPR calc, but has no dedicated
+  row in `BreakdownsPanel` — only mainhand `melee.doublestrike` is shown.
+  (b) V2 shows "Critical Multiplier (19-20)" as its own breakdown row;
+  `weapon.critMultiplier19to20` is parsed and correctly consumed in the DPS
+  math (`attackEntry.ts:111-178`) but only the combined multiplier is
+  displayed. Both are cosmetic — the underlying numbers are already correct.
 
 ---
 
@@ -302,12 +375,17 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#105 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-06 (third pass) —
-re-scan of all V2 effect types vs. `effectParser.ts`, all V2 Pane classes vs.
-V3 components, all V2 `Breakdown*.cpp` formulas vs. `useBuildStats.ts`, and all
-25 V2 forum export sections vs. `sections.ts`. New gaps found: X4 (tacticalDCs
-section broken stat key), X5 (grantedFeats section ignores stats.grantedFeatsList),
-N6 (4 weapon ability-damage effect types still returning []), X6 (6 spell power
-types missing from export + BreakdownsPanel), U10 (BreakdownsPanel hardcoded
-tactical DC sub-types).*
+*Maintained by the parity-pass series. See PRs #53–#109 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-07-01 (fourth pass) —
+independent agent-verified re-scan of `effectParser.ts` vs. V2 `Effect.cpp`,
+`sections.ts` vs. all 26 `ForumExportDlg.cpp` sections, and `BreakdownsPanel`/
+`CombatPanel` display coverage vs. `BreakdownsPane.cpp`. Several candidate
+gaps surfaced by prior (unmerged) scan attempts were independently
+re-verified against current code before being added here — some were
+confirmed stale/already-fixed and dropped (offhand doublestrike, weapon
+alacrity, crit-multiplier math, metamagic cost, tumble charges all checked
+out fine). New gaps confirmed and added: N7 (`Weapon_CriticalRange` routes to
+a dead stat key), X7/X8/X9 (forum export weaponDamage/spells/characterHeader
+sections much narrower than V2), U11 (Arcane Spell Failure computed but never
+displayed), U12 (4 of 6 Sneak Attack sub-bonus stat keys are dead), L2 (two
+minor Combat/Breakdowns display rows).*
