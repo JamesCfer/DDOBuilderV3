@@ -193,73 +193,233 @@ Remaining read/write-fidelity gaps:
 
 ---
 
-## High-priority remaining — forum export
+## Previously-tracked items — all closed
 
-- ✅ **X4 — Forum export `tacticalDCs` section fixed** — done (#108).
-
-- ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (this PR).
+Every item that used to live in the three "High-priority remaining" sections
+(forum export, numerical correctness, effect parser coverage), the UI
+features section (U1–U10), and the medium/low sections below is now ✅ or ➖
+— see the **Done** table above (items 1–89) for details. This section is
+replaced by the fresh gap list below, found during the 2026-07 (fourth pass)
+full V2↔V3 re-scan.
 
 ---
 
 ## High-priority remaining — numerical correctness
 
-- ✅ **N6 — WeaponProficiencyClass grants class-based weapon proficiency** — done (this PR).
+All previously-tracked `Breakdown*.cpp` classes were re-verified as matching
+(Hitpoints, EnergyAbsorption/Resistance, Immunities, SpellSchool,
+SchoolCasterLevel, Tactical, Simple, Duration, Dice, PactDice,
+WeaponVorpalRange, WeaponOtherDamageEffects, WeaponDRBypass). Three real gaps
+found this pass, all in the weapon crit/attack-speed pipeline feeding the DPS
+combat estimator:
+
+- ❌ **N7 — Keen / Improved Critical doesn't widen crit threat range in the DPS
+  calculator.** V2 (`BreakdownItemWeaponCriticalThreatRange.cpp:131-170`)
+  doubles the weapon's base critical threat range once Keen or an
+  Improved-Critical-for-this-damage-type bonus is present, and folds that
+  into the attack math. V3's `effectParser.ts` emits a `weapon.keen` marker
+  (value=1) but it is **display-only** (`BreakdownsPanel.tsx:503-504`) —
+  `lib/combat/attackEntry.ts:109,157` computes `threatFaces` from
+  `weapon.critThreatRange + baseCrit` and never reads `weapon.keen`. A Keen
+  scimitar (15-20 threat) is estimated as if it still only threatens 18-20.
+- ❌ **N8 — Non-class-gated `Weapon_CriticalMultiplier` / `Weapon_CriticalRange`
+  effects are orphaned from DPS math.** V2's `BreakdownItemWeaponCriticalMultiplier`
+  / `BreakdownItemWeaponCriticalThreatRange` (`:70-95`, `:52-75`) sum **both**
+  the plain effect and the `*Class` (weapon-class-gated) variant into one
+  total. V3's `effectParser.ts:1413-1418,1447-1452` splits them into separate
+  stat keys — `weapon.critMultiplier`/`weapon.critRange` (plain, display-only)
+  vs. `melee.crit.multiplier`/`melee.crit.range` (class-gated, read by
+  `attackEntry.ts:109-110,165`). Live enhancement trees (`Fighter_Kensei`,
+  `LegendaryDreadnought`, `Cleric_Warpriest`) use the non-class AType, so
+  their crit bonuses show correctly in Breakdowns but silently don't affect
+  estimated DPS.
+- ❌ **N9 — Weapon Alacrity never applied to attacks-per-round in the DPS
+  calculator.** `CombatPanel.tsx:125-127` derives `attacksPerRound` purely
+  from the static `lookupAttacksPerMinute` table; no code path adds
+  `weapon.alacrity`/`melee.alacrity` (parsed from `Weapon_Alacrity`/
+  `WeaponAlacrityClass`, `effectParser.ts:1407-1408,1453-1455`, currently
+  display-only in `BreakdownsPanel.tsx:501`) into the attack-speed rate. V2's
+  `BreakdownItemWeaponAttackSpeed.cpp:42-66` folds Alacrity directly into the
+  breakdown that scales swings/round. Common itemization (Alacrity gear,
+  Haste-line twists) is entirely absent from estimated DPS.
+
+Low-priority companion finding: `EnergyAbsorption`'s rare `<Percent/>`-tagged
+bonuses use V2's additive-after-invert semantics
+(`BreakdownItemEnergyAbsorption.cpp:86-97`) which `BreakdownsPanel.tsx:390-406`'s
+pure-multiplicative loop doesn't replicate; likely no live data exercises
+this path (flagged for completeness only, not tracked with a number).
 
 ---
 
 ## High-priority remaining — effect parser coverage
 
-- ✅ **E1 — `SLA` (Spell-Like Ability)** — done (#74/#69).
-- ✅ **Non-stance runtime gates** — done (#73): EnemyType hard-fails (as in V2),
-  MaterialType checks the equipped item's material, Skill checks the resolved
-  total.
+✅ **Verified complete this pass, no gaps.** All 213 V2 `EffectType` XML
+values (`DDOBuilder/Effect.h` `effectTypeMap`) have a corresponding case in
+`parseEffect` (`effectParser.ts:519-1564`). `parseItemBuff`
+(`:1626-2412`) is functionally complete: its `default:` case falls back to
+`parseItemBuffViaTemplate` against `ItemBuffs.xml`, so even the two nominal
+misses (`DodgeBonusTowerShield`, `Strikethrough` as raw `<Buff><Type>` values)
+resolve correctly — and in practice neither occurs as real ItemBuff data
+(both only appear as nested `<Effect>` blocks, which already route through
+`parseEffect`).
 
 ---
 
-## High-priority remaining — UI features
+## Medium-priority remaining — UI features / subsystems
 
-- ✅ **U1 — Multi-life / multi-build document UI** — done (#65).
-- ✅ **U2 — Twists of Fate editor** — done (#58).
-- ✅ **U3 — Reaper AP persisted** — done (#55).
-- ✅ **U4 — Spells known-per-level limit** — done (#57).
-- ✅ **U5 — Granted / Special / Automatic feats consolidated** — done (#59/#60).
-- ✅ **U6 — Build comparison scope** — done (#66).
-- ✅ **U7 — Per-level training UI** — done (#62).
-- ➖ **U8 — Spell metamagic class-gating** — not a gap; V2 also uses per-spell
-  binary metamagic flags with no class-level gating.
-- ✅ **U9 — complete** — FindGearDialog (#64), ContentPane (#68), Help/About (#69).
-- ✅ **U10 — BreakdownsPanel tactical DC sub-types complete** — done (#108).
+- ❌ **U11 — BonusesPane bonus-type breakdown matrix.** V2's `BonusesPane`
+  (`DDOBuilder/BonusesPane.cpp:80-91`) shows a user-configurable table of
+  monitored stats broken out by bonus *type* column (Enhancement/Insightful/
+  Artifact/Quality/Profane/Equipment/Competence/Exceptional/Festive/Fortune/
+  Legendary) with a right-click "Add Breakdown" menu (`:199-252`). V3's
+  `components/bonuses/BonusesPanel.tsx` is a fixed summary (feats/buffs/gear/
+  ability totals) with no per-bonus-type matrix and no user-configurable
+  monitored-stat list.
+- ❌ **U12 — Single enhancement/destiny tree save/load.** V2 lets a user
+  export one trained tree's spend pattern to a standalone file and reload it
+  into another build (`EnhancementsPane.cpp:932` `OnSaveTree`, `:1174`
+  `OnLoadTree`; mirrored in `DestinyPane.cpp:984,1074`). No equivalent
+  single-tree export/import exists in `components/enhancements/` or
+  `components/epicdestinies/` — only whole-build export/import.
 
 ---
 
-## Medium-priority remaining
+## Medium-priority remaining — data edge cases
 
-### Subsystems V3 hasn't ported
-- ✅ **Combat simulator with attack chains** — done (#70).
-- ➖ **Gear optimizer / auto-equip** — phantom: V2 has no such feature.
-- ✅ **Settings** — done (#67/#69).
-- ✅ **Build version migration** — done (#66).
+- ❌ **D1 — Synthetic augment slots not derived (Mythic / Reaper / Deck
+  Curse).** V2 programmatically adds a "Mythic" slot, a slot-type-specific
+  "Reaper" slot, and a "Deck Curse" slot to every named item at runtime — none
+  of this is in the raw `.item` XML. V2: `GlobalSupportFunctions.cpp:1881-1962`
+  (`AddSpecialSlots`), called from `Build.cpp:4411/4420/4498`. V3:
+  `server/dataLoaders.ts` parses items verbatim with no equivalent synthesis
+  (zero hits for "Mythic"/"Reaper Boot"/"Deck Curse" in `webapp/src`).
+  Affects nearly every named item (~8185 of 8487).
+- ❌ **D2 — Item-specific augment choice lists shown as fixed text, not
+  selectable.** 283 `<ItemAugment>` slots embed multiple item-specific
+  `<Augment>` options that should be a picker (V2
+  `GlobalSupportFunctions.cpp:2353-2359`, `CompatibleAugments`). V3's
+  `components/items/GearPanel.tsx:227-233` treats `augment.Augment` as a
+  single value, but since `Augment` is in `dataLoaders.ts:35`'s forced-array
+  list it actually parses as an array — `.Name`/`.Description` read
+  `undefined` for these slots.
+- ❌ **D3 — Multi-`<Type>` augments unmatched by exact-string filter.** 539
+  augments declare more than one compatible slot `<Type>` (V2:
+  `Augment::IsCompatibleWithSlot`, `Augment.cpp:63-90`, list-based). V3:
+  `webapp/server.ts:152-159` filters via `a['Type'] === type`; since
+  fast-xml-parser turns repeated siblings into an array, `Type` becomes an
+  array for these 539 augments and never strict-equals the query string, so
+  they never appear in any slot's picker.
+- ❌ **D4 — Cannith "user sets item level" (`UserSetsLevel`) unimplemented.**
+  64 items let the player pick the item's effective/crafted level (V2:
+  `Item.h:66`, `Build.cpp:4409-4451`, `FindGearDialog.cpp:176/1278`,
+  `ItemSelectDialog.cpp:227/1432`). V3 has no `UserSetsLevel` field in
+  `types/ddo.ts`/`dataLoaders.ts`; item level is always the catalogue's
+  static `MinLevel`.
+- ❌ **D5 — Minor Artifact single-equip restriction not enforced.** V2
+  auto-unequips any other Minor Artifact when a new one is equipped
+  (`EquippedGear.cpp:345-370`). V3 has no `MinorArtifact` handling in
+  `GearPanel.tsx`/`useBuildStats.ts` — two can be equipped and stack.
+- ❌ **D6 — `RestrictedSlots` / two-handed-blocks-off-hand not enforced.** V2
+  blocks equipping an off-hand item when the main-hand weapon precludes it,
+  and honors per-item `RestrictedSlots` (e.g. Platinum Knuckles).
+  (`EquippedGear.cpp:281-310` `IsSlotRestricted`, `:371-381`). V3's
+  `accumulateGear` in `useBuildStats.ts` sums every equipped slot
+  unconditionally.
+- ❌ **D7 — Skill-tome bonus not level-capped.** V2 caps applied skill-tome
+  value by character level (2 base, +1 at 3/7/11/15/19/23/27/31), separately
+  from the ability-tome cap V3 already ports (`Character.cpp:459-478`
+  `SkillTomeValue`). V3's `useBuildStats.ts:1241-1244` applies
+  `build.skillTomes[skill]` uncapped; `lib/levelProgression.ts`'s
+  `tomeCapAtLevel` only covers ability tomes.
+- ❌ **D8 — "Dark Bargainer" race rename missing from the `.DDOBuild` import
+  path.** V2 migrates old saves in `Life::LoadComplete` (`Life.cpp:95-98`).
+  V3 only handles this rename in the V1 `.ddocp` importer
+  (`lib/v1Import.ts:114`); `lib/v2Import.ts` (`.DDOBuild` path) does no
+  rename, so old V2 files with `Race=Dark Bargainer` silently lose racial
+  data on import.
+- ❌ **D9 — "FavoredWeapon" stance not gated by Favored Soul level.** V2
+  special-cases this stance: even toggled on, it's forced inactive unless the
+  character has at least half total levels in Favored Soul
+  (`Build.cpp:3865-3876` `IsStanceActive`), gating Grace/Knowledge of Battle
+  enhancement bonuses. V3's stance handling in `useBuildStats.ts` treats it
+  as a plain toggle with no FvS-level check.
 
-### Data-file edge cases
-- ✅ **Item slot edge cases** — done (#71); trinket-via-augment not a V2 mechanic.
-- ✅ **Cosmetic gear effects** — done (#71).
-- ✅ **Sentient gem personality buffs** — not a gap (#71).
-- ✅ **Filigree set bonuses with conditional triggers** — done (#71).
+Confirmed **not** gaps this pass: item SetBonus stacking, `Improved Heroic
+Durability` synthesis, Cannith `SelectedLevelIndex` migration (handled in
+`v1Import.ts`), all `MAX_*` constants, and V2's `Build.cpp` has no additional
+`UpdateVersion`/fixup logic worth porting.
 
-### Spell power school coverage
-- ✅ **X6 — Missing alignment/physical spell power types in export and BreakdownsPanel** — done (#109).
+---
+
+## Low-priority remaining — forum export
+
+`DDOBuilder/ForumExportDlg.cpp` vs `webapp/src/lib/export/sections.ts`,
+section by section (beyond what X2/X3/X4/X5/X6 already fixed):
+
+- ❌ **X7 — `CharacterHeader` missing the full defensive stat block.** V2
+  exports Start/Tome/Final ability table, HP, Displacement%, Unc. Range,
+  Incorporeality%, PRR, AC, MRR(+cap), Healing Amp ±, Dodge/Dodge Cap,
+  Fortification%, Repair Amp, SR, BAB, DR list, Immunities list
+  (`ForumExportDlg.cpp:312-392`). V3's `sections.ts:43-57` only has
+  Name/Race/Alignment/Classes/Total Level.
+- ❌ **X8 — `featSelections` missing per-level table context.** V2 is a
+  per-level `[TABLE]` with Level/Class(level)/Feats columns, heart-of-wood
+  swap warnings, and colored ability-level-up rows
+  (`GetLevelEntries:1992-2126`, `AddFeatSelections:622-660`). V3's
+  `featSelections` (`sections.ts:178-193`) is a flat `slot: value` dump.
+- ❌ **X9 — `consolidatedFeats` is a different feature than V2's.** V2 merges
+  the per-level trainable+automatic feat table with heart-of-wood/ability-up
+  rows (`:736-845`). V3's `consolidatedFeats` (`sections.ts:461-477`) instead
+  counts duplicate feat-name occurrences across the whole build.
+- ❌ **X10 — `skills` section missing the per-level point/rank matrix.** V2
+  renders a full per-heroic-level skill-point table (points available,
+  ranks, cross-class ½-point notation, tome column, running total) inside a
+  `[code]` block (`:890-1028`). V3's `skills` (`sections.ts:195-208`) only
+  lists total ranks + buffed total per skill.
+- ❌ **X11 — Enhancement/Destiny/Reaper tree sections missing AP totals and
+  tier labels.** V2 headers show AP/Destiny-Point totals (with racial/
+  universal-bonus callouts, `:1219-1232`) and each tree prints "TreeName -
+  Points spent: N" plus per-enhancement Core#/Tier1-6 labels
+  (`AddEnhancementTree`/`AddEpicDestinyTree`/`AddReaperTree:1309-1452`). V3's
+  versions (`sections.ts:262-319`) omit all of this.
+- ❌ **X12 — `spells` section missing school/CL/DC/damage columns.** V2's
+  table has Level/Name/School/CL-MCL/DC/Average Damage/Critical Damage
+  columns plus a separate fixed-spells list (`:1523-1646`). V3's `spells`
+  (`sections.ts:339-358`) only lists spell names grouped by level.
+- ❌ **X13 — `weaponDamage` section missing most V2 fields.** V2 exports
+  Melee/Ranged Power, Doublestrike%, Strikethrough%, per-hand damage-ability
+  multipliers, off-hand attack chance%, fortification/dodge-bypass%,
+  helpless-damage%, doubleshot%, sneak-attack, and per-weapon-effect list
+  (`:1681-1733`). V3's `weaponDamage` (`sections.ts:360-374`) only has name/
+  dice/crit range/multiplier/to-hit/damage/doublestrike.
+- ❌ **X14 — `gear` (full/non-simple) section is a stub.** V2's
+  `ExportGear(bSimple=false)` (`:1759-1929`) includes buff descriptions,
+  augment values, set-bonus lines with suppression strikethrough,
+  artifact/weapon filigrees, sentient-weapon personality, drop locations, and
+  restricted-slot notices in canonical slot order. V3's `gear` section
+  (`sections.ts:408-420`, distinct from the already-fixed `simpleGear`) is
+  alphabetically-sorted `slot: item` pairs only.
+- ❌ **X15 — `saves` footnote + ordering.** V2 adds a footnote "Marked with
+  a* is no fail on a 1 if required DC met" (`:527`) and orders Fort→Will→
+  Reflex; V3 (`sections.ts:122-150`) has neither the footnote nor that order
+  (Fort→Reflex→Will).
+- ❌ **X16 — `energyResistances` type list mismatch.** V2 exports Acid/
+  Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/
+  Sonic (Positive/Repair/Rust explicitly excluded, `:1196-1198`). V3's list
+  (`sections.ts:160`) has Positive/Repair instead but is missing Chaos/Evil/
+  Good/Lawful.
+- ❌ **X17 — `activeStances` collapses to one line.** V2 prints one line per
+  active stance prefixed by its `StanceGroup` name (`:847-873`). V3
+  (`sections.ts:210-224`) joins all active stances into a single comma list,
+  losing group context.
+- ❌ **X18 — Section order + extra `notes` section.** V2's default order ends
+  `...Gear, AlternateGearLayouts, SimpleGear`; V3's `DEFAULT_SECTIONS`
+  (`sections.ts:635-638`) ends `...gear, simpleGear, alternateGearLayouts,
+  notes` — reordered, plus a `notes` section V2 doesn't have.
 
 ### Editor tools (intentionally out of parity scope)
 - ➖ **Item / enhancement-tree / spell / race / class editors** — V3 reads V2's
   XML directly; not on the parity path.
-
----
-
-## Low-priority polish
-
-- ✅ **Keyboard shortcuts / print layout / auto-save / drag-and-drop import** —
-  done (#69).
-- ✅ **L1 — Build history log (V2 `LogPane`)** — `lib/buildLog.ts` exports `actionToLogMessage` mapping key reducer action types to human-readable log strings (feat trained, class changed, gear equipped, enhancement selected, etc.); `BuildLogContext.tsx` wraps `CharacterProvider`'s dispatch to capture a session-only (non-persisted) `LogEntry[]`; `BuildHistoryPanel.tsx` renders entries in reverse-chronological order with Copy-to-Clipboard and Clear buttons (V2 `CLogPane::OnCopyLogToClipboard`/`OnClearLog` parity). Registered in Sidebar and Dashboard. 14 regression tests.
 
 ---
 
@@ -302,12 +462,17 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#105 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-06 (third pass) —
-re-scan of all V2 effect types vs. `effectParser.ts`, all V2 Pane classes vs.
-V3 components, all V2 `Breakdown*.cpp` formulas vs. `useBuildStats.ts`, and all
-25 V2 forum export sections vs. `sections.ts`. New gaps found: X4 (tacticalDCs
-section broken stat key), X5 (grantedFeats section ignores stats.grantedFeatsList),
-N6 (4 weapon ability-damage effect types still returning []), X6 (6 spell power
-types missing from export + BreakdownsPanel), U10 (BreakdownsPanel hardcoded
-tactical DC sub-types).*
+*Maintained by the parity-pass series. See PRs #53–#109 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-07 (fourth pass) —
+re-scan of all `Breakdown*.cpp` classes vs. `useBuildStats.ts`/combat pipeline,
+all 213 V2 `EffectType` values vs. `effectParser.ts` (found fully covered, no
+gaps), all V2 Pane/Dialog classes vs. V3 components, all 24 V2 forum export
+sections vs. `sections.ts`, and V2 data-loading/slot-handling logic vs.
+`dataLoaders.ts`. New gaps found: N7–N9 (Keen/crit-multiplier/alacrity not
+wired into the DPS calculator), U11–U12 (BonusesPane bonus-type matrix,
+single-tree save/load), D1–D9 (synthetic augment slots, augment Type-array
+matching, Cannith user-set item level, Minor Artifact/RestrictedSlots
+enforcement, skill-tome level cap, Dark Bargainer rename, FavoredWeapon
+stance gating), X7–X18 (CharacterHeader defensive block, per-level feat/skill
+tables, tree AP totals, spell/weapon-damage/gear section richness, saves/
+energy-resistance/stances formatting).*
