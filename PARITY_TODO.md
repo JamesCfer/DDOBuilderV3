@@ -193,42 +193,68 @@ Remaining read/write-fidelity gaps:
 
 ---
 
-## High-priority remaining — forum export
-
-- ✅ **X4 — Forum export `tacticalDCs` section fixed** — done (#108).
-
-- ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (this PR).
-
----
-
 ## High-priority remaining — numerical correctness
 
-- ✅ **N6 — WeaponProficiencyClass grants class-based weapon proficiency** — done (this PR).
+Fourth full-scan pass (2026-07) re-read every `Breakdown*.cpp` against
+`useBuildStats.ts`/combat lib, cross-checked against the Done table. Most
+areas already ported faithfully; these are the concrete, verified new gaps:
 
----
+- ❌ **N7 — Docent Mithral Body / Adamantine Body AC bonus dropped.** V2
+  `Item.h:85-86` (`MithralBody`/`AdamantineBody`) is set on ~201 docent items
+  (`Beholder Plate Docent.item`, etc). `Build.cpp:5780-5834 ApplyArmorEffects`
+  gates the item's raw `ArmorBonus` behind whether the wearer has the
+  "Composite Plating" feat when the item has a `MithralBody`/`AdamantineBody`
+  value, and separately adds the `MithralBody`/`AdamantineBody` AC bonus when
+  the wearer has the matching "Mithral Body"/"Adamantine Body" feat. V3's
+  `Item` type has neither field, and `useBuildStats.ts` adds `item.ArmorBonus`
+  unconditionally — wrong AC for any Warforged/Bladeforged docent build.
+- ❌ **N8 — Favor total doesn't scale by quest difficulty.** V2 `FavorPane.cpp`
+  tracks completion difficulty per quest (Solo/Casual/Normal/Hard/Elite/
+  Reaper1-10) and `Quest::Favor(diff)` scales the reward (Casual ×0.5, Hard
+  ×2, Elite/Reaper ×3). V3's `FavorPanel.tsx` only stores a completed boolean
+  and always awards flat base favor — anyone who ran quests above Normal gets
+  Total Favor under-counted by up to 3×, with no UI to select a difficulty.
+- ❌ **N9 — Two-handed/ranged weapons don't block the off-hand slot.** V2
+  `GlobalSupportFunctions.cpp:1745-1782 CanEquipTo2ndWeapon()` blocks the
+  off-hand for Falchion/GreatAxe/GreatClub/GreatSword/Maul/Quarterstaff/
+  Longbow/Shortbow/monk Handwraps/crossbows (unless Artificer Rune Arm Use),
+  enforced in `EquippedGear::SetItem` (auto-unequips + warns). V3's `SET_GEAR`
+  reducer (`context/CharacterContext.tsx`) writes any slot unconditionally —
+  a two-handed-weapon build can show an illegal off-hand item simultaneously
+  equipped, double-counting its AC/attack/damage contribution. Affects common
+  builds (Fighter/Barbarian THF, Monk, crossbow Artificer).
+- ❌ **N10 — Minor Artifact single-equip exclusivity not enforced.** V2
+  `EquippedGear::SetItem` (`EquippedGear.cpp:345-370`) auto-unequips any other
+  item flagged `HasMinorArtifact()` (`Item.h:100`) when a new one is equipped.
+  V3 has no such check anywhere in the gear reducer — two Minor Artifacts can
+  be worn simultaneously, double-stacking their bonuses.
+- 🟡 **N11 — Two-handed STR-to-damage multiplier missing in combat
+  estimator.** V2's universal "Attack" feat grants `DamageAbilityMultiplier`
+  1.0, +0.5 when "Two Handed Fighting"/Bastard-Sword/Dwarven-Axe stance is
+  active (`BreakdownItemWeaponDamageBonus.cpp:54-71`) — the classic 1.5×
+  STR-to-damage for two-handers. V3's `attackEntry.ts` reads
+  `stats.total('melee.damageAbilityMult') || 1`, but `CombatPanel.tsx`'s
+  `twoHanded` flag never feeds that stat, only strikethrough — two-handed
+  builds show ~20-30% less melee damage than V2. (Lives inside the
+  already-disclaimed simplified combat estimator — partial credit.)
+- 🟡 **N12 — Attack alacrity/haste doesn't scale attacks-per-round in the
+  combat estimator.** `attacksPerRound` in `attackEntry.ts` comes solely from
+  the static AttackRates.xml BAB/style lookup; no Haste/weapon-Alacrity/
+  WeaponAlacrityClass term exists anywhere in the combat lib. (Same
+  documented-estimator caveat as N11.)
 
 ## High-priority remaining — effect parser coverage
 
-- ✅ **E1 — `SLA` (Spell-Like Ability)** — done (#74/#69).
-- ✅ **Non-stance runtime gates** — done (#73): EnemyType hard-fails (as in V2),
-  MaterialType checks the equipped item's material, Skill checks the resolved
-  total.
-
----
-
-## High-priority remaining — UI features
-
-- ✅ **U1 — Multi-life / multi-build document UI** — done (#65).
-- ✅ **U2 — Twists of Fate editor** — done (#58).
-- ✅ **U3 — Reaper AP persisted** — done (#55).
-- ✅ **U4 — Spells known-per-level limit** — done (#57).
-- ✅ **U5 — Granted / Special / Automatic feats consolidated** — done (#59/#60).
-- ✅ **U6 — Build comparison scope** — done (#66).
-- ✅ **U7 — Per-level training UI** — done (#62).
-- ➖ **U8 — Spell metamagic class-gating** — not a gap; V2 also uses per-spell
-  binary metamagic flags with no class-level gating.
-- ✅ **U9 — complete** — FindGearDialog (#64), ContentPane (#68), Help/About (#69).
-- ✅ **U10 — BreakdownsPanel tactical DC sub-types complete** — done (#108).
+- **Verified clean this pass.** Extracted all 213 distinct effect `<Type>`
+  strings (16,086 occurrences across 14,510 `<Effect>` blocks) and all 22
+  `<AType>` values from the real data corpus and diffed against
+  `effectParser.ts`'s switch statements. Only 2 unhandled Type strings exist
+  (`BreakOath`/`Uncenter`, 1 occurrence each, a single flavor-only cursed-item
+  debuff) — below any actionable threshold. `parseItemBuff` catalogue
+  resolution is exhaustive (every buff type used by a real item exists in
+  `ItemBuffs.xml` and resolves through the same verified switch). No action
+  item here — next passes should look at `Requirements`/gating correctness
+  for already-handled types rather than switch completeness.
 
 ---
 
@@ -239,12 +265,51 @@ Remaining read/write-fidelity gaps:
 - ➖ **Gear optimizer / auto-equip** — phantom: V2 has no such feature.
 - ✅ **Settings** — done (#67/#69).
 - ✅ **Build version migration** — done (#66).
+- ❌ **U11 — BonusesPane stacking-type breakdown tool.** V2's `BonusesPane.cpp`
+  is a user-configurable stat tracker: Add/Remove/Move-Up/Down buttons let the
+  player pick specific stats and see them broken out across 11
+  bonus-stacking-type columns (Enhancement, Insightful, Artifact, Quality,
+  Profane, Equipment, Competence, Exceptional, Festive, Fortune, Legendary) —
+  a stacking-diagnosis tool. V3's `BonusesPanel.tsx` is an entirely different,
+  fixed, read-only summary (feats/buffs/items/ability totals) with no
+  per-type breakdown. Feature substitution, not a partial port.
 
 ### Data-file edge cases
 - ✅ **Item slot edge cases** — done (#71); trinket-via-augment not a V2 mechanic.
 - ✅ **Cosmetic gear effects** — done (#71).
 - ✅ **Sentient gem personality buffs** — not a gap (#71).
 - ✅ **Filigree set bonuses with conditional triggers** — done (#71).
+- ❌ **D1 — Gear content-ownership filter is a no-op.** V2 `DDOBuilder.cpp:
+  1673-1697` derives `Item.AdventurePack` at load time by cross-referencing
+  each item's `DropLocation` against `Quests.xml`/`Challenges.xml` (the raw
+  `.item` XML has no `AdventurePack` field at all — verified 0 matches across
+  8,487 files). V3's `loadItems()` never performs this join, so
+  `Item.AdventurePack` is always `undefined`; `GearPanel.tsx`/
+  `FindGearDialog.tsx`'s `!it.AdventurePack || !dontOwn.has(...)` filter is
+  therefore always true and **silently excludes nothing**. This contradicts
+  Done #68's claim ("GearPanel pickers + FindGearDialog hide items from
+  unowned packs") — that only works for quest/favor content, not gear items.
+- ❌ **D2 — "Ignore Raid Items" gear filter missing entirely.** V2 derives
+  `Item.IsRaidItem` the same way as D1 (`DDOBuilder.cpp:1660-1671`) and
+  exposes an `IDC_CHECK_IGNORERAIDITEMS` checkbox in both
+  `ItemSelectDialog.cpp` and `FindGearDialog.cpp`. No V3 equivalent (data
+  field or UI) exists. Fixing D1's join provides the data this needs.
+- ❌ **D3 — `RestrictedSlots` item-level slot exclusions unmodeled.** V2
+  `Item.h:73` blocks equipping a second item into a named slot while a
+  restricting item is worn (e.g. `Platinum Knuckles.item` occupies Weapon1
+  but restricts Gloves). No V3 field or enforcement.
+- ❌ **D4 — `SlotUpgrade` augment-slot type upgrades dropped.** V2 `Item.h:97`
+  lets certain items (6 in the data, e.g. a Slavelords item) offer alternate
+  accepted augment types for an existing slot. No V3 field/type — augment
+  slots on these items are stuck at their base type.
+- ❌ **D5 — Stale feat migration not replicated on `.DDOBuild` import.** V2's
+  `FindFeat()` (`GlobalSupportFunctions.cpp:232-302`) returns a sentinel for
+  any renamed/removed feat name and `Character::MoveSpecialFeatsIfRequired()`
+  (`Character.cpp:635-664`, run every load) drops sentinel entries and
+  migrates legacy Character-level universal-tree feats down to each `Life`.
+  V3's `parseFeatsListObject`/`v2Import.ts` has no catalogue-validity check
+  and folds all Character-level special feats into one flat bucket instead of
+  V2's per-Life migration — old saves can show stale/orphaned feat entries.
 
 ### Spell power school coverage
 - ✅ **X6 — Missing alignment/physical spell power types in export and BreakdownsPanel** — done (#109).
@@ -260,6 +325,55 @@ Remaining read/write-fidelity gaps:
 - ✅ **Keyboard shortcuts / print layout / auto-save / drag-and-drop import** —
   done (#69).
 - ✅ **L1 — Build history log (V2 `LogPane`)** — `lib/buildLog.ts` exports `actionToLogMessage` mapping key reducer action types to human-readable log strings (feat trained, class changed, gear equipped, enhancement selected, etc.); `BuildLogContext.tsx` wraps `CharacterProvider`'s dispatch to capture a session-only (non-persisted) `LogEntry[]`; `BuildHistoryPanel.tsx` renders entries in reverse-chronological order with Copy-to-Clipboard and Clear buttons (V2 `CLogPane::OnCopyLogToClipboard`/`OnClearLog` parity). Registered in Sidebar and Dashboard. 14 regression tests.
+- ❌ **U12 — Per-life clipboard/export context menu.** V2 `BuildsPane.cpp` has
+  "Copy Life to Clipboard" / "Paste Life" / "Export Life to New File" /
+  "Import Lives from Other File" on right-click of a single Life node.
+  `LifeBuildBar.tsx` only supports whole-document import/export (U1/F1) —
+  no way to isolate or transplant a single life.
+- ❌ **U13 — Gear-picker "Ignore Raid Items" / "Ignore Minor Artifacts"
+  checkboxes.** UI half of D1/D2 — `ItemSelectDialog.cpp`/`FindGearDialog.cpp`
+  persist these two filter checkboxes; V3's `GearPanel.tsx`/`FindGearDialog.tsx`
+  pickers only filter by level range/buff type/name.
+
+### Forum export
+
+Re-audited `ForumExportDlg.cpp` section-by-section against `sections.ts`
+(all 25 V2 `Add*` emitters vs. 27 V3 `SectionDef`s). X4/X5/X6 confirmed
+closed; found new, previously unflagged content/ordering gaps:
+
+- ❌ **X7 — `gear` section far less detailed than `simpleGear`.** V2's
+  `AddGear`/`ExportGear(bSimple=false)` (the section V2 calls plain "Gear")
+  is the *richer* variant: V2 canonical slot order, per-item buff
+  descriptions, augment contents, set-bonus lines, artifact/sentient
+  filigree. V3's `gear` section (`sections.ts:408-420`) just alphabetically
+  lists `slot: item` with none of that — backwards from V2, where
+  `SimpleGear` (already parity-fixed, Done #29) is the stripped-down variant
+  and plain `Gear` is the detailed one.
+- ❌ **X8 — `characterHeader` section missing the entire combat-stat block.**
+  V2 `AddCharacterHeader` (`ForumExportDlg.cpp:312-392`) interleaves the six
+  ability rows with HP (Start/Tome/Final), Displacement%, Unconscious Range,
+  Incorporeality%, PRR, AC, MRR+cap, Healing Amp, Dodge+cap, Fortification%,
+  Repair Amp%, SR, BAB, a DR list, and an Immunities list. V3's
+  `characterHeader` (`sections.ts:43-57`) only has Name/Race/Alignment/
+  Classes/TotalLevel/EpicLevels/LegendaryLevels — none of the combat stats
+  appear in any other section either.
+- ❌ **X9 — `energyResistances` type list mismatch.** V2
+  (`ForumExportDlg.cpp:1184-1199`) exports Acid/Chaos/Cold/Electric/Evil/
+  Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic and deliberately
+  comments out Positive/Repair/Rust. V3 (`sections.ts:160`) is missing
+  Chaos/Evil/Good/Lawful and wrongly includes Positive/Repair — same class
+  of bug as X6, but for resistances rather than spell power.
+- ❌ **X10 — `pastLives` bucket order/content differs from V2.** V2
+  `AddPastLives` emits Heroic → Racial → Iconic → Epic
+  (`ForumExportDlg.cpp:428-431`); V3 emits Heroic → Iconic → Epic → Racial
+  plus an extra "Other Past Lives" bucket with no V2 equivalent.
+- 🟡 **X11 — `skills` section drops V2's per-level table (lower confidence).**
+  V2 `AddSkills` renders a full per-level ASCII table (points available,
+  ranks trained per level, half-rank cross-class glyph, an "Available
+  Points" row). V3's `skills` section only shows total ranks + buffed total
+  per skill. Given the scale, this may be an intentional simplification from
+  the original port rather than a fresh regression — flagged at lower
+  confidence for a follow-up decision rather than an assumed bug.
 
 ---
 
@@ -302,12 +416,25 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#105 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-06 (third pass) —
-re-scan of all V2 effect types vs. `effectParser.ts`, all V2 Pane classes vs.
-V3 components, all V2 `Breakdown*.cpp` formulas vs. `useBuildStats.ts`, and all
-25 V2 forum export sections vs. `sections.ts`. New gaps found: X4 (tacticalDCs
-section broken stat key), X5 (grantedFeats section ignores stats.grantedFeatsList),
-N6 (4 weapon ability-damage effect types still returning []), X6 (6 spell power
-types missing from export + BreakdownsPanel), U10 (BreakdownsPanel hardcoded
-tactical DC sub-types).*
+*Maintained by the parity-pass series. See PRs #53–#109 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-07 (fourth pass) —
+independent parallel re-scan of all `Breakdown*.cpp` formulas vs.
+`useBuildStats.ts`/combat lib, all effect `<Type>`/`<AType>` dispatch vs.
+`effectParser.ts` (verified clean — no new gaps), all V2 `*Pane.cpp`/
+`*Dialog.cpp` vs. V3 components, all 25 V2 forum export sections vs.
+`sections.ts`, and V2's item/gear/feat load-time derivation and slot-handling
+logic vs. `dataLoaders.ts`/the gear reducer. New gaps found: N7 (docent
+Mithral/Adamantine Body AC bonus dropped), N8 (favor total ignores quest
+difficulty scaling), N9 (two-handed/ranged weapons don't block the off-hand
+slot — double-counts stats), N10 (Minor Artifact single-equip exclusivity
+unenforced), N11/N12 (combat estimator: two-handed STR-damage multiplier and
+attack alacrity, both partial/estimator-scoped), D1 (gear content-ownership
+filter is a no-op — `Item.AdventurePack` never derived, contradicts Done
+#68's claim), D2 (Ignore Raid Items filter missing), D3/D4 (RestrictedSlots/
+SlotUpgrade item fields unmodeled), D5 (stale-feat migration on import), U11
+(BonusesPane's stacking-type breakdown tool has no V3 equivalent), U12
+(per-life clipboard/export context menu), U13 (raid/artifact picker
+checkboxes, UI half of D1/D2), X7–X11 (forum export: Gear section far less
+detailed than SimpleGear, CharacterHeader missing the whole combat-stat
+block, EnergyResistances type-list mismatch, PastLives bucket ordering, and
+a lower-confidence Skills per-level table omission).*
