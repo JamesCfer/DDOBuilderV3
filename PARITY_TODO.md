@@ -193,17 +193,51 @@ Remaining read/write-fidelity gaps:
 
 ---
 
-## High-priority remaining — forum export
-
-- ✅ **X4 — Forum export `tacticalDCs` section fixed** — done (#108).
-
-- ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (this PR).
-
----
-
 ## High-priority remaining — numerical correctness
 
-- ✅ **N6 — WeaponProficiencyClass grants class-based weapon proficiency** — done (this PR).
+- ❌ **N7 — `Weapon_CriticalRange` effect parses into a dead stat key.** V2
+  `BreakdownItemWeaponCriticalThreatRange.cpp:52-57` feeds
+  `Effect_Weapon_CriticalRange` (alongside `Weapon_Keen`/
+  `WeaponCriticalRangeClass`) into the crit-threat-range total.
+  `effectParser.ts:1417-1418` (and the item-buff duplicate at `:2313-2314`)
+  route it to `make('weapon.critRange')` — a key nothing reads.
+  `BreakdownsPanel.tsx`'s "Threat Range" row and the combat estimator both
+  read a different key (`weapon.threatRange` / `melee.crit.range`), so the
+  bonus is silently a no-op everywhere. Confirmed live in Fighter **Kensei
+  "Threat Range"** (`Fighter_Kensei.tree.xml`), plus similar abilities in
+  HorizonWalker, Tempest, Shintao, Assassin trees. Fix: route to the same key
+  the Breakdowns panel / combat code actually reads.
+- ❌ **N8 — `Weapon_CriticalMultiplier` effect parses into a dead stat key.**
+  V2 `BreakdownItemWeaponCriticalMultiplier.cpp:70-93` feeds
+  `Effect_Weapon_CriticalMultiplier` (universal, item-type-gated) into the
+  standard-multiplier total, alongside the class-gated
+  `WeaponCriticalMultiplierClass`. `effectParser.ts:1413-1414`/`:2309-2310`
+  route it to `make('weapon.critMultiplier')`, which has zero readers — only
+  the class-gated sibling (`melee.crit.multiplier`) is consumed by
+  `attackEntry.ts:165`. Confirmed live in Aasimar **"Scourge of the Undead:
+  Destroyer of the Dead"** and similar Kensei/Tempest/Shintao abilities. Fix:
+  merge into `melee.crit.multiplier` alongside its class-gated sibling.
+- ❌ **N9 — `Life.specialFeats` (V2 `Type="Special"` acquired feats) are
+  imported but never applied to any stat or AP budget.** V2's
+  `Life::AllSpecialFeats()` (`Life.cpp:694-698`) feeds these feats through the
+  normal per-feat effect-application path plus the AP-bonus scan
+  (`CountBonusRacialAP`/`CountBonusUniversalAP`, `Life.cpp:720-820`).
+  `v2Import.ts:339-371` correctly separates them out of `<SpecialFeats>` into
+  `Life.specialFeats`, but `useBuildStats.ts`'s `ctxFeats` construction
+  (`:866-877`, race/class/`build.featChoices` only) and
+  `actionPoints.ts`'s `computeBonusActionPoints` (`:48-72`, `pastLives`/
+  `favorFeats` only) never look at it — `Life.specialFeats` is read solely by
+  the forum exporter and the V2 re-exporter. Real-world impact: all three of
+  the repo's own fixture builds (`YingsMonk`, `YingsMonkU73`,
+  `Maetrim_EndGameHandwrapsMonk`) carry `Type="Special"` Chrism
+  reincarnation-cache feats (`Feats.xml` ~10175+: Inherent Melee/Ranged
+  Power, Inherent MRR/PRR, Inherent Universal Spell Power, Inherent Fate
+  Point, Inherent RAP/UAP Bonus) that silently contribute **nothing** in V3 —
+  under-counting Melee/Ranged Power, PRR/MRR, spell power, Fate Points, and
+  enhancement AP budget by however many Chrisms the character redeemed (up to
+  +4 each). Fix shape: thread `Life.specialFeats` into both the
+  `accumulateFeat` loop and `computeBonusActionPoints` (both currently take
+  only `CharacterBuild`, not the owning `Life`).
 
 ---
 
@@ -213,6 +247,46 @@ Remaining read/write-fidelity gaps:
 - ✅ **Non-stance runtime gates** — done (#73): EnemyType hard-fails (as in V2),
   MaterialType checks the equipped item's material, Skill checks the resolved
   total.
+- No further `Effect_*`/`AType` case gaps found in a full fresh sweep of
+  `Effect.h`/`Effect.cpp` vs. `effectParser.ts` (fourth review pass) — every
+  effect Type used in the live data now has a corresponding case. The one
+  fresh gap this pass surfaced (N9 above) is a feat-selection wiring bug, not
+  a missing effect-parser case.
+
+---
+
+## High-priority remaining — forum export
+
+- ✅ **X4 — Forum export `tacticalDCs` section fixed** — done (#108).
+- ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (see Done table).
+- ❌ **X7 — `characterHeader` section is missing V2's whole "vitals block."**
+  V2 (`ForumExportDlg.cpp:344-391`) prints HP/Displacement totals
+  (Start/Tome/Final columns) then six ability lines each paired with a
+  derived combat stat — STR+Uncons.Range/Incorporeal%, DEX+PRR/AC,
+  CON+MRR(or `MRR/CAP`)/+Healing Amp, INT+Dodge/DodgeCap%(tower-shield-aware),
+  WIS+Fort%/Repair Amp, CHA+SR/BAB — plus trailing `DR:`/`Immunities:` lines.
+  V3's `characterHeader` (`sections.ts:43-57`) only emits Name/Race/
+  Alignment/Classes/Total Level; `abilityScores` (`:107-120`) covers ability
+  totals separately in a different plain-list format with no paired combat
+  stats. A high-AC/PRR/MRR/SR build's forum export is missing the entire
+  "vitals block" V2 posts are known for.
+- ❌ **X8 — `saves` section missing `[TABLE]` wrapping and the no-fail-on-1
+  marker/footnote.** V2 (`ForumExportDlg.cpp:510-529`) wraps saves in a
+  3-column `[TABLE]`/`[TR][TD]` block and appends a trailing `*` to any save
+  where `BreakdownItemSave::HasNoFailOn1()` is true (Paladin Fortitude,
+  Divine Grace edge cases, etc.), plus a footnote line explaining the `*`.
+  V3's `saves` section (`sections.ts:122-150`) emits plain `[b]/[/b]` +
+  indented lines with no table and no no-fail-on-1 marker at all — that
+  information is silently dropped.
+- ❌ **X9 — `featSelections`/`featSelectionsNoSkills` should be a per-level
+  `[TABLE]` (Level | Class(level) | Feats/Skills), not a flat sorted list.**
+  V2 (`ForumExportDlg.cpp:622-660`) iterates every character level and prints
+  one table row per level with the trained class + that class's level count
+  (e.g. `Fighter(3)`) alongside the feats/skills picked at that level. V3
+  (`sections.ts:178-193`, `540-556`) just sorts `build.featChoices` by the
+  leading level number and prints `  key: value` — no class-per-level
+  context, no BBCode table. A multiclass build's forum table loses the
+  "at level 7 I was Fighter level 3" context V2 readers rely on.
 
 ---
 
@@ -229,6 +303,18 @@ Remaining read/write-fidelity gaps:
   binary metamagic flags with no class-level gating.
 - ✅ **U9 — complete** — FindGearDialog (#64), ContentPane (#68), Help/About (#69).
 - ✅ **U10 — BreakdownsPanel tactical DC sub-types complete** — done (#108).
+- ❌ **U11 — "Special" / "Favor" feat groups have no training UI at all.** V2
+  `SpecialFeatsPane.cpp` renders six feat groups side by side (Heroic/
+  Racial/Iconic/Epic past-life + **Special** + **Favor**), each a grid of
+  clickable `CFeatSelectionDialog` tiles (left-click trains, right-click
+  revokes). V3's `pastlives/PastLivesPanel.tsx` covers only the four
+  past-life groups; `build.favorFeats`/`Life.specialFeats` exist purely as
+  import/export/compute plumbing (`favorFeats` does feed
+  `actionPoints.ts`'s bonus-AP count; `specialFeats` doesn't feed anything —
+  see N9) with zero component ever referencing
+  `SET_FAVOR_FEAT`/`SET_SPECIAL_FEAT`-style actions. A build authored fresh
+  in V3 can never acquire a Special or Favor feat; these only populate
+  correctly when imported from a V2 `.DDOBuild` that already has them set.
 
 ---
 
@@ -245,6 +331,34 @@ Remaining read/write-fidelity gaps:
 - ✅ **Cosmetic gear effects** — done (#71).
 - ✅ **Sentient gem personality buffs** — not a gap (#71).
 - ✅ **Filigree set bonuses with conditional triggers** — done (#71).
+- ❌ **D1 — Legacy enhancement trees are never filtered; V2's
+  `SupportLegacyTrees` gate has no V3 counterpart.** V2 `EnhancementTree.h`'s
+  `Legacy` flag + `UpdateLegacyInfo()` (`EnhancementTree.cpp:44-52`) prefixes
+  legacy-tree items to dodge `InternalName` collisions with the modern tree
+  of the same class; `EnhancementsPane.cpp:332` hides any `HasLegacy()` tree
+  from the picker unless the character already has one trained
+  (`Character::SupportLegacyTrees()`, set by `Build::UpdateLegacyTrees()`,
+  `Build.cpp:6701-6731`). Confirmed in data:
+  `Legacy_Monk_Shintao_v1.tree.xml` reuses the exact same item
+  `InternalName` (`ShintaoCore1`) as the modern `Monk_Shintao.tree.xml` — by
+  design, gated on the legacy flag. V3's `dataLoaders.ts:150-175`
+  normalizes `IsReaperTree`/`IsEpicDestiny`/`IsRacialTree`/`IsUniversalTree`
+  but not `Legacy` (not even in the `EnhancementTree` type,
+  `types/ddo.ts:179-190`), and no `SupportLegacyTrees`-equivalent exists
+  anywhere. Every Monk build in V3 shows " Shintao V1"/HenshinMystic v1/
+  NinjaSpy v1 as fully selectable trees that V2 users never see unless
+  they already trained one on an old save.
+- ❌ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades) is parsed
+  nowhere in V3.** V2 `Item.h:97` / `SlotUpgrade.h`/`.cpp` models named
+  upgrades that let one of an item's augment slots additionally accept other
+  colors; `ItemSelectDialog.cpp:462-476` and `FindGearDialog.cpp:342-347`
+  both render the extra pickable slot colors. Confirmed in data: `Chains`/
+  `Shackles`/`Five Rings` (and Legendary variants) all carry a
+  `<SlotUpgrade>` granting Blue/Colorless/Green/Yellow options. V3's `Item`
+  type (`types/ddo.ts:218-247`) has no `SlotUpgrade` field and
+  `dataLoaders.ts`'s `loadItems` (`:314-326`) does no post-processing for
+  it, so the Gear panel's augment-slot UI can never surface the alternate
+  colors — those items are stuck with only their native slot color in V3.
 
 ### Spell power school coverage
 - ✅ **X6 — Missing alignment/physical spell power types in export and BreakdownsPanel** — done (#109).
@@ -302,12 +416,21 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#105 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-06 (third pass) —
-re-scan of all V2 effect types vs. `effectParser.ts`, all V2 Pane classes vs.
-V3 components, all V2 `Breakdown*.cpp` formulas vs. `useBuildStats.ts`, and all
-25 V2 forum export sections vs. `sections.ts`. New gaps found: X4 (tacticalDCs
-section broken stat key), X5 (grantedFeats section ignores stats.grantedFeatsList),
-N6 (4 weapon ability-damage effect types still returning []), X6 (6 spell power
-types missing from export + BreakdownsPanel), U10 (BreakdownsPanel hardcoded
-tactical DC sub-types).*
+*Maintained by the parity-pass series. See PRs #53–#109 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-07 (fourth pass) —
+five parallel scans covering numerical correctness (`Breakdown*.cpp` vs.
+`useBuildStats.ts`), effect parser coverage (`Effect.cpp` vs.
+`effectParser.ts`), UI features (`*Pane.cpp`/`*Dialog.cpp` vs.
+`webapp/src/components/`), forum export (`ForumExportDlg.cpp` vs.
+`sections.ts`), and data-loading edge cases (`dataLoaders.ts` vs. V2's XML
+loaders). New gaps found: N7/N8 (`Weapon_CriticalRange`/
+`Weapon_CriticalMultiplier` effects parse into dead, unread stat keys), N9
+(`Life.specialFeats` — V2 `Type="Special"` Chrism feats — imported but never
+applied to stats or AP budget; affects all 3 repo fixture builds), X7
+(forum export `characterHeader` missing V2's HP/AC/PRR/MRR/Dodge/Fort/SR/BAB/
+DR/Immunities vitals block), X8 (saves section missing `[TABLE]` wrap +
+no-fail-on-1 marker), X9 (feat selections should be a per-level table, not a
+flat list), U11 (no UI to train/revoke Special or Favor feats), D1 (Legacy
+enhancement trees never filtered — `SupportLegacyTrees` gate missing, shows
+duplicate colliding trees to every Monk build), D2 (`<SlotUpgrade>` augment
+slot color upgrades parsed nowhere).*
