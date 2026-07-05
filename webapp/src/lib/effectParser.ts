@@ -1410,8 +1410,12 @@ export function parseEffect(
       return [make('weapon.keen')]
     case 'Weapon_VorpalRange':
       return [make('weapon.vorpalRange')]
+    // Weapon_CriticalMultiplier is universal (not weapon-class-gated) but V2
+    // (BreakdownItemWeaponCriticalMultiplier.cpp:70-93) sums it into the same
+    // total as the class-gated WeaponCriticalMultiplierClass sibling, so both
+    // route to melee.crit.multiplier (V2 parity pass N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('weapon.critMultiplier')]
+      return [make('melee.crit.multiplier')]
     case 'Weapon_CriticalMultiplier19To20':
       return [make('weapon.critMultiplier19to20')]
     case 'Weapon_CriticalRange':
@@ -2306,8 +2310,9 @@ export function parseItemBuff(
       return [make('weapon.keen')]
     case 'Weapon_VorpalRange':
       return [make('weapon.vorpalRange')]
+    // Universal sibling of WeaponCriticalMultiplierClass — same total (N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('weapon.critMultiplier')]
+      return [make('melee.crit.multiplier')]
     case 'Weapon_CriticalMultiplier19To20':
       return [make('weapon.critMultiplier19to20')]
     case 'Weapon_CriticalRange':
