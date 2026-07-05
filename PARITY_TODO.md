@@ -108,6 +108,7 @@ the PR number, so this file doubles as a changelog.
 | 87 | **U10 — BreakdownsPanel tactical DC sub-types complete** — `BreakdownsPanel.tsx` hardcoded only 4 tactical DC sub-type rows (Trip, Stun, Sunder, Assassinate); now dynamically renders all 13 V2 types from `TacticalTypes.h`, matching V2 `BreakdownsPane.cpp::AddTacticalItem` which registers all 13. Users can now see Fear (Warlock Tainted Scholar), InnateAttack (Dragonborn enhancements), and all other types. | #108 |
 | 88 | **N6 — WeaponProficiencyClass grants class-based weapon proficiency** — `buildRuntimeGroupAdds()` now handles `WeaponProficiencyClass` effects (e.g. "Half-Elf Dilettante: Ranger" `<Item>Ranged</Item>`, Spells.xml "Master's Touch" `<Item>Simple</Item>`/`<Item>Martial</Item>`) by emitting a `RuntimeGroupMerge { baseGroup: 'Proficiency', mergedGroup: <className> }`. The existing `deriveWeaponClasses` transitive-merge logic then makes any weapon in the named static group (e.g. Longbow in Ranged) gain 'Proficiency' membership, so `isWeaponProficient('Longbow')` returns true. The other three types in the N6 stub — `WeaponOtherDamageBonus` (bane dice, EnemyType-gated, commented out in V2), `WeaponDamageBonusStat`/`WeaponDamageBonusCriticalStat` (Rogue Crippling Strike enemy STR drain, not a character damage bonus) — correctly return `[]` matching V2's own unhandled behavior. (V2 source: `BreakdownItemWeaponEffects.cpp:56/329-344`, `HalfElf.race.xml`, `Spells.xml`.) | this PR |
 | 89 | **X6 — Missing alignment/physical spell power types in forum export** — `sections.ts:spellPowers` replaced hardcoded 13-type list with `SPELL_POWER_TYPES` from `gamedata.ts` (all 17 V2 types: Acid, LightAlignment, Chaos, Cold, Electric, Evil, Fire, Force, Lawful, Negative, Physical, Poison, Positive, Repair, Rust, Sonic, Untyped, plus Universal). Fixed wrong stat key `sp.crit.*` → `spCrit.*`; removed non-existent `sp.critMult.*`; uses `SPELL_POWER_LABELS` for display names (e.g. `LightAlignment` → `Light/Alignment`). Previously `Chaos`, `Evil`, `Lawful`, `Physical`, `Poison`, `Untyped` spell power bonuses (confirmed in Cleric Divine Disciple + Warlock Tainted Scholar trees) were silently absent from the forum export. `BreakdownsPanel.tsx` already used the full `SPELL_POWER_TYPES` list — no change needed there. V2 source: `BreakdownsPane.cpp:1764-1780`. | #109 |
+| 90 | **N8 — `Weapon_CriticalMultiplier` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalMultiplier.cpp:70-93`) sums the universal `Effect_Weapon_CriticalMultiplier` into the *same* total as the class-gated `WeaponCriticalMultiplierClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critMultiplier`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.multiplier`, which is what `WeaponCriticalMultiplierClass` already used). Now both route to `melee.crit.multiplier`, so universal crit-multiplier abilities like Aasimar "Scourge of the Undead: Destroyer of the Dead" actually apply. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -207,16 +208,11 @@ Remaining read/write-fidelity gaps:
   "Threat Range"** (`Fighter_Kensei.tree.xml`), plus similar abilities in
   HorizonWalker, Tempest, Shintao, Assassin trees. Fix: route to the same key
   the Breakdowns panel / combat code actually reads.
-- ❌ **N8 — `Weapon_CriticalMultiplier` effect parses into a dead stat key.**
-  V2 `BreakdownItemWeaponCriticalMultiplier.cpp:70-93` feeds
-  `Effect_Weapon_CriticalMultiplier` (universal, item-type-gated) into the
-  standard-multiplier total, alongside the class-gated
-  `WeaponCriticalMultiplierClass`. `effectParser.ts:1413-1414`/`:2309-2310`
-  route it to `make('weapon.critMultiplier')`, which has zero readers — only
-  the class-gated sibling (`melee.crit.multiplier`) is consumed by
-  `attackEntry.ts:165`. Confirmed live in Aasimar **"Scourge of the Undead:
-  Destroyer of the Dead"** and similar Kensei/Tempest/Shintao abilities. Fix:
-  merge into `melee.crit.multiplier` alongside its class-gated sibling.
+- ✅ **N8 — `Weapon_CriticalMultiplier` effect parses into a dead stat key** —
+  done (#90 in Done table above). Both `parseEffect`/`parseItemBuff` now
+  route the universal effect into `melee.crit.multiplier`, merging with its
+  class-gated `WeaponCriticalMultiplierClass` sibling, matching V2
+  `BreakdownItemWeaponCriticalMultiplier.cpp:70-93`.
 - ❌ **N9 — `Life.specialFeats` (V2 `Type="Special"` acquired feats) are
   imported but never applied to any stat or AP budget.** V2's
   `Life::AllSpecialFeats()` (`Life.cpp:694-698`) feeds these feats through the

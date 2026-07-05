@@ -31,9 +31,9 @@ describe('Audit-fix surfaced effect cases', () => {
     expect(out[0].value).toBe(5)
   })
 
-  it('Weapon_CriticalMultiplier emits weapon.critMultiplier', () => {
+  it('Weapon_CriticalMultiplier emits melee.crit.multiplier (N8: shares the class-gated sibling total)', () => {
     const out = parseEffect(mk('Weapon_CriticalMultiplier', { Amount: 1 }), 1, 'Test', 0, 0, ctx)
-    expect(out[0].statKey).toBe('weapon.critMultiplier')
+    expect(out[0].statKey).toBe('melee.crit.multiplier')
   })
 
   it('EldritchBlastD6 emits eldritchBlast.d6', () => {
