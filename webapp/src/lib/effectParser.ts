@@ -1418,8 +1418,10 @@ export function parseEffect(
       return [make('melee.crit.multiplier')]
     case 'Weapon_CriticalMultiplier19To20':
       return [make('weapon.critMultiplier19to20')]
+    // Universal sibling of WeaponCriticalRangeClass — same total (N7),
+    // matching V2 BreakdownItemWeaponCriticalThreatRange.cpp:52-57.
     case 'Weapon_CriticalRange':
-      return [make('weapon.critRange')]
+      return [make('melee.crit.range')]
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
@@ -2315,8 +2317,9 @@ export function parseItemBuff(
       return [make('melee.crit.multiplier')]
     case 'Weapon_CriticalMultiplier19To20':
       return [make('weapon.critMultiplier19to20')]
+    // Universal sibling of WeaponCriticalRangeClass — same total (N7).
     case 'Weapon_CriticalRange':
-      return [make('weapon.critRange')]
+      return [make('melee.crit.range')]
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // surfaced as `melee.crit.damage` for the DPR estimator's crit term.
     case 'Weapon_AttackAndDamageCritical':
