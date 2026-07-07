@@ -11,6 +11,8 @@
 
 import { useMemo } from 'react'
 import { useCharacter } from '../context/CharacterContext'
+import { useDocument } from '../context/DocumentContext'
+import { findActiveLife } from '../lib/multiLife'
 import type { CharacterBuild } from '../types/ddo'
 import { SKILLS } from '../lib/gamedata'
 import type {
@@ -101,6 +103,16 @@ export interface BuildStatsInput {
    * whose stat effects live only in the template (V2 Item::FindEffect).
    */
   allItemBuffs?: ItemBuffTemplate[]
+  /**
+   * Life-level "Special" acquired feats (V2 `Life.specialFeats` /
+   * `Life::AllSpecialFeats`), e.g. Chrism reincarnation-cache feats (Inherent
+   * Melee/Ranged Power, Inherent MRR/PRR, Inherent Universal Spell Power,
+   * Inherent Fate Point, Inherent RAP/UAP Bonus). One entry per redemption —
+   * duplicates represent repeated training (V2 allows up to +4 stacks).
+   * Optional — not owned by CharacterBuild, so callers must supply it from
+   * the owning Life.
+   */
+  specialFeats?: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -827,7 +839,7 @@ function buildStatMapOnce(
   const {
     allClasses, allRaces, allFeats, allTrees,
     allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-    allWeaponGroups, allSpells, allGuildBuffs, allItemBuffs,
+    allWeaponGroups, allSpells, allGuildBuffs, allItemBuffs, specialFeats,
   } = input
   // Cosmetic slots are display-only in V2 (effects never applied) — drop them
   // here so gear buffs, set bonuses, armor stances and weapon detection all
@@ -1112,6 +1124,21 @@ function buildStatMapOnce(
       const feat = allFeats.find(f =>
         f.Name === source || f.Name === `Past Life: ${source}` || f.Name === `Racial Past Life: ${source}`)
       if (feat) accumulateFeat(map, feat, count, `Past life: ${source} ×${count}`, build.totalLevel, ctx)
+    }
+
+    // ── Life-level Special feats (V2 Life::AllSpecialFeats) ────────────────
+    // Chrism reincarnation-cache feats and similar Type="Special" acquisitions
+    // were imported into Life.specialFeats but never applied to any stat —
+    // count repeated redemptions (duplicate names) as the effect rank.
+    if (specialFeats && specialFeats.length > 0) {
+      const specialCounts = new Map<string, number>()
+      for (const name of specialFeats) {
+        specialCounts.set(name, (specialCounts.get(name) ?? 0) + 1)
+      }
+      for (const [name, count] of specialCounts) {
+        const feat = allFeats.find(f => f.Name === name)
+        if (feat) accumulateFeat(map, feat, count, `Special: ${name}${count > 1 ? ` ×${count}` : ''}`, build.totalLevel, ctx)
+      }
     }
 
     // ── Auto-acquired feats (V2 Build::AutomaticFeats via <AutomaticAcquisition>) ──
@@ -2024,15 +2051,30 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
 export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterBuild): BuildStats {
   const ctx = useCharacter()
   const build = buildOverride ?? ctx.build
+  const { doc } = useDocument()
+
+  // Life.specialFeats isn't owned by CharacterBuild, so it isn't part of
+  // `input` for most callers — default it to the active build's own life
+  // here (the common case: every panel computing stats for the build the
+  // user is editing). A caller comparing a different build (BuildCompare)
+  // may pass `input.specialFeats` explicitly; otherwise it's left empty
+  // rather than misattributed to the active life.
+  const isActiveBuild = build === ctx.build
+  const resolvedSpecialFeats = input.specialFeats
+    ?? (isActiveBuild ? findActiveLife(doc)?.specialFeats : undefined)
+  const effectiveInput = resolvedSpecialFeats !== undefined && resolvedSpecialFeats !== input.specialFeats
+    ? { ...input, specialFeats: resolvedSpecialFeats }
+    : input
 
   const statMap = useMemo<StatMap>(
-    () => buildStatMap(input, build),
+    () => buildStatMap(effectiveInput, build),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       build,
       input.allClasses, input.allRaces, input.allFeats, input.allTrees,
       input.allSelfBuffs, input.allAugments, input.allSetBonuses,
       input.allFiligreeBonuses, input.allFiligrees, input.gearItems,
+      resolvedSpecialFeats,
     ],
   )
 

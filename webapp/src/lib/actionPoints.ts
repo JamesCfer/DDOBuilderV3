@@ -42,10 +42,17 @@ export interface BonusActionPoints {
 }
 
 /**
- * Counts bonus racial/universal APs from past-life and favor feats, exactly
- * as V2's Life::CountBonusRacialAP / CountBonusUniversalAP walk SpecialFeats.
+ * Counts bonus racial/universal APs from past-life, favor, and Life-level
+ * Special feats, exactly as V2's Life::CountBonusRacialAP /
+ * CountBonusUniversalAP walk SpecialFeats. `specialFeats` comes from the
+ * owning Life (not CharacterBuild) — e.g. Chrism reincarnation-cache feats,
+ * which may appear more than once (one entry per redemption, up to +4).
  */
-export function computeBonusActionPoints(build: CharacterBuild, allFeats: Feat[]): BonusActionPoints {
+export function computeBonusActionPoints(
+  build: CharacterBuild,
+  allFeats: Feat[],
+  specialFeats: string[] = [],
+): BonusActionPoints {
   const out: BonusActionPoints = { racial: 0, universal: 0 }
   const counted = new Map<string, number>()
   for (const [source, count] of Object.entries(build.pastLives ?? {})) {
@@ -62,6 +69,17 @@ export function computeBonusActionPoints(build: CharacterBuild, allFeats: Feat[]
       if (feat) counted.set(feat.Name, 1)
     }
   }
+  // Life-level Special feats — count repeated redemptions of the same name.
+  const specialCounts = new Map<string, number>()
+  for (const fn of specialFeats) {
+    specialCounts.set(fn, (specialCounts.get(fn) ?? 0) + 1)
+  }
+  for (const [fn, count] of specialCounts) {
+    if (!counted.has(fn)) {
+      const feat = allFeats.find(f => f.Name === fn)
+      if (feat) counted.set(feat.Name, count)
+    }
+  }
   for (const [name, count] of counted) {
     const feat = allFeats.find(f => f.Name === name)
     if (!feat) continue
@@ -72,8 +90,8 @@ export function computeBonusActionPoints(build: CharacterBuild, allFeats: Feat[]
 }
 
 /** V2 TT_allEnhancement budget: min(20, heroic level)·4 + racial + universal. */
-export function enhancementAPBudget(build: CharacterBuild, allFeats: Feat[]): number {
+export function enhancementAPBudget(build: CharacterBuild, allFeats: Feat[], specialFeats: string[] = []): number {
   const heroic = Math.min(20, build.totalLevel || 0)
-  const bonus = computeBonusActionPoints(build, allFeats)
+  const bonus = computeBonusActionPoints(build, allFeats, specialFeats)
   return heroic * 4 + bonus.racial + bonus.universal
 }
