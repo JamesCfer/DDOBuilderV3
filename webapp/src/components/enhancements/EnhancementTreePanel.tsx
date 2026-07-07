@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
+import { useDocument } from '../../context/DocumentContext'
+import { findActiveLife } from '../../lib/multiLife'
 import { enhancementAPBudget } from '../../lib/actionPoints'
 import type { DDOClass, EnhancementTree, EnhancementTreeItem, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
@@ -167,6 +169,8 @@ function TreePicker({ allTrees, selected, build, onToggle, onClose }: TreePicker
 
 export default function EnhancementTreePanel() {
   const { build, dispatch } = useCharacter()
+  const { doc } = useDocument()
+  const specialFeats = findActiveLife(doc)?.specialFeats ?? []
 
   const [allTrees, setAllTrees] = useState<EnhancementTree[]>([])
   const [allClasses, setAllClasses] = useState<DDOClass[]>([])
@@ -245,8 +249,8 @@ export default function EnhancementTreePanel() {
   // / Effect_UAPBonus). The previous hardcoded 80 mis-reported imported
   // builds with bonus APs as over budget ("102 / 80").
   const apBudget = useMemo(
-    () => (allFeats.length > 0 ? enhancementAPBudget(build, allFeats) : Math.min(20, build.totalLevel || 0) * 4),
-    [build, allFeats])
+    () => (allFeats.length > 0 ? enhancementAPBudget(build, allFeats, specialFeats) : Math.min(20, build.totalLevel || 0) * 4),
+    [build, allFeats, specialFeats])
 
   function handleChoicesChange(treeName: string, updated: TreeChoices) {
     dispatch({ type: 'SET_ENH_CHOICES', treeName, choices: updated })

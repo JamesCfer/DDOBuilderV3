@@ -110,6 +110,7 @@ the PR number, so this file doubles as a changelog.
 | 89 | **X6 — Missing alignment/physical spell power types in forum export** — `sections.ts:spellPowers` replaced hardcoded 13-type list with `SPELL_POWER_TYPES` from `gamedata.ts` (all 17 V2 types: Acid, LightAlignment, Chaos, Cold, Electric, Evil, Fire, Force, Lawful, Negative, Physical, Poison, Positive, Repair, Rust, Sonic, Untyped, plus Universal). Fixed wrong stat key `sp.crit.*` → `spCrit.*`; removed non-existent `sp.critMult.*`; uses `SPELL_POWER_LABELS` for display names (e.g. `LightAlignment` → `Light/Alignment`). Previously `Chaos`, `Evil`, `Lawful`, `Physical`, `Poison`, `Untyped` spell power bonuses (confirmed in Cleric Divine Disciple + Warlock Tainted Scholar trees) were silently absent from the forum export. `BreakdownsPanel.tsx` already used the full `SPELL_POWER_TYPES` list — no change needed there. V2 source: `BreakdownsPane.cpp:1764-1780`. | #109 |
 | 90 | **N8 — `Weapon_CriticalMultiplier` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalMultiplier.cpp:70-93`) sums the universal `Effect_Weapon_CriticalMultiplier` into the *same* total as the class-gated `WeaponCriticalMultiplierClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critMultiplier`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.multiplier`, which is what `WeaponCriticalMultiplierClass` already used). Now both route to `melee.crit.multiplier`, so universal crit-multiplier abilities like Aasimar "Scourge of the Undead: Destroyer of the Dead" actually apply. | this PR |
 | 91 | **N7 — `Weapon_CriticalRange` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalThreatRange.cpp:52-57`) sums the universal `Effect_Weapon_CriticalRange` into the *same* total as the class-gated `WeaponCriticalRangeClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critRange`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.range`, which is what `WeaponCriticalRangeClass` already used). Now both route to `melee.crit.range`, so universal threat-range abilities like Fighter Kensei "Keen Edge" actually apply. 3 regression tests in `parityPassN7.test.ts`. | this PR |
+| 92 | **N9 — `Life.specialFeats` threaded into stats + AP budget** — Life-level `<SpecialFeats>` (V2 `Life::AllSpecialFeats`, e.g. universal-tree-access grants like "Falconry Tree") were imported into `Life.specialFeats` but only ever read by the exporters — never applied to any stat or the enhancement AP budget, since both `useBuildStats` and `actionPoints.ts` took only `CharacterBuild`, not the owning `Life`. (The separate Character-level `<SpecialFeats>` Chrism feats were already folded into `build.pastLives` by a prior pass and unaffected by this gap.) `BuildStatsInput.specialFeats?: string[]` (`useBuildStats.ts`) is now accumulated via `accumulateFeat` alongside past lives (repeated names count as rank, V2's Chrism re-redemption model); the `useBuildStats` hook defaults it from the active build's own `Life` via `findActiveLife(doc)`. `computeBonusActionPoints`/`enhancementAPBudget` (`actionPoints.ts`) gained an optional `specialFeats` parameter folded into the existing RAPBonus/UAPBonus scan; `EnhancementTreePanel` now passes it through. 5 regression tests in `parityPassN9.test.ts`. | #118 |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -210,27 +211,29 @@ Remaining read/write-fidelity gaps:
   route the universal effect into `melee.crit.multiplier`, merging with its
   class-gated `WeaponCriticalMultiplierClass` sibling, matching V2
   `BreakdownItemWeaponCriticalMultiplier.cpp:70-93`.
-- ❌ **N9 — `Life.specialFeats` (V2 `Type="Special"` acquired feats) are
-  imported but never applied to any stat or AP budget.** V2's
-  `Life::AllSpecialFeats()` (`Life.cpp:694-698`) feeds these feats through the
-  normal per-feat effect-application path plus the AP-bonus scan
-  (`CountBonusRacialAP`/`CountBonusUniversalAP`, `Life.cpp:720-820`).
-  `v2Import.ts:339-371` correctly separates them out of `<SpecialFeats>` into
-  `Life.specialFeats`, but `useBuildStats.ts`'s `ctxFeats` construction
-  (`:866-877`, race/class/`build.featChoices` only) and
-  `actionPoints.ts`'s `computeBonusActionPoints` (`:48-72`, `pastLives`/
-  `favorFeats` only) never look at it — `Life.specialFeats` is read solely by
-  the forum exporter and the V2 re-exporter. Real-world impact: all three of
-  the repo's own fixture builds (`YingsMonk`, `YingsMonkU73`,
-  `Maetrim_EndGameHandwrapsMonk`) carry `Type="Special"` Chrism
-  reincarnation-cache feats (`Feats.xml` ~10175+: Inherent Melee/Ranged
-  Power, Inherent MRR/PRR, Inherent Universal Spell Power, Inherent Fate
-  Point, Inherent RAP/UAP Bonus) that silently contribute **nothing** in V3 —
-  under-counting Melee/Ranged Power, PRR/MRR, spell power, Fate Points, and
-  enhancement AP budget by however many Chrisms the character redeemed (up to
-  +4 each). Fix shape: thread `Life.specialFeats` into both the
-  `accumulateFeat` loop and `computeBonusActionPoints` (both currently take
-  only `CharacterBuild`, not the owning `Life`).
+- ✅ **N9 — `Life.specialFeats` (V2 `Type="Special"` acquired feats) now
+  applied to stats + AP budget** — done (see Done table). Confirmed the
+  Character-level `<SpecialFeats>` Chrism feats (Inherent Melee/Ranged Power,
+  Inherent MRR/PRR, Inherent Fate Point, Inherent RAP/UAP Bonus, …) were
+  already folded into `build.pastLives` by a prior pass
+  (`v2Import.ts:585-592`) and applied correctly. The real remaining gap was
+  the separate **Life-level** `<SpecialFeats>` node (`v2Import.ts:738/771`,
+  e.g. universal-tree-access grants like "Falconry Tree" seen in
+  `Maetrim_EndGameHandwrapsMonk.DDOBuild:1293-1299`) — `Life.specialFeats`
+  was stored on the `Life` object for round-trip/export only and never fed
+  into `useBuildStats`'s effect accumulation or `actionPoints.ts`'s AP-bonus
+  scan (both took only `CharacterBuild`, never the owning `Life`).
+  `BuildStatsInput.specialFeats?: string[]` (`useBuildStats.ts`) is now
+  accumulated via `accumulateFeat` right after the past-lives pass (counting
+  repeated names as rank, matching V2's Chrism re-redemption model); the
+  `useBuildStats` React hook defaults it from `findActiveLife(doc)` when
+  computing the active build (a `BuildCompare` column for a non-active build
+  is left at `[]` rather than misattributed to the wrong life).
+  `computeBonusActionPoints`/`enhancementAPBudget` (`actionPoints.ts`) gained
+  an optional third `specialFeats` parameter, folded into the same
+  RAPBonus/UAPBonus scan as `pastLives`/`favorFeats`; `EnhancementTreePanel`
+  now passes the active life's `specialFeats` through. Regression tests in
+  `__tests__/parityPassN9.test.ts`.
 
 ---
 
