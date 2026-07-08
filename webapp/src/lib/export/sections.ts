@@ -122,30 +122,42 @@ const abilityScores: SectionDef = {
 const saves: SectionDef = {
   id: 'Saves',
   label: 'Saving throws',
+  // V2 ForumExportDlg.cpp:509-528 (AddSaves) wraps every save + sub-save row in
+  // a [TABLE], in Fort/Will/Reflex order, and AddTableEntryBreakdown:548-564
+  // appends a "*" to any row whose save has a `HasNoFailOn1()` effect
+  // (Effect_SaveNoFailOn1), followed by a footnote explaining the marker.
   emit: ({ stats }) => {
     if (!stats) return []
-    // V2 ForumExportDlg.cpp:514-524: exports 9 sub-save rows (base + sub bonus)
-    // in addition to the three main saves.  Only non-zero sub-rows are shown.
-    function subRow(label: string, baseKey: string, subKey: string): string | null {
-      const sub = stats!.total(subKey)
-      if (!sub) return null
-      return `    ${label}: ${sign(stats!.total(baseKey) + sub)}`
+    function noFailOn1(saveKey: string): boolean {
+      return (stats!.total(`save.${saveKey}.noFailOn1`) + stats!.total('save.All.noFailOn1')) > 0
     }
+    function row(header: string, sub: string, saveKey: string, baseKey: string, subKey?: string): string | null {
+      if (sub && subKey && !stats!.total(subKey)) return null
+      const total = stats!.total(baseKey) + (subKey ? stats!.total(subKey) : 0)
+      const marker = noFailOn1(saveKey) ? '*' : ''
+      return `[TR][TD]${header}[/TD][TD]${sub}[/TD][TD]${total}${marker}[/TD][/TR]`
+    }
+    const rows = [
+      row('Fortitude', '', 'Fort', 'save.Fort'),
+      row('', 'vs Poison',      'Fort',   'save.Fort',   'save.sub.Poison'),
+      row('', 'vs Disease',     'Fort',   'save.Fort',   'save.sub.Disease'),
+      row('Will', '', 'Will', 'save.Will'),
+      row('', 'vs Enchantment', 'Will',   'save.Will',   'save.sub.Enchantment'),
+      row('', 'vs Illusion',    'Will',   'save.Will',   'save.sub.Illusion'),
+      row('', 'vs Fear',        'Will',   'save.Will',   'save.sub.Fear'),
+      row('', 'vs Curse',       'Will',   'save.Will',   'save.sub.Curse'),
+      row('Reflex', '', 'Reflex', 'save.Reflex'),
+      row('', 'vs Traps',       'Reflex', 'save.Reflex', 'save.sub.Traps'),
+      row('', 'vs Spell',       'Reflex', 'save.Reflex', 'save.sub.Spell'),
+      row('', 'vs Magic',       'Reflex', 'save.Reflex', 'save.sub.Magic'),
+    ].filter((l): l is string => l !== null)
     return [
       '[b]Saving Throws[/b]:',
-      `  Fortitude: ${sign(stats.total('save.Fort'))}`,
-      subRow('vs Poison',      'save.Fort',   'save.sub.Poison'),
-      subRow('vs Disease',     'save.Fort',   'save.sub.Disease'),
-      `  Reflex: ${sign(stats.total('save.Reflex'))}`,
-      subRow('vs Traps',       'save.Reflex', 'save.sub.Traps'),
-      subRow('vs Spell',       'save.Reflex', 'save.sub.Spell'),
-      subRow('vs Magic',       'save.Reflex', 'save.sub.Magic'),
-      `  Will: ${sign(stats.total('save.Will'))}`,
-      subRow('vs Enchantment', 'save.Will',   'save.sub.Enchantment'),
-      subRow('vs Illusion',    'save.Will',   'save.sub.Illusion'),
-      subRow('vs Fear',        'save.Will',   'save.sub.Fear'),
-      subRow('vs Curse',       'save.Will',   'save.sub.Curse'),
-    ].filter((l): l is string => l !== null)
+      '[TABLE]',
+      ...rows,
+      '[/TABLE]',
+      'Marked with a* is no fail on a 1 if required DC met',
+    ]
   },
 }
 

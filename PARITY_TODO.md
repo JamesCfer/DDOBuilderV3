@@ -111,6 +111,7 @@ the PR number, so this file doubles as a changelog.
 | 90 | **N8 — `Weapon_CriticalMultiplier` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalMultiplier.cpp:70-93`) sums the universal `Effect_Weapon_CriticalMultiplier` into the *same* total as the class-gated `WeaponCriticalMultiplierClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critMultiplier`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.multiplier`, which is what `WeaponCriticalMultiplierClass` already used). Now both route to `melee.crit.multiplier`, so universal crit-multiplier abilities like Aasimar "Scourge of the Undead: Destroyer of the Dead" actually apply. | this PR |
 | 91 | **N7 — `Weapon_CriticalRange` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalThreatRange.cpp:52-57`) sums the universal `Effect_Weapon_CriticalRange` into the *same* total as the class-gated `WeaponCriticalRangeClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critRange`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.range`, which is what `WeaponCriticalRangeClass` already used). Now both route to `melee.crit.range`, so universal threat-range abilities like Fighter Kensei "Keen Edge" actually apply. 3 regression tests in `parityPassN7.test.ts`. | this PR |
 | 92 | **N9 — `Life.specialFeats` threaded into stats + AP budget** — Life-level `<SpecialFeats>` (V2 `Life::AllSpecialFeats`, e.g. universal-tree-access grants like "Falconry Tree") were imported into `Life.specialFeats` but only ever read by the exporters — never applied to any stat or the enhancement AP budget, since both `useBuildStats` and `actionPoints.ts` took only `CharacterBuild`, not the owning `Life`. (The separate Character-level `<SpecialFeats>` Chrism feats were already folded into `build.pastLives` by a prior pass and unaffected by this gap.) `BuildStatsInput.specialFeats?: string[]` (`useBuildStats.ts`) is now accumulated via `accumulateFeat` alongside past lives (repeated names count as rank, V2's Chrism re-redemption model); the `useBuildStats` hook defaults it from the active build's own `Life` via `findActiveLife(doc)`. `computeBonusActionPoints`/`enhancementAPBudget` (`actionPoints.ts`) gained an optional `specialFeats` parameter folded into the existing RAPBonus/UAPBonus scan; `EnhancementTreePanel` now passes it through. 5 regression tests in `parityPassN9.test.ts`. | #118 |
+| 93 | **X8 — Forum export `saves` section: `[TABLE]` wrapping + no-fail-on-1 marker** — V2 `ForumExportDlg.cpp:509-528` (`AddSaves`) wraps every save/sub-save row in a BBCode `[TABLE]`/`[TR][TD]` block (Fort/Will/Reflex order) and `AddTableEntryBreakdown:548-564` appends a trailing `*` to any row whose `BreakdownItemSave::HasNoFailOn1()` is true, followed by a footnote line. `effectParser.ts` already parsed `Effect_SaveNoFailOn1` into `save.{Fort,Reflex,Will,All}.noFailOn1` stat keys, but nothing ever read them — `sections.ts:saves` emitted a plain indented list with no table and silently dropped the no-fail-on-1 information. `saves` now emits a `[TABLE]` (Fort/Will/Reflex order matching V2), reads `save.<Type>.noFailOn1` + `save.All.noFailOn1` to mark the base save and its sub-save rows with `*`, and appends the "Marked with a* is no fail on a 1 if required DC met" footnote. 5 regression tests in `parityPassX8.test.ts`; `parityPassX2.test.ts` updated for the new table-cell format. | #119 |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -266,14 +267,11 @@ Remaining read/write-fidelity gaps:
   totals separately in a different plain-list format with no paired combat
   stats. A high-AC/PRR/MRR/SR build's forum export is missing the entire
   "vitals block" V2 posts are known for.
-- ❌ **X8 — `saves` section missing `[TABLE]` wrapping and the no-fail-on-1
-  marker/footnote.** V2 (`ForumExportDlg.cpp:510-529`) wraps saves in a
-  3-column `[TABLE]`/`[TR][TD]` block and appends a trailing `*` to any save
-  where `BreakdownItemSave::HasNoFailOn1()` is true (Paladin Fortitude,
-  Divine Grace edge cases, etc.), plus a footnote line explaining the `*`.
-  V3's `saves` section (`sections.ts:122-150`) emits plain `[b]/[/b]` +
-  indented lines with no table and no no-fail-on-1 marker at all — that
-  information is silently dropped.
+- ✅ **X8 — `saves` section missing `[TABLE]` wrapping and the no-fail-on-1
+  marker/footnote** — done (see Done table, #119). `sections.ts:saves` now
+  emits a `[TABLE]` (Fort/Will/Reflex order matching V2) and marks any save
+  (and its sub-saves) whose `save.<Type>.noFailOn1`/`save.All.noFailOn1` stat
+  is set with a trailing `*`, plus the V2 footnote line.
 - ❌ **X9 — `featSelections`/`featSelectionsNoSkills` should be a per-level
   `[TABLE]` (Level | Class(level) | Feats/Skills), not a flat sorted list.**
   V2 (`ForumExportDlg.cpp:622-660`) iterates every character level and prints
