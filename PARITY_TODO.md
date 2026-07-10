@@ -112,6 +112,7 @@ the PR number, so this file doubles as a changelog.
 | 91 | **N7 — `Weapon_CriticalRange` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalThreatRange.cpp:52-57`) sums the universal `Effect_Weapon_CriticalRange` into the *same* total as the class-gated `WeaponCriticalRangeClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critRange`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.range`, which is what `WeaponCriticalRangeClass` already used). Now both route to `melee.crit.range`, so universal threat-range abilities like Fighter Kensei "Keen Edge" actually apply. 3 regression tests in `parityPassN7.test.ts`. | this PR |
 | 92 | **N9 — `Life.specialFeats` threaded into stats + AP budget** — Life-level `<SpecialFeats>` (V2 `Life::AllSpecialFeats`, e.g. universal-tree-access grants like "Falconry Tree") were imported into `Life.specialFeats` but only ever read by the exporters — never applied to any stat or the enhancement AP budget, since both `useBuildStats` and `actionPoints.ts` took only `CharacterBuild`, not the owning `Life`. (The separate Character-level `<SpecialFeats>` Chrism feats were already folded into `build.pastLives` by a prior pass and unaffected by this gap.) `BuildStatsInput.specialFeats?: string[]` (`useBuildStats.ts`) is now accumulated via `accumulateFeat` alongside past lives (repeated names count as rank, V2's Chrism re-redemption model); the `useBuildStats` hook defaults it from the active build's own `Life` via `findActiveLife(doc)`. `computeBonusActionPoints`/`enhancementAPBudget` (`actionPoints.ts`) gained an optional `specialFeats` parameter folded into the existing RAPBonus/UAPBonus scan; `EnhancementTreePanel` now passes it through. 5 regression tests in `parityPassN9.test.ts`. | #118 |
 | 93 | **X8 — Forum export `saves` section: `[TABLE]` wrapping + no-fail-on-1 marker** — V2 `ForumExportDlg.cpp:509-528` (`AddSaves`) wraps every save/sub-save row in a BBCode `[TABLE]`/`[TR][TD]` block (Fort/Will/Reflex order) and `AddTableEntryBreakdown:548-564` appends a trailing `*` to any row whose `BreakdownItemSave::HasNoFailOn1()` is true, followed by a footnote line. `effectParser.ts` already parsed `Effect_SaveNoFailOn1` into `save.{Fort,Reflex,Will,All}.noFailOn1` stat keys, but nothing ever read them — `sections.ts:saves` emitted a plain indented list with no table and silently dropped the no-fail-on-1 information. `saves` now emits a `[TABLE]` (Fort/Will/Reflex order matching V2), reads `save.<Type>.noFailOn1` + `save.All.noFailOn1` to mark the base save and its sub-save rows with `*`, and appends the "Marked with a* is no fail on a 1 if required DC met" footnote. 5 regression tests in `parityPassX8.test.ts`; `parityPassX2.test.ts` updated for the new table-cell format. | #119 |
+| 94 | **X9 — Forum export `featSelections`/`featSelectionsNoSkills` become a per-level `[TABLE]`** — V2 `ForumExportDlg.cpp:622-660` (`AddFeatSelections`) + `GetLevelEntries` (`:1992+`) iterate every heroic character level and emit one `[TR]` with `Level | Class(classLevel) | Feats`, appending class/cross-class skill-rank rows only when `bIncludeSkills` is set. V3's `sections.ts` previously flattened `build.featChoices` into a sorted `key: value` list with no class-per-level context, and the "no skills" variant used an invented (and never-matching) `"Skill:"`-prefix filter instead of V2's real semantics. New shared `featSelectionsTable()` walks heroic levels 1..min(20,totalLevel) via `buildSlots()` (`lib/levelTraining.ts`) for that level's feat slots and `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)` label, and appends `Class Skills:`/`Cross Class Skills:` rows (from `build.skillRanksByLevel`) only for the skills-included variant. 3 regression tests in `parityPassX9.test.ts`; `parityPass5.test.ts`'s outdated no-skills test updated to the corrected semantics. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -272,15 +273,18 @@ Remaining read/write-fidelity gaps:
   emits a `[TABLE]` (Fort/Will/Reflex order matching V2) and marks any save
   (and its sub-saves) whose `save.<Type>.noFailOn1`/`save.All.noFailOn1` stat
   is set with a trailing `*`, plus the V2 footnote line.
-- ❌ **X9 — `featSelections`/`featSelectionsNoSkills` should be a per-level
-  `[TABLE]` (Level | Class(level) | Feats/Skills), not a flat sorted list.**
-  V2 (`ForumExportDlg.cpp:622-660`) iterates every character level and prints
-  one table row per level with the trained class + that class's level count
-  (e.g. `Fighter(3)`) alongside the feats/skills picked at that level. V3
-  (`sections.ts:178-193`, `540-556`) just sorts `build.featChoices` by the
-  leading level number and prints `  key: value` — no class-per-level
-  context, no BBCode table. A multiclass build's forum table loses the
-  "at level 7 I was Fighter level 3" context V2 readers rely on.
+- ✅ **X9 — `featSelections`/`featSelectionsNoSkills` are now a per-level
+  `[TABLE]` (Level | Class(classLevel) | Feats)** — done (see Done table).
+  `sections.ts` gained a shared `featSelectionsTable()` (V2
+  `AddFeatSelections`/`GetLevelEntries` parity) that walks heroic character
+  levels 1..min(20,totalLevel), uses `buildSlots()`
+  (`lib/levelTraining.ts`) to find each level's feat slots, and
+  `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)`
+  label. Also corrected a real bug: the old "no skills" variant filtered
+  feat choices whose value started with `"Skill:"`, which doesn't match V2
+  semantics at all — V2's `bIncludeSkills` flag only toggles whether the
+  trailing class/cross-class skill-rank rows are appended; feat rows are
+  identical between the two variants.
 
 ---
 

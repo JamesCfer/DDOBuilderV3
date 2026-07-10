@@ -10,6 +10,8 @@ import type {
 import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups } from '../automaticFeats'
 import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../gamedata'
+import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
+import { buildSlots } from '../levelTraining'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -187,21 +189,81 @@ const energyResistances: SectionDef = {
   },
 }
 
+function toArray<T>(v: T | T[] | undefined): T[] {
+  if (v == null) return []
+  return Array.isArray(v) ? v : [v]
+}
+
+/**
+ * V2 ForumExportDlg.cpp:622-660 (AddFeatSelections) + GetLevelEntries:1992+ —
+ * one [TR] per character level: Level | Class(classLevel) | feat/ability/skill
+ * lines for that level (multi-line cells continue on their own [TR] with
+ * blank Level/Class cells). `includeSkills` mirrors V2's `bIncludeSkills`
+ * flag (FES_FeatSelections passes true, FES_FeatSelectionsNoSkills false) —
+ * V2 does NOT filter feat slots for the "no skills" variant, it only omits
+ * the trailing class/cross-class skill-rank rows.
+ */
+function featSelectionsTable(ctx: SectionContext, includeSkills: boolean): string[] {
+  const { build, allClasses, allRaces } = ctx
+  const heroicLevel = Math.min(20, build.totalLevel)
+  if (heroicLevel === 0) return []
+  const classes = allClasses ?? []
+  const races = allRaces ?? []
+  const lc = getLevelClasses(build)
+  const slots = buildSlots(build, classes, races)
+
+  const lines: string[] = [
+    includeSkills ? '[b]Class and Feat Selection[/b]:' : '[b]Class and Feat Selection (no skills)[/b]:',
+    '[TABLE]',
+    '[TR][TD]Level[/TD][TD]Class[/TD][TD]Feats[/TD][/TR]',
+  ]
+  for (let charLevel = 1; charLevel <= heroicLevel; charLevel++) {
+    const className = lc[charLevel - 1] || 'Unknown'
+    const classLevel = classLevelsAtLevel(build, className, charLevel, classes)
+    const cellLines: string[] = []
+
+    for (const slot of slots.filter(s => s.level === charLevel)) {
+      const choice = build.featChoices[slot.key]
+      cellLines.push(`${slot.featType}: ${choice || 'Empty Feat Slot'}`)
+    }
+
+    const abilityUp = (build.abilityLevelUps as Record<number, Ability | undefined>)[charLevel]
+    if (abilityUp) cellLines.push(`${abilityUp}: +1 Level up`)
+
+    if (includeSkills) {
+      const skillRanks = build.skillRanksByLevel?.[charLevel] ?? {}
+      const cls = classes.find(c => c.Name === className)
+      const classSkills = new Set(toArray(cls?.ClassSkill))
+      const classSkillEntries: string[] = []
+      const crossClassEntries: string[] = []
+      for (const [skill, ranks] of Object.entries(skillRanks)) {
+        if (!ranks) continue
+        const entry = `${skill}(${ranks})`
+        if (classSkills.has(skill)) classSkillEntries.push(entry)
+        else crossClassEntries.push(entry)
+      }
+      if (classSkillEntries.length > 0) cellLines.push(`Class Skills: ${classSkillEntries.join(', ')}`)
+      if (crossClassEntries.length > 0) cellLines.push(`Cross Class Skills: ${crossClassEntries.join(', ')}`)
+    }
+
+    const classCell = `${className}(${classLevel})`
+    if (cellLines.length === 0) {
+      lines.push(`[TR][TD]${charLevel}[/TD][TD]${classCell}[/TD][TD][/TD][/TR]`)
+    } else {
+      lines.push(`[TR][TD]${charLevel}[/TD][TD]${classCell}[/TD][TD]${cellLines[0]}[/TD][/TR]`)
+      for (let i = 1; i < cellLines.length; i++) {
+        lines.push(`[TR][TD][/TD][TD][/TD][TD]${cellLines[i]}[/TD][/TR]`)
+      }
+    }
+  }
+  lines.push('[/TABLE]')
+  return lines
+}
+
 const featSelections: SectionDef = {
   id: 'FeatSelections',
   label: 'Feat selections',
-  emit: ({ build }) => {
-    const entries = Object.entries(build.featChoices).filter(([, v]) => v)
-    if (entries.length === 0) return []
-    const lines = ['[b]Feats[/b]:']
-    entries.sort(([a], [b]) => {
-      const al = parseInt(a.match(/^(\d+)/)?.[1] ?? '0', 10)
-      const bl = parseInt(b.match(/^(\d+)/)?.[1] ?? '0', 10)
-      if (al !== bl) return al - bl
-      return a.localeCompare(b)
-    }).forEach(([k, v]) => lines.push(`  ${k}: ${v}`))
-    return lines
-  },
+  emit: ctx => featSelectionsTable(ctx, true),
 }
 
 const skills: SectionDef = {
@@ -545,26 +607,14 @@ const specialFeats: SectionDef = {
 }
 
 /**
- * V2 ForumExportDlg.cpp FES_FeatSelectionsNoSkills — same as FES_FeatSelections
- * but with skill-feat slots filtered out. We reuse `featSelections` and drop
- * any slot whose feat name starts with "Skill:".
+ * V2 ForumExportDlg.cpp FES_FeatSelectionsNoSkills — same table as
+ * FES_FeatSelections (`featSelectionsTable`) but built with `bIncludeSkills`
+ * false, so the trailing class/cross-class skill-rank rows are omitted.
  */
 const featSelectionsNoSkills: SectionDef = {
   id: 'FeatSelectionsNoSkills',
   label: 'Feat selections (no skills)',
-  emit: ({ build }) => {
-    const entries = Object.entries(build.featChoices)
-      .filter(([, v]) => v && !/^Skill:|^Skill /i.test(v))
-    if (entries.length === 0) return []
-    const lines = ['[b]Feats (no skills)[/b]:']
-    entries.sort(([a], [b]) => {
-      const al = parseInt(a.match(/^(\d+)/)?.[1] ?? '0', 10)
-      const bl = parseInt(b.match(/^(\d+)/)?.[1] ?? '0', 10)
-      return al - bl
-    })
-    for (const [slot, feat] of entries) lines.push(`  ${slot}: ${feat}`)
-    return lines
-  },
+  emit: ctx => featSelectionsTable(ctx, false),
 }
 
 /**

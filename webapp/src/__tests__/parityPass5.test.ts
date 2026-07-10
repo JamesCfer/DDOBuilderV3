@@ -135,20 +135,20 @@ describe('Parity pass 5 — forum export sections (V2 ForumExportDlg parity)', (
     expect(out).toContain('Past Life: Wizard')
   })
 
-  it('emits a FeatSelectionsNoSkills section that hides Skill: feats', () => {
+  it('emits a FeatSelectionsNoSkills section using the same per-level table as FeatSelections', () => {
+    // buildSlots derives universal heroic feat slot keys as `heroic-<level>`
+    // (levels 1,3,6,9,12,15,18), independent of class — matches production.
     const build = {
       ...baseBuild,
-      featChoices: {
-        '1-Heroic-0': 'Toughness',
-        '3-Heroic-0': 'Skill: Use Magic Device',
-      },
+      featChoices: { 'heroic-1': 'Toughness' },
     }
     const out = emitForumExport({ build, allClasses: [], allRaces: [], stats: fakeStats({}) }, DEFAULT_SECTIONS)
-    expect(out).toContain('Feats (no skills)')
-    expect(out).toContain('Toughness')
-    // Skill: feats must be filtered out of the no-skills section
-    const noSkillsSection = out.split('[b]Feats (no skills)[/b]')[1]?.split('\n\n')[0] ?? ''
-    expect(noSkillsSection).not.toMatch(/Skill: /)
+    expect(out).toContain('Class and Feat Selection (no skills)')
+    // Both variants share the same per-level table shape and list of trained
+    // feats — the no-skills variant differs only in omitting the trailing
+    // skill-rank rows (see parityPassX9.test.ts).
+    const noSkillsSection = out.split('[b]Class and Feat Selection (no skills)[/b]')[1] ?? ''
+    expect(noSkillsSection).toContain('Toughness')
   })
 
   it('emits a Bonuses section listing every accumulated stat with non-zero total', () => {
