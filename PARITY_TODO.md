@@ -112,6 +112,7 @@ the PR number, so this file doubles as a changelog.
 | 91 | **N7 — `Weapon_CriticalRange` routed to a dead stat key** — V2 (`BreakdownItemWeaponCriticalThreatRange.cpp:52-57`) sums the universal `Effect_Weapon_CriticalRange` into the *same* total as the class-gated `WeaponCriticalRangeClass` sibling. `effectParser.ts`'s `parseEffect`/`parseItemBuff` routed the universal effect to `weapon.critRange`, a key nothing reads (the combat estimator — `attackEntry.ts`/`CombatPanel.tsx` — only reads `melee.crit.range`, which is what `WeaponCriticalRangeClass` already used). Now both route to `melee.crit.range`, so universal threat-range abilities like Fighter Kensei "Keen Edge" actually apply. 3 regression tests in `parityPassN7.test.ts`. | this PR |
 | 92 | **N9 — `Life.specialFeats` threaded into stats + AP budget** — Life-level `<SpecialFeats>` (V2 `Life::AllSpecialFeats`, e.g. universal-tree-access grants like "Falconry Tree") were imported into `Life.specialFeats` but only ever read by the exporters — never applied to any stat or the enhancement AP budget, since both `useBuildStats` and `actionPoints.ts` took only `CharacterBuild`, not the owning `Life`. (The separate Character-level `<SpecialFeats>` Chrism feats were already folded into `build.pastLives` by a prior pass and unaffected by this gap.) `BuildStatsInput.specialFeats?: string[]` (`useBuildStats.ts`) is now accumulated via `accumulateFeat` alongside past lives (repeated names count as rank, V2's Chrism re-redemption model); the `useBuildStats` hook defaults it from the active build's own `Life` via `findActiveLife(doc)`. `computeBonusActionPoints`/`enhancementAPBudget` (`actionPoints.ts`) gained an optional `specialFeats` parameter folded into the existing RAPBonus/UAPBonus scan; `EnhancementTreePanel` now passes it through. 5 regression tests in `parityPassN9.test.ts`. | #118 |
 | 93 | **X8 — Forum export `saves` section: `[TABLE]` wrapping + no-fail-on-1 marker** — V2 `ForumExportDlg.cpp:509-528` (`AddSaves`) wraps every save/sub-save row in a BBCode `[TABLE]`/`[TR][TD]` block (Fort/Will/Reflex order) and `AddTableEntryBreakdown:548-564` appends a trailing `*` to any row whose `BreakdownItemSave::HasNoFailOn1()` is true, followed by a footnote line. `effectParser.ts` already parsed `Effect_SaveNoFailOn1` into `save.{Fort,Reflex,Will,All}.noFailOn1` stat keys, but nothing ever read them — `sections.ts:saves` emitted a plain indented list with no table and silently dropped the no-fail-on-1 information. `saves` now emits a `[TABLE]` (Fort/Will/Reflex order matching V2), reads `save.<Type>.noFailOn1` + `save.All.noFailOn1` to mark the base save and its sub-save rows with `*`, and appends the "Marked with a* is no fail on a 1 if required DC met" footnote. 5 regression tests in `parityPassX8.test.ts`; `parityPassX2.test.ts` updated for the new table-cell format. | #119 |
+| 95 | **X7 — Forum export `characterHeader` vitals block** — `sections.ts:characterHeader` now emits V2's "vitals block" (`ForumExportDlg.cpp:312-392`) after the existing Name/Race/Classes lines: HP + Displacement, then one row per ability paired with its V2 combat stat (Str+Unconscious Range/Incorporeality, Dex+PRR/AC, Con+MRR(/cap)/+Healing Amp, Int+Dodge(/cap)/-Healing Amp, Wis+Fortification/Repair Amp, Cha+Spell Resistance/BAB), then trailing DR and Immunities lines (derived from `dr.*`/`immunity.*` stat keys, matching `BreakdownsPanel.tsx`'s existing convention for those two). Falls back to the pre-existing header-only lines when `stats` is null. 5 regression tests in `parityPassX7.test.ts`. | this PR |
 | 94 | **X9 — Forum export `featSelections`/`featSelectionsNoSkills` become a per-level `[TABLE]`** — V2 `ForumExportDlg.cpp:622-660` (`AddFeatSelections`) + `GetLevelEntries` (`:1992+`) iterate every heroic character level and emit one `[TR]` with `Level | Class(classLevel) | Feats`, appending class/cross-class skill-rank rows only when `bIncludeSkills` is set. V3's `sections.ts` previously flattened `build.featChoices` into a sorted `key: value` list with no class-per-level context, and the "no skills" variant used an invented (and never-matching) `"Skill:"`-prefix filter instead of V2's real semantics. New shared `featSelectionsTable()` walks heroic levels 1..min(20,totalLevel) via `buildSlots()` (`lib/levelTraining.ts`) for that level's feat slots and `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)` label, and appends `Class Skills:`/`Cross Class Skills:` rows (from `build.skillRanksByLevel`) only for the skills-included variant. 3 regression tests in `parityPassX9.test.ts`; `parityPass5.test.ts`'s outdated no-skills test updated to the corrected semantics. | this PR |
 
 ### Known approximation — RESOLVED (#93)
@@ -257,17 +258,14 @@ Remaining read/write-fidelity gaps:
 
 - ✅ **X4 — Forum export `tacticalDCs` section fixed** — done (#108).
 - ✅ **X5 — Forum export `grantedFeats` section uses `stats.grantedFeatsList`** — done (see Done table).
-- ❌ **X7 — `characterHeader` section is missing V2's whole "vitals block."**
-  V2 (`ForumExportDlg.cpp:344-391`) prints HP/Displacement totals
-  (Start/Tome/Final columns) then six ability lines each paired with a
-  derived combat stat — STR+Uncons.Range/Incorporeal%, DEX+PRR/AC,
-  CON+MRR(or `MRR/CAP`)/+Healing Amp, INT+Dodge/DodgeCap%(tower-shield-aware),
-  WIS+Fort%/Repair Amp, CHA+SR/BAB — plus trailing `DR:`/`Immunities:` lines.
-  V3's `characterHeader` (`sections.ts:43-57`) only emits Name/Race/
-  Alignment/Classes/Total Level; `abilityScores` (`:107-120`) covers ability
-  totals separately in a different plain-list format with no paired combat
-  stats. A high-AC/PRR/MRR/SR build's forum export is missing the entire
-  "vitals block" V2 posts are known for.
+- ✅ **X7 — `characterHeader` section now includes V2's "vitals block"** — done
+  (see Done table, #95). `sections.ts:characterHeader` appends HP/Displacement
+  then six ability rows each paired with a derived combat stat (Str+Unc.
+  Range/Incorporeality, Dex+PRR/AC, Con+MRR(/cap)/+Healing Amp, Int+Dodge
+  (/cap)/-Healing Amp, Wis+Fortification/Repair Amp, Cha+SR/BAB), then
+  trailing DR/Immunities lines, matching `ForumExportDlg.cpp:312-392`. The
+  pre-existing `abilityScores` section (Base/Tome/Total + modifier, in a
+  different plain-list format) is unchanged and still runs separately.
 - ✅ **X8 — `saves` section missing `[TABLE]` wrapping and the no-fail-on-1
   marker/footnote** — done (see Done table, #119). `sections.ts:saves` now
   emits a `[TABLE]` (Fort/Will/Reflex order matching V2) and marks any save
