@@ -1,0 +1,30 @@
+seed 9016, level 20
+race Half-Elf
+classes Cleric 8 / Barbarian 4 / Stormsinger 8
+abilities Str 16, Dex 13, Con 11, Int 11, Wis 12, Cha 11 (28/28 pts)
+slot Cleric-1-Follower Of-0: Follower of the Undying Court
+slot race-1-Dilettante Feat-0: Half-Elf Dilettante: Rogue
+slot heroic-1: Spell Focus: Enchantment
+slot Cleric-2-Domain-0: Domain of Chaos
+slot heroic-3: Eschew Materials
+slot heroic-6: Great Fortitude
+slot heroic-9: Sap
+slot heroic-12: Skill Focus: Hide
+slot Cleric-5-Domain Feat-0: Improved Domain of Chaos
+slot Cleric-6-Deity-0: Search the Soul
+slot heroic-15: Martial Weapon Proficiency: Rapier
+slot heroic-18: Spell Focus: Conjuration
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Crown of Butterflies
+gear Necklace: Ward-Inscribed Pendant
+gear Trinket: Deep Red Ioun Stone
+gear Armor: Disc of Acid Warding
+gear Cloak: Earthen Mantle
+gear Belt: Tokala's Belt
+gear Ring: Thamor's Ring
+gear Ring2: Ring of the Green Abishai
+gear Gloves: Bramble-Casters
+gear Bracers: Surreptitious Shackles
+gear Boots: Official Risia Ice Games Ice Skates
+gear Goggles: Troubleshooter's Goggles
+gear Main Hand: Celestial Beacon
