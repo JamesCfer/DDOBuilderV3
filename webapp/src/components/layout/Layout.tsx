@@ -1,38 +1,15 @@
-import React, { useState } from 'react'
-import Sidebar, { type NavItem } from './Sidebar'
+import React from 'react'
 import styles from './Layout.module.css'
+import TopNav, { type TopNavProps } from './TopNav'
 
-interface LayoutProps {
+interface LayoutProps extends TopNavProps {
   children: React.ReactNode
-  activeItem: NavItem
-  onNavigate: (item: NavItem) => void
-  saveBar: React.ReactNode
 }
 
-export default function Layout({ children, activeItem, onNavigate, saveBar }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
+export default function Layout({ children, ...nav }: LayoutProps) {
   return (
     <div className={styles.root}>
-      {/* Mobile hamburger */}
-      <button
-        className={styles.hamburger}
-        onClick={() => setSidebarOpen(prev => !prev)}
-        aria-label="Toggle navigation"
-      >
-        <span className={styles.hamburgerLine} />
-        <span className={styles.hamburgerLine} />
-        <span className={styles.hamburgerLine} />
-      </button>
-
-      <Sidebar
-        activeItem={activeItem}
-        onNavigate={onNavigate}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        saveBar={saveBar}
-      />
-
+      <TopNav {...nav} />
       <main className={styles.content}>
         {children}
       </main>

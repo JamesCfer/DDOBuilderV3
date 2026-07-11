@@ -1,0 +1,297 @@
+/* Community browser + account panels */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.toolbar label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar select,
+.toolbar input {
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.card:hover {
+  border-color: var(--color-border-light);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Vote rail */
+
+.voteRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 34px;
+}
+
+.voteBtn {
+  padding: 0 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-muted);
+}
+
+.voteBtn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+  box-shadow: none;
+}
+
+.voteUpActive, .voteUpActive:hover:not(:disabled) {
+  color: var(--color-green);
+}
+
+.voteDownActive, .voteDownActive:hover:not(:disabled) {
+  color: var(--color-red);
+}
+
+.score {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-gold-light);
+}
+
+/* Card body */
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.byline {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.byline b {
+  color: var(--color-gold-light);
+  font-weight: 600;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.statChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.chip {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.chip b {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.cardActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cardActions button {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+/* Auth forms */
+
+.authBox {
+  max-width: 380px;
+  padding: 18px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.authBox h3 {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  color: var(--color-gold-light);
+}
+
+.authBox input {
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.authBox input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.authSwitch {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.authSwitch button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-gold-light);
+  text-decoration: underline;
+  font-size: 12px;
+}
+
+.error {
+  color: var(--color-red);
+  font-size: 12px;
+}
+
+.notice {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+/* My builds table */
+
+.myBuilds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.myBuildRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.myBuildName {
+  font-weight: 600;
+  min-width: 140px;
+}
+
+.myBuildMeta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  flex: 1;
+}
+
+.starBtn {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+.starred, .starred:hover:not(:disabled) {
+  color: var(--color-gold-light);
+  border-color: var(--color-gold-dark);
+  box-shadow: 0 0 8px rgba(212,152,42,0.3);
+}
+
+.saveRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-gold-dark);
+  border-radius: var(--radius-lg);
+}
+
+.saveRow input {
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 13px;
+  min-width: 200px;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
