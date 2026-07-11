@@ -268,8 +268,10 @@ export interface Stance {
   Name: string
   Icon?: string
   Description?: string
-  Group?: string
-  AutoControlled?: boolean
+  /** Repeated <Group> elements parse to an array. */
+  Group?: string | string[]
+  /** Presence flag — <AutoControlled/> parses to ''; test with !== undefined. */
+  AutoControlled?: boolean | string
   /** V2 IncompatibleStance — list of stance names mutually exclusive with this one. */
   IncompatibleStance?: string | string[]
 }

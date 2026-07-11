@@ -2093,10 +2093,6 @@ export function parseItemBuff(
       if (items.length > 0) return items.map(item => make(`clEnergy.${normalizeSpellElement(item)}`))
       return []
 
-    case 'EpicCasterLevel':
-      if (items.length > 0) return items.map(item => make(`cl.${item}`))
-      return [make('cl.All')]
-
     // -----------------------------------------------------------------------
     // Metamagic cost reductions
     // -----------------------------------------------------------------------

@@ -49,13 +49,18 @@ export default function StancesPanel() {
     )
   }
 
-  const autoStances = stances.filter(s => s.AutoControlled)
-  const toggleableStances = stances.filter(s => !s.AutoControlled)
+  // AutoControlled is a presence flag in Stances.xml (<AutoControlled/> parses
+  // to an empty string), so test for presence rather than truthiness.
+  const autoStances = stances.filter(s => s.AutoControlled !== undefined)
+  const toggleableStances = stances.filter(s => s.AutoControlled === undefined)
 
-  // Group toggleable stances by their Group field
+  // Group toggleable stances by their Group field (repeated <Group> elements
+  // parse to an array — use the first entry).
+  const groupOf = (s: Stance) =>
+    (Array.isArray(s.Group) ? s.Group[0] : s.Group) ?? 'Other'
   const groupMap = new Map<string, Stance[]>()
   for (const s of toggleableStances) {
-    const grp = s.Group ?? 'Other'
+    const grp = groupOf(s)
     if (!groupMap.has(grp)) groupMap.set(grp, [])
     groupMap.get(grp)!.push(s)
   }
