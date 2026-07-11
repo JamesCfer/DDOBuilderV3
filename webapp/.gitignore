@@ -3,3 +3,5 @@ dist/
 dist-server/
 .env
 *.local
+# Community platform database (default COMMUNITY_DB_PATH — see server.ts)
+/data/

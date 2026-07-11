@@ -1,40 +1,68 @@
-.content {
-  min-height: 0;
+/* Page content widths */
+
+.narrow {
+  max-width: 980px;
 }
 
-/* Builder tab: two-column layout */
-.builderLayout {
+.wide {
+  max-width: none;
+}
+
+/* Character › Overview — three-column grid */
+
+.overviewGrid {
   display: grid;
-  grid-template-columns: 290px 1fr;
+  grid-template-columns: 320px minmax(300px, 1fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+  max-width: 1400px;
+}
+
+.overviewCol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Simple vertical stack (Feats tab) */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Two-column split (Buffs tab) */
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
 }
 
-.builderSidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Account button in the top-right cluster */
+
+.accountBtn {
+  font-size: 12px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  border-color: var(--color-gold-dark);
+  color: var(--color-gold-light);
 }
 
-.builderMain {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* Responsive */
 
-/* Single-column panels */
-.single {
-  max-width: 900px;
-}
-
-@media (max-width: 1024px) {
-  .builderLayout {
-    grid-template-columns: 260px 1fr;
+@media (max-width: 1200px) {
+  .overviewGrid {
+    grid-template-columns: 320px 1fr;
   }
 }
 
-@media (max-width: 720px) {
-  .builderLayout {
+@media (max-width: 860px) {
+  .overviewGrid,
+  .twoCol {
     grid-template-columns: 1fr;
   }
 }

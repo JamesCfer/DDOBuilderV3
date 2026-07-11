@@ -10,7 +10,11 @@ import {
   loadGuildBuffs, loadFiligreeSets, loadFiligreeBonuses, loadSelfAndPartyBuffs,
   loadPatrons, loadQuests, loadSentientGems,
   loadAttackRates, loadBonusTypes, loadAdventurePacks, loadChallenges, loadIgnoredList, loadItemBuffs, loadItemClickies,
+  loadAllCatalogues,
 } from './src/server/dataLoaders'
+import { CommunityStore } from './src/server/communityStore'
+import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
+import type { CharacterDocument } from './src/types/ddo'
 
 dotenv.config()
 
@@ -72,6 +76,7 @@ const ignoredList = () => loadIgnoredList(DATA_DIR)
 const adventurePacks = () => loadAdventurePacks(DATA_DIR)
 const itemBuffs = () => loadItemBuffs(DATA_DIR)
 const itemClickies = () => loadItemClickies(DATA_DIR)
+const allCatalogues = () => loadAllCatalogues(DATA_DIR)
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -232,6 +237,203 @@ app.get('/api/ignored-list', (_req, res) => res.json(cached('ignored-list', igno
 app.get('/api/adventure-packs', (_req, res) => res.json(cached('adventure-packs', adventurePacks)))
 app.get('/api/item-buffs', (_req, res) => res.json(cached('item-buffs', itemBuffs)))
 app.get('/api/item-clickies', (_req, res) => res.json(cached('item-clickies', itemClickies)))
+
+// ---------------------------------------------------------------------------
+// Community platform routes (accounts, saved builds, star-to-publish, votes)
+// ---------------------------------------------------------------------------
+
+const COMMUNITY_DB_PATH = process.env.COMMUNITY_DB_PATH ?? path.join(__dirname, 'data', 'community.json')
+if (COMMUNITY_DB_PATH !== ':memory:') {
+  fs.mkdirSync(path.dirname(COMMUNITY_DB_PATH), { recursive: true })
+}
+const community = new CommunityStore(COMMUNITY_DB_PATH)
+
+/** Extracts the Bearer token from the Authorization header (null if absent). */
+function bearerToken(req: express.Request): string | null {
+  const header = req.headers.authorization
+  if (!header || !header.startsWith('Bearer ')) return null
+  return header.slice('Bearer '.length)
+}
+
+/** Resolves the authenticated user id from the request, if any. */
+function communityUserId(req: express.Request): string | null {
+  const token = bearerToken(req)
+  return token ? community.getSession(token) : null
+}
+
+/** Sends 401 and returns null when the request carries no valid session. */
+function requireAuth(req: express.Request, res: express.Response): string | null {
+  const userId = communityUserId(req)
+  if (!userId) {
+    res.status(401).json({ error: 'Authentication required' })
+    return null
+  }
+  return userId
+}
+
+/** Maps store errors to HTTP: 'Build not found' → 404, 'Forbidden…' → 403, else 400. */
+function communityError(res: express.Response, err: unknown): void {
+  const message = err instanceof Error ? err.message : String(err)
+  const status = message === 'Build not found' ? 404
+    : message.startsWith('Forbidden') ? 403
+    : 400
+  res.status(status).json({ error: message })
+}
+
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { username, email, password } = req.body ?? {}
+    const user = community.register(username, email, password)
+    const token = community.createSession(user.id)
+    res.json({ token, user: community.publicUser(user) })
+  } catch (err) { communityError(res, err) }
+})
+
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body ?? {}
+  const user = community.verifyLogin(username, password)
+  if (!user) {
+    res.status(401).json({ error: 'Invalid username or password' })
+    return
+  }
+  const token = community.createSession(user.id)
+  res.json({ token, user: community.publicUser(user) })
+})
+
+app.post('/api/auth/logout', (req, res) => {
+  if (!requireAuth(req, res)) return
+  const token = bearerToken(req)
+  if (token) community.deleteSession(token)
+  res.json({ ok: true })
+})
+
+app.get('/api/auth/me', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  const user = community.userById(userId)
+  if (!user) {
+    res.status(401).json({ error: 'Authentication required' })
+    return
+  }
+  res.json({ user: community.publicUser(user) })
+})
+
+app.get('/api/my/builds', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  res.json(community.listBuilds(userId).map(b => ({
+    id: b.id,
+    name: b.name,
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+    published: b.published,
+    score: community.score(b),
+  })))
+})
+
+app.post('/api/my/builds', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    const { id, name, document } = req.body ?? {}
+    const build = community.saveBuild(userId, { id, name, document })
+    res.json({ id: build.id, name: build.name, updatedAt: build.updatedAt, published: build.published })
+  } catch (err) { communityError(res, err) }
+})
+
+app.get('/api/my/builds/:id', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  const build = community.getBuild(req.params.id)
+  if (!build) {
+    res.status(404).json({ error: 'Build not found' })
+    return
+  }
+  if (build.ownerId !== userId) {
+    res.status(403).json({ error: 'Forbidden: build belongs to another user' })
+    return
+  }
+  res.json({ ...build, score: community.score(build) })
+})
+
+app.delete('/api/my/builds/:id', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    community.deleteBuild(req.params.id, userId)
+    res.json({ ok: true })
+  } catch (err) { communityError(res, err) }
+})
+
+// Star = publish to the community listing. The stat snapshot shown in the
+// listing is computed server-side from the saved document so it can't be
+// spoofed by the client.
+app.post('/api/my/builds/:id/star', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    const build = community.getBuild(req.params.id)
+    if (!build) throw new Error('Build not found')
+    if (build.ownerId !== userId) throw new Error('Forbidden: build belongs to another user')
+    const cat = cached('allCatalogues', allCatalogues)
+    const snapshot = buildSnapshotFromDocument(build.document as CharacterDocument, cat)
+    community.publishBuild(build.id, userId, snapshot)
+    res.json({ ok: true, snapshot })
+  } catch (err) { communityError(res, err) }
+})
+
+app.delete('/api/my/builds/:id/star', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    community.unpublishBuild(req.params.id, userId)
+    res.json({ ok: true })
+  } catch (err) { communityError(res, err) }
+})
+
+app.get('/api/community', (req, res) => {
+  const { class: cls, race, sort, order } = req.query
+  res.json(community.communityList({
+    cls: typeof cls === 'string' && cls ? cls : undefined,
+    race: typeof race === 'string' && race ? race : undefined,
+    sort: typeof sort === 'string' && sort ? sort : undefined,
+    order: order === 'asc' || order === 'desc' ? order : undefined,
+    viewerId: communityUserId(req) ?? undefined,
+  }))
+})
+
+app.get('/api/community/:id', (req, res) => {
+  const build = community.getPublishedBuild(req.params.id)
+  if (!build) {
+    res.status(404).json({ error: 'Build not found' })
+    return
+  }
+  const viewerId = communityUserId(req)
+  res.json({
+    id: build.id,
+    name: build.name,
+    author: build.author,
+    publishedAt: build.publishedAt,
+    snapshot: build.snapshot,
+    document: build.document,
+    score: community.score(build),
+    myVote: (viewerId ? build.votes[viewerId] : undefined) ?? 0,
+  })
+})
+
+app.post('/api/community/:id/vote', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    const { value } = req.body ?? {}
+    if (value !== 1 && value !== -1 && value !== 0) {
+      res.status(400).json({ error: 'Vote value must be 1, -1 or 0' })
+      return
+    }
+    const score = community.vote(req.params.id, userId, value)
+    res.json({ score, myVote: value })
+  } catch (err) { communityError(res, err) }
+})
 
 // ---------------------------------------------------------------------------
 // Auto-update routes

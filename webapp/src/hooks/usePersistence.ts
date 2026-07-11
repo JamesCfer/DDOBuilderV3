@@ -56,7 +56,7 @@ function writeDocs(docs: CharacterDocument[]): void {
  * everywhere a stored build is consumed (LifeBuildBar, BuildCompare, export),
  * not only when one is dispatched through LOAD_BUILD. Stamps `_v: 2`.
  */
-function migrateDocument(doc: CharacterDocument): CharacterDocument {
+export function migrateDocument(doc: CharacterDocument): CharacterDocument {
   return {
     ...doc,
     lives: doc.lives.map(life => ({

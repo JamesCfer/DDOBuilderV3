@@ -1,0 +1,263 @@
+/* HeroForge-style top navigation shell */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 60%),
+    var(--color-bg-sidebar);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+}
+
+/* ── Row 1 ─────────────────────────────────────────────────────────────── */
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.brandName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: var(--color-gold-light);
+  text-shadow: 0 0 18px rgba(212,152,42,0.35);
+}
+
+.brandBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-gold-dark);
+  color: #fff8e8;
+  letter-spacing: 0.08em;
+}
+
+.brandVersion {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+/* Page tabs */
+
+.pageTabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pageTabs::-webkit-scrollbar { display: none; }
+
+.pageTab {
+  position: relative;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.pageTab:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  box-shadow: none;
+}
+
+.pageTabActive,
+.pageTabActive:hover:not(:disabled) {
+  color: var(--color-gold-light);
+}
+
+.pageTabActive::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+  box-shadow: 0 0 10px rgba(212,152,42,0.7);
+}
+
+/* Right cluster */
+
+.rightCluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Dropdowns */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownBtn {
+  font-size: 12px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
+.dropdownBtnOpen {
+  background: var(--color-bg-active);
+  border-color: var(--color-gold-dark);
+}
+
+.caret {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.dropdownPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 200px;
+  padding: 10px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 300;
+}
+
+.dropdownRight {
+  left: auto;
+  right: 0;
+}
+
+.fileMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fileMenu button,
+.fileMenu select {
+  width: 100%;
+  text-align: left;
+}
+
+.menuItem {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+}
+
+.updateWrap {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── Row 2 — sub-tabs ──────────────────────────────────────────────────── */
+
+.subRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px;
+  background: rgba(0,0,0,0.25);
+}
+
+.subTabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subTabs::-webkit-scrollbar { display: none; }
+
+.subTab {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 7px 13px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.subTab:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  box-shadow: none;
+}
+
+.subTabActive,
+.subTabActive:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-gold);
+}
+
+.subRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.charName {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  color: var(--color-gold-light);
+  letter-spacing: 0.04em;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.livesToggle {
+  font-size: 11px;
+  padding: 3px 10px;
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.livesToggleOpen {
+  color: var(--color-text-primary);
+  background: var(--color-bg-active);
+}
+
+/* ── Row 3 — lives strip ───────────────────────────────────────────────── */
+
+.livesStrip {
+  padding: 4px 18px 8px;
+  background: rgba(0,0,0,0.35);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .topRow { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .brand { order: 1; }
+  .rightCluster { order: 2; margin-left: auto; }
+  .pageTabs { order: 3; flex-basis: 100%; }
+  .pageTab { padding: 7px 10px; font-size: 12px; }
+  .subRow { padding: 0 12px; }
+  .charName { display: none; }
+}

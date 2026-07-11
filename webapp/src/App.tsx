@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { CharacterProvider, useCharacter } from './context/CharacterContext'
 import { BuildLogProvider } from './context/BuildLogContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import BuildHistoryPanel from './components/layout/BuildHistoryPanel'
 import Layout from './components/layout/Layout'
-import type { NavItem } from './components/layout/Sidebar'
 import CharacterInfo from './components/builder/CharacterInfo'
 import RaceSelector from './components/builder/RaceSelector'
 import ClassSelector from './components/builder/ClassSelector'
@@ -35,6 +35,8 @@ import BonusesPanel from './components/bonuses/BonusesPanel'
 import FavorPanel from './components/favor/FavorPanel'
 import NotesPanel from './components/notes/NotesPanel'
 import ForumExportPanel from './components/export/ForumExportPanel'
+import CommunityPanel from './components/community/CommunityPanel'
+import AccountPanel from './components/community/AccountPanel'
 import { SaveLoadBar } from './hooks/usePersistence'
 import { DocumentProvider, useDocument } from './context/DocumentContext'
 import { SettingsProvider } from './context/SettingsContext'
@@ -48,13 +50,39 @@ import { findActiveBuild } from './lib/multiLife'
 import type { CharacterDocument } from './types/ddo'
 import styles from './App.module.css'
 
+// ---------------------------------------------------------------------------
+// Page model — five destinations plus a utility page, each with sub-tabs
+// (HeroForge-style consolidation of the old 30-item sidebar).
+// ---------------------------------------------------------------------------
+
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Analysis' | 'Community' | 'More'
+
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Analysis', 'Community', 'More']
+
+const PAGE_TABS: Record<Page, string[]> = {
+  Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
+  Progression: ['Enhancements', 'Epic Destinies', 'Reaper', 'Past Lives', 'Favor'],
+  Equipment:   ['Gear', 'Filigrees', 'Set Bonuses', 'Clickies'],
+  Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Stances', 'Bonuses', 'Buffs', 'Compare'],
+  Community:   ['Browse', 'My Builds'],
+  More:        ['Windows', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
+}
+
+/** Tabs whose content wants the full viewport width (trees, tables). */
+const WIDE_TABS = new Set([
+  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Combat',
+  'Breakdowns', 'Compare', 'Windows', 'Level Plan', 'Filigrees',
+])
+
 export default function App() {
   return (
     <BuildLogProvider>
       <CharacterProvider>
         <DocumentProvider>
           <SettingsProvider>
-            <AppInner />
+            <AuthProvider>
+              <AppInner />
+            </AuthProvider>
           </SettingsProvider>
         </DocumentProvider>
       </CharacterProvider>
@@ -62,10 +90,29 @@ export default function App() {
   )
 }
 
+function AccountButton({ onGoToAccount }: { onGoToAccount: () => void }) {
+  const { user } = useAuth()
+  return (
+    <button
+      type="button"
+      className={styles.accountBtn}
+      onClick={onGoToAccount}
+      title={user ? 'Your account and saved builds' : 'Sign in to save and share builds'}
+    >
+      {user ? `⚔ ${user.username}` : 'Sign in'}
+    </button>
+  )
+}
+
 function AppInner() {
   const { dispatch } = useCharacter()
   const { setDoc } = useDocument()
-  const [activeItem, setActiveItem] = useState<NavItem>('Builder')
+  const [page, setPage] = useState<Page>('Character')
+  const [tabs, setTabs] = useState<Record<Page, string>>(() => (
+    Object.fromEntries(PAGES.map(p => [p, PAGE_TABS[p][0]])) as Record<Page, string>
+  ))
+
+  const tab = tabs[page]
 
   function handleLoad(doc: CharacterDocument) {
     setDoc(doc)
@@ -73,218 +120,106 @@ function AppInner() {
     if (build) dispatch({ type: 'LOAD_BUILD', build })
   }
 
-  const saveBar = (
-    <>
-      <SaveLoadBar onLoad={handleLoad} />
-      <LifeBuildBar />
-      <AppShortcuts onLoad={handleLoad} />
-    </>
-  )
+  function goToAccount() {
+    setPage('Community')
+    setTabs(t => ({ ...t, Community: 'My Builds' }))
+  }
 
-  return (
-    <Layout activeItem={activeItem} onNavigate={setActiveItem} saveBar={saveBar}>
-      <div className={styles.content}>
-        {activeItem === 'Main' && (
-          <Dashboard />
-        )}
-
-        {activeItem === 'Builder' && (
-          <div className={styles.builderLayout}>
-            <aside className={styles.builderSidebar}>
+  function renderTab(): React.ReactNode {
+    switch (`${page}/${tab}`) {
+      // ── Character ────────────────────────────────────────────────────────
+      case 'Character/Overview':
+        return (
+          <div className={styles.overviewGrid}>
+            <div className={styles.overviewCol}>
               <CharacterInfo />
               <RaceSelector />
               <ClassSelector />
+            </div>
+            <div className={styles.overviewCol}>
               <AbilityScores />
               <AbilityLevelUps />
+            </div>
+            <div className={styles.overviewCol}>
               <StatsPanel />
-            </aside>
-            <section className={styles.builderMain}>
-              <FeatSlots />
-              <AutomaticFeats />
-            </section>
+            </div>
           </div>
-        )}
-
-        {activeItem === 'Ability Ups' && (
-          <div className={styles.single}>
-            <AbilityLevelUps />
-          </div>
-        )}
-
-        {activeItem === 'Skills' && (
-          <div className={styles.single}>
-            <Skills />
-          </div>
-        )}
-
-        {activeItem === 'Level Training' && (
-          <div className={styles.single}>
-            <LevelTrainingPanel />
-          </div>
-        )}
-
-        {activeItem === 'Feats' && (
-          <div className={styles.single}>
+        )
+      case 'Character/Skills':      return <Skills />
+      case 'Character/Feats':
+        return (
+          <div className={styles.stack}>
             <FeatSlots />
-          </div>
-        )}
-
-        {activeItem === 'Automatic Feats' && (
-          <div className={styles.single}>
             <AutomaticFeats />
           </div>
-        )}
+        )
+      case 'Character/Spells':      return <SpellsPanel />
+      case 'Character/Tomes':       return <TomesPanel />
+      case 'Character/Level Plan':  return <LevelTrainingPanel />
 
-        {activeItem === 'Spells' && (
-          <div className={styles.single}>
-            <SpellsPanel />
-          </div>
-        )}
+      // ── Progression ──────────────────────────────────────────────────────
+      case 'Progression/Enhancements':   return <EnhancementTreePanel />
+      case 'Progression/Epic Destinies': return <EpicDestiniesPanel />
+      case 'Progression/Reaper':         return <ReaperPanel />
+      case 'Progression/Past Lives':     return <PastLivesPanel />
+      case 'Progression/Favor':          return <FavorPanel />
 
-        {activeItem === 'DCs' && (
-          <div className={styles.single}>
-            <DCPanel />
-          </div>
-        )}
+      // ── Equipment ────────────────────────────────────────────────────────
+      case 'Equipment/Gear':        return <GearPanel />
+      case 'Equipment/Filigrees':   return <FiligreePanel />
+      case 'Equipment/Set Bonuses': return <SetBonusesPanel />
+      case 'Equipment/Clickies':    return <ClickiesPanel />
 
-        {activeItem === 'Enhancements' && (
-          <div className={styles.single}>
-            <EnhancementTreePanel />
-          </div>
-        )}
-
-        {activeItem === 'Epic Destinies' && (
-          <div className={styles.single}>
-            <EpicDestiniesPanel />
-          </div>
-        )}
-
-        {activeItem === 'Reaper' && (
-          <div className={styles.single}>
-            <ReaperPanel />
-          </div>
-        )}
-
-        {activeItem === 'Gear' && (
-          <div className={styles.single}>
-            <GearPanel />
-          </div>
-        )}
-
-        {activeItem === 'Filigrees' && (
-          <div className={styles.single}>
-            <FiligreePanel />
-          </div>
-        )}
-
-        {activeItem === 'Set Bonuses' && (
-          <div className={styles.single}>
-            <SetBonusesPanel />
-          </div>
-        )}
-
-        {activeItem === 'Clickies' && (
-          <div className={styles.single}>
-            <ClickiesPanel />
-          </div>
-        )}
-
-        {activeItem === 'Breakdowns' && (
-          <div className={styles.single}>
-            <BreakdownsPanel />
-          </div>
-        )}
-
-        {activeItem === 'Combat' && (
-          <div className={styles.single}>
-            <CombatPanel />
-          </div>
-        )}
-
-        {activeItem === 'Compare' && (
-          <div className={styles.single}>
-            <BuildCompare />
-          </div>
-        )}
-
-        {activeItem === 'Bonuses' && (
-          <div className={styles.single}>
-            <BonusesPanel />
-          </div>
-        )}
-
-        {activeItem === 'Stances' && (
-          <div className={styles.single}>
-            <StancesPanel />
-          </div>
-        )}
-
-        {activeItem === 'Past Lives' && (
-          <div className={styles.single}>
-            <PastLivesPanel />
-          </div>
-        )}
-
-
-        {activeItem === 'Tomes' && (
-          <div className={styles.single}>
-            <TomesPanel />
-          </div>
-        )}
-        {activeItem === 'Favor' && (
-          <div className={styles.single}>
-            <FavorPanel />
-          </div>
-        )}
-
-        {activeItem === 'Self Buffs' && (
-          <div className={styles.single}>
+      // ── Analysis ─────────────────────────────────────────────────────────
+      case 'Analysis/Breakdowns':   return <BreakdownsPanel />
+      case 'Analysis/Combat':       return <CombatPanel />
+      case 'Analysis/DCs':          return <DCPanel />
+      case 'Analysis/Stances':      return <StancesPanel />
+      case 'Analysis/Bonuses':      return <BonusesPanel />
+      case 'Analysis/Buffs':
+        return (
+          <div className={styles.twoCol}>
             <SelfBuffsPanel />
-          </div>
-        )}
-
-        {activeItem === 'Guild Buffs' && (
-          <div className={styles.single}>
             <GuildBuffsPanel />
           </div>
-        )}
+        )
+      case 'Analysis/Compare':      return <BuildCompare />
 
-        {activeItem === 'Notes' && (
-          <div className={styles.single}>
-            <NotesPanel />
-          </div>
-        )}
+      // ── Community ────────────────────────────────────────────────────────
+      case 'Community/Browse':      return <CommunityPanel onLoad={handleLoad} />
+      case 'Community/My Builds':   return <AccountPanel onLoad={handleLoad} />
 
-        {activeItem === 'Forum Export' && (
-          <div className={styles.single}>
-            <ForumExportPanel />
-          </div>
-        )}
+      // ── More ─────────────────────────────────────────────────────────────
+      case 'More/Windows':      return <Dashboard />
+      case 'More/Notes':        return <NotesPanel />
+      case 'More/Forum Export': return <ForumExportPanel />
+      case 'More/Content':      return <ContentPanel />
+      case 'More/Settings':     return <SettingsPanel />
+      case 'More/Help':         return <HelpPanel />
+      case 'More/Build Log':    return <BuildHistoryPanel />
 
-        {activeItem === 'Settings' && (
-          <div className={styles.single}>
-            <SettingsPanel />
-          </div>
-        )}
+      default: return null
+    }
+  }
 
-        {activeItem === 'Content' && (
-          <div className={styles.single}>
-            <ContentPanel />
-          </div>
-        )}
-
-        {activeItem === 'Help' && (
-          <div className={styles.single}>
-            <HelpPanel />
-          </div>
-        )}
-
-        {activeItem === 'Build Log' && (
-          <div className={styles.single}>
-            <BuildHistoryPanel />
-          </div>
-        )}
-      </div>
-    </Layout>
+  return (
+    <>
+      <AppShortcuts onLoad={handleLoad} />
+      <Layout
+        pages={PAGES}
+        activePage={page}
+        onNavigate={p => setPage(p as Page)}
+        subTabs={PAGE_TABS[page]}
+        activeSubTab={tab}
+        onSubTab={t => setTabs(prev => ({ ...prev, [page]: t }))}
+        fileMenu={<SaveLoadBar onLoad={handleLoad} />}
+        account={<AccountButton onGoToAccount={goToAccount} />}
+        livesBar={<LifeBuildBar />}
+      >
+        <div className={WIDE_TABS.has(tab) ? styles.wide : styles.narrow}>
+          {renderTab()}
+        </div>
+      </Layout>
+    </>
   )
 }

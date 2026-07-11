@@ -226,6 +226,21 @@ const PANELS: Array<[string, () => Promise<{ default: React.ComponentType<any> }
   ['HelpPanel', () => import('../components/layout/HelpPanel')],
   ['LifeBuildBar', () => import('../components/layout/LifeBuildBar')],
   ['Dashboard', () => import('../components/layout/Dashboard')],
+  // Community panels need AuthProvider and an onLoad prop — shim them in.
+  ['CommunityPanel', () => Promise.all([
+    import('../components/community/CommunityPanel'),
+    import('../context/AuthContext'),
+  ]).then(([m, auth]) => ({
+    default: () => React.createElement(auth.AuthProvider, null,
+      React.createElement(m.default, { onLoad: () => {} })),
+  }))],
+  ['AccountPanel', () => Promise.all([
+    import('../components/community/AccountPanel'),
+    import('../context/AuthContext'),
+  ]).then(([m, auth]) => ({
+    default: () => React.createElement(auth.AuthProvider, null,
+      React.createElement(m.default, { onLoad: () => {} })),
+  }))],
 ]
 
 describe.skipIf(!haveData)('panel render smoke (real data + real build)', () => {

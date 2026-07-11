@@ -1,0 +1,7 @@
+{
+  "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
+  "lastSyncedCommit": "d18539ecfe99b8d0726b84ffbe6072165091c396",
+  "lastChecked": "2026-07-11T12:09:15.614Z",
+  "dataPathUpstream": "Output/DataFiles",
+  "notes": "As of 2026-07-11, 23 data files (21 .xml + 2 .item) differ from upstream @ d18539ec (2026-06-17); no upstream-only or local-only data files. Sync covers .xml and .item files only (images excluded)."
+}
