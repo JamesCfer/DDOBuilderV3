@@ -1,0 +1,815 @@
+<?xml version="1.0"?>
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats>
+    </SpecialFeats>
+    <SkillTomes>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Fuzz 9014 (Sac8/Dru5/Fav7)</Name>
+      <Race>Elf</Race>
+      <Alignment>True Neutral</Alignment>
+      <Build version="1">
+        <Level>20</Level>
+        <Class1>Sacred Fist</Class1>
+        <Class2>Druid</Class2>
+        <Class3>Favored Soul</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>4</StrSpend>
+          <DexSpend>1</DexSpend>
+          <ConSpend>8</ConSpend>
+          <IntSpend>4</IntSpend>
+          <WisSpend>10</WisSpend>
+          <ChaSpend>1</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+          <TrainedFeat>
+            <FeatName>Simple Weapon Proficiency: Heavy Mace</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Druid</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+          <TrainedFeat>
+            <FeatName>Favored by Helm</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Druid</Class>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Winter Wolf</FeatName>
+            <Type>Wild Shape</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>No Follower Feat Available</FeatName>
+            <Type>Follower Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Spell Focus: Necromancy</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>Grace of Battle</FeatName>
+            <Type>Battle Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Druid</Class>
+          <TrainedFeat>
+            <FeatName>Martial Weapon Proficiency: Warhammer</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>Child of Faith</FeatName>
+            <Type>Child Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Mental Toughness</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Druid</Class>
+          <TrainedFeat>
+            <FeatName>Iron Will</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>Energy Absorption: Sonic</FeatName>
+            <Type>Energy Resistance</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Druid</Class>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Bear</FeatName>
+            <Type>Wild Shape</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Sacred Fist</Class>
+          <TrainedFeat>
+            <FeatName>Stunning Blow</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>Ever Watchful</FeatName>
+            <Type>Deity</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <TrainedFeat>
+            <FeatName>Stout of Heart</FeatName>
+            <Type>Heart Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <ActiveStances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Nature's Protector</TreeName>
+          <TreeName>Nature's Warrior</TreeName>
+          <TreeName>Season's Herald</TreeName>
+          <TreeName>Elf</TreeName>
+          <TreeName>Falconry</TreeName>
+          <TreeName>Angel of Vengeance</TreeName>
+          <TreeName>Beacon of Hope</TreeName>
+        </Enhancement_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Falconry</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore1</EnhancementName>
+            <Selection>Summon Snow Owl</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconRugged</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconWanderlust</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconHuntersKnowledge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconKillerInstinctI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Radiant Servant (Pal)</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>SFRSCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PRSDivineCleansing</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PRSAltruism</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PRSBliss</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Wood Elf</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>WoodElfCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WoodElfElvenWeaponTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WoodElfArcaneFluidity</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WoodElfAdeptOfTrees</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WoodElfKeenSenses</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Nature's Warrior</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>NWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NWSnappingJaws</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NWAthleticHunter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NWTakeDown</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Half-Elf</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfArcaneFluidity</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfDiplomaticImmunity</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfSkillFocus</EnhancementName>
+            <Selection>Self Sufficient</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfArcanum</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HalfElfImprovedDilettanteI</EnhancementName>
+            <Selection>Improved Dilettante: Favored Soul</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Beacon of Hope</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>BoHCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHSpellCriticalI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHConfidence</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHDivineDurabilityI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Inquisitive</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveConjureBolts</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveSkills</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveEyeForAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>War Soul</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>WarSoulCore1</EnhancementName>
+            <Selection>Smite Foe (Melee)</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSToughness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSSacredTouch</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Sacred Fist</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>SFCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SFDiscipleOfTheFist</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SFSacredStrikeI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SFExtraSmite</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Angel of Vengeance</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AoVCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Nature's Protector</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>NPCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NPFeysBlessing</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NPRageOfTheBeast</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>NPBloodyClawsI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWEyeForAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWOpeningShot</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWSkills</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Elf</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>ElfCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ElfChildOfNature</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ElfCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ElfKeenSenses</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>StrategicCombatI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeatheredTraveler</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Vistani Knife Fighter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniAcrobatic</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Season's Herald</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>SHCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SHWaxAndWaneI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Memories of the Mighty</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>A fragment of a misplaced thought, a brilliant light you once remembered. This
+tattered memory was once the face of someone mighty.</Description>
+            <DropLocation>Memory Lapse, End chest</DropLocation>
+            <MinLevel>6</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>ImmunityToFear</Type>
+            </Buff>
+            <Buff>
+              <Type>Tendon Slice</Type>
+              <Value1>3</Value1>
+            </Buff>
+            <Buff>
+              <Type>Stunning</Type>
+              <Value1>5</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </Helmet>
+          <Necklace>
+            <Name>Oremi's Necklace</Name>
+            <Icon>Necklace_3d</Icon>
+            <Description>This simple twin necklace belonged to the renowned Henshin Mystic, Oremi.</Description>
+            <DropLocation>Bastion of Power, Any End chest; Tower of Despair, Nythirios chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>Enhanced Ki</Type>
+              <Value1>1</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Henshin Mystic</Type>
+            </Buff>
+          </Necklace>
+          <Trinket>
+            <Name>Pearl of Power VI</Name>
+            <Icon>Trinket_3</Icon>
+            <Description>This seemingly normal pearl of average size and luster is a potent aid to all
+spell casters.</Description>
+            <DropLocation>Random, level ~8 chests/rewards</DropLocation>
+            <MinLevel>9</MinLevel>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Power</Type>
+              <Value1>60</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>VI</Description1>
+            </Buff>
+          </Trinket>
+          <Cloak>
+            <Name>Knight's Cloak</Name>
+            <Icon>Cloak_6</Icon>
+            <Description>This item cannot be fed to sentient jewels .</Description>
+            <DropLocation>Advance to level 15, End reward</DropLocation>
+            <MinLevel>15</MinLevel>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>5</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+            <Buff>
+              <Type>EnergyResistance</Type>
+              <Value1>30</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+          </Cloak>
+          <Belt>
+            <Name>Morgana's Belt</Name>
+            <Icon>Belt_3</Icon>
+            <Description>The dreaded Warpriest Morgana wore this belt in battle. Morgana is believed
+to have left Stormreach to assist the Devil's forces in Shavarath.</Description>
+            <DropLocation>Bastion of Power, End chest ; Tower of Despair, Nythirios chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>AttackBonus</Type>
+              <Value1>2</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Warpriest</Type>
+            </Buff>
+          </Belt>
+          <Goggles>
+            <Name>Steps' Lenses of Seein' Hidden Hand Secrets</Name>
+            <Icon>Goggles_19</Icon>
+            <Description>This item cannot be fed to sentient jewels .</Description>
+            <DropLocation>Steps Obliss, Turn in Seeing the Impossible: Behind the Dark Curtain</DropLocation>
+            <MinLevel>1</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Hidden Hand Secret Visibility</Type>
+            </Buff>
+            <SetBonus>Forbidden Knowledge</SetBonus>
+            <SetBonus>Legendary Forbidden Knowledge</SetBonus>
+          </Goggles>
+          <Gloves>
+            <Name>Cloth Half-Sleeve</Name>
+            <Icon>Gloves_3b</Icon>
+            <Description>This item cannot be fed to sentient jewels .</Description>
+            <DropLocation>Advance to level 15, End reward</DropLocation>
+            <MinLevel>15</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Exceptional</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+          </Gloves>
+          <Boots>
+            <Name>Epic Crocodile Skin Boots</Name>
+            <Icon>Boots_11a</Icon>
+            <Description>Sturdy waterproof boots for the adventurer who doesn't mind the risk involved
+in obtaining the materials.</Description>
+            <DropLocation>Epic version of Crocodile Skin Boots</DropLocation>
+            <MinLevel>20</MinLevel>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>27</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Acid</Description1>
+              <Item>Acid</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>27</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Freedom of Movement</Type>
+            </Buff>
+            <Buff>
+              <Type>Acidic Reaping</Type>
+            </Buff>
+            <SetBonus>Epic Saltmarsh Explorer</SetBonus>
+          </Boots>
+          <Bracers>
+            <Name>Crystalline Wristlet</Name>
+            <Icon>Bracers_5</Icon>
+            <Description>Made of pure crystal, this mysterious bangle holds off many ills.</Description>
+            <DropLocation>Vecna Denied, End chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>89</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>EnergyResistance</Type>
+              <Value1>33</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Poison</Description1>
+              <Item>Poison</Item>
+            </Buff>
+            <SetBonus>Forbidden Knowledge</SetBonus>
+          </Bracers>
+          <Armor>
+            <Name>Epic Vulkoorim Dervish Robe</Name>
+            <Icon>Cloth_1b</Icon>
+            <Description>The Vulkoorim Dervish use silk robes to cover their Drow bodies from the baking
+heat of the desert.</Description>
+            <DropLocation>Epic version of Vulkoorim Dervish Robe</DropLocation>
+            <MinLevel>20</MinLevel>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>111</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>UniversalSpellPower</Type>
+              <Value1>15</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>EfficientMaximizeII</Type>
+            </Buff>
+            <Buff>
+              <Type>DisintegrationGuard</Type>
+            </Buff>
+            <SetBonus>Epic Vulkoor's Chosen</SetBonus>
+          </Armor>
+          <Ring1>
+            <Name>Ring of the Stormreaver Prophecy (Level 12)</Name>
+            <Icon>Ring_14b</Icon>
+            <Description>This ring is inscribed with runes that comprise a small fragment of the Stormreaver
+Prophecy. It is of recent manufacture, yet the skill used in its crafting suggests
+familiarity with lost giantcraft.</Description>
+            <DropLocation>Gianthold Tor, Black Dragon 's chest (Heroic Normal)</DropLocation>
+            <MinLevel>12</MinLevel>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>5</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Wisdom</Description1>
+              <Item>Wisdom</Item>
+            </Buff>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>2</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+          </Ring1>
+          <Ring2>
+            <Name>Epic Ring of the Silver Concord</Name>
+            <Icon>Ring_23b</Icon>
+            <Description>This magical ring is a gift to a very select few of the Aurum inner circles.</Description>
+            <DropLocation>Epic version of Ring of the Silver Concord</DropLocation>
+            <MinLevel>20</MinLevel>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>Protection</Type>
+              <Value1>8</Value1>
+              <BonusType>Deflection</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Command</Type>
+              <Value1>5</Value1>
+            </Buff>
+            <Buff>
+              <Type>ParryingNumber</Type>
+              <Value1>4</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <SetBonus>Epic Silver Concord's Subtlety</SetBonus>
+          </Ring2>
+          <MainHand>
+            <Name>+3 Quenched Heavy Crossbow</Name>
+            <Icon>HeavyCrossbow_8b</Icon>
+            <DropLocation>Temple of Elemental Evil Part One, and Temple of Elemental Evil Part Two any chest</DropLocation>
+            <MinLevel>7</MinLevel>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>3</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </MainHand>
+        </EquippedGear>
+        <FavorFeats>
+        </FavorFeats>
+        <Level4>Charisma</Level4>
+        <Level8>Strength</Level8>
+        <Level12>Constitution</Level12>
+        <Level16>Wisdom</Level16>
+        <Level20>Intelligence</Level20>
+      </Build>
+    </Life>
+    <GuildLevel>0</GuildLevel>
+    <ApplyGuildBuffs>0</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

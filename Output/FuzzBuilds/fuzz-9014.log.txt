@@ -1,0 +1,33 @@
+seed 9014, level 20
+race Elf
+classes Sacred Fist 8 / Druid 5 / Favored Soul 7
+abilities Str 12, Dex 9, Con 15, Int 12, Wis 16, Cha 9 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Heavy Mace
+slot heroic-3: Favored by Helm
+slot Druid-2-Wild Shape-0: Wild Shape: Winter Wolf
+slot Favored Soul-1-Follower Of-0: No Follower Feat Available
+slot heroic-6: Spell Focus: Necromancy
+slot Favored Soul-2-Battle Feat-0: Grace of Battle
+slot heroic-9: Martial Weapon Proficiency: Warhammer
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot heroic-12: Mental Toughness
+slot heroic-15: Iron Will
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Sonic
+slot Druid-5-Wild Shape-0: Wild Shape: Bear
+slot heroic-18: Stunning Blow
+slot Favored Soul-6-Deity-0: Ever Watchful
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+enhancements: 80/80 AP across 16 trees
+gear Helmet: Memories of the Mighty
+gear Necklace: Oremi's Necklace
+gear Trinket: Pearl of Power VI
+gear Armor: Epic Vulkoorim Dervish Robe
+gear Cloak: Knight's Cloak
+gear Belt: Morgana's Belt
+gear Ring: Ring of the Stormreaver Prophecy (Level 12)
+gear Ring2: Epic Ring of the Silver Concord
+gear Gloves: Cloth Half-Sleeve
+gear Bracers: Crystalline Wristlet
+gear Boots: Epic Crocodile Skin Boots
+gear Goggles: Steps' Lenses of Seein' Hidden Hand Secrets
+gear Main Hand: +3 Quenched Heavy Crossbow

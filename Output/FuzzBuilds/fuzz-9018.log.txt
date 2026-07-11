@@ -1,0 +1,33 @@
+seed 9018, level 20
+race Halfling
+classes Ranger 9 / Dragon Lord 11
+abilities Str 12, Dex 11, Con 11, Int 12, Wis 12, Cha 16 (28/28 pts)
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Aberration
+slot heroic-1: Simple Weapon Proficiency: Heavy Mace
+slot Dragon Lord-1-Minor Draconic Aura-0: Aussircaex's Defiance
+slot heroic-3: Skill Focus: Spot
+slot Dragon Lord-2-Fighter Bonus Feat-0: Shield Proficiency (General)
+slot Dragon Lord-4-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-6: Simple Weapon Proficiency: Dagger
+slot Dragon Lord-6-Fighter Bonus Feat-0: Tactical Training
+slot heroic-9: Spell Focus: Abjuration
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Elf
+slot heroic-12: Simple Weapon Proficiency: Club
+slot Dragon Lord-8-Major Draconic Aura-0: Sinvala's Toughness
+slot heroic-15: Spell Focus: Conjuration
+slot Dragon Lord-10-Fighter Bonus Feat-0: Heavy Armor Master
+slot heroic-18: Skill Focus: Use Magic Device
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Epic Mask of Comedy
+gear Necklace: Draconic Necklace
+gear Trinket: Topaz of the Twelve
+gear Armor: Epic Diabolist's Docent
+gear Cloak: Cloak of the Artblade
+gear Belt: Agarta's Belt
+gear Ring: Ring of Mystic Dexterity
+gear Ring2: Epic Ring of Master Artifice
+gear Gloves: Gauntlets of Innate Arcanum
+gear Bracers: Nimble Wrists
+gear Boots: Surefoot Boots
+gear Goggles: Agony's Eyes
+gear Main Hand: Radiant Arc
