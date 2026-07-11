@@ -373,6 +373,17 @@ Remaining read/write-fidelity gaps:
 
 ---
 
+## Random-build parity fuzzer
+
+`webapp/scripts/randomBuildFuzzer.ts` (see `docs/PARITY_FUZZER.md`) generates
+legal random builds (1–3 classes, prereq-valid feats via `lib/featEligibility`,
+rule-valid enhancement spends, random gear), exports them as `.DDOBuild`
+files with V3 stat snapshots + golden templates, and `compare` diffs V3
+against V2 numbers captured on Windows. Use it to *discover* new parity gaps;
+each mismatching stat key becomes a todo item here.
+
+---
+
 ## Methodology — how to close a parity gap
 
 1. Pick an item from the list above (favour user-reported numerical

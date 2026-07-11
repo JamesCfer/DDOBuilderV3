@@ -1,0 +1,28 @@
+seed 9002, level 20
+race Shifter
+classes Barbarian 8 / Stormsinger 5 / Druid 7
+abilities Str 11, Dex 14, Con 11, Int 12, Wis 12, Cha 15 (28/28 pts)
+slot race-1-Animalistic Aspect-0: Wildhunt Shifter
+slot heroic-1: Discipline
+slot heroic-3: Skill Focus: Listen
+slot heroic-6: Light Armor Proficiency
+slot Druid-2-Wild Shape-0: Wild Shape: Wolf
+slot heroic-9: Simple Weapon Proficiency: Dart
+slot heroic-12: Stunning Blow
+slot heroic-15: Maximize Spell
+slot Druid-5-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-18: Martial Weapon Proficiency: Heavy Pick
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Swabby's Kerchief
+gear Necklace: Hruvayah's Medallion
+gear Trinket: Signal of the Silver Flame
+gear Armor: Epic Frozen Plate
+gear Cloak: Prismatic Cloak, Grey (Level 17)
+gear Belt: Indomitable Wrappings (level 12)
+gear Ring: Scoundrel's Bangle
+gear Ring2: Glorious Dawn (Level 16)
+gear Gloves: Blood-Stained Doctor's Gloves
+gear Bracers: Axe Bane
+gear Boots: Stone-steady Boots
+gear Goggles: Goggles of the Frozen Night
+gear Main Hand: Sheridan's Ruin
