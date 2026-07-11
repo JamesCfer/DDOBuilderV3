@@ -1,0 +1,27 @@
+seed 9001, level 20
+race Tiefling
+classes Bard 7 / Paladin 13
+abilities Str 13, Dex 14, Con 13, Int 13, Wis 11, Cha 12 (28/28 pts)
+slot heroic-1: Skill Focus: Use Magic Device
+slot Paladin-1-Follower Of-0: Favored by Helm
+slot heroic-3: Martial Weapon Proficiency: Throwing Axe
+slot heroic-6: Stunning Blow
+slot heroic-9: Skill Focus: Diplomacy
+slot Paladin-6-Deity-0: Search the Soul
+slot heroic-12: Martial Weapon Proficiency: Battle Axe
+slot heroic-15: Simple Weapon Proficiency: Unarmed
+slot heroic-18: Spell Focus: Conjuration
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Home Renovation Hat
+gear Necklace: Noxious Embers
+gear Trinket: Experienced Evil
+gear Armor: Gerard's Mail
+gear Cloak: Architect's Cloak
+gear Belt: Belt of Brute Strength
+gear Ring: Ring of Mystic Intelligence
+gear Ring2: Sparkring
+gear Gloves: Knifepalm
+gear Bracers: Bracers of the Demon's Consort
+gear Boots: The High Steps
+gear Goggles: Clear Lenses
+gear Main Hand: Defiled Reliquary Greatsword

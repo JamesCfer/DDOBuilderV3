@@ -1,0 +1,25 @@
+seed 9003, level 20
+race Tiefling
+classes Stormsinger 20
+abilities Str 12, Dex 11, Con 11, Int 14, Wis 14, Cha 14 (28/28 pts)
+slot heroic-1: Stunning Blow
+slot heroic-3: Sap
+slot heroic-6: Empower Healing Spell
+slot heroic-9: Martial Weapon Proficiency: Shortbow
+slot heroic-12: Skill Focus: Search
+slot heroic-15: Martial Weapon Proficiency: Rapier
+slot heroic-18: Athletic
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Unbreakable Stormreach Guardian's Helm
+gear Necklace: Beholder Optic Nerves
+gear Trinket: Globe of Imperial Blood (historic)
+gear Armor: Sunscale
+gear Cloak: Bronkarz's Cloak
+gear Belt: Morah's Belt
+gear Ring: Ring of Shadows (Level 13)
+gear Ring2: Cherished Wedding Ring
+gear Gloves: Stone-forged Gauntlet
+gear Bracers: Bracers of Spiderkind
+gear Boots: Epic Boots of the Mire
+gear Goggles: Goggles of Unbroken Sight
+gear Main Hand: Phase Hammer
