@@ -21,6 +21,7 @@ const ABILITIES: Ability[] = ['Strength', 'Dexterity', 'Constitution', 'Intellig
 
 function sign(n: number): string { return n >= 0 ? `+${n}` : String(n) }
 function abMod(score: number): number { return Math.floor((score - 10) / 2) }
+function pctStr(n: number): string { return `${n}%` }
 
 export interface SectionContext {
   build: CharacterBuild
@@ -45,7 +46,13 @@ export interface SectionDef {
 const characterHeader: SectionDef = {
   id: 'CharacterHeader',
   label: 'Character header',
-  emit: ({ build }) => {
+  // V2 ForumExportDlg.cpp:312-392 (AddCharacterHeader) additionally prints a
+  // "vitals block": HP/Displacement, then one row per ability paired with a
+  // derived combat stat (Str+UnconsciousRange/Incorporeality, Dex+PRR/AC,
+  // Con+MRR/+HealingAmp, Int+Dodge/-HealingAmp, Wis+Fort/RepairAmp,
+  // Cha+SR/BAB), then trailing DR/Immunities lines. V3 previously emitted
+  // only Name/Race/Alignment/Classes/Total Level.
+  emit: ({ build, stats }) => {
     const lines: string[] = []
     lines.push(`[b]Character Name[/b]: ${build.name || '(unnamed)'}`)
     lines.push(`[b]Race[/b]: ${build.race || '(none)'} | [b]Alignment[/b]: ${build.alignment || '(none)'}`)
@@ -54,6 +61,42 @@ const characterHeader: SectionDef = {
     lines.push(`[b]Total Level[/b]: ${build.totalLevel}`)
     if (build.epicLevels) lines.push(`[b]Epic Levels[/b]: ${build.epicLevels}`)
     if (build.legendaryLevels) lines.push(`[b]Legendary Levels[/b]: ${build.legendaryLevels}`)
+
+    if (!stats) return lines
+
+    function abilityRow(ab: Ability): string {
+      const base = build.baseAbilities[ab] ?? 8
+      const tome = build.abilityTomes[ab] ?? 0
+      const total = stats!.total(`ability.${ab}`)
+      return `${ABILITY_ABBREVS[ab]}: ${base}/+${tome}/${total}`
+    }
+
+    lines.push('')
+    lines.push(`[b]HP[/b]: ${stats.total('hp')}  [b]Displacement[/b]: ${pctStr(stats.total('displacement'))}`)
+    lines.push(`${abilityRow('Strength')}  [b]Unc. Range[/b]: ${stats.total('unconsciousRange')}  [b]Incorporeality[/b]: ${pctStr(stats.total('incorporeality'))}`)
+    lines.push(`${abilityRow('Dexterity')}  [b]PRR[/b]: ${stats.total('prr')}  [b]AC[/b]: ${stats.total('ac')}`)
+
+    const mrr = stats.total('mrr')
+    const mrrCap = stats.total('mrrCap')
+    const mrrDisplay = mrrCap > 0 && mrrCap < mrr ? `${mrr}/${mrrCap}` : String(mrr)
+    lines.push(`${abilityRow('Constitution')}  [b]MRR[/b]: ${mrrDisplay}  [b]+Healing Amp[/b]: ${pctStr(stats.total('healAmp'))}`)
+
+    const dodge = stats.total('dodge')
+    const dodgeCap = stats.total('dodgeCap')
+    const dodgeDisplay = dodgeCap > 0 ? `${dodge}/${dodgeCap}` : String(dodge)
+    lines.push(`${abilityRow('Intelligence')}  [b]Dodge[/b]: ${dodgeDisplay}%  [b]-Healing Amp[/b]: ${pctStr(stats.total('negHealAmp'))}`)
+
+    lines.push(`${abilityRow('Wisdom')}  [b]Fort[/b]: ${pctStr(stats.total('fortification'))}  [b]Repair Amp[/b]: ${pctStr(stats.total('repairAmp'))}`)
+    lines.push(`${abilityRow('Charisma')}  [b]SR[/b]: ${stats.total('spellResistance')}  [b]BAB[/b]: ${stats.total('bab')}`)
+
+    const drKeys = stats.keys().filter(k => k.startsWith('dr.') && stats!.total(k) > 0)
+    const drText = drKeys.map(k => `${stats.total(k)}/${k.slice(3)}`).join(', ')
+    lines.push(`[b]DR[/b]: ${drText || 'None'}`)
+
+    const immunityKeys = stats.keys().filter(k => k.startsWith('immunity.') && stats!.total(k) > 0)
+    const immunityText = immunityKeys.map(k => k.slice('immunity.'.length)).join(', ')
+    lines.push(`[b]Immunities[/b]: ${immunityText || 'None'}`)
+
     return lines
   },
 }
