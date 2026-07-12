@@ -74,6 +74,8 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/Requirement.cpp \
     $(ROOT)/DDOBuilder/Requirements.cpp \
     $(ROOT)/DDOBuilder/RequirementsBase.cpp \
+    $(ROOT)/DDOBuilder/RequiresNoneOf.cpp \
+    $(ROOT)/DDOBuilder/RequiresOneOf.cpp \
     $(ROOT)/DDOBuilder/Stance.cpp \
     $(ROOT)/DDOBuilder/SubItem.cpp
 

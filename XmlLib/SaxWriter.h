@@ -104,6 +104,12 @@ namespace XmlLib
     };
 
     template <>
+#if defined(V2CALC_LINUX)
+    // explicit specialization defined in a header: MSVC folds it via COMDAT,
+    // but g++ emits a strong symbol in every TU -> multiple definition. inline
+    // gives it vague linkage so the ODR-identical copies merge.
+    inline
+#endif
     void SaxWriter::WriteSimpleElement(const SaxString & elementName, const std::string & t)
     {
         StartElement(elementName, false);
