@@ -94,21 +94,17 @@ if !mainWin {
     ExitApp 2
 }
 
-; ── Invoke Forum Export → Forum Export. V2's UI thread is busy loading
-; ~17k data files for several minutes on a cold CI box; MenuSelect simply
-; blocks until it responds, so the retry loop doubles as the load wait. ──
+; ── Invoke Forum Export. V2's menu bar is an MFC Feature-Pack toolbar —
+; NOT a Win32 menu, so MenuSelect can never drive it. Post WM_COMMAND with
+; ID_EDIT_FORUMEXPORT (32847, DDOBuilder/resource.h) instead; the message
+; queues until V2's UI thread finishes its multi-minute data load, so the
+; retry loop doubles as the load wait. ───────────────────────────────────
 dlgUp := false
 loop 30 {
     CheckModal("pre-menu")
-    WinActivate mainWin
-    Log("invoking menu Forum Export (attempt " A_Index ")")
-    try {
-        MenuSelect mainWin, , "Forum Export", "Forum Export"
-        Log("menu call returned")
-    } catch as e {
-        Log("MenuSelect threw: " e.Message)
-    }
-    if WinWait("Configure Forum Export", , 15) {
+    Log("posting WM_COMMAND ID_EDIT_FORUMEXPORT (attempt " A_Index ")")
+    try PostMessage 0x111, 32847, 0, , mainWin
+    if WinWait("Configure Forum Export", , 20) {
         dlgUp := true
         break
     }
