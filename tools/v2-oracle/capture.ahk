@@ -2,29 +2,36 @@
 ;
 ;   AutoHotkey64.exe capture.ahk <v2pid> <outFile>
 ;
-; Launches V2 with the build file on its command line (MFC shell-command
-; open), waits for the main frame, invokes menu "Forum Export" → "Forum
-; Export" (ID_EDIT_FORUMEXPORT), accepts the "Configure Forum Export"
-; dialog (all sections default ON in a fresh registry; OK copies the
-; export to the clipboard — ForumExportDlg.cpp:306), and writes the
-; clipboard to outFile. Exit codes: 0 ok, 2 no main window, 3 menu failed,
-; 4 export dialog missing, 5 clipboard empty.
+; V2 is launched by capture.ps1 (CreateProcess — avoids the ShellExecute
+; MotW consent dialog). This script attaches by pid, waits out the data
+; load, invokes menu "Forum Export" → "Forum Export" (ID_EDIT_FORUMEXPORT,
+; retried — the menu is unresponsive while V2's UI thread is loading),
+; accepts the "Configure Forum Export" dialog (OK copies the export to the
+; clipboard — ForumExportDlg.cpp:306), and writes the clipboard to outFile.
+;
+; All progress goes to <outFile>.log via per-call FileAppend (flushed on
+; every write, so nothing is lost if the orchestrator kills us on timeout).
+; Exit codes: 0 ok, 2 no main window, 4 export dialog missing,
+; 5 clipboard empty, 6 document rejected by V2's parser.
 
 #Requires AutoHotkey v2.0
 #SingleInstance Off
 SetTitleMatchMode 2
 DetectHiddenWindows false
 
-FileAppend "capture.ahk start; args=" A_Args.Length "`n", "*"
 if A_Args.Length < 2 {
     FileAppend "usage: capture.ahk pid out`n", "*"
     ExitApp 1
 }
-; V2 is launched by capture.ps1 (CreateProcess — avoids the ShellExecute
-; consent dialog that blocked Run on the MotW-tagged downloaded exe).
 pid := Integer(A_Args[1])
 outFile := A_Args[2]
-FileAppend "attaching to pid=" pid "`n", "*"
+logFile := outFile ".log"
+
+Log(msg) {
+    global logFile
+    try FileAppend msg "`n", logFile
+    FileAppend msg "`n", "*"
+}
 
 DumpWindows(tag) {
     global pid
@@ -34,109 +41,94 @@ DumpWindows(tag) {
             c := WinGetClass(hwnd)
             p := WinGetPID(hwnd)
             if (p = pid || InStr(t, "DDO") || InStr(c, "Afx")) {
-                FileAppend tag ": hwnd=" hwnd " pid=" p " class=" c " title='" t "'`n", "*"
+                Log(tag ": hwnd=" hwnd " pid=" p " class=" c " title='" t "'")
             }
         }
     }
 }
 
-; ── Wait for the main frame (data load can take a while on first run) ────
+; Returns the modal's hwnd if one is up; aborts the whole capture if it is
+; a document-load failure (its text carries V2's parser error).
+CheckModal(phase) {
+    global pid
+    modal := WinExist("ahk_class #32770 ahk_pid " pid)
+    if !modal {
+        return 0
+    }
+    mtext := SubStr(WinGetText(modal), 1, 400)
+    Log(phase " modal: <" mtext ">")
+    if InStr(mtext, "failed to load") {
+        Log("ERROR: document rejected by V2 parser")
+        ProcessClose pid
+        ExitApp 6
+    }
+    WinActivate modal
+    Send "{Enter}"
+    Sleep 800
+    return modal
+}
+
+Log("capture.ahk start; attaching to pid=" pid)
+
+; ── Wait for the main frame ──────────────────────────────────────────────
 mainWin := 0
 deadline := A_TickCount + 180000
 while A_TickCount < deadline {
-    ; Dismiss any modal message box the app throws while loading (data
-    ; read-error notices etc.) — press Enter on it and keep waiting.
-    modal := WinExist("ahk_class #32770 ahk_pid " pid)
-    if modal {
-        title := WinGetTitle(modal)
-        FileAppend "dismissing modal during load: '" title "' text=<" SubStr(WinGetText(modal), 1, 400) ">`n", "*"
-        WinActivate modal
-        Send "{Enter}"
-        Sleep 500
+    if CheckModal("startup") {
         continue
     }
-    ; Match ANY top-level window of the process (title-independent).
     mainWin := WinExist("ahk_pid " pid)
-    if !mainWin {
-        mainWin := WinExist("ahk_exe DDOBuilder.exe")
-    }
     if mainWin {
-        FileAppend "main window: '" WinGetTitle(mainWin) "' class=" WinGetClass(mainWin) "`n", "*"
+        Log("main window: '" WinGetTitle(mainWin) "' class=" WinGetClass(mainWin))
         break
+    }
+    if !ProcessExist(pid) {
+        Log("ERROR: process exited before a window appeared")
+        ExitApp 2
     }
     Sleep 1000
 }
 if !mainWin {
-    FileAppend "ERROR: main window never appeared`n", "*"
+    Log("ERROR: main window never appeared")
     DumpWindows("timeout-dump")
-    if !ProcessExist(pid) {
-        FileAppend "NOTE: process " pid " has EXITED (crash or missing DLL?)`n", "*"
-    }
     ExitApp 2
 }
 
-; Let the document finish loading/rendering. V2 loads ~17k data files at
-; startup; wait until the SDI title shows the document ("<name> - DDOBuilder")
-; or up to 150s, heartbeating so the log shows where time goes.
+; ── Let the data + document load finish (V2 reads ~17k files; the window
+; title stays 'DDOBuilder' throughout, so this is a flat wait with a modal
+; watch — a modal here is usually the parser rejecting the document). ─────
 WinActivate mainWin
-loadDeadline := A_TickCount + 240000
-while A_TickCount < loadDeadline {
-    ; A modal here usually means the document failed to load — abort fast.
-    modal := WinExist("ahk_class #32770 ahk_pid " pid)
-    if modal {
-        mtext := SubStr(WinGetText(modal), 1, 400)
-        FileAppend "modal during doc-load: <" mtext ">`n", "*"
-        if InStr(mtext, "failed to load") {
-            FileAppend "ERROR: document rejected by V2 parser`n", "*"
-            ProcessClose pid
-            ExitApp 6
-        }
-        WinActivate modal
-        Send "{Enter}"
-        Sleep 800
-        continue
-    }
-    t := WinGetTitle(mainWin)
-    if InStr(t, " - ") || InStr(t, "fuzz") {
-        FileAppend "document loaded: '" t "'`n", "*"
-        break
-    }
-    if Mod(A_TickCount, 10000) < 1100 {
-        FileAppend "waiting for load; title='" t "'`n", "*"
-    }
+loop 90 {
+    CheckModal("doc-load")
     Sleep 1000
 }
-Sleep 3000
 
-; Dismiss any straggler modals (e.g. per-file read warnings).
-loop 5 {
-    modal := WinExist("ahk_class #32770 ahk_pid " pid)
-    if !modal {
+; ── Invoke Forum Export → Forum Export (retry while UI thread busy) ──────
+DumpWindows("pre-menu")
+dlgUp := false
+loop 8 {
+    CheckModal("pre-menu")
+    WinActivate mainWin
+    Log("invoking menu Forum Export (attempt " A_Index ")")
+    try {
+        MenuSelect mainWin, , "Forum Export", "Forum Export"
+        Log("menu call returned")
+    } catch as e {
+        Log("MenuSelect threw: " e.Message)
+    }
+    if WinWait("Configure Forum Export", , 15) {
+        dlgUp := true
         break
     }
-    FileAppend "dismissing modal post-load: '" WinGetTitle(modal) "' text=<" SubStr(WinGetText(modal), 1, 400) ">`n", "*"
-    WinActivate modal
-    Send "{Enter}"
-    Sleep 800
+    Log("dialog not up yet; retrying")
+    Sleep 5000
 }
-
-; ── Invoke Forum Export → Forum Export ───────────────────────────────────
-DumpWindows("pre-menu")
-WinActivate mainWin
-FileAppend "invoking menu Forum Export...`n", "*"
-try {
-    MenuSelect mainWin, , "Forum Export", "Forum Export"
-    FileAppend "menu invoked`n", "*"
-} catch as e {
-    FileAppend "ERROR: MenuSelect failed: " e.Message "`n", "*"
+if !dlgUp {
+    Log("ERROR: Configure Forum Export dialog never appeared after retries")
     DumpWindows("menu-fail")
-    ExitApp 3
-}
-
-if !WinWait("Configure Forum Export", , 20) {
-    FileAppend "ERROR: Configure Forum Export dialog never appeared`n", "*"
     ExitApp 4
 }
+Log("export dialog is up")
 
 ; ── OK → clipboard ───────────────────────────────────────────────────────
 A_Clipboard := ""
@@ -144,11 +136,11 @@ WinActivate "Configure Forum Export"
 Sleep 500
 Send "{Enter}"
 if !ClipWait(15) {
-    FileAppend "ERROR: clipboard never populated`n", "*"
+    Log("ERROR: clipboard never populated")
     ExitApp 5
 }
 text := A_Clipboard
-FileAppend "captured " StrLen(text) " chars`n", "*"
+Log("captured " StrLen(text) " chars")
 if FileExist(outFile) {
     FileDelete outFile
 }
@@ -157,7 +149,7 @@ FileAppend text, outFile, "UTF-8-RAW"
 ; ── Close V2 without saving ──────────────────────────────────────────────
 WinClose mainWin
 if WinWait("ahk_class #32770 ahk_pid " pid, , 5) {
-    Send "n"          ; "Save changes?" → No
+    Send "n"
     Sleep 500
     Send "{Enter}"
 }

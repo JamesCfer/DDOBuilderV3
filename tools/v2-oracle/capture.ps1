@@ -83,6 +83,9 @@ foreach ($b in $builds) {
     } else {
         Write-Host "  ok: $((Get-Item $out).Length) bytes"
     }
+    # The AHK's own flushed log (survives kills) supersedes the stdout copy.
+    $flushedLog = "$out.log"
+    if (Test-Path $flushedLog) { Copy-Item $flushedLog $ahkLog -Force }
     if (Test-Path $ahkLog) { Get-Content $ahkLog | ForEach-Object { Write-Host "  ahk| $_" } }
 
     # Kill any stray V2 instances before the next build.
