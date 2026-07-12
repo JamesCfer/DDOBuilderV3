@@ -99,16 +99,29 @@ if !mainWin {
 ; ID_EDIT_FORUMEXPORT (32847, DDOBuilder/resource.h) instead; the message
 ; queues until V2's UI thread finishes its multi-minute data load, so the
 ; retry loop doubles as the load wait. ───────────────────────────────────
+; The first 'DDOBuilder' window may be a splash/progress window; the real
+; main frame only exists once loading ends. Re-enumerate the process's
+; top-level windows every attempt and post the command to ALL of them.
 dlgUp := false
 loop 30 {
     CheckModal("pre-menu")
-    Log("posting WM_COMMAND ID_EDIT_FORUMEXPORT (attempt " A_Index ")")
-    try PostMessage 0x111, 32847, 0, , mainWin
+    targets := []
+    for hwnd in WinGetList("ahk_pid " pid) {
+        targets.Push(hwnd)
+    }
+    if Mod(A_Index, 5) = 1 {
+        for hwnd in targets {
+            try Log("attempt " A_Index " target: hwnd=" hwnd " class=" WinGetClass(hwnd) " title='" WinGetTitle(hwnd) "'")
+        }
+    }
+    Log("posting WM_COMMAND to " targets.Length " window(s) (attempt " A_Index ")")
+    for hwnd in targets {
+        try PostMessage 0x111, 32847, 0, , hwnd
+    }
     if WinWait("Configure Forum Export", , 20) {
         dlgUp := true
         break
     }
-    Log("dialog not up yet; retrying")
     Sleep 5000
 }
 if !dlgUp {
