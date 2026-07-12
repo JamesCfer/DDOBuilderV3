@@ -1,6 +1,6 @@
 ; DDOBuilder V2 forum-export capture (AutoHotkey v2).
 ;
-;   AutoHotkey64.exe capture.ahk <exePath> <buildFile> <outFile>
+;   AutoHotkey64.exe capture.ahk <v2pid> <outFile>
 ;
 ; Launches V2 with the build file on its command line (MFC shell-command
 ; open), waits for the main frame, invokes menu "Forum Export" → "Forum
@@ -16,19 +16,15 @@ SetTitleMatchMode 2
 DetectHiddenWindows false
 
 FileAppend "capture.ahk start; args=" A_Args.Length "`n", "*"
-if A_Args.Length < 3 {
-    FileAppend "usage: capture.ahk exe build out`n", "*"
+if A_Args.Length < 2 {
+    FileAppend "usage: capture.ahk pid out`n", "*"
     ExitApp 1
 }
-exePath := A_Args[1]
-buildFile := A_Args[2]
-outFile := A_Args[3]
-FileAppend "exe=" exePath "; build=" buildFile "`n", "*"
-
-SplitPath exePath, , &exeDir
-
-Run '"' exePath '" "' buildFile '"', exeDir, , &pid
-FileAppend "launched pid=" pid "`n", "*"
+; V2 is launched by capture.ps1 (CreateProcess — avoids the ShellExecute
+; consent dialog that blocked Run on the MotW-tagged downloaded exe).
+pid := Integer(A_Args[1])
+outFile := A_Args[2]
+FileAppend "attaching to pid=" pid "`n", "*"
 
 DumpWindows(tag) {
     global pid
