@@ -95,6 +95,19 @@ typedef DWORD               COLORREF;
 #define OUT
 
 #define UNREFERENCED_PARAMETER(x) ((void)(x))
+
+// windows.h traditionally provides unqualified min/max. Templates (not
+// macros) so std::numeric_limits<T>::max() etc. still work.
+template <typename A, typename B>
+constexpr auto min(const A& a, const B& b) -> decltype(a < b ? a : b)
+{
+    return a < b ? a : b;
+}
+template <typename A, typename B>
+constexpr auto max(const A& a, const B& b) -> decltype(a < b ? b : a)
+{
+    return a < b ? b : a;
+}
 #define _T(x) x
 #define TEXT(x) x
 
@@ -410,6 +423,20 @@ inline int wcstombs_s(
     return 0;
 }
 
+typedef long long __int64;
+inline int _isnan(double v) { return v != v; }
+inline int _finite(double v) { return v == v && v * 0.0 == 0.0; }
+inline int wcscpy_s(wchar_t* dst, size_t size, const wchar_t* src)
+{
+    size_t len = wcslen(src);
+    if (len >= size)
+    {
+        len = size > 0 ? size - 1 : 0;
+    }
+    wmemcpy(dst, src, len);
+    if (size > 0) dst[len] = L'\0';
+    return 0;
+}
 inline int _stricmp(const char* a, const char* b) { return strcasecmp(a, b); }
 inline int _strnicmp(const char* a, const char* b, size_t n) { return strncasecmp(a, b, n); }
 inline int _wcsicmp(const wchar_t* a, const wchar_t* b) { return wcscasecmp(a, b); }

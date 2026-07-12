@@ -110,7 +110,10 @@ farm:
 	    b=$$(basename $$h); \
 	    ln -sf "$$h" '$(FARM)/XmlLib\'"$$b"; \
 	done
-	@ln -sf $(ROOT)/DDOBuilder/resource.h '$(FARM)/Resource.h'
+	@# resource.h is UTF-16; convert to UTF-8 (and strip BOM) so gcc can read
+	@# it. rm first: writing through a stale symlink would truncate the source!
+	@rm -f '$(FARM)/Resource.h'
+	@iconv -f UTF-16 -t UTF-8 $(ROOT)/DDOBuilder/resource.h | sed 's/^\xEF\xBB\xBF//' > '$(FARM)/Resource.h'
 	@ln -sf $(V2CALC_DIR)/shim/v2calc_stdafx.h '$(FARM)/stdafx.h'
 	@ln -sf $(V2CALC_DIR)/shim/v2calc_stdafx.h '$(FARM)/StdAfx.h'
 	@ln -sf $(ROOT)/DDOBuilder/stdafx.h '$(FARM)/v2calc_ddobuilder_stdafx.h'

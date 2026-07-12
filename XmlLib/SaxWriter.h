@@ -51,8 +51,13 @@ namespace XmlLib
                 EndElement(false);
             }
 
+#ifndef V2CALC_LINUX
+            // MSVC extension: in-class explicit specialization declaration.
+            // gcc rejects this; the specialization is defined at namespace
+            // scope at the end of this header which gcc finds by itself.
             template <>
             void WriteSimpleElement(const SaxString & elementName, const std::string & t);
+#endif
 
             void WriteSimpleElement(const SaxString & elementName, double t, size_t precision);
 

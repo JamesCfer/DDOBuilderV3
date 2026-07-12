@@ -1,0 +1,36 @@
+/home/user/DDOBuilderV3/v2calc/build/obj/XmlLib/Src/SaxWriter.o: \
+ /home/user/DDOBuilderV3/XmlLib/Src/SaxWriter.cpp \
+ /home/user/DDOBuilderV3/v2calc/build/farm/stdafx.h \
+ /home/user/DDOBuilderV3/v2calc/shim/windows.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxwin.h \
+ /home/user/DDOBuilderV3/v2calc/build/farm/v2calc_ddobuilder_stdafx.h \
+ /home/user/DDOBuilderV3/DDOBuilder/targetver.h \
+ /home/user/DDOBuilderV3/v2calc/shim/SDKDDKVer.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxext.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxdisp.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxdtctl.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxcmn.h \
+ /home/user/DDOBuilderV3/v2calc/shim/afxcontrolbars.h \
+ /home/user/DDOBuilderV3/v2calc/build/farm/XmlLib\SaxWriter.h \
+ /home/user/DDOBuilderV3/XmlLib/XmlLibExports.h \
+ /home/user/DDOBuilderV3/XmlLib/SaxString.h \
+ /home/user/DDOBuilderV3/XmlLib/SaxContentElement.h \
+ /home/user/DDOBuilderV3/XmlLib/SaxAttributes.h \
+ /home/user/DDOBuilderV3/v2calc/shim/msxml3.dll
+/home/user/DDOBuilderV3/v2calc/build/farm/stdafx.h:
+/home/user/DDOBuilderV3/v2calc/shim/windows.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxwin.h:
+/home/user/DDOBuilderV3/v2calc/build/farm/v2calc_ddobuilder_stdafx.h:
+/home/user/DDOBuilderV3/DDOBuilder/targetver.h:
+/home/user/DDOBuilderV3/v2calc/shim/SDKDDKVer.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxext.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxdisp.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxdtctl.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxcmn.h:
+/home/user/DDOBuilderV3/v2calc/shim/afxcontrolbars.h:
+/home/user/DDOBuilderV3/v2calc/build/farm/XmlLib\SaxWriter.h:
+/home/user/DDOBuilderV3/XmlLib/XmlLibExports.h:
+/home/user/DDOBuilderV3/XmlLib/SaxString.h:
+/home/user/DDOBuilderV3/XmlLib/SaxContentElement.h:
+/home/user/DDOBuilderV3/XmlLib/SaxAttributes.h:
+/home/user/DDOBuilderV3/v2calc/shim/msxml3.dll:
