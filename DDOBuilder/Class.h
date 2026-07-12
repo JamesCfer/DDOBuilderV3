@@ -27,6 +27,13 @@ class Class :
         // m_index to the load-order index, matching CreateClassImageLists (the
         // UI-only reindex that never runs headless).
         explicit Class(size_t index);
+        // Headless reindex: CreateClassImageLists (UI-only) is what normally
+        // assigns m_index to each class's position in the *sorted* global list.
+        // That never runs headless, so after Classes() is sorted the load-order
+        // m_index is stale. The data loader calls this to restore the invariant
+        // that Index() == position in Classes() (ClassLevels()/ClassFromIndex()
+        // both rely on it). m_index is mutable, matching CreateClassImageLists.
+        void V2CalcReindex(size_t index) const { m_index = index; }
 #endif
         virtual ~Class();
         void Write(XmlLib::SaxWriter * writer) const;

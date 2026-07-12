@@ -21,9 +21,11 @@
 #include "Character.h"
 #include "Life.h"
 #include "Build.h"
+#include "Class.h"
 #include "AbilityTypes.h"
 #include "BreakdownTypes.h"
 #include "BreakdownHost.h"
+#include "GlobalSupportFunctions.h"
 
 // provided by shim/GlobalDataLinux.cpp
 void V2CalcLoadGameData(const std::string& dataFilesDir);
@@ -186,6 +188,21 @@ int main(int argc, char** argv)
     {
         printf("%s\"%s\": %d", (i ? ", " : " "),
                 spellDCs[i].key, (int)v2calc::Total(spellDCs[i].bt));
+    }
+    printf(" },\n");
+
+    // caster levels per caster class (only classes with spell points are live)
+    printf("  \"casterLevel\": {");
+    bool firstCl = true;
+    for (auto&& c : Classes())
+    {
+        BreakdownType bt = (BreakdownType)(Breakdown_CasterLevel_First + c.Index());
+        if (v2calc::HasBreakdown(bt))
+        {
+            printf("%s\"%s\": %d", (firstCl ? " " : ", "),
+                    c.Name().c_str(), (int)v2calc::Total(bt));
+            firstCl = false;
+        }
     }
     printf(" }\n");
     printf("}\n");

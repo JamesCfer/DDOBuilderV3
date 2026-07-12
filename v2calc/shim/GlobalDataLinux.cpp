@@ -120,6 +120,13 @@ void V2CalcLoadGameData(const std::string& dataFilesDir)
     LoadDir<RaceFileAdapter>(dataFilesDir + "/Races", ".race.xml", g_races);
     LoadDir<ClassFileAdapter>(dataFilesDir + "/Classes", ".class.xml", g_classes);
     g_classes.sort();
+    // Restore Index() == position in the sorted list (normally done by the
+    // UI-only Class::CreateClassImageLists). ClassLevels()/ClassFromIndex() and
+    // the caster-level breakdowns index classes by Index(), so this must match.
+    {
+        size_t idx = 0;
+        for (const auto& c : g_classes) { c.V2CalcReindex(idx); ++idx; }
+    }
 
     FeatsFile feats(dataFilesDir + "/Feats.xml");
     feats.Read();
