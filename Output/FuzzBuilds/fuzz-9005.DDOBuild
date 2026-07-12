@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9005 (Wil20)</Name>
       <Race>Shifter</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Wild Mage</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wildhunt Shifter</FeatName>
             <Type>Animalistic Aspect</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Lightning Reflexes</FeatName>
             <Type>Standard</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Resist Poison</FeatName>
             <Type>Standard</Type>
@@ -69,12 +104,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Unarmed</FeatName>
             <Type>Standard</Type>
@@ -83,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Light Mace</FeatName>
             <Type>Standard</Type>
@@ -97,12 +144,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Point Blank Shot</FeatName>
             <Type>Standard</Type>
@@ -111,12 +164,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Great Club</FeatName>
             <Type>Standard</Type>
@@ -125,9 +184,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -145,6 +208,11 @@
           <TreeName>Razorclaw Shifter</TreeName>
           <TreeName>Shifter</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Inquisitive</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -433,6 +501,9 @@
 side of the road. This one appears to have been modified.</Description>
             <DropLocation>Special Delivery, end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -453,6 +524,9 @@ side of the road. This one appears to have been modified.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Deathblock</Type>
@@ -473,6 +547,9 @@ side of the road. This one appears to have been modified.</Description>
 spell casters.</Description>
             <DropLocation>Random, level ~7 chests/rewards</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Power</Type>
@@ -487,6 +564,9 @@ spell casters.</Description>
             <Description>Time-Twisted version of Cloak of Summer</Description>
             <DropLocation>Timeline Fragment Exchange, Turn in 50 Timeline Fragments</DropLocation>
             <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Absorption</Type>
@@ -522,6 +602,9 @@ spell casters.</Description>
 to the eccentric Wild Mage, Kormor.</Description>
             <DropLocation>Sins of Attrition, Any chest ; Tower of Despair, Nythirios chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Archmagi</Type>
@@ -539,6 +622,9 @@ to the eccentric Wild Mage, Kormor.</Description>
             <Description>The winds and weather of the Howling Hatred, put to a more honorable purpose.</Description>
             <DropLocation>ToEE: Air Node, end chest, Tempest 's chest, and random locked chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>LightningLore</Type>
@@ -571,6 +657,9 @@ to the eccentric Wild Mage, Kormor.</Description>
 They are soaked with the blood of his enemies... or perhaps his allies.</Description>
             <DropLocation>The Crucible, Harza Ghost Waker 's chest (Heroic Elite)</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -587,8 +676,12 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
           <Boots>
             <Name>Decorated Boots</Name>
             <Icon>Boots_4</Icon>
+            <Description></Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -608,8 +701,12 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
           <Bracers>
             <Name>Ringed Bracer</Name>
             <Icon>Bracers_1</Icon>
+            <Description></Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -630,6 +727,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
             <Description>This small, round metal disc is engraved with small symbols.</Description>
             <DropLocation>The Grotto, Sahuagin High Priestess 's chest, All Warforged characters</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -645,6 +745,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
             <Description>This ring features a singular pearl encrusted with bitter salt.</Description>
             <DropLocation>Saltmarsh, rare encounter chest</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Platinum</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -673,6 +776,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
             <Description>This weighty ring carries energy from the ocean.</Description>
             <DropLocation>Plundering Pirates' Point, end chest</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SpellFocusMastery</Type>
@@ -703,6 +809,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
 against the Undead or certain, powerful Devils.</Description>
             <DropLocation>Morten Edgewright, Turn in 1 Silver Ingot</DropLocation>
             <MinLevel>2</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Silver</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -716,14 +825,21 @@ against the Undead or certain, powerful Devils.</Description>
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Intelligence</Level4>
         <Level8>Intelligence</Level8>
         <Level12>Constitution</Level12>
         <Level16>Strength</Level16>
         <Level20>Constitution</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

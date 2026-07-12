@@ -458,9 +458,13 @@ function parseBuildNode(
   out.baseAbilities = parseAbilities(getRec(buildNode, 'AbilitySpend'))
 
   // ── Ability level-ups: V2 stores <Level4>, <Level8>, … at Build level ────
-  // (NOT inside LevelTraining as AbilityLevelUp).
+  // (NOT inside LevelTraining as AbilityLevelUp). All ten elements are always
+  // present in a V2 file (required DL_ENUMs, default "Strength"), so ignore
+  // entries beyond the build's actual level — they are unpicked defaults.
   const ABILITIES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const
+  const charLevel = out.totalLevel + out.epicLevels + out.legendaryLevels
   for (const lvl of [4, 8, 12, 16, 20, 24, 28, 32, 36, 40] as const) {
+    if (lvl > charLevel) continue
     const val = asStr(buildNode[`Level${lvl}`])
     if (val && (ABILITIES as readonly string[]).includes(val)) {
       out.abilityLevelUps[lvl] = val as Ability

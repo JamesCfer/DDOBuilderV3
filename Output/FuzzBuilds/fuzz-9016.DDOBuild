@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9016 (Cle8/Bar4/Sto8)</Name>
       <Race>Half-Elf</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Cleric</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Follower of the Undying Court</FeatName>
             <Type>Follower Of</Type>
@@ -49,9 +74,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Domain of Chaos</FeatName>
             <Type>Domain</Type>
@@ -65,12 +94,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Great Fortitude</FeatName>
             <Type>Standard</Type>
@@ -79,12 +114,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Sap</FeatName>
             <Type>Standard</Type>
@@ -93,12 +134,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Hide</FeatName>
             <Type>Standard</Type>
@@ -107,6 +154,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Improved Domain of Chaos</FeatName>
             <Type>Domain Feat</Type>
@@ -115,9 +164,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Search the Soul</FeatName>
             <Type>Deity</Type>
@@ -131,12 +184,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Conjuration</FeatName>
             <Type>Standard</Type>
@@ -145,9 +204,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -165,6 +228,11 @@
           <TreeName>Radiant Servant</TreeName>
           <TreeName>Warpriest</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Warpriest</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -499,6 +567,9 @@
             <Description>Delightful butterflies flutter around your head.</Description>
             <DropLocation>Immortality Lessons, End chest, 'Granny' Optional Chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Wood</Material>
             <Buff>
               <Type>Crown of Summer</Type>
@@ -529,6 +600,9 @@
             <Description>There is an odd glyph inscribed on this stone pendant.</Description>
             <DropLocation>Ravens' Bane, end chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Stone</Material>
             <Buff>
               <Type>CurseResistance</Type>
@@ -560,6 +634,9 @@
             <Description>A deep red gem about 1 inch in diameter.</Description>
             <DropLocation>Random, Highest drop rate from The Dreaming Dark</DropLocation>
             <MinLevel>2</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -578,6 +655,9 @@
             <Description>It smells faintly of wet dirt and freshly cut grass.</Description>
             <DropLocation>Search and Rescue, Drow Priestess chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -613,6 +693,9 @@
 with symbols depicting the sun.</Description>
             <DropLocation>Genesis Point, Any end chest; Tower of Despair, Nythirios chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Wizardry</Type>
@@ -630,6 +713,9 @@ with symbols depicting the sun.</Description>
             <Description>This pair of goggles will increase your awareness of the surrounding area.</Description>
             <DropLocation>Sacrifices, End reward</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -661,6 +747,9 @@ with symbols depicting the sun.</Description>
 oncoming barbs, thorns and other sharp objects.</Description>
             <DropLocation>Zawabi's Revenge, Raid Warded chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>BlightedLore</Type>
@@ -690,6 +779,9 @@ in the Harbor during the Risia Ice Games! Try out the half pipe in House Phiarla
 Bogwater Tavern too!</Description>
             <DropLocation>DDO Store, Seasonal Item</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Tropical Winter Wonderland</Type>
@@ -702,6 +794,9 @@ Bogwater Tavern too!</Description>
 free from your bonds, your desire for revenge insatiable.</Description>
             <DropLocation>Locked Away (Part Two), end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WillSave</Type>
@@ -721,6 +816,9 @@ free from your bonds, your desire for revenge insatiable.</Description>
 is set at its center.</Description>
             <DropLocation>Redwillow's Ruins, Black Bile Eater 's chest</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -742,6 +840,9 @@ is set at its center.</Description>
 crushed an undead army.</Description>
             <DropLocation>Tower of Despair, right side end chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -767,6 +868,9 @@ crushed an undead army.</Description>
             <Description>This ring seems to be attuned to elemental power.</Description>
             <DropLocation>The Chronoscope, and The Chronoscope (Legendary), optional chests</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Platinum</Material>
             <Buff>
               <Type>Nullification</Type>
@@ -799,6 +903,9 @@ crushed an undead army.</Description>
 you'll have trouble losing it.</Description>
             <DropLocation>White Plume Mountain, Burket and Snarla's chest</DropLocation>
             <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SpellcastingImplement</Type>
@@ -832,14 +939,21 @@ you'll have trouble losing it.</Description>
               <BonusType>Enhancement</BonusType>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Wisdom</Level4>
         <Level8>Intelligence</Level8>
         <Level12>Wisdom</Level12>
         <Level16>Charisma</Level16>
         <Level20>Constitution</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

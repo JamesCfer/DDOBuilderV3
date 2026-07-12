@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9000 (Wil6/Alc14)</Name>
       <Race>Aasimar</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Wild Mage</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Aasimar: Protector Bond</FeatName>
             <Type>Aasimar Bond</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Move Silently</FeatName>
             <Type>Standard</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Single Weapon Fighting</FeatName>
             <Type>Standard</Type>
@@ -69,6 +104,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Point Blank Shot</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -77,9 +114,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Kukri</FeatName>
             <Type>Standard</Type>
@@ -88,9 +129,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Insightful Fortitude</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -99,6 +144,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Luck Of Heroes</FeatName>
             <Type>Standard</Type>
@@ -107,12 +154,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Liquid Luck</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -126,12 +179,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Penetration</FeatName>
             <Type>Standard</Type>
@@ -140,9 +199,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Wild Mage</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -160,6 +223,11 @@
           <TreeName>Falconry</TreeName>
           <TreeName>Feydark Illusionist</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Harper Agent</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -466,6 +534,9 @@
             <Description>This sturdy metal helmet allows you to breathe underwater.</Description>
             <DropLocation>Isle of Dread (wilderness), rare encounter chest</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>ProofAgainstDisease</Type>
@@ -504,6 +575,9 @@ the Storm's Fist. It is a reminder of the stone giant's joy in the bloody clash
 of armies.</Description>
             <DropLocation>Gianthold Tor, White Dragon 's chest (Heroic Hard)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>MeleeAlacrity</Type>
@@ -522,6 +596,9 @@ of armies.</Description>
             <Description>A faint whispering sound surrounds this glowing amber gem.</Description>
             <DropLocation>Garrison's Missing Pack, Witch Doctor Moog 's chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -538,6 +615,9 @@ of armies.</Description>
 its fabric.</Description>
             <DropLocation>The Maze of Madness, and Trial by Fire, end chest (Heroic Elite)</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Elemental Resistance</Type>
@@ -559,6 +639,9 @@ its fabric.</Description>
 on this belt.</Description>
             <DropLocation>The Knife's Edge, end chest</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -592,8 +675,12 @@ on this belt.</Description>
           <Goggles>
             <Name>Eyes of the Crushing Wave</Name>
             <Icon>Goggles_19</Icon>
+            <Description></Description>
             <DropLocation>ToEE: Water Node, end chest and random locked chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>IceLore</Type>
@@ -625,6 +712,9 @@ on this belt.</Description>
             <Description>Enchanted stone gloves, made to increase your strength.</Description>
             <DropLocation>Treasure Hunt, End Chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Magesteel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -640,6 +730,9 @@ on this belt.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -663,8 +756,12 @@ on this belt.</Description>
           <Bracers>
             <Name>Gilded Protectors</Name>
             <Icon>Bracers_1</Icon>
+            <Description></Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Deathblock</Type>
@@ -682,6 +779,9 @@ on this belt.</Description>
             <Description>&quot;You lookin' at me? Huh?&quot;</Description>
             <DropLocation>The Wraithcallers, End Chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -716,6 +816,9 @@ on this belt.</Description>
             <Description>This ring is enscribed with a series of images of dancing flames.</Description>
             <DropLocation>Hold for Reinforcements, End Chest</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Dodge</Type>
@@ -736,8 +839,12 @@ on this belt.</Description>
           <Ring2>
             <Name>Storm Signet</Name>
             <Icon>Ring_21</Icon>
+            <Description></Description>
             <DropLocation>Sleeping with the Fishes, end chest</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Magnetism</Type>
@@ -768,6 +875,9 @@ on this belt.</Description>
             <Description>The weight of justice.</Description>
             <DropLocation>The Tracker's Trap, End chest (Heroic Hard)</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -780,14 +890,21 @@ on this belt.</Description>
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Dexterity</Level4>
         <Level8>Strength</Level8>
         <Level12>Dexterity</Level12>
         <Level16>Charisma</Level16>
         <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

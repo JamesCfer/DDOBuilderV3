@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9007 (War11/Rog9)</Name>
       <Race>Duergar</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Warlock</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Extend Spell</FeatName>
             <Type>Standard</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Illusion</FeatName>
             <Type>Standard</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Great Fortitude</FeatName>
             <Type>Standard</Type>
@@ -69,6 +104,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Abyssal Resilience</FeatName>
             <Type>Pact Save Bonus</Type>
@@ -77,9 +114,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Scimitar</FeatName>
             <Type>Standard</Type>
@@ -88,6 +129,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Pact Magic: Symbol of Pain</FeatName>
             <Type>Pact Spell</Type>
@@ -96,6 +139,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Warlock: Channel the Abyss</FeatName>
             <Type>Pact Ability</Type>
@@ -104,6 +149,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Quarterstaff</FeatName>
             <Type>Standard</Type>
@@ -112,12 +159,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Great Club</FeatName>
             <Type>Standard</Type>
@@ -131,12 +184,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Warhammer</FeatName>
             <Type>Standard</Type>
@@ -150,9 +209,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -170,6 +233,11 @@
           <TreeName>Horizon Walker</TreeName>
           <TreeName>Inquisitive</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Enlightened Spirit</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -466,6 +534,9 @@
 almost seems... possible.</Description>
             <DropLocation>The Archons' Trial, end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -506,6 +577,9 @@ almost seems... possible.</Description>
 these were meant to be worn by a giant.</Description>
             <DropLocation>Madstone Crater, end chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Magnetism</Type>
@@ -527,6 +601,9 @@ these were meant to be worn by a giant.</Description>
 you don't ask what kind of meat.</Description>
             <DropLocation>Epic version of Pouch of Jerky</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -561,6 +638,9 @@ you don't ask what kind of meat.</Description>
 others. Even in pitch darkness, the cloak lures passersby like a siren's song.</Description>
             <DropLocation>Third Time's a Charm, End Chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>SchoolFocusNumber</Type>
@@ -596,6 +676,9 @@ others. Even in pitch darkness, the cloak lures passersby like a siren's song.</
 hidden messages, or a small dose of poison.</Description>
             <DropLocation>Zoo Creeper, Lacheln 's chest (rare)</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>EfficientEmpowerI</Type>
@@ -608,6 +691,9 @@ hidden messages, or a small dose of poison.</Description>
 by drow scouts and spies.</Description>
             <DropLocation>The Last Stand, End reward</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <SetBonus>Raven's Eye</SetBonus>
           </Goggles>
@@ -618,6 +704,9 @@ by drow scouts and spies.</Description>
 They are soaked with the blood of his enemies... or perhaps his allies.</Description>
             <DropLocation>The Crucible, Harza Ghost Waker 's chest (Heroic Elite)</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -637,6 +726,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
             <Description>To hold one back, is to give them strength through freedom.</Description>
             <DropLocation>Assault on the Aerie of the Slave Lords, Small chest, End chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Silver</Material>
           </Boots>
           <Bracers>
@@ -645,6 +737,9 @@ They are soaked with the blood of his enemies... or perhaps his allies.</Descrip
             <Description>These must have belonged to someone else before you.</Description>
             <DropLocation>A Raven at the Door, End chest, Rescue Yesper from the Dungeons optional chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -680,6 +775,9 @@ a protective, almost holy power. Undead are seared by it, and it protects the
 wearer from evil.</Description>
             <DropLocation>Vaults of the Artificers, Turn in Various Cannith challenge ingredients</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -706,6 +804,9 @@ wearer from evil.</Description>
             <Description>Light enough to forget you're even wearing it, sometimes.</Description>
             <DropLocation>The Final Enemy, end chest</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Platinum</Material>
             <Buff>
               <Type>Ethereal</Type>
@@ -723,6 +824,9 @@ wearer from evil.</Description>
             <Description>A ring blessed with Amaunator's love.</Description>
             <DropLocation>A Lesson in Deception, end chest (Heroic Hard)</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Deathblock IV</Type>
@@ -739,6 +843,9 @@ wearer from evil.</Description>
 against the undead.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various challenge ingredients</DropLocation>
             <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -758,14 +865,21 @@ against the undead.</Description>
               <Type>Brilliance</Type>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Charisma</Level4>
         <Level8>Charisma</Level8>
         <Level12>Strength</Level12>
         <Level16>Strength</Level16>
         <Level20>Constitution</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

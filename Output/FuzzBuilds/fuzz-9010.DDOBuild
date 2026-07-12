@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9010 (Bar8/Aco12)</Name>
       <Race>Aasimar</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Bard</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Aasimar: Fallen Bond</FeatName>
             <Type>Aasimar Bond</Type>
@@ -44,6 +69,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>True Patron: Fiend</FeatName>
             <Type>True Patron</Type>
@@ -52,6 +79,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Shield Proficiency (General)</FeatName>
             <Type>Standard</Type>
@@ -60,12 +89,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Quarterstaff</FeatName>
             <Type>Standard</Type>
@@ -74,6 +109,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Fiendish Resilience</FeatName>
             <Type>Pact Save Bonus</Type>
@@ -82,9 +119,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Light Hammer</FeatName>
             <Type>Standard</Type>
@@ -93,6 +134,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Fiendskin</FeatName>
             <Type>Pact Ability</Type>
@@ -101,9 +144,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Sickle</FeatName>
             <Type>Standard</Type>
@@ -112,12 +159,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Enlarge Spell</FeatName>
             <Type>Standard</Type>
@@ -126,12 +179,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Listen</FeatName>
             <Type>Standard</Type>
@@ -140,9 +199,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Acolyte of the Skin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -160,6 +223,11 @@
           <TreeName>Warchanter</TreeName>
           <TreeName>Falconry</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Spellsinger</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -437,6 +505,9 @@
 word, they would be able to join him at a moment's notice in the event of trouble.</Description>
             <DropLocation>Bring Me the Head of Ghola-Fan!, treasure room end chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
           </Helmet>
           <Necklace>
@@ -446,6 +517,9 @@ word, they would be able to join him at a moment's notice in the event of troubl
 it easier to listen to the populace surrounding his tower.</Description>
             <DropLocation>Mimic Hunt, Turn in 80 Mimic Tokens</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Alluring Skills Bonus</Type>
@@ -473,6 +547,9 @@ it easier to listen to the populace surrounding his tower.</Description>
 spell casters.</Description>
             <DropLocation>Random, level ~7 chests/rewards</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Power</Type>
@@ -487,6 +564,9 @@ spell casters.</Description>
             <Description>This cloak appears to have been fashioned from the sail of a seaworthy vessel.</Description>
             <DropLocation>Epic version of Sailcloth Cloak</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -518,6 +598,9 @@ spell casters.</Description>
             <Description>The bandolier of the Baron's fallen body.</Description>
             <DropLocation>A Miner Sacrifice, end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Blood Rage</Type>
@@ -537,6 +620,9 @@ composer who spent his life writing organ music. After creative differences
 with Strahd himself, his career was ended early - and quite suddenly.</Description>
             <DropLocation>An Invitation to Dinner, End chest, Challenge Strahd Again optional chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -570,6 +656,9 @@ with Strahd himself, his career was ended early - and quite suddenly.</Descripti
 of the flesh of a gnoll.</Description>
             <DropLocation>Flesh Maker's Laboratory, End chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -592,6 +681,9 @@ of the flesh of a gnoll.</Description>
             <Description>These boots are said to allow the wielder to move more swiftly.</Description>
             <DropLocation>Sacrifices, End reward</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -613,6 +705,9 @@ of the flesh of a gnoll.</Description>
             <Description>Shines in the moonlight with radiant energies.</Description>
             <DropLocation>Blown Deadline, End Chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Devotion</Type>
@@ -642,6 +737,9 @@ of the flesh of a gnoll.</Description>
             <Description>Delicate threads 'woven' of adamantine lace comprise this regal chain shirt.</Description>
             <DropLocation>A Relic of a Sovereign Past, Turn in 9 Adamantine Ore</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Adamantine</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -662,6 +760,9 @@ of the flesh of a gnoll.</Description>
 Masters.</Description>
             <DropLocation>Secret of the Slavers' Stockade, Small chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Silver</Material>
           </Ring1>
           <Ring2>
@@ -671,6 +772,9 @@ Masters.</Description>
 on its surface are so numerous that any shine the metal once had is gone forever.</Description>
             <DropLocation>Madstone Crater, end chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Fortification</Type>
@@ -691,6 +795,9 @@ a heavy fighting staff for a human-sized wielder. It is inscribed with runes
 that would fascinate and befuddle the greatest scholars of Xen'drik.</Description>
             <DropLocation>Gianthold Tor, White Dragon chest (Heroic Hard)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Silver</Material>
             <Buff>
               <Type>SpellcastingImplement</Type>
@@ -728,14 +835,21 @@ that would fascinate and befuddle the greatest scholars of Xen'drik.</Descriptio
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Constitution</Level4>
         <Level8>Charisma</Level8>
         <Level12>Intelligence</Level12>
         <Level16>Wisdom</Level16>
         <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

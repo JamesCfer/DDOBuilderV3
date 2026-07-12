@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9006 (Dra9/Pal6/Dru5)</Name>
       <Race>Dragonborn</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Dragon Disciple</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Conjuration</FeatName>
             <Type>Dragon Arts</Type>
@@ -49,6 +74,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Follower of Aureon</FeatName>
             <Type>Follower Of</Type>
@@ -57,6 +84,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Discipline</FeatName>
             <Type>Standard</Type>
@@ -65,9 +94,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Druid</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Druid</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Water Elemental</FeatName>
             <Type>Wild Shape</Type>
@@ -76,6 +109,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Path of Harmonious Balance: Fists of Light</FeatName>
             <Type>Monk Philosophy</Type>
@@ -89,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Druid</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Extend Spell</FeatName>
             <Type>Standard</Type>
@@ -103,12 +144,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Dagger</FeatName>
             <Type>Standard</Type>
@@ -117,12 +164,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Rapier</FeatName>
             <Type>Standard</Type>
@@ -131,9 +184,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Druid</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Druid</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Wolf</FeatName>
             <Type>Wild Shape</Type>
@@ -142,6 +199,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Paladin</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Search the Soul</FeatName>
             <Type>Deity</Type>
@@ -155,9 +214,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Disciple</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -175,6 +238,11 @@
           <TreeName>Feydark Illusionist</TreeName>
           <TreeName>Harper Agent</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Knight of the Chalice</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -471,6 +539,9 @@
 magically formed an elaborate headpiece.</Description>
             <DropLocation>The Seal of Shan-To-Kor, End reward</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -487,6 +558,9 @@ magically formed an elaborate headpiece.</Description>
 warm to the touch.</Description>
             <DropLocation>The Xorian Cipher, end chest</DropLocation>
             <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -507,6 +581,9 @@ warm to the touch.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -529,6 +606,9 @@ warm to the touch.</Description>
             <Description>The Archon Aosu'riel wore this into battle. Treat it with care.</Description>
             <DropLocation>Seizing the Dawn, End chest</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Speed</Type>
@@ -564,6 +644,9 @@ warm to the touch.</Description>
 in the light.</Description>
             <DropLocation>Kind of a Big Deal, End Chest</DropLocation>
             <MinLevel>6</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Deadly</Type>
@@ -582,6 +665,9 @@ in the light.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Steps Obliss, Turn in Seeing the Impossible: Behind the Dark Curtain</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Hidden Hand Secret Visibility</Type>
@@ -596,6 +682,9 @@ in the light.</Description>
 aiming.</Description>
             <DropLocation>The Newcomers, end chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>DistantDiversion</Type>
@@ -628,6 +717,9 @@ Earth Elemental. They allow the user to execute a ferocious stomp that knocks
 nearby enemies over, as well as turning your attackers to stone on occasion.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various ingredients</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Corrosion</Type>
@@ -657,6 +749,9 @@ nearby enemies over, as well as turning your attackers to stone on occasion.</De
 seriously.</Description>
             <DropLocation>Portal to Below, end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Assassinate</Type>
@@ -686,6 +781,9 @@ seriously.</Description>
 the Warforged it is bonded to power over flesh.</Description>
             <DropLocation>Flesh Maker's Laboratory, End Chest</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Flesh</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -709,6 +807,9 @@ the Warforged it is bonded to power over flesh.</Description>
             <Description>A golden ring, blessed by divine protection.</Description>
             <DropLocation>Ruins of Myth Drannor, Yegora 's chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>PhysicalSheltering</Type>
@@ -735,6 +836,9 @@ the Warforged it is bonded to power over flesh.</Description>
             <Description>This simple gold band is engraved with the image of waves.</Description>
             <DropLocation>The Grotto, Sahuagin High Priestess 's chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
           </Ring2>
           <MainHand>
@@ -746,6 +850,9 @@ rowdiness and anarchy of a high-seas brigand, and is impeccably useful against
 lawful opponents.</Description>
             <DropLocation>Treasure of Crystal Cove, Turn in 250 Silver Doubloon 100 Golden Doubloon 20 Stolen Obsidian 400 Green Dragonshard at Euphonia's Barter Box</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -777,14 +884,21 @@ lawful opponents.</Description>
               <Item>Intimidate</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Strength</Level4>
         <Level8>Wisdom</Level8>
         <Level12>Strength</Level12>
         <Level16>Intelligence</Level16>
         <Level20>Wisdom</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

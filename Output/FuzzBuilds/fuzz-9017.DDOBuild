@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9017 (War6/Dar7/Bar7)</Name>
       <Race>Half-Orc</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Warlock</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Resist Poison</FeatName>
             <Type>Standard</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Rapier</FeatName>
             <Type>Standard</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Human</FeatName>
             <Type>Favored Enemy</Type>
@@ -74,12 +109,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Jump</FeatName>
             <Type>Standard</Type>
@@ -88,12 +129,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Illusion</FeatName>
             <Type>Standard</Type>
@@ -102,6 +149,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Abyssal Resilience</FeatName>
             <Type>Pact Save Bonus</Type>
@@ -110,9 +159,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Insightful Reflexes</FeatName>
             <Type>Standard</Type>
@@ -121,6 +174,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Pact Magic: Rend the Soul</FeatName>
             <Type>Pact Spell</Type>
@@ -129,6 +184,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Evil Outsider</FeatName>
             <Type>Favored Enemy</Type>
@@ -137,6 +194,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Combat Expertise</FeatName>
             <Type>Standard</Type>
@@ -145,9 +204,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Warlock</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Warlock: Channel the Abyss</FeatName>
             <Type>Pact Ability</Type>
@@ -170,6 +233,11 @@
           <TreeName>Half-Orc</TreeName>
           <TreeName>Harper Agent</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Ravager (Barbarian)</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -467,6 +535,9 @@
             <Description>The intelligent truly have more mind to bring to the madness.</Description>
             <DropLocation>The Age of Rage, end chest</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -497,6 +568,9 @@
             <Description>This tiny glass bottle contains a drop of sunlight within.</Description>
             <DropLocation>The Endless Revels, End Chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>High Spirits</Type>
@@ -522,6 +596,9 @@
 it.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various ingredients</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Weaken Construct Defense</Type>
@@ -549,6 +626,9 @@ it.</Description>
             <Description>The perfect touch for the fanciest flayer.</Description>
             <DropLocation>Fred's First Date, end chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>SpellFocusMastery</Type>
@@ -577,8 +657,12 @@ it.</Description>
           <Belt>
             <Name>Creation Forge Girdle</Name>
             <Icon>Belt_11c</Icon>
+            <Description></Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -602,6 +686,9 @@ it.</Description>
 It was once said this monocle let its user see both.</Description>
             <DropLocation>Paper Trail, End chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -635,6 +722,9 @@ It was once said this monocle let its user see both.</Description>
             <Description>A pair of rough, oversized leather gloves.</Description>
             <DropLocation>The Mindsunder, Disc locked optional end chest, End reward</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -653,6 +743,9 @@ It was once said this monocle let its user see both.</Description>
             <Description>Boots lined with cloth woven with threads of green steel.</Description>
             <DropLocation>Altar of Fecundity, Manufactured Ingredient Recipes</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
           </Boots>
           <Bracers>
@@ -662,6 +755,9 @@ It was once said this monocle let its user see both.</Description>
 protrusions on their sides.</Description>
             <DropLocation>The Crucible, Underwater chest (Heroic Hard)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Magesteel</Material>
             <Buff>
               <Type>UnderwaterAction</Type>
@@ -689,6 +785,9 @@ protrusions on their sides.</Description>
 allowing one to react quickly to danger.</Description>
             <DropLocation>The Subterrane - Central, Garamol 's chest</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>ArmorBonus</Type>
@@ -718,6 +817,9 @@ allowing one to react quickly to danger.</Description>
 dexterous, and better able to survive the perils of the ocean.</Description>
             <DropLocation>Treasure of Crystal Cove, Turn in at Dusty Old Treasure of Crystal Cove</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -750,6 +852,9 @@ dexterous, and better able to survive the perils of the ocean.</Description>
 or her duties.</Description>
             <DropLocation>Epic version of Sacred Band</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -781,6 +886,9 @@ or her duties.</Description>
             <Description>Forged in the glory of Cormanthor, this weapon is remarkably well-preserved.</Description>
             <DropLocation>Magic of Myth Drannor, rare drop in any end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SpellcastingImplement</Type>
@@ -818,14 +926,21 @@ or her duties.</Description>
               <BonusType>Quality</BonusType>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Strength</Level4>
         <Level8>Dexterity</Level8>
         <Level12>Intelligence</Level12>
         <Level16>Wisdom</Level16>
         <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

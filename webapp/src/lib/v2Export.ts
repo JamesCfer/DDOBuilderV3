@@ -24,7 +24,7 @@
 // notes and PARITY_TODO.md.
 
 import type {
-  Ability, CharacterBuild, CharacterDocument, Item, ItemBuff,
+  Ability, CharacterBuild, CharacterDocument, FiligreeSlot, Item, ItemAugment, ItemBuff,
 } from '../types/ddo'
 import { POINT_BUY_COSTS } from '../types/ddo'
 
@@ -132,6 +132,42 @@ const SPEND_KEY: Record<Ability, string> = {
 const TOME_KEY: Record<Ability, string> = {
   Strength: 'StrTome', Dexterity: 'DexTome', Constitution: 'ConTome',
   Intelligence: 'IntTome', Wisdom: 'WisTome', Charisma: 'ChaTome',
+}
+
+/**
+ * The 21 <SkillTomes> children, in V2 write order. Every one is a REQUIRED
+ * DL_SIMPLE element (SkillTomes.h SkillTomes_PROPERTIES): the real V2 SAX
+ * reader raises "SkillTomes was missing <skill> element" if any is absent,
+ * so the exporter must always write all 21 (zeros included). Each entry maps
+ * the V2 element name to the V3 display name so tomes keyed either way
+ * (V2-import passthrough vs V3 UI names) are found.
+ */
+export const V2_SKILL_TOMES: ReadonlyArray<readonly [string, string]> = [
+  ['Balance', 'Balance'], ['Bluff', 'Bluff'], ['Concentration', 'Concentration'],
+  ['Diplomacy', 'Diplomacy'], ['DisableDevice', 'Disable Device'],
+  ['Haggle', 'Haggle'], ['Heal', 'Heal'], ['Hide', 'Hide'],
+  ['Intimidate', 'Intimidate'], ['Jump', 'Jump'], ['Listen', 'Listen'],
+  ['MoveSilently', 'Move Silently'], ['OpenLock', 'Open Lock'],
+  ['Perform', 'Perform'], ['Repair', 'Repair'], ['Search', 'Search'],
+  ['SpellCraft', 'Spellcraft'], ['Spot', 'Spot'], ['Swim', 'Swim'],
+  ['Tumble', 'Tumble'], ['UMD', 'Use Magic Device'],
+]
+
+/**
+ * V2 EquippedGear slot element → the <EquipmentSlot> flag V2 uses for that
+ * slot (EquipmentSlot.h). Used as the fallback when a gear item is emitted
+ * without a catalogue definition: Item_PROPERTIES declares Slots as a
+ * required DL_OBJECT, so every embedded item must carry an <EquipmentSlot>
+ * with at least the flag matching where it is equipped.
+ */
+const V2_SLOT_FLAG: Record<string, string> = {
+  Helmet: 'Helmet', Necklace: 'Necklace', Trinket: 'Trinket', Cloak: 'Cloak',
+  Belt: 'Belt', Goggles: 'Goggles', Gloves: 'Gloves', Boots: 'Boots',
+  Bracers: 'Bracers', Armor: 'Armor', Ring1: 'Ring', Ring2: 'Ring',
+  MainHand: 'Weapon1', OffHand: 'Weapon2', Quiver: 'Quiver', Arrow: 'Arrow',
+  CosmeticHelm: 'CosmeticHelm', CosmeticArmor: 'CosmeticArmor',
+  CosmeticCloak: 'CosmeticCloak', CosmeticWeapon1: 'CosmeticWeapon1',
+  CosmeticWeapon2: 'CosmeticWeapon2',
 }
 
 /** Known DDO base classes — used to reconstruct past-life feat Type/name. */
@@ -255,8 +291,15 @@ function emitLevelTraining(xml: Xml, build: CharacterBuild): void {
   const skillsByLevel = build.skillRanksByLevel ?? {}
 
   for (let lvl = 1; lvl <= totalLevels; lvl++) {
+    const perSkill = skillsByLevel[lvl] ?? {}
+    const pointsSpent = Object.values(perSkill).reduce((a, b) => a + (b || 0), 0)
     xml.open('LevelTraining')
     xml.leaf('Class', classAtLevel(build, lvl))
+    // SkillPointsAvailable/SkillPointsSpent are REQUIRED DL_SIMPLE children
+    // (LevelTraining.h). V3 does not track the per-level point pool, so emit
+    // the spent count for both — V2 recomputes availability from class + Int.
+    xml.leaf('SkillPointsAvailable', pointsSpent)
+    xml.leaf('SkillPointsSpent', pointsSpent)
     for (const f of feats.get(lvl) ?? []) {
       xml.open('TrainedFeat')
       xml.leaf('FeatName', f.name)
@@ -264,7 +307,6 @@ function emitLevelTraining(xml: Xml, build: CharacterBuild): void {
       xml.leaf('LevelTrainedAt', 0)
       xml.close('TrainedFeat')
     }
-    const perSkill = skillsByLevel[lvl] ?? {}
     for (const [skill, ranks] of Object.entries(perSkill)) {
       for (let r = 0; r < ranks; r++) {
         xml.open('TrainedSkill')
@@ -318,23 +360,28 @@ const SNAPSHOT_KEY: Record<Ability, string> = {
 }
 
 /**
- * F2 — embed an item's full V2 definition (Buffs + metadata + SetBonus). The
+ * F2 — embed an item's V2 definition (Buffs + metadata + SetBonus). The
  * <Name> is emitted by the caller; this adds everything V2 stores after it so
  * the re-opened file carries the item's effects without re-resolving by name.
+ *
+ * V2's Item_PROPERTIES (Item.h) makes <Description>, <MinLevel> and
+ * <EquipmentSlot> REQUIRED once the slot element exists, so they are always
+ * emitted — with defaults (empty description, level 0, the equipping slot's
+ * flag) when no catalogue definition is available.
  */
-function emitItemDefinition(xml: Xml, item: Item): void {
-  if (item.Icon) xml.leaf('Icon', item.Icon)
-  if (item.Description) xml.leaf('Description', item.Description)
-  if (item.DropLocation) xml.leaf('DropLocation', item.DropLocation)
-  if (item.MinLevel != null) xml.leaf('MinLevel', item.MinLevel)
-  if (item.EquipmentSlot) {
-    const slots = Object.entries(item.EquipmentSlot).filter(([, on]) => on)
-    if (slots.length > 0) {
-      xml.open('EquipmentSlot')
-      for (const [slot] of slots) xml.empty(slot)
-      xml.close('EquipmentSlot')
-    }
-  }
+function emitItemDefinition(xml: Xml, item: Item | undefined, v2Slot: string): void {
+  if (item?.Icon) xml.leaf('Icon', item.Icon)
+  xml.leaf('Description', item?.Description ?? '')
+  if (item?.DropLocation) xml.leaf('DropLocation', item.DropLocation)
+  xml.leaf('MinLevel', item?.MinLevel ?? 0)
+  const slots = item?.EquipmentSlot
+    ? Object.entries(item.EquipmentSlot).filter(([, on]) => on).map(([s]) => s)
+    : []
+  if (slots.length === 0 && V2_SLOT_FLAG[v2Slot]) slots.push(V2_SLOT_FLAG[v2Slot])
+  xml.open('EquipmentSlot')
+  for (const slot of slots) xml.empty(slot)
+  xml.close('EquipmentSlot')
+  if (!item) return
   if (item.Material) xml.leaf('Material', item.Material)
   const buffs: ItemBuff[] = item.Buff
     ? (Array.isArray(item.Buff) ? item.Buff : [item.Buff])
@@ -358,6 +405,20 @@ function emitItemDefinition(xml: Xml, item: Item): void {
   }
 }
 
+/** Per-build sentient-jewel state emitted inside each <EquippedGear>. */
+interface SentientInfo {
+  personality?: string
+  filigrees?: FiligreeSlot[]
+  artifactFiligrees?: FiligreeSlot[]
+}
+
+/** Trim trailing empty filigree slots (V3 pads the arrays to fixed length). */
+function trimFiligrees(slots: FiligreeSlot[] | undefined): FiligreeSlot[] {
+  const out = [...(slots ?? [])]
+  while (out.length > 0 && !out[out.length - 1]?.name) out.pop()
+  return out
+}
+
 function emitGearSet(
   xml: Xml,
   setName: string,
@@ -365,6 +426,7 @@ function emitGearSet(
   augments: Record<string, string>,
   snapshot?: Partial<Record<Ability, number>>,
   itemCatalogue?: ItemCatalogue,
+  sentient?: SentientInfo,
 ): void {
   xml.open('EquippedGear')
   xml.leaf('Name', setName)
@@ -375,10 +437,14 @@ function emitGearSet(
     // V3 stores gear by name only. F2: when an item catalogue is supplied, embed
     // the full item definition (Buffs + metadata) so V2 re-opens the slot with
     // the item's effects — matching what V2 writes and trusts on load. Without a
-    // catalogue, only <Name> is emitted (V2 then re-resolves by name).
+    // catalogue, <Name> plus the required Item defaults (Description, MinLevel,
+    // EquipmentSlot) are emitted; V2 then re-resolves the rest by name.
     xml.leaf('Name', itemName)
     const itemDef = lookupItem(itemCatalogue, itemName)
-    if (itemDef) emitItemDefinition(xml, itemDef)
+    emitItemDefinition(xml, itemDef, v2Slot)
+    const defAugs: ItemAugment[] = itemDef?.ItemAugment
+      ? (Array.isArray(itemDef.ItemAugment) ? itemDef.ItemAugment : [itemDef.ItemAugment])
+      : []
     // Augments are keyed `slot:type:index` where `index` is the position of the
     // augment in the item's FULL <ItemAugment> list (including empty slots). The
     // importer increments its index counter for every <ItemAugment> entry, even
@@ -401,19 +467,39 @@ function emitGearSet(
     }
     for (let i = 0; i < slotAugs.length; i++) {
       const a = slotAugs[i]
-      if (!a) {
-        // Padding slot: import skips it (no Type/SelectedAugment) but still
-        // advances the index counter, keeping later indices aligned.
-        xml.empty('ItemAugment')
-        continue
-      }
       xml.open('ItemAugment')
-      xml.leaf('Type', a.type)
-      xml.leaf('SelectedAugment', a.name)
-      xml.leaf('SelectedLevelIndex', 0)
+      if (!a) {
+        // Padding slot: import skips it (no SelectedAugment) but still
+        // advances the index counter, keeping later indices aligned. <Type>
+        // is a REQUIRED DL_STRING child (ItemAugment.h), so it must be
+        // present even here — use the catalogue item's slot type when known.
+        xml.leaf('Type', defAugs[i]?.Type ?? '')
+      } else {
+        xml.leaf('Type', a.type)
+        xml.leaf('SelectedAugment', a.name)
+        xml.leaf('SelectedLevelIndex', 0)
+      }
       xml.close('ItemAugment')
     }
     xml.close(v2Slot)
+  }
+  // Sentient-jewel block (Personality + filigrees). V2 stores these per gear
+  // set; <NumFiligrees> is a REQUIRED DL_SIMPLE child (EquippedGear.h) and is
+  // always written. Each <Filigree>/<ArtifactFiligree> needs a <Name> child
+  // (TrainedFiligree.h DL_STRING) — V2 itself writes empty <Name/> for
+  // unfilled slots.
+  if (sentient?.personality) xml.leaf('Personality', sentient.personality)
+  const filigrees = trimFiligrees(sentient?.filigrees)
+  xml.leaf('NumFiligrees', filigrees.length)
+  const emitFiligree = (tag: string, f: FiligreeSlot) => {
+    xml.open(tag)
+    xml.leaf('Name', f.name ?? '')
+    if (f.rare) xml.empty('Rare')
+    xml.close(tag)
+  }
+  for (const f of filigrees) emitFiligree('Filigree', f)
+  for (const f of trimFiligrees(sentient?.artifactFiligrees)) {
+    emitFiligree('ArtifactFiligree', f)
   }
   // V2 EquippedGear.Snapshot{Ability} — per-set ability snapshot for gear-swap
   // "what-if" comparisons (F3). Emitted after the slot elements.
@@ -536,6 +622,13 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
   emitSelectedTrees(
     xml, 'Enhancement_SelectedTrees', build.enhancementPinned ?? [], undefined, 7,
   )
+  // Reaper_SelectedTrees is a REQUIRED DL_OBJECT child of Build (Build.h);
+  // V2 writes it even when nothing is selected ("No selection" x3).
+  emitSelectedTrees(
+    xml, 'Reaper_SelectedTrees',
+    Object.keys(build.reaperChoices ?? {}).filter(Boolean).slice(0, 3),
+    undefined, 3,
+  )
 
   // ── Spend-in-tree blocks ────────────────────────────────────────────────
   emitSpendInTree(xml, 'EnhancementSpendInTree', build.enhancementChoices, build.enhancementSelections)
@@ -560,14 +653,19 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
   const named = build.namedGearSets ?? {}
   const namedAug = build.namedGearAugments ?? {}
   const snapshots = build.gearSetSnapshots ?? {}
+  const sentient: SentientInfo = {
+    personality: build.sentientGem?.personality,
+    filigrees: build.filigreeSlots,
+    artifactFiligrees: build.artifactFiligreeSlots,
+  }
   const setNames = Object.keys(named)
   if (setNames.length > 0) {
     for (const name of setNames) {
-      emitGearSet(xml, name, named[name] ?? {}, namedAug[name] ?? {}, snapshots[name], itemCatalogue)
+      emitGearSet(xml, name, named[name] ?? {}, namedAug[name] ?? {}, snapshots[name], itemCatalogue, sentient)
     }
   } else if (Object.keys(build.gear ?? {}).length > 0) {
     const name = build.activeGearSetName || 'Standard'
-    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue)
+    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient)
   }
   // GearSetSnapshot — names the snapshot baseline set (F3).
   if (build.gearSetSnapshot) xml.leaf('GearSetSnapshot', build.gearSetSnapshot)
@@ -575,13 +673,15 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
   // ── Favor feats (FeatsListObject) — F3 ───────────────────────────────────
   emitFeatsList(xml, 'FavorFeats', build.favorFeats ?? [], 'Favor')
 
-  // ── Notes ─────────────────────────────────────────────────────────────────
+  // ── Notes — REQUIRED DL_STRING child of Build; write even when empty ────
   if (build.notes) xml.leaf('Notes', build.notes)
+  else xml.empty('Notes')
 
-  // ── Ability level-ups (Level4..40) ──────────────────────────────────────
+  // ── Ability level-ups (Level4..40) ───────────────────────────────────────
+  // All ten are REQUIRED DL_ENUM children of Build (Build.h); V2 writes every
+  // one with the enum default ("Strength") when the player never picked.
   for (const lvl of [4, 8, 12, 16, 20, 24, 28, 32, 36, 40] as const) {
-    const ab = build.abilityLevelUps?.[lvl]
-    if (ab) xml.leaf(`Level${lvl}`, ab)
+    xml.leaf(`Level${lvl}`, build.abilityLevelUps?.[lvl] ?? 'Strength')
   }
 
   xml.close('Build')
@@ -641,9 +741,12 @@ export function exportV2Document(doc: ExportDocument, itemCatalogue?: ItemCatalo
   else { xml.open('SpecialFeats'); xml.close('SpecialFeats') }
 
   // ── Character: SkillTomes ────────────────────────────────────────────────
+  // All 21 skill elements are REQUIRED by V2's SAX reader (SkillTomes.h);
+  // omitting any aborts the load ("SkillTomes was missing Balance element").
+  const skillTomes = activeBuild?.skillTomes ?? {}
   xml.open('SkillTomes')
-  for (const [skill, val] of Object.entries(activeBuild?.skillTomes ?? {})) {
-    if (val) xml.leaf(skill, val)
+  for (const [v2Name, v3Name] of V2_SKILL_TOMES) {
+    xml.leaf(v2Name, skillTomes[v2Name] ?? skillTomes[v3Name] ?? 0)
   }
   xml.close('SkillTomes')
 
@@ -655,9 +758,9 @@ export function exportV2Document(doc: ExportDocument, itemCatalogue?: ItemCatalo
     xml.leaf('Alignment', life.alignment || 'True Neutral')
     // Life-level SpecialFeats (F4): universal-tree access, Granted feats, …
     // (V2 Type for these access feats is UniversalTree; reproduced best-effort.)
-    if (life.specialFeats.length > 0) {
-      emitFeatsList(xml, 'SpecialFeats', life.specialFeats, 'UniversalTree')
-    }
+    // The element itself is a REQUIRED DL_OBJECT child of Life (Life.h), so it
+    // is written even when empty.
+    emitFeatsList(xml, 'SpecialFeats', life.specialFeats, 'UniversalTree')
     for (const build of life.builds) emitBuild(xml, build, itemCatalogue)
     // Life-level self/party buffs round-trip via each build's activeBuffs /
     // ActiveStances; no separate list emitted.

@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9013 (Bar20)</Name>
       <Race>Dragonborn</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Barbarian</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Draconic Ancestry: Blue</FeatName>
             <Type>Dragonborn Racial</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Acrobatic</FeatName>
             <Type>Standard</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Balance</FeatName>
             <Type>Standard</Type>
@@ -69,12 +104,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Hide</FeatName>
             <Type>Standard</Type>
@@ -83,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Longbow</FeatName>
             <Type>Standard</Type>
@@ -97,12 +144,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Swim</FeatName>
             <Type>Standard</Type>
@@ -111,12 +164,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Spellcraft</FeatName>
             <Type>Standard</Type>
@@ -125,9 +184,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Barbarian</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -145,6 +208,11 @@
           <TreeName>Feydark Illusionist</TreeName>
           <TreeName>Harper Agent</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Vistani Knife Fighter</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -406,6 +474,9 @@
             <Description>This discarded hat has had extra experimental slots worked into its fabric.</Description>
             <DropLocation>A Miner Sacrifice, optional chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Absorption</Type>
@@ -427,6 +498,9 @@
 imbued with magics to protect the wearer from cold.</Description>
             <DropLocation>Caverns of Korromar, Oglethorpe the Prospector 's chest</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>EnergyResistance</Type>
@@ -442,6 +516,9 @@ imbued with magics to protect the wearer from cold.</Description>
             <Description>This trinket periodically casts cure serious wounds.</Description>
             <DropLocation>The Marketplace, Turn in 3 Small Eberron Dragonshards to Rudolf Rightman .</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
           </Trinket>
           <Cloak>
@@ -450,6 +527,9 @@ imbued with magics to protect the wearer from cold.</Description>
             <Description>Lined with plates of steel, this bearskin cloak is a formidable protection.</Description>
             <DropLocation>Eveningstar Challenge Pack, Turn in various ingredients</DropLocation>
             <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Sheltering</Type>
@@ -479,6 +559,9 @@ imbued with magics to protect the wearer from cold.</Description>
 trejectory[sic] of any projectile launched by its user.</Description>
             <DropLocation>Records of the Past, End Chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Doubleshot</Type>
@@ -510,6 +593,9 @@ trejectory[sic] of any projectile launched by its user.</Description>
 blows to be targeted on the most vulnerable locations.</Description>
             <DropLocation>Litany of the Dead, Mentau 's chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>SchoolFocusNumber</Type>
@@ -531,6 +617,9 @@ blows to be targeted on the most vulnerable locations.</Description>
 oncoming barbs, thorns and other sharp objects.</Description>
             <DropLocation>Epic version of Bramble-Casters</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>BlightedLore</Type>
@@ -557,6 +646,9 @@ oncoming barbs, thorns and other sharp objects.</Description>
 fallen apart from containing such energy.</Description>
             <DropLocation>The Chronoscope, End reward</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Corrosion</Type>
@@ -583,6 +675,9 @@ fallen apart from containing such energy.</Description>
             <Description>Bracers. Mysterious.</Description>
             <DropLocation>Champion Hunter, Turn in 1000 Mysterious Remnants</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Paper</Material>
             <Buff>
               <Type>HealingAmplification</Type>
@@ -605,6 +700,9 @@ fallen apart from containing such energy.</Description>
             <Description>This docent was crafted with the scales of black dragon.</Description>
             <DropLocation>Black Dragonscale Armor, Turn in 20 Black Dragon Scales</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -637,6 +735,9 @@ fallen apart from containing such energy.</Description>
 dexterous, and better able to survive the perils of the ocean.</Description>
             <DropLocation>Treasure of Crystal Cove, Turn in at Dusty Old Treasure of Crystal Cove</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -663,6 +764,9 @@ dexterous, and better able to survive the perils of the ocean.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>ProofAgainstPoison</Type>
@@ -683,6 +787,9 @@ stock. This weapon is large enough to require a winch for reloading, yet is
 surprisingly simple to use.</Description>
             <DropLocation>Altar of Fecundity, Manufactured Ingredient Recipes</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -690,14 +797,21 @@ surprisingly simple to use.</Description>
               <BonusType>Weapon Enchantment</BonusType>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Charisma</Level4>
         <Level8>Intelligence</Level8>
         <Level12>Charisma</Level12>
         <Level16>Wisdom</Level16>
         <Level20>Constitution</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9019 (Bar8/Alc12)</Name>
       <Race>Tiefling</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Bard</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Snake Blood</FeatName>
             <Type>Standard</Type>
@@ -39,9 +64,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Concentration</FeatName>
             <Type>Standard</Type>
@@ -50,9 +79,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Point Blank Shot</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -61,6 +94,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Spot</FeatName>
             <Type>Standard</Type>
@@ -69,12 +104,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Negotiator</FeatName>
             <Type>Standard</Type>
@@ -83,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Shield Proficiency (General)</FeatName>
             <Type>Standard</Type>
@@ -97,9 +144,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Tonic of Toxins</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -108,6 +159,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Swim</FeatName>
             <Type>Standard</Type>
@@ -116,12 +169,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Insightful Courage</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -135,9 +194,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Bard</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -155,6 +218,11 @@
           <TreeName>Warchanter</TreeName>
           <TreeName>Falconry</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Tiefling</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -458,6 +526,9 @@
 and foresight, allowing them to make decisions with greater clarity.</Description>
             <DropLocation>House Cannith Manufactury, Tegan Darsit 's chest (Rare encounter)</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -484,6 +555,9 @@ and foresight, allowing them to make decisions with greater clarity.</Descriptio
 body.</Description>
             <DropLocation>Epic version of Hruvayah's Medallion</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>SpellPenetration</Type>
@@ -519,6 +593,9 @@ body.</Description>
 a Rest Shrine.</Description>
             <DropLocation>Special event items, Special Purchase Bonus Items</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gold</Material>
           </Trinket>
           <Cloak>
@@ -529,6 +606,9 @@ runes run along the edges of this fine cape, and masterfully drawn on the silken
 lining is an incredibly detailed map of a place named 'Blackmoor'.</Description>
             <DropLocation>The Abandoned Excavation, End reward</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Adamantine</Material>
             <Buff>
               <Type>Heroic Inspiration</Type>
@@ -544,6 +624,9 @@ lining is an incredibly detailed map of a place named 'Blackmoor'.</Description>
 will help you attack your foes and make tasks easier to perform.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various challenge ingredients</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Riposte</Type>
@@ -576,6 +659,9 @@ will help you attack your foes and make tasks easier to perform.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>MagicalSheltering</Type>
@@ -592,6 +678,9 @@ will help you attack your foes and make tasks easier to perform.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>The Thrill of the Hunt, End reward</DropLocation>
             <MinLevel>17</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>HealingLore</Type>
@@ -611,6 +700,9 @@ will help you attack your foes and make tasks easier to perform.</Description>
 alter the flow of electrical energy.</Description>
             <DropLocation>Kind of a Big Deal, End Chest</DropLocation>
             <MinLevel>6</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Striding</Type>
@@ -643,6 +735,9 @@ alter the flow of electrical energy.</Description>
             <Description>Made of pure crystal, this mysterious bangle holds off many ills.</Description>
             <DropLocation>Vecna Denied, End chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -677,6 +772,9 @@ alter the flow of electrical energy.</Description>
 this armor, and shares its clarity of purpose.</Description>
             <DropLocation>Seeds of Decay, end chest (rare)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -708,6 +806,9 @@ this armor, and shares its clarity of purpose.</Description>
             <Description>This bone ring reeks of death.</Description>
             <DropLocation>Combatting Corruption, End chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Vertigo</Type>
@@ -735,6 +836,9 @@ this armor, and shares its clarity of purpose.</Description>
 it will make one's attacks deft and lethal.</Description>
             <DropLocation>Into the Deep, End reward</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <SetBonus>Vulkoor's Cunning</SetBonus>
           </Ring2>
@@ -744,6 +848,9 @@ it will make one's attacks deft and lethal.</Description>
             <Description>This dagger bears a valuable curse.</Description>
             <DropLocation>Epic version of Goldcursed Dagger</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Epic Goldcurse</Type>
@@ -767,14 +874,21 @@ it will make one's attacks deft and lethal.</Description>
               <Type>Destruction</Type>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Charisma</Level4>
         <Level8>Wisdom</Level8>
         <Level12>Strength</Level12>
         <Level16>Wisdom</Level16>
         <Level20>Dexterity</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

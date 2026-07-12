@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9009 (Bli20)</Name>
       <Race>Dwarf</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Blight Caster</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Unarmed</FeatName>
             <Type>Standard</Type>
@@ -39,6 +64,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Thorne Knight</FeatName>
             <Type>Wild Shape</Type>
@@ -52,6 +79,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Quarterstaff</FeatName>
             <Type>Standard</Type>
@@ -60,6 +89,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Thorn-Kin</FeatName>
             <Type>Kin Form</Type>
@@ -68,9 +99,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Dodge</FeatName>
             <Type>Standard</Type>
@@ -79,9 +114,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Hive Keeper</FeatName>
             <Type>Kin Form</Type>
@@ -90,6 +129,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Dagger</FeatName>
             <Type>Standard</Type>
@@ -98,9 +139,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Plague Wolf</FeatName>
             <Type>Wild Shape</Type>
@@ -114,6 +159,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Alertness</FeatName>
             <Type>Standard</Type>
@@ -122,6 +169,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Blighted Wolf</FeatName>
             <Type>Wild Shape</Type>
@@ -130,9 +179,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Least Dragonmark of Warding</FeatName>
             <Type>Standard</Type>
@@ -141,9 +194,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Wild Shape: Hive Master</FeatName>
             <Type>Wild Shape</Type>
@@ -152,6 +209,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Great Club</FeatName>
             <Type>Standard</Type>
@@ -160,9 +219,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -180,6 +243,11 @@
           <TreeName>Horizon Walker</TreeName>
           <TreeName>Inquisitive</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Inquisitive</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -434,6 +502,9 @@
             <Description>Phiarlan's greatest assassins are honored with a gift of these helms.</Description>
             <DropLocation>Tattered Tapestries, Turn in 20 Tattered Tapestries</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -455,6 +526,9 @@
 of ultrasonic sound.</Description>
             <DropLocation>Epic version of Wolf Whistle</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Heightened Awareness</Type>
@@ -486,6 +560,9 @@ of ultrasonic sound.</Description>
             <Description>This fragment of a gemstone is infused with the power from The Twelve.</Description>
             <DropLocation>The Marketplace, Turn in 25 Planar Shards from The Subterrane</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
           </Trinket>
           <Cloak>
@@ -494,6 +571,9 @@ of ultrasonic sound.</Description>
             <Description>Time-Twisted version of Dread Stalker's Cloak</Description>
             <DropLocation>Timeline Fragment Exchange, Turn in 50 Timeline Fragments</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Exceptional Nimble Skills</Type>
@@ -519,6 +599,9 @@ of ultrasonic sound.</Description>
             <Description>Tools of the trade.</Description>
             <DropLocation>Through a Mirror Darkly, End chest (Heroic Normal); Shadow Over Wheloon, Quest chain end reward (Heroic)</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Intelligence Skills - Exceptional Bonus</Type>
@@ -542,6 +625,9 @@ the darkly tinted lenses may somewhat hinder the normal vision of someone who
 is already acclimated to sunlight.</Description>
             <DropLocation>The Battle for Eveningstar, end chest; Menace of the Underdark: The Darkening, quest chain end reward</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -570,6 +656,9 @@ dramatically increased visual acuity as well as increased dexterity.</Descriptio
             <DropLocation>Sands of Menechtarun, Firebrand Area: Lieutenant Ayurro 's chest (Rare Encounter); 
  Masei Mkembe sells for 625 Antique Bronze Tokens</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -601,6 +690,9 @@ dramatically increased visual acuity as well as increased dexterity.</Descriptio
             <Description>Lighter than they look and exactly as tough as they look.</Description>
             <DropLocation>Turn the Page (quest), End chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -634,6 +726,9 @@ by members of the twelve to investigate the ruins beneath Stormreach. There
 is said to be a matching pair of gloves to these bracers.</Description>
             <DropLocation>A Vision of Destruction, End chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SpellPenetrationNumeral</Type>
@@ -655,6 +750,9 @@ is said to be a matching pair of gloves to these bracers.</Description>
             <Description>A robe from deep within the Temple of Elemental Evil.</Description>
             <DropLocation>ToEE: Earth Node, end chest and random locked chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -690,6 +788,9 @@ is said to be a matching pair of gloves to these bracers.</Description>
 their enemies from the shadows.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various challenge ingredients</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Deception</Type>
@@ -708,6 +809,9 @@ their enemies from the shadows.</Description>
             <Description>The sharp spike of a tooth rises up from the band of this ring.</Description>
             <DropLocation>Cold Snap, end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>WillSave</Type>
@@ -729,6 +833,9 @@ with a subtle magic, making it equivalent to Flametouched Iron, at the cost
 of some of the steel's natural durability.</Description>
             <DropLocation>Captain Xendros, Turn in 5 Quartermaster's Chits</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Flametouched Iron</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -757,14 +864,21 @@ of some of the steel's natural durability.</Description>
               <Type>Flametouched Iron</Type>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Dexterity</Level4>
         <Level8>Constitution</Level8>
         <Level12>Wisdom</Level12>
         <Level16>Intelligence</Level16>
         <Level20>Charisma</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

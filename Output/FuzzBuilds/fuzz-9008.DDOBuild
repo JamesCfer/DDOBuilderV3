@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9008 (Dar20)</Name>
       <Race>Wood Elf</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Dark Hunter</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Animal</FeatName>
             <Type>Favored Enemy</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Club</FeatName>
             <Type>Standard</Type>
@@ -55,9 +84,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Construct</FeatName>
             <Type>Favored Enemy</Type>
@@ -66,6 +99,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Evocation</FeatName>
             <Type>Standard</Type>
@@ -74,12 +109,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Toughness</FeatName>
             <Type>Standard</Type>
@@ -88,6 +129,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Dwarf</FeatName>
             <Type>Favored Enemy</Type>
@@ -96,9 +139,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Warhammer</FeatName>
             <Type>Standard</Type>
@@ -107,12 +154,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Giant</FeatName>
             <Type>Favored Enemy</Type>
@@ -126,12 +179,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Sap</FeatName>
             <Type>Standard</Type>
@@ -140,9 +199,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Plant</FeatName>
             <Type>Favored Enemy</Type>
@@ -165,6 +228,11 @@
           <TreeName>Inquisitive</TreeName>
           <TreeName>Dark Hunter</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Vistani Knife Fighter</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -438,6 +506,9 @@
 Placing it atop one's head confers a greater understanding of all things magical.</Description>
             <DropLocation>Under the Big Top, end chest</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -461,6 +532,9 @@ Placing it atop one's head confers a greater understanding of all things magical
 it easier to listen to the populace surrounding his tower.</Description>
             <DropLocation>Mimic Hunt, Turn in 80 Mimic Tokens</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Alluring Skills Bonus</Type>
@@ -488,6 +562,9 @@ it easier to listen to the populace surrounding his tower.</Description>
 winds itself back to where it was.</Description>
             <DropLocation>Down You Go, end chest</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -510,6 +587,9 @@ winds itself back to where it was.</Description>
 is able to repel most slashing attacks.</Description>
             <DropLocation>The Bloody Crypt, End chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Axeblock III</Type>
@@ -521,6 +601,9 @@ is able to repel most slashing attacks.</Description>
             <Description>It's definitely cursed.</Description>
             <DropLocation>The Magma Must Flow, End chest</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -555,6 +638,9 @@ is able to repel most slashing attacks.</Description>
             <Icon>Goggles_1</Icon>
             <Description>This is a Cannith crafted set of goggles.</Description>
             <MinLevel>0</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
           </Goggles>
           <Gloves>
             <Name>Gloves of Titan's Grip</Name>
@@ -562,6 +648,9 @@ is able to repel most slashing attacks.</Description>
             <Description>A pair of rough, oversized leather gloves.</Description>
             <DropLocation>The Mindsunder, Disc locked optional end chest, End reward</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -580,6 +669,9 @@ is able to repel most slashing attacks.</Description>
             <Description>These boots are enchanted to add a little spring to your step.</Description>
             <DropLocation>Treasure Hunt, End chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -602,6 +694,9 @@ is able to repel most slashing attacks.</Description>
             <Description>These bracers feature a cresting wave on the side of them.</Description>
             <DropLocation>Epic version of Bracers of Deftness</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>FeatMobility</Type>
@@ -633,6 +728,9 @@ is able to repel most slashing attacks.</Description>
 Hound of the Wild Hunt.</Description>
             <DropLocation>The Legend of the Lost Locket, End chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -669,6 +767,9 @@ investigating the disappearance of several adventurers in the ruins beneath
 Stormreach.</Description>
             <DropLocation>Hound of Xoriat, Raid Warded chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>EfficientEmpowerII</Type>
@@ -691,6 +792,9 @@ Stormreach.</Description>
             <Description>This signet ring bears the sigil of the plane of Lamannia.</Description>
             <DropLocation>Growing Pains, end chest</DropLocation>
             <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>HealingLore</Type>
@@ -722,6 +826,9 @@ Stormreach.</Description>
 well to the tips of arrows.</Description>
             <DropLocation>The Missing Party, End chest</DropLocation>
             <MinLevel>6</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Wood</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -740,14 +847,21 @@ well to the tips of arrows.</Description>
               <BonusType>Enhancement</BonusType>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Dexterity</Level4>
         <Level8>Strength</Level8>
         <Level12>Charisma</Level12>
         <Level16>Strength</Level16>
         <Level20>Intelligence</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

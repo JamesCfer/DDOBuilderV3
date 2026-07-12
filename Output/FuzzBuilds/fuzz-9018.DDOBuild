@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9018 (Ran9/Dra11)</Name>
       <Race>Halfling</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Ranger</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Aberration</FeatName>
             <Type>Favored Enemy</Type>
@@ -44,9 +69,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Aussircaex's Defiance</FeatName>
             <Type>Minor Draconic Aura</Type>
@@ -60,6 +89,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Shield Proficiency (General)</FeatName>
             <Type>Fighter Bonus Feat</Type>
@@ -68,9 +99,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Heavy Armor Training</FeatName>
             <Type>Fighter Bonus Feat</Type>
@@ -84,12 +119,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Tactical Training</FeatName>
             <Type>Fighter Bonus Feat</Type>
@@ -103,12 +144,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Elf</FeatName>
             <Type>Favored Enemy</Type>
@@ -122,9 +169,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Sinvala's Toughness</FeatName>
             <Type>Major Draconic Aura</Type>
@@ -133,6 +184,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Spell Focus: Conjuration</FeatName>
             <Type>Standard</Type>
@@ -141,9 +194,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Heavy Armor Master</FeatName>
             <Type>Fighter Bonus Feat</Type>
@@ -152,6 +209,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Use Magic Device</FeatName>
             <Type>Standard</Type>
@@ -160,9 +219,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Ranger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dragon Lord</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -180,6 +243,11 @@
           <TreeName>Harper Agent</TreeName>
           <TreeName>Horizon Walker</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Vistani Knife Fighter</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -493,6 +561,9 @@
 happiness and high spirits, and is invested with magic to match.</Description>
             <DropLocation>Epic version of Mask of Comedy</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -529,6 +600,9 @@ Dragon Knights, an order heralded as heroes even before they journeyed to Shavar
 to assist the Angelic Host.</Description>
             <DropLocation>Bastion of Power, End chest ; Tower of Despair, Nythirios chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -546,6 +620,9 @@ to assist the Angelic Host.</Description>
             <Description>This fragment of a gemstone is infused with the power from The Twelve.</Description>
             <DropLocation>The Marketplace, Turn in 50 Planar Shards from The Subterrane</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
           </Trinket>
           <Cloak>
@@ -555,6 +632,9 @@ to assist the Angelic Host.</Description>
 this cloak, and shares its clarity of purpose.</Description>
             <DropLocation>Ruins of Myth Drannor, Goranathanil 's chest (rare)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Power of the Firestorm</Type>
@@ -582,6 +662,9 @@ this cloak, and shares its clarity of purpose.</Description>
             <Description>The belt of Agarta the Breaker, which retains a measure of her strength.</Description>
             <DropLocation>Rats in a Cage, end chest</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -613,6 +696,9 @@ this cloak, and shares its clarity of purpose.</Description>
 away in the cold, then coming to in a Form distinctly unlike your own.</Description>
             <DropLocation>Cold Snap, end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Soundproof</Type>
@@ -632,6 +718,9 @@ away in the cold, then coming to in a Form distinctly unlike your own.</Descript
 a conduit for magic.</Description>
             <DropLocation>Sunrise, End chest, Abbot chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -668,6 +757,9 @@ a conduit for magic.</Description>
 raiders to help maintain their footing on slick underground stone.</Description>
             <DropLocation>The Seal of Shan-To-Kor, End reward</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Sentient Weapon</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -690,6 +782,9 @@ raiders to help maintain their footing on slick underground stone.</Description>
             <Description>These are light and have some subtle magic to them.</Description>
             <DropLocation>The Bugbear Bandits, End chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Resistance</Type>
@@ -705,6 +800,9 @@ the exact nature of the link is unclear. It can summon evil creatures to the
 wearer's aid, and facilitates the casting of conjuration-based magic.</Description>
             <DropLocation>Epic version of Diabolist's Docent</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -746,6 +844,9 @@ wearer's aid, and facilitates the casting of conjuration-based magic.</Descripti
 and Magical prowess.</Description>
             <DropLocation>Ruins of Myth Drannor, red-named encounter chests</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -777,6 +878,9 @@ and Magical prowess.</Description>
 to take things that seemed beyond repair and make them good as new.</Description>
             <DropLocation>Vaults of the Artificers, from exchanged challenge rewards or upgraded from level 16 version</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WizardryNumber</Type>
@@ -809,6 +913,9 @@ to take things that seemed beyond repair and make them good as new.</Description
 function when beyond the influence of a magically bound receptor pedestal.</Description>
             <DropLocation>Rainbow in the Dark</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Blueshine</Material>
             <Buff>
               <Type>SpellcastingImplement</Type>
@@ -842,14 +949,21 @@ function when beyond the influence of a magically bound receptor pedestal.</Desc
               <Type>Metalline</Type>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Strength</Level4>
         <Level8>Constitution</Level8>
         <Level12>Wisdom</Level12>
         <Level16>Intelligence</Level16>
         <Level20>Intelligence</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

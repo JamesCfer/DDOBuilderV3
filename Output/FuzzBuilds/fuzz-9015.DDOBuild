@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9015 (Arc20)</Name>
       <Race>Tabaxi</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Arcane Trickster</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Diplomacy</FeatName>
             <Type>Standard</Type>
@@ -39,9 +64,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Bullheaded</FeatName>
             <Type>Standard</Type>
@@ -50,12 +79,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Heighten Spell</FeatName>
             <Type>Bonus Magical Feat</Type>
@@ -69,12 +104,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Negotiator</FeatName>
             <Type>Standard</Type>
@@ -83,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Acrobatic</FeatName>
             <Type>Standard</Type>
@@ -97,12 +144,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Power Attack</FeatName>
             <Type>Standard</Type>
@@ -111,12 +164,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Thrown Weapon Expertise</FeatName>
             <Type>Standard</Type>
@@ -125,9 +184,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -145,6 +208,11 @@
           <TreeName>Arcane Trickster</TreeName>
           <TreeName>Tabaxi</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Arcane Trickster</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -416,6 +484,9 @@ It was crafted by Drow slaves to attempt to resist the mind control of their
 quori masters.</Description>
             <DropLocation>The Twilight Forge, underwater chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SpellResistance</Type>
@@ -434,6 +505,9 @@ a small skull weighing them down. The side of the skull is hinged and opens
 to reveal some unknown thing's ashes.</Description>
             <DropLocation>The Prison of the Planes, Dolurrh room's chest (Heroic Normal)</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Deathblock</Type>
@@ -453,6 +527,9 @@ to reveal some unknown thing's ashes.</Description>
             <Description>A faint whispering sound surrounds this glowing alabaster gem.</Description>
             <DropLocation>Stealthy Repossession, Witch Doctor Glik 's chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>WillSave</Type>
@@ -466,6 +543,9 @@ to reveal some unknown thing's ashes.</Description>
             <Description>Even the mystic and powerful eventually find themselves in the grave.</Description>
             <DropLocation>Beneath the City Streets, Dead Man's Wrath 's chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>SpellFocusMastery</Type>
@@ -485,6 +565,9 @@ to reveal some unknown thing's ashes.</Description>
 will help you attack your foes and make tasks easier to perform.</Description>
             <DropLocation>Vaults of the Artificers, Turn in various ingredients</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Riposte</Type>
@@ -521,6 +604,9 @@ will help you attack your foes and make tasks easier to perform.</Description>
 energy for their wearer.</Description>
             <DropLocation>Thrall of Duty, end chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Magnetism</Type>
@@ -550,6 +636,9 @@ energy for their wearer.</Description>
 these gloves have seen their share of conflict.</Description>
             <DropLocation>The Safehold, end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -581,6 +670,9 @@ these gloves have seen their share of conflict.</Description>
 a day.</Description>
             <DropLocation>Random, Found only in low level loot, ~level 6 loot tables</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
           </Boots>
           <Bracers>
@@ -590,6 +682,9 @@ a day.</Description>
 a remnant of her magics.</Description>
             <DropLocation>The Endless Revels, End Chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Copper</Material>
             <Buff>
               <Type>Seeker</Type>
@@ -623,6 +718,9 @@ of the wearer more deadly. The enchantments also protect the wearer from those
 same elemental forces.</Description>
             <DropLocation>Attack on Stormreach, End reward</DropLocation>
             <MinLevel>12</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>FireLore</Type>
@@ -656,6 +754,9 @@ same elemental forces.</Description>
 and Magical prowess.</Description>
             <DropLocation>Ruins of Myth Drannor, red-named encounter chests</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -686,6 +787,9 @@ and Magical prowess.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -703,8 +807,12 @@ and Magical prowess.</Description>
           <MainHand>
             <Name>Mournlode Greataxe (level 8)</Name>
             <Icon>GreatAxe_4c</Icon>
+            <Description></Description>
             <DropLocation>Vaults of the Artificers, Turn in various challenge ingredients</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -724,14 +832,21 @@ and Magical prowess.</Description>
               <Type>Incandescence</Type>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Strength</Level4>
         <Level8>Strength</Level8>
         <Level12>Wisdom</Level12>
         <Level16>Intelligence</Level16>
         <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

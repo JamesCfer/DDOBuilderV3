@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9012 (Dar12/Fav8)</Name>
       <Race>Dragonborn</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Dark Hunter</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Monstrous Humanoid</FeatName>
             <Type>Favored Enemy</Type>
@@ -49,9 +74,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored by Silvanus</FeatName>
             <Type>Follower Of</Type>
@@ -65,6 +94,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Grace of Battle</FeatName>
             <Type>Battle Feat</Type>
@@ -73,9 +104,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Child of Faith</FeatName>
             <Type>Child Of</Type>
@@ -89,12 +124,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Energy Absorption: Acid</FeatName>
             <Type>Energy Resistance</Type>
@@ -108,6 +149,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Blessing of Silvanus</FeatName>
             <Type>Deity</Type>
@@ -116,6 +159,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Aberration</FeatName>
             <Type>Favored Enemy</Type>
@@ -124,6 +169,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Stout of Heart</FeatName>
             <Type>Heart Feat</Type>
@@ -137,12 +184,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Sickle</FeatName>
             <Type>Standard</Type>
@@ -151,9 +204,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Favored Enemy: Giant</FeatName>
             <Type>Favored Enemy</Type>
@@ -162,6 +219,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Morningstar</FeatName>
             <Type>Standard</Type>
@@ -170,9 +229,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -190,6 +253,11 @@
           <TreeName>Feydark Illusionist</TreeName>
           <TreeName>Harper Agent</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>War Soul</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -483,6 +551,9 @@
             <DropLocation>The Night Revels, Turn in Joe Candymaker :
 100 Piece of Darkest Chocolate; obtained in the Graveyard mob slayer, Hayweird Foundry, or Getting Ahead in Lordsmarch Palace 10 Spooky Almond, obtained in Under New Ravagement, Hayweird Foundry, or Getting Ahead in Lordsmarch Palace 20 Black Apple; obtained in Haverdashed, Hayweird Foundry, or Getting Ahead in Lordsmarch Palace 20 Pinch of Sinister Cinnamon; obtained in The Snitch and the Lich, Hayweird Foundry, or Getting Ahead in Lordsmarch Palace</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>MagicalEfficiency</Type>
@@ -493,8 +564,12 @@
           <Necklace>
             <Name>Icon of Mielikki</Name>
             <Icon>Necklace_14</Icon>
+            <Description></Description>
             <DropLocation>Toil and Trouble, optional chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Devotion</Type>
@@ -522,6 +597,9 @@
 all charges are expended.</Description>
             <DropLocation>Random, Any chest with low loot level ~1</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
           </Trinket>
           <Cloak>
@@ -531,6 +609,9 @@ all charges are expended.</Description>
 defense - Patrolling the forest of Cormanthor, eliminating threats.</Description>
             <DropLocation>Times Long Past, end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Doubleshot</Type>
@@ -557,6 +638,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
             <Description>Stone plates ring this belt, absorbing impact.</Description>
             <DropLocation>Ends and Means, end chest</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>CombatMastery</Type>
@@ -575,6 +659,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
             <Description>A mild warmth eminates around the lenses, preventing frost from forming.</Description>
             <DropLocation>Locked Away (Part Two), end chest (rare)</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Absorption</Type>
@@ -590,6 +677,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
             <Description>These gloves will cast a protective shield when their magic is called upon.</Description>
             <DropLocation>Necromancer's Doom, Chest behind locked door</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
           </Gloves>
           <Boots>
@@ -598,6 +688,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
             <Description>The clicks of these sharp heels echo on the deck of every ship.</Description>
             <DropLocation>Captive of the Hidden God, end chest</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -629,6 +722,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
             <Description>Bracers with green steel plates.</Description>
             <DropLocation>Altar of Fecundity, Manufactured Ingredient Recipes</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
           </Bracers>
           <Armor>
@@ -638,6 +734,9 @@ defense - Patrolling the forest of Cormanthor, eliminating threats.</Description
 harm, is instead enchanted to ward against other forms of attack.</Description>
             <DropLocation>The Cloven-jaw Scourge: The Caverns of Shaagh, End chest</DropLocation>
             <MinLevel>2</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Cloth</Material>
             <Buff>
               <Type>Resistance</Type>
@@ -651,6 +750,9 @@ harm, is instead enchanted to ward against other forms of attack.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>What Goes Up, End reward</DropLocation>
             <MinLevel>19</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Potency</Type>
@@ -671,6 +773,9 @@ harm, is instead enchanted to ward against other forms of attack.</Description>
             <Description>A ring blessed with Amaunator's love.</Description>
             <DropLocation>A Lesson in Deception, end chest (Heroic Hard)</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Deathblock IV</Type>
@@ -686,6 +791,9 @@ harm, is instead enchanted to ward against other forms of attack.</Description>
             <Description>This weapon was designed to help those lost in the mists.</Description>
             <DropLocation>Blue Water Inn, Turn in 40 Vistani Talismans</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -717,14 +825,21 @@ harm, is instead enchanted to ward against other forms of attack.</Description>
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Charisma</Level4>
         <Level8>Dexterity</Level8>
         <Level12>Wisdom</Level12>
         <Level16>Intelligence</Level16>
         <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

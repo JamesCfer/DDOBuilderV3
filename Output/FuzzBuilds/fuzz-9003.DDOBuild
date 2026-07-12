@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9003 (Sto20)</Name>
       <Race>Tiefling</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Stormsinger</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Stunning Blow</FeatName>
             <Type>Standard</Type>
@@ -39,9 +64,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Sap</FeatName>
             <Type>Standard</Type>
@@ -50,12 +79,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Empower Healing Spell</FeatName>
             <Type>Standard</Type>
@@ -64,12 +99,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Shortbow</FeatName>
             <Type>Standard</Type>
@@ -78,12 +119,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Search</FeatName>
             <Type>Standard</Type>
@@ -92,12 +139,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Martial Weapon Proficiency: Rapier</FeatName>
             <Type>Standard</Type>
@@ -106,12 +159,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Athletic</FeatName>
             <Type>Standard</Type>
@@ -120,9 +179,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Stormsinger</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <ActiveStances>
         </ActiveStances>
@@ -140,6 +203,11 @@
           <TreeName>Inquisitive</TreeName>
           <TreeName>Tiefling</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Vistani Knife Fighter</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -413,6 +481,9 @@
 one's safety on the line day after day could drive the weaker-willed to madness.</Description>
             <DropLocation>Quarantine, End Chest</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -448,6 +519,9 @@ number of spells some time is required to bleed off the energy before the neckla
 can once again perform this warding function.</Description>
             <DropLocation>Invaders!, end chest (only if Boktar is the end boss)</DropLocation>
             <MinLevel>7</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -470,6 +544,9 @@ It is thought that such globes were used by the giants to prove imperial descent
 but the secret of the test is now forgotten.</Description>
             <DropLocation>Gianthold Tor, Black Dragon 's chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -526,6 +603,9 @@ but the secret of the test is now forgotten.</Description>
             <Description>This magical cloak was taken from the chest of the bugbear Bronkarz.</Description>
             <DropLocation>The Kobolds' New Ringleader, Bronkarz 's chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>WillSave</Type>
@@ -541,6 +621,9 @@ was worn by the famous street performer Morah when she disappeared through
 a portal to Shavarath.</Description>
             <DropLocation>Bastion of Power, Any end chest ; Tower of Despair, Nythirios chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -566,6 +649,9 @@ a portal to Shavarath.</Description>
             <Description>These are magical goggles that will prevent you from becoming blinded.</Description>
             <DropLocation>The Hobgoblin Horde, End chest</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>BlindnessImmunity</Type>
@@ -577,6 +663,9 @@ a portal to Shavarath.</Description>
             <Description>A large, simple stone appears to be central to the construction of this gauntlet.</Description>
             <DropLocation>Housekeeping, End chest</DropLocation>
             <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Stone</Material>
             <Buff>
               <Type>AcidLore</Type>
@@ -595,6 +684,9 @@ a portal to Shavarath.</Description>
             <Description>These boots were designed to ease travel through swampy, water-logged regions.</Description>
             <DropLocation>Epic version of Boots of the Mire</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -627,6 +719,9 @@ a portal to Shavarath.</Description>
             <Description>These drow-made bracers feature cobwebs and spider designs sewn into the leather.</Description>
             <DropLocation>The Abandoned Excavation, End reward</DropLocation>
             <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Steel</Material>
           </Bracers>
           <Armor>
@@ -635,6 +730,9 @@ a portal to Shavarath.</Description>
             <Description>This impressive suit of armor seems to fill you with hope and banish all doubt.</Description>
             <DropLocation>Immortality Lessons, End Chest, 'Granny' Optional Chest</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Copper</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -670,6 +768,9 @@ a portal to Shavarath.</Description>
 hand. It seems almost as if it has been formed out of dark clouds.</Description>
             <DropLocation>The Prison of the Planes, Mabar room's chest (Heroic Hard)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -696,6 +797,9 @@ hand. It seems almost as if it has been formed out of dark clouds.</Description>
 been quite heartbroken to throw it away.</Description>
             <DropLocation>Kill Ten Rats, End Chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>Alluring Skills Bonus</Type>
@@ -726,6 +830,9 @@ been quite heartbroken to throw it away.</Description>
             <Description>A giant black hammer. The head seems somewhat blurred and diaphanous.</Description>
             <DropLocation>The Shadow Crypt, Optional &quot;big chest&quot;</DropLocation>
             <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Adamantine</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -749,14 +856,21 @@ been quite heartbroken to throw it away.</Description>
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Constitution</Level4>
         <Level8>Constitution</Level8>
         <Level12>Intelligence</Level12>
         <Level16>Wisdom</Level16>
         <Level20>Charisma</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>

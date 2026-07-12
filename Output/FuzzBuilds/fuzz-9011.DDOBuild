@@ -10,11 +10,34 @@
     <SpecialFeats>
     </SpecialFeats>
     <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
     </SkillTomes>
     <Life version="1">
       <Name>Fuzz 9011 (Alc8/Arc7/Mon5)</Name>
       <Race>Wood Elf</Race>
       <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
       <Build version="1">
         <Level>20</Level>
         <Class1>Alchemist</Class1>
@@ -31,6 +54,8 @@
         </AbilitySpend>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Athletic</FeatName>
             <Type>Standard</Type>
@@ -39,9 +64,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Monk</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Great Fortitude</FeatName>
             <Type>Monk Bonus</Type>
@@ -55,12 +84,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Stunning Blow</FeatName>
             <Type>Standard</Type>
@@ -69,12 +104,18 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Monk</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Skill Focus: Spellcraft</FeatName>
             <Type>Standard</Type>
@@ -83,6 +124,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Monk</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Path of Harmonious Balance: Fists of Light</FeatName>
             <Type>Monk Philosophy</Type>
@@ -91,9 +134,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Monk</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Bullheaded</FeatName>
             <Type>Standard</Type>
@@ -102,6 +149,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Thrown Weapon Expertise</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -110,9 +159,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Monk</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Combat Casting</FeatName>
             <Type>Standard</Type>
@@ -121,9 +174,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Mental Toughness</FeatName>
             <Type>Bonus Magical Feat</Type>
@@ -132,6 +189,8 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Arcane Trickster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Simple Weapon Proficiency: Sickle</FeatName>
             <Type>Standard</Type>
@@ -140,9 +199,13 @@
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
         </LevelTraining>
         <LevelTraining>
           <Class>Alchemist</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
           <TrainedFeat>
             <FeatName>Alchemical Studies: Verudite</FeatName>
             <Type>Alchemist Bonus Feat</Type>
@@ -165,6 +228,11 @@
           <TreeName>Feydark Illusionist</TreeName>
           <TreeName>Harper Agent</TreeName>
         </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
         <EnhancementSpendInTree>
           <TreeName>Falconry</TreeName>
           <TreeVersion>1</TreeVersion>
@@ -478,6 +546,9 @@
 almost seems... possible.</Description>
             <DropLocation>The Archons' Trial, end chest</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -517,6 +588,9 @@ almost seems... possible.</Description>
             <Description>The fangs on this necklace are actually made of what appears to be quartz.</Description>
             <DropLocation>The Promise of Fire, end chest</DropLocation>
             <MinLevel>6</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
             <Material>Steel</Material>
             <Buff>
               <Type>Druidic Survival Mastery</Type>
@@ -541,6 +615,9 @@ almost seems... possible.</Description>
 wavering dragonshard needle all but points the way to your destiny.</Description>
             <DropLocation>Gianthold Tor, Blue Dragon 's chest (Heroic Elite)</DropLocation>
             <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -562,6 +639,9 @@ wavering dragonshard needle all but points the way to your destiny.</Description
 flame. But nothing looks better on a Dragonborn.</Description>
             <DropLocation>The Final Vintage, End chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
             <Material>Red Dragonscale</Material>
             <Buff>
               <Type>Breath Weapon Focus</Type>
@@ -597,6 +677,9 @@ flame. But nothing looks better on a Dragonborn.</Description>
             <Description>The best offense is a great defense.</Description>
             <DropLocation>Mimic Hunt, Turn in 80 Mimic Tokens</DropLocation>
             <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>FalseLife</Type>
@@ -625,6 +708,9 @@ flame. But nothing looks better on a Dragonborn.</Description>
             <Description>This item cannot be fed to sentient jewels .</Description>
             <DropLocation>Advance to level 15, End reward</DropLocation>
             <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
             <Material>Glass</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -643,6 +729,9 @@ flame. But nothing looks better on a Dragonborn.</Description>
             <Description>This pair of gloves is said to protect those who would protect others.</Description>
             <DropLocation>Sacrifices, End reward</DropLocation>
             <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>SkillBonus</Type>
@@ -662,6 +751,9 @@ flame. But nothing looks better on a Dragonborn.</Description>
             <Description>Subtle transmutative magic causes the wearer's footprints to erase themselves.</Description>
             <DropLocation>Zawabi's Revenge, Warded Chest</DropLocation>
             <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>Assassinate</Type>
@@ -695,6 +787,9 @@ Bolstered by potent, compulsory magic, the cuff-wearers guided intricate work
 for weeks on end without complaint or loss of perception.</Description>
             <DropLocation>Gianthold Tor, Black Dragon chest (Heroic Hard)</DropLocation>
             <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
             <Material>Leather</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -717,6 +812,9 @@ Installing this docent causes a warforged to move with exquisite grace and
 confidence.</Description>
             <DropLocation>Plane of Night, Warded Raid Chest</DropLocation>
             <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
             <Material>Gem (material)</Material>
             <Buff>
               <Type>ArmorEnchantment</Type>
@@ -757,6 +855,9 @@ confidence.</Description>
             <Description>A dark metal ring emblazoned with the emblem of Splinterskull.</Description>
             <DropLocation>Assault on Splinterskull, End reward</DropLocation>
             <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>Devotion</Type>
@@ -776,6 +877,9 @@ confidence.</Description>
 echoes faintly across the battle wracked landscape of Shavarath.</Description>
             <DropLocation>Tower of Despair, right side end chest</DropLocation>
             <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
             <Material>Gold</Material>
             <Buff>
               <Type>AbilityBonus</Type>
@@ -803,6 +907,9 @@ undead, the Bow of the Silver Flame was the answer. It blunts the ammunition
 used with it such that even skeletons will crumble beneath its assault.</Description>
             <DropLocation>Epic version of Bow of the Silver Flame</DropLocation>
             <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
             <Material>Wood</Material>
             <Buff>
               <Type>WeaponEnchantment</Type>
@@ -838,14 +945,21 @@ used with it such that even skeletons will crumble beneath its assault.</Descrip
               <Item>All</Item>
             </Buff>
           </MainHand>
+          <NumFiligrees>0</NumFiligrees>
         </EquippedGear>
         <FavorFeats>
         </FavorFeats>
+        <Notes/>
         <Level4>Wisdom</Level4>
         <Level8>Strength</Level8>
         <Level12>Constitution</Level12>
         <Level16>Constitution</Level16>
         <Level20>Dexterity</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
       </Build>
     </Life>
     <GuildLevel>0</GuildLevel>
