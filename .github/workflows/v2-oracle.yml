@@ -35,7 +35,11 @@ jobs:
           $tag = "${{ github.event.inputs.release_tag }}"
           $api = if ($tag) { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/tags/$tag" }
                  else { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/latest" }
-          $rel = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "v2-oracle" }
+          # Authenticated: unauthenticated calls hit the runner-IP shared rate limit.
+          $rel = Invoke-RestMethod -Uri $api -Headers @{
+            "User-Agent" = "v2-oracle"
+            "Authorization" = "Bearer ${{ secrets.GITHUB_TOKEN }}"
+          }
           Write-Host "Release: $($rel.tag_name)"
           $rel.assets | ForEach-Object { Write-Host "  asset: $($_.name) ($($_.size) bytes)" }
           New-Item -ItemType Directory -Force -Path v2dl | Out-Null
