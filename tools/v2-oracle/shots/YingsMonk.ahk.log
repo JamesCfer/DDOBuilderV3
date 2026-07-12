@@ -1,0 +1,8 @@
+capture.ahk start; attaching to pid=6692
+main window: 'DDOBuilder' class=Afx:007A0000:b:00010003:00000006:0003014B
+waiting for V2 to finish loading (CPU idle)...
+ERROR: V2 exited during load
+capture.ahk start; attaching to pid=9000
+ERROR: process exited before a window appeared
+capture.ahk start; attaching to pid=3236
+ERROR: process exited before a window appeared

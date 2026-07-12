@@ -1,0 +1,6 @@
+capture.ahk start; attaching to pid=7920
+ERROR: process exited before a window appeared
+capture.ahk start; attaching to pid=4348
+ERROR: process exited before a window appeared
+capture.ahk start; attaching to pid=9968
+ERROR: process exited before a window appeared
