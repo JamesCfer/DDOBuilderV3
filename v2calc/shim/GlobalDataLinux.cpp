@@ -134,18 +134,27 @@ namespace
         }
     }
 
-    // Port of the per-class synthesized "Improved Heroic Durability
-    // (<ClassName> 5/10/15)" feats from CDDOBuilderApp::LoadFeats
-    // (DDOBuilder.cpp ~461-467). Every heroic (non-NotHeroic) class dynamically
-    // synthesizes 3 copies of the base "Improved Heroic Durability" feat (+5 max
-    // HP), each with an AutomaticAcquisition Requirement(Requirement_ClassAtLevel,
-    // ClassName, 5/10/15). These exist in no XML, so the headless loader must
-    // create them or v2calc under-counts HP by up to +15 per heroic class. We
-    // insert them into g_allFeats so the normal AutomaticAcquisition path in
-    // Build::AutomaticFeats grants them. Class::ImprovedHeroicDurabilityFeats()
-    // calls FindFeat("Improved Heroic Durability"), which reads g_allFeats, so
-    // this must run after g_allFeats is populated from Feats.xml.
-    void SynthesizeImprovedHeroicDurabilityFeats()
+    // Port of the per-class / per-race feat injection from
+    // CDDOBuilderApp::LoadFeats (DDOBuilder.cpp ~460-488). The Windows app,
+    // after loading Feats.xml, folds three extra feat sources into m_allFeats
+    // (then clears them off the Class/Race objects so they are not applied
+    // twice). The headless calc core reads only StandardFeats()/FindFeat(), so
+    // without this injection these feats' effects never apply and v2calc
+    // under-counts. The three sources:
+    //
+    //   1. Class::ImprovedHeroicDurabilityFeats() - per heroic (non-NotHeroic)
+    //      class, 3 synthesized copies of the base "Improved Heroic Durability"
+    //      feat (+5 max HP) auto-acquired at class-level 5/10/15. Exist in no
+    //      XML. (FindFeat("Improved Heroic Durability") reads g_allFeats, so
+    //      this must run after g_allFeats is populated from Feats.xml.)
+    //   2. Class::ClassFeats() - class-specific feats defined inline in the
+    //      .class.xml files rather than in Feats.xml.
+    //   3. Race::RacialFeats() - race-specific feats defined inline in the
+    //      .race.xml files rather than in Feats.xml.
+    //
+    // insert() (not operator[]) matches the Windows behaviour: an existing
+    // Feats.xml entry of the same name wins.
+    void InjectClassAndRaceFeats()
     {
         for (auto&& cit : g_classes)
         {
@@ -153,6 +162,17 @@ namespace
             for (auto&& it : ihdfs)
             {
                 g_allFeats.insert(std::pair<std::string, Feat>(it.Name(), it));
+            }
+            for (auto&& cfit : cit.ClassFeats())
+            {
+                g_allFeats.insert(std::pair<std::string, Feat>(cfit.Name(), cfit));
+            }
+        }
+        for (auto&& rit : g_races)
+        {
+            for (auto&& rfit : rit.RacialFeats())
+            {
+                g_allFeats.insert(std::pair<std::string, Feat>(rfit.Name(), rfit));
             }
         }
     }
@@ -242,7 +262,7 @@ void V2CalcLoadGameData(const std::string& dataFilesDir)
     FeatsFile feats(dataFilesDir + "/Feats.xml");
     feats.Read();
     g_allFeats = feats.Feats();
-    SynthesizeImprovedHeroicDurabilityFeats();
+    InjectClassAndRaceFeats();
     UpdateCompletionistRequirements();
     SeparateFeats();
 }
