@@ -68,6 +68,10 @@ int main(int argc, char** argv)
         return 3;
     }
 
+    // rebuild the class-level cache post-parse (headless, pane-free) so BAB and
+    // ClassLevels are correct - the constructor built it before parse.
+    const_cast<Build*>(pBuild)->V2CalcRebuildClassCache();
+
     size_t level = pBuild->Level();          // 1-based total level
     size_t zLevel = (level > 0) ? level - 1 : 0; // 0-based for AbilityAtLevel
 
@@ -95,7 +99,8 @@ int main(int argc, char** argv)
                 abilities[i].key,
                 pBuild->AbilityAtLevel(abilities[i].at, zLevel, true));
     }
-    printf(" }\n");
+    printf(" },\n");
+    printf("  \"baseAttackBonus\": %zu\n", pBuild->BaseAttackBonus(level));
     printf("}\n");
     return 0;
 }

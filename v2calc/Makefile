@@ -195,7 +195,7 @@ farm:
 	@ln -sf $(ROOT)/DDOBuilder/stdafx.h '$(FARM)/v2calc_ddobuilder_stdafx.h'
 
 run: $(TARGET)
-	cd $(ROOT) && $(TARGET) Output/DataFiles/Feats.xml
+	cd $(ROOT) && $(TARGET) "Output/Example Builds/YingsMonk.DDOBuild"
 
 clean:
 	rm -rf $(BUILD)
