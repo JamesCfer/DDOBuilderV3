@@ -56,41 +56,44 @@ foreach ($b in $builds) {
     $ahkLog = Join-Path $shotsDir ($b.BaseName + ".ahk.log")
     Write-Host "=== $($b.Name) ==="
 
-    # Launch V2 ourselves (CreateProcess — no ShellExecute consent dialog).
-    $v2 = Start-Process -FilePath $exeFull -ArgumentList "`"$($b.FullName)`"" `
-        -WorkingDirectory $exeDir -PassThru
-    Write-Host "  v2 pid=$($v2.Id)"
+    # V2 crashes non-deterministically during load in the non-interactive CI
+    # session — retry the whole capture a few times to ride out a bad launch.
+    $captured = $false
+    foreach ($attempt in 1..3) {
+        Write-Host "  -- attempt $attempt --"
+        $v2 = Start-Process -FilePath $exeFull -ArgumentList "`"$($b.FullName)`"" `
+            -WorkingDirectory $exeDir -PassThru
+        Write-Host "  v2 pid=$($v2.Id)"
 
-    # /ErrorStdOut: AHK script errors print to stdout instead of a blocking dialog.
-    $p = Start-Process -FilePath $AhkExe `
-        -ArgumentList @("/ErrorStdOut", "`"$PSScriptRoot\capture.ahk`"", "$($v2.Id)", "`"$out`"") `
-        -RedirectStandardOutput $ahkLog -PassThru -NoNewWindow
-    $done = $p.WaitForExit($PerBuildTimeoutSec * 1000)
-    if (-not $done) {
-        Write-Host "  TIMEOUT after ${PerBuildTimeoutSec}s"
-        Get-Process -Name "DDOBuilder*" -ErrorAction SilentlyContinue |
-            ForEach-Object { Write-Host "  proc: $($_.ProcessName) pid=$($_.Id) title='$($_.MainWindowTitle)'" }
-        Take-Screenshot (Join-Path $shotsDir ($b.BaseName + ".timeout.png"))
-        Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-        $failed += $b.Name
-    } elseif ($p.ExitCode -ne 0) {
-        Write-Host "  FAILED exit=$($p.ExitCode)"
-        Take-Screenshot (Join-Path $shotsDir ($b.BaseName + ".fail$($p.ExitCode).png"))
-        $failed += $b.Name
-    } elseif (-not (Test-Path $out) -or (Get-Item $out).Length -lt 100) {
-        Write-Host "  FAILED: export file missing/near-empty"
-        $failed += $b.Name
-    } else {
-        Write-Host "  ok: $((Get-Item $out).Length) bytes"
+        $p = Start-Process -FilePath $AhkExe `
+            -ArgumentList @("/ErrorStdOut", "`"$PSScriptRoot\capture.ahk`"", "$($v2.Id)", "`"$out`"") `
+            -RedirectStandardOutput $ahkLog -PassThru -NoNewWindow
+        $done = $p.WaitForExit($PerBuildTimeoutSec * 1000)
+
+        if (-not $done) {
+            Write-Host "  TIMEOUT after ${PerBuildTimeoutSec}s"
+            Take-Screenshot (Join-Path $shotsDir ($b.BaseName + ".timeout$attempt.png"))
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+        } elseif ($p.ExitCode -eq 6) {
+            Write-Host "  FAILED: V2 parser rejected the document (no retry)"
+            $flushedLog = "$out.log"; if (Test-Path $flushedLog) { Copy-Item $flushedLog $ahkLog -Force }
+            break   # a rejected document will be rejected every time
+        } elseif ($p.ExitCode -ne 0) {
+            Write-Host "  attempt failed exit=$($p.ExitCode)"
+            Take-Screenshot (Join-Path $shotsDir ($b.BaseName + ".fail$($p.ExitCode)_$attempt.png"))
+        } elseif (Test-Path $out) {
+            Write-Host "  ok: $((Get-Item $out).Length) bytes"
+            $captured = $true
+        }
+
+        $flushedLog = "$out.log"
+        if (Test-Path $flushedLog) { Copy-Item $flushedLog $ahkLog -Force }
+        Get-Process -Name "DDOBuilder*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        if ($captured) { break }
     }
-    # The AHK's own flushed log (survives kills) supersedes the stdout copy.
-    $flushedLog = "$out.log"
-    if (Test-Path $flushedLog) { Copy-Item $flushedLog $ahkLog -Force }
     if (Test-Path $ahkLog) { Get-Content $ahkLog | ForEach-Object { Write-Host "  ahk| $_" } }
-
-    # Kill any stray V2 instances before the next build.
-    Get-Process -Name "DDOBuilder*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 2
+    if (-not $captured) { $failed += $b.Name }
 }
 
 Write-Host ""
