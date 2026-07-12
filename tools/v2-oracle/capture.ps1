@@ -46,12 +46,15 @@ foreach ($b in $builds) {
     $ahkLog = Join-Path $shotsDir ($b.BaseName + ".ahk.log")
     Write-Host "=== $($b.Name) ==="
 
+    # /ErrorStdOut: AHK script errors print to stdout instead of a blocking dialog.
     $p = Start-Process -FilePath $AhkExe `
-        -ArgumentList @("`"$PSScriptRoot\capture.ahk`"", "`"$ExePath`"", "`"$($b.FullName)`"", "`"$out`"") `
+        -ArgumentList @("/ErrorStdOut", "`"$PSScriptRoot\capture.ahk`"", "`"$ExePath`"", "`"$($b.FullName)`"", "`"$out`"") `
         -RedirectStandardOutput $ahkLog -PassThru -NoNewWindow
     $done = $p.WaitForExit($PerBuildTimeoutSec * 1000)
     if (-not $done) {
         Write-Host "  TIMEOUT after ${PerBuildTimeoutSec}s"
+        Get-Process -Name "DDOBuilder*" -ErrorAction SilentlyContinue |
+            ForEach-Object { Write-Host "  proc: $($_.ProcessName) pid=$($_.Id) title='$($_.MainWindowTitle)'" }
         Take-Screenshot (Join-Path $shotsDir ($b.BaseName + ".timeout.png"))
         Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
         $failed += $b.Name

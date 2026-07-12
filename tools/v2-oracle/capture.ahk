@@ -15,6 +15,7 @@
 SetTitleMatchMode 2
 DetectHiddenWindows false
 
+FileAppend "capture.ahk start; args=" A_Args.Length "`n", "*"
 if A_Args.Length < 3 {
     FileAppend "usage: capture.ahk exe build out`n", "*"
     ExitApp 1
@@ -22,10 +23,26 @@ if A_Args.Length < 3 {
 exePath := A_Args[1]
 buildFile := A_Args[2]
 outFile := A_Args[3]
+FileAppend "exe=" exePath "; build=" buildFile "`n", "*"
 
 SplitPath exePath, , &exeDir
 
 Run '"' exePath '" "' buildFile '"', exeDir, , &pid
+FileAppend "launched pid=" pid "`n", "*"
+
+DumpWindows(tag) {
+    global pid
+    for hwnd in WinGetList() {
+        try {
+            t := WinGetTitle(hwnd)
+            c := WinGetClass(hwnd)
+            p := WinGetPID(hwnd)
+            if (p = pid || InStr(t, "DDO") || InStr(c, "Afx")) {
+                FileAppend tag ": hwnd=" hwnd " pid=" p " class=" c " title='" t "'`n", "*"
+            }
+        }
+    }
+}
 
 ; ── Wait for the main frame (data load can take a while on first run) ────
 mainWin := 0
@@ -42,14 +59,23 @@ while A_TickCount < deadline {
         Sleep 500
         continue
     }
-    mainWin := WinExist("DDOBuilder ahk_pid " pid)
+    ; Match ANY top-level window of the process (title-independent).
+    mainWin := WinExist("ahk_pid " pid)
+    if !mainWin {
+        mainWin := WinExist("ahk_exe DDOBuilder.exe")
+    }
     if mainWin {
+        FileAppend "main window: '" WinGetTitle(mainWin) "' class=" WinGetClass(mainWin) "`n", "*"
         break
     }
     Sleep 1000
 }
 if !mainWin {
     FileAppend "ERROR: main window never appeared`n", "*"
+    DumpWindows("timeout-dump")
+    if !ProcessExist(pid) {
+        FileAppend "NOTE: process " pid " has EXITED (crash or missing DLL?)`n", "*"
+    }
     ExitApp 2
 }
 
