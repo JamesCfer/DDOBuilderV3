@@ -1,0 +1,29 @@
+seed 5087, level 20
+race Aasimar
+classes Arcane Trickster 20
+abilities Str 12, Dex 13, Con 13, Int 14, Wis 12, Cha 12 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Protector Bond
+slot heroic-1: Sap
+slot heroic-3: Combat Expertise
+slot Arcane Trickster-6-Bonus Magical Feat-0: Spell Focus: Enchantment
+slot heroic-6: Maximize Spell
+slot heroic-9: Dodge
+slot Arcane Trickster-12-Bonus Magical Feat-0: no eligible feats — left empty
+slot heroic-12: Martial Weapon Proficiency: Shortsword
+slot heroic-15: Skill Focus: Listen
+slot Arcane Trickster-18-Bonus Magical Feat-0: no eligible feats — left empty
+slot heroic-18: Lightning Reflexes
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Helm of the Warblade
+gear Necklace: Iron Beads (historic)
+gear Trinket: Deep Red Ioun Stone
+gear Armor: Giantcrafted Robe
+gear Cloak: Cloak of Curses
+gear Belt: Indomitable Wrappings (level 16)
+gear Ring: The Shattered Onyx
+gear Ring2: Ann Velsing's Band
+gear Gloves: Molb's Fist
+gear Bracers: Bracers of the Unseen Assassin
+gear Boots: Faded Tracker's Boots
+gear Goggles: Tharne's Goggles
+gear Main Hand: Kookie Kutter (level 20)

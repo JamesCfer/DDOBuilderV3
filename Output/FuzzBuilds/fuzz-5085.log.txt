@@ -1,0 +1,33 @@
+seed 5085, level 20
+race Halfling
+classes Stormsinger 8 / Favored Soul 12
+abilities Str 15, Dex 11, Con 15, Int 10, Wis 13, Cha 10 (28/28 pts)
+slot heroic-1: Negotiator
+slot Favored Soul-1-Follower Of-0: Follower of Aureon
+slot heroic-3: Simple Weapon Proficiency: Morningstar
+slot Favored Soul-2-Battle Feat-0: Grace of Battle
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot heroic-6: Quicken Spell
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Fire
+slot Favored Soul-6-Deity-0: Aureon's Instruction
+slot heroic-9: Martial Weapon Proficiency: Warhammer
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+slot heroic-12: Mental Toughness
+slot heroic-15: Diehard
+slot Favored Soul-10-Energy Resistance-0: Energy Absorption: Acid
+slot heroic-18: Simple Weapon Proficiency: Quarterstaff
+slot Favored Soul-12-Beloved Of-0: Beloved of the Divine
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Executioner's Helm
+gear Necklace: Pendant of Hidden Tools
+gear Trinket: Alabaster of the Twelve
+gear Armor: Sinsoul
+gear Cloak: Epic Cloak of the Silver Concord
+gear Belt: Outpost Sniper's Belt
+gear Ring: Ring of Troll's Regeneration
+gear Ring2: Trapmaker's Mark
+gear Gloves: Gloves of Forgotten Craft (historic)
+gear Bracers: Prisoner's Manacles (Level 15)
+gear Boots: Surefooted Boots (Level 14)
+gear Goggles: Dream Visor (Level 14)
+gear Main Hand: Defiled Reliquary Handwraps

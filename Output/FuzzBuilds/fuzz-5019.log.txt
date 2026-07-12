@@ -1,0 +1,34 @@
+seed 5019, level 20
+race Dwarf
+classes Druid 7 / Favored Soul 8 / Alchemist 5
+abilities Str 11, Dex 14, Con 10, Int 14, Wis 13, Cha 14 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Great Club
+slot Favored Soul-1-Follower Of-0: Follower of Olladra
+slot Favored Soul-2-Battle Feat-0: Grace of Battle
+slot heroic-3: Martial Weapon Proficiency: Light Hammer
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot Druid-2-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-6: Simple Weapon Proficiency: Dart
+slot heroic-9: Sap
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Electricity
+slot Alchemist-4-Alchemist Bonus Feat-0: Eschew Materials
+slot heroic-12: Alertness
+slot Favored Soul-6-Deity-0: Search the Soul
+slot heroic-15: Martial Weapon Proficiency: Longsword
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+slot Druid-5-Wild Shape-0: Wild Shape: Bear
+slot heroic-18: Spell Focus: Illusion
+enhancements: 80/80 AP across 15 trees
+gear Helmet: Plume of Adherence
+gear Necklace: Epic Pendant of the Green Abishai
+gear Trinket: Gilk's Bangle
+gear Armor: Elfcraft Docent
+gear Cloak: Cloak of Invisibility
+gear Belt: Rugged Belt
+gear Ring: Ring of Thelis
+gear Ring2: Rulebreaker
+gear Gloves: Protective Gloves
+gear Bracers: Manacles of Ceaseless Toil (Level 12)
+gear Boots: Boots of the Long Step
+gear Goggles: Eyes of Enlightenment
+gear Main Hand: Phase Hammer

@@ -1,0 +1,29 @@
+seed 5037, level 20
+race Elf
+classes Dragon Disciple 20
+abilities Str 14, Dex 14, Con 13, Int 11, Wis 14, Cha 10 (28/28 pts)
+slot Dragon Disciple-1-Dragon Arts-0: Single Weapon Fighting
+slot heroic-1: Maximize Spell
+slot Dragon Disciple-2-Dragon Arts-0: no eligible feats — left empty
+slot Dragon Disciple-3-Monk Philosophy-0: Path of Harmonious Balance: Fists of Light
+slot heroic-3: Skill Focus: Hide
+slot Dragon Disciple-6-Dragon Arts-0: no eligible feats — left empty
+slot heroic-6: Hamstring
+slot heroic-9: Self Sufficient
+slot heroic-12: Extend Spell
+slot heroic-15: Martial Weapon Proficiency: Maul
+slot heroic-18: Empower Spell
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Gravekeeper's Helm
+gear Necklace: Pendant of Apparition
+gear Trinket: Scarab of Spell Absorption
+gear Armor: Emissary's Stone
+gear Cloak: Cloak of the Mimic (Level 4)
+gear Belt: Thamor's Belt
+gear Ring: Signet of Caustic Persuasion
+gear Ring2: Signet of Shavarath
+gear Gloves: Mastermaker's Fingers
+gear Bracers: Bracers of the Hidden Blade
+gear Boots: Kundarak Delving Boots
+gear Goggles: Dream Visor (historic)
+gear Main Hand: Epic Ethereal Repeating Light Crossbow

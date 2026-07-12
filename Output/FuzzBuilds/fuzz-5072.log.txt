@@ -1,0 +1,37 @@
+seed 5072, level 20
+race Aasimar
+classes Dark Apostate 11 / Favored Soul 9
+abilities Str 15, Dex 10, Con 12, Int 11, Wis 14, Cha 13 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Fallen Bond
+slot Dark Apostate-1-Follower Of-0: Favored by Silvanus
+slot heroic-1: Athletic
+slot Favored Soul-1-Follower Of-0: Follower of Olladra
+slot Favored Soul-2-Battle Feat-0: Knowledge of Battle
+slot heroic-3: Martial Weapon Proficiency: Warhammer
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot Dark Apostate-2-Domain-0: Domain of Air
+slot heroic-6: Magical Training
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Fire
+slot heroic-9: Negotiator
+slot Favored Soul-6-Deity-0: Search the Soul
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Air
+slot Dark Apostate-6-Deity-0: No Deity Feat Available
+slot heroic-12: Power Attack
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+slot heroic-15: Skill Focus: Move Silently
+slot Dark Apostate-9-Domain Feat-0: Greater Domain of Air
+slot heroic-18: Eschew Materials
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Flame Priest's Focus
+gear Necklace: Ward-Inscribed Pendant
+gear Trinket: Epic Pouch of Jerky
+gear Armor: Epic Full Plate of the Ringleader
+gear Cloak: Prismatic Cloak, Green (Level 17)
+gear Belt: Buckle of Secrets
+gear Ring: Glorious Dawn (Level 14)
+gear Ring2: Ring of Shadows (historic)
+gear Gloves: Cloth Half-Sleeve
+gear Bracers: Wristbound Register
+gear Boots: Krugg's Spiked Boots
+gear Goggles: Garstone's Lenses
+gear Main Hand: Elemental Rapier of Air (level 4)

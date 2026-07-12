@@ -1,0 +1,28 @@
+seed 5035, level 20
+race Elf
+classes Stormsinger 6 / Wizard 14
+abilities Str 12, Dex 15, Con 11, Int 10, Wis 13, Cha 14 (28/28 pts)
+slot heroic-1: Empower Spell
+slot heroic-3: Skill Focus: Intimidate
+slot Wizard-1-Metamagic Feat-0: Mental Toughness
+slot heroic-6: Simple Weapon Proficiency: Light Mace
+slot heroic-9: Simple Thrown Weapon Expertise
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-12: Skill Focus: Balance
+slot Wizard-10-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-15: Hamstring
+slot heroic-18: Skill Focus: Swim
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Malicia's Crown (level 8)
+gear Necklace: Necklace of Glib Tongue (Level 12)
+gear Trinket: Shard Trinket of Summon Monster VII
+gear Armor: Robe of Resonance (level 20)
+gear Cloak: Cloak of Night (level 4)
+gear Belt: Girdle of Faith
+gear Ring: Anathema
+gear Ring2: Morah's Band
+gear Gloves: Tinker's Gloves
+gear Bracers: Bracers of Twisting Shade (Level 18)
+gear Boots: Grundok's Boots
+gear Goggles: Goggles of the Berserker
+gear Main Hand: Flamesalt Heavy Pick

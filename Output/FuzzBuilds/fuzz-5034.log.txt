@@ -1,0 +1,28 @@
+seed 5034, level 20
+race Half-Elf
+classes Ranger 6 / Bard 14
+abilities Str 11, Dex 11, Con 13, Int 15, Wis 12, Cha 13 (28/28 pts)
+slot race-1-Dilettante Feat-0: Half-Elf Dilettante: Bard
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Dwarf
+slot heroic-1: Least Dragonmark of Storm
+slot heroic-3: Martial Weapon Proficiency: Scimitar
+slot heroic-6: Spell Focus: Enchantment
+slot heroic-9: Simple Weapon Proficiency: Sickle
+slot heroic-12: Martial Weapon Proficiency: Warhammer
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Chaotic Outsider
+slot heroic-15: Simple Weapon Proficiency: Light Crossbow
+slot heroic-18: Skill Focus: Balance
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Walking Ancestor's Helmet
+gear Necklace: Epic Lizardfolk Tooth Necklace
+gear Trinket: Shimmering Arrowhead
+gear Armor: Enlightened Robes
+gear Cloak: Mysterious Cloak (Level 7)
+gear Belt: Book-Cover Beltstrap
+gear Ring: Oremi's Ring
+gear Ring2: Ring of the Stalker (Level 15)
+gear Gloves: Wildwood Gauntlets
+gear Bracers: Scorched Bracers
+gear Boots: Hobnail Boots
+gear Goggles: Dream Visor (Level 12)
+gear Main Hand: Cheap Shot (level 5)

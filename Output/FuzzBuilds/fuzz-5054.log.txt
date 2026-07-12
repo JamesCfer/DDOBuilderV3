@@ -1,0 +1,34 @@
+seed 5054, level 20
+race Shifter
+classes Rogue 6 / Favored Soul 14
+abilities Str 13, Dex 12, Con 12, Int 11, Wis 16, Cha 10 (28/28 pts)
+slot race-1-Animalistic Aspect-0: Beasthide Shifter
+slot heroic-1: Skill Focus: Bluff
+slot Favored Soul-1-Follower Of-0: Favored by Silvanus
+slot Favored Soul-2-Battle Feat-0: Knowledge of Battle
+slot heroic-3: Skill Focus: Hide
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot heroic-6: Power Attack
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Fire
+slot Favored Soul-6-Deity-0: Search the Soul
+slot heroic-9: Skill Focus: Listen
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+slot heroic-12: Luck Of Heroes
+slot Favored Soul-10-Energy Resistance-0: Energy Absorption: Acid
+slot heroic-15: Simple Weapon Proficiency: Club
+slot Favored Soul-12-Beloved Of-0: Beloved of the Divine
+slot heroic-18: Iron Will
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Founder's Helm
+gear Necklace: Jorgundal's Collar (Level 14)
+gear Trinket: Rahkat's Trifle
+gear Armor: Epic Frozen Plate
+gear Cloak: Lamordian Heavy Cloak
+gear Belt: Belt of the Black Sands
+gear Ring: Ring of Thelis
+gear Ring2: Signet of Risia
+gear Gloves: Scuffed Long-Gloves
+gear Bracers: Epic Bracers of Deftness
+gear Boots: Epic Firestorm Greaves
+gear Goggles: Eternal Flameguard's Lenses
+gear Main Hand: +3 Magnetism Electrified Sickle

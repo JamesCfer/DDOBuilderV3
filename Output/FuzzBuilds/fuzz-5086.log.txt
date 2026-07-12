@@ -1,0 +1,31 @@
+seed 5086, level 20
+race Tabaxi
+classes Dark Apostate 20
+abilities Str 10, Dex 13, Con 13, Int 13, Wis 14, Cha 13 (28/28 pts)
+slot Dark Apostate-1-Follower Of-0: Favored by Helm
+slot heroic-1: Skill Focus: Spot
+slot Dark Apostate-2-Domain-0: Domain of Animals
+slot heroic-3: Skill Focus: Spellcraft
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Animals
+slot Dark Apostate-6-Deity-0: Search the Soul
+slot heroic-6: Single Weapon Fighting
+slot Dark Apostate-9-Domain Feat-0: Greater Domain of Animals
+slot heroic-9: Sap
+slot heroic-12: Simple Weapon Proficiency: Throwing Dagger
+slot Dark Apostate-14-Domain Feat-0: Master of the Domain of Animals
+slot heroic-15: Martial Weapon Proficiency: Rapier
+slot heroic-18: Empower Spell
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Phantasmic Masque
+gear Necklace: Necklace of Contemplation
+gear Trinket: Epic Treasure Hunter's Spyglass (legacy) (level 20)
+gear Armor: Epic Dockworker's Outfit
+gear Cloak: Epic Sailcloth Cloak
+gear Belt: Epic Belt of the Blue Abishai
+gear Ring: Duskbone Ring
+gear Ring2: Nyoko's Band
+gear Gloves: Backstabber's Gloves (Level 14)
+gear Bracers: Palescale Bracers
+gear Boots: Epic Boots of the Mire
+gear Goggles: Doctor Gustav's Warped Lenses
+gear Main Hand: +5 Heirloom Spelltouched Dart

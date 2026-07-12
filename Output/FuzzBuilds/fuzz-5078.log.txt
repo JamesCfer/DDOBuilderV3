@@ -1,0 +1,33 @@
+seed 5078, level 20
+race Dwarf
+classes Blight Caster 8 / Monk 5 / Artificer 7
+abilities Str 10, Dex 13, Con 12, Int 14, Wis 11, Cha 15 (28/28 pts)
+slot heroic-1: Mental Toughness
+slot heroic-3: Martial Weapon Proficiency: Longbow
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Hive Master
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-6: Diehard
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot Artificer-4-Artificer Bonus Feat-0: Point Blank Shot
+slot Monk-1-Monk Bonus-0: Lightning Reflexes
+slot heroic-9: Martial Weapon Proficiency: Falchion
+slot Monk-2-Monk Bonus-0: no eligible feats — left empty
+slot Monk-3-Monk Philosophy-0: Path of Harmonious Balance: Fists of Light
+slot heroic-12: Martial Weapon Proficiency: Throwing Hammer
+slot heroic-15: Rapid Shot
+slot heroic-18: Simple Weapon Proficiency: Quarterstaff
+slot Blight Caster-8-Kin Form-0: Wild Shape: Hive Keeper
+enhancements: 80/80 AP across 16 trees
+gear Helmet: Helm of the Black Dragon (historic)
+gear Necklace: Vim and Vigor
+gear Trinket: Lockup Property Log
+gear Armor: Livewood Core (Level 16)
+gear Cloak: Cloak of Winter's End (level 4)
+gear Belt: Snakeskin Belt
+gear Ring: Cinder's Band
+gear Ring2: Trapmaker's Mark
+gear Gloves: Epic Brawling Gloves (level 20)
+gear Bracers: Bracers of Wind (level 11)
+gear Boots: Boots of Fleet and Fortune
+gear Goggles: Tinker's Goggles
+gear Main Hand: Illusionist's Focus

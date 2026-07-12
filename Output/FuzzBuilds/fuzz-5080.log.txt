@@ -1,0 +1,31 @@
+seed 5080, level 20
+race Half-Orc
+classes Dark Apostate 7 / Bard 6 / Druid 7
+abilities Str 14, Dex 13, Con 12, Int 13, Wis 11, Cha 13 (28/28 pts)
+slot Dark Apostate-1-Follower Of-0: Follower of the Blood of Vol
+slot heroic-1: Martial Weapon Proficiency: Throwing Axe
+slot heroic-3: Skill Focus: Tumble
+slot Druid-2-Wild Shape-0: Wild Shape: Wolf
+slot Dark Apostate-2-Domain-0: Domain of Death
+slot heroic-6: Martial Weapon Proficiency: Hand Axe
+slot heroic-9: Two Handed Fighting
+slot heroic-12: Simple Weapon Proficiency: Sickle
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Death
+slot Dark Apostate-6-Deity-0: The Blood is The Life
+slot heroic-15: Self Sufficient
+slot Druid-5-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-18: Stealthy
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Rider's Chapeau
+gear Necklace: Epic Pendant of the Black Abishai
+gear Trinket: Icon of the High Tide
+gear Armor: Eladrin Regalia
+gear Cloak: Scarlet Scale Cloak
+gear Belt: Feline-Faced Buckle
+gear Ring: Vishral's Signet
+gear Ring2: Dragonmarked Ring
+gear Gloves: Backstabber's Gloves (Level 14)
+gear Bracers: Cliffdiver Luck Charms
+gear Boots: Admiral's Gumshoes
+gear Goggles: Four Eyes
+gear Main Hand: Flint

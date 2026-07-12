@@ -1,0 +1,31 @@
+seed 5025, level 20
+race Warforged
+classes Arcane Trickster 11 / Fighter 9
+abilities Str 11, Dex 10, Con 16, Int 9, Wis 12, Cha 15 (28/28 pts)
+slot heroic-1: Spell Focus: Evocation
+slot Fighter-1-Fighter Bonus Feat-0: Slicing Blow
+slot heroic-3: Spell Focus: Transmutation
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-6: Martial Weapon Proficiency: Maul
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot heroic-9: Skill Focus: Spellcraft
+slot Arcane Trickster-6-Bonus Magical Feat-0: Eschew Materials
+slot heroic-12: Martial Weapon Proficiency: Heavy Pick
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-15: Greater Spell Focus: Transmutation
+slot Fighter-8-Fighter Bonus Feat-0: Tactical Combatant
+slot heroic-18: Heighten Spell
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Downcast Cap
+gear Necklace: Dragonmarked Necklace
+gear Trinket: Icon of Ravenloft
+gear Armor: Executioner's Platemail
+gear Cloak: Gossamer Weave
+gear Belt: Mystic Belt
+gear Ring: The Flame and the Frost
+gear Ring2: Omniscience
+gear Gloves: Cannith Crafted Gloves
+gear Bracers: Mysterious Bracers (Level 14)
+gear Boots: Treads of Falling Shadow (Level 17)
+gear Goggles: Goggles of the Warrior
+gear Main Hand: Silver Slinger

@@ -1,0 +1,25 @@
+seed 5077, level 20
+race Dhampir
+classes Sacred Fist 10 / Sorcerer 10
+abilities Str 13, Dex 13, Con 13, Int 12, Wis 13, Cha 12 (28/28 pts)
+slot heroic-1: Follower of the Blood of Vol
+slot heroic-3: Martial Weapon Proficiency: Hand Axe
+slot heroic-6: Martial Weapon Proficiency: Shortbow
+slot heroic-9: Combat Casting
+slot heroic-12: Simple Weapon Proficiency: Club
+slot heroic-15: Empower Healing Spell
+slot heroic-18: Skill Focus: Bluff
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Sojourner's Cowl
+gear Necklace: Kindred Pendant
+gear Trinket: Jeeka's Spangle
+gear Armor: Fleshshaper's Docent
+gear Cloak: Cloak of Summer's End (level 4)
+gear Belt: Chains
+gear Ring: Signet Ring of the Earth
+gear Ring2: Ring of Changes
+gear Gloves: Epic Ruby Encrusted Gauntlets
+gear Bracers: Steady Handed Armbands (Level 13)
+gear Boots: Spiked Boots (Level 14)
+gear Goggles: Epic Corroded Iron Lenses
+gear Main Hand: Macabre Repeating Heavy Crossbow

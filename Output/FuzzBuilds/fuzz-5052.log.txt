@@ -1,0 +1,32 @@
+seed 5052, level 20
+race Wood Elf
+classes Cleric 12 / Wizard 8
+abilities Str 10, Dex 14, Con 13, Int 14, Wis 11, Cha 14 (28/28 pts)
+slot Cleric-1-Follower Of-0: Favored by Silvanus
+slot heroic-1: Skill Focus: Jump
+slot Cleric-2-Domain-0: Domain of Earth
+slot heroic-3: Mental Toughness
+slot Wizard-1-Metamagic Feat-0: Spell Focus: Abjuration
+slot heroic-6: Martial Weapon Proficiency: Rapier
+slot Cleric-5-Domain Feat-0: Improved Domain of Earth
+slot Cleric-6-Deity-0: Search the Soul
+slot heroic-9: Blessing of Silvanus
+slot heroic-12: Martial Weapon Proficiency: Shortsword
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot Cleric-9-Domain Feat-0: Greater Domain of Earth
+slot heroic-15: Simple Weapon Proficiency: Morningstar
+slot heroic-18: Lightning Reflexes
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Helm of the White Dragon (Level 14)
+gear Necklace: Stolen Necklace (Level 14)
+gear Trinket: Ruined Signet Brooch
+gear Armor: Frozen Tunic (Level 4)
+gear Cloak: Jeweled Cloak (Level 14)
+gear Belt: Many-Pouched Belt of the Healer
+gear Ring: The Earth and the Sky
+gear Ring2: Ring of the Buccaneer (level 12)
+gear Gloves: Control Gauntlet
+gear Bracers: Epic Bracers of the Claw
+gear Boots: Knife Toed Boots
+gear Goggles: Goggles of Insight
+gear Main Hand: Vampiric Fury Shortsword

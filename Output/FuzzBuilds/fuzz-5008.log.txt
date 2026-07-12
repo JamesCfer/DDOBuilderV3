@@ -1,0 +1,29 @@
+seed 5008, level 20
+race Eladrin
+classes Sacred Fist 4 / Wizard 2 / Ranger 14
+abilities Str 14, Dex 12, Con 12, Int 11, Wis 15, Cha 11 (28/28 pts)
+slot heroic-1: Great Fortitude
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Ooze
+slot heroic-3: Martial Weapon Proficiency: Rapier
+slot heroic-6: Negotiator
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Fey
+slot heroic-9: Lightning Reflexes
+slot heroic-12: Spell Focus: Transmutation
+slot Wizard-1-Metamagic Feat-0: Spell Focus: Illusion
+slot Ranger-10-Favored Enemy-0: Favored Enemy: Human
+slot heroic-15: Spell Focus: Evocation
+slot heroic-18: Follower of Onatar
+enhancements: 80/80 AP across 15 trees
+gear Helmet: Sage's Skullcap (Level 19)
+gear Necklace: Amulet of Inner Focus
+gear Trinket: Battleworn Medal
+gear Armor: Memory of Fine Regalia
+gear Cloak: Dread Pirate's Cloak (level 4)
+gear Belt: Belt of the Red Abishai
+gear Ring: Ring of Dragon's Breath
+gear Ring2: Epic Ring of Master Artifice
+gear Gloves: Guardian's Gauntlets (Level 15)
+gear Bracers: Epic Bracers of the Claw
+gear Boots: Boots of the Rose
+gear Goggles: Goggles of Perception
+gear Main Hand: Calamitous Warhammer

@@ -1,0 +1,29 @@
+seed 5048, level 20
+race Wood Elf
+classes Ranger 3 / Rogue 17
+abilities Str 14, Dex 12, Con 12, Int 15, Wis 12, Cha 10 (28/28 pts)
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Ooze
+slot heroic-1: Martial Weapon Proficiency: Kukri
+slot heroic-3: Athletic
+slot heroic-6: Martial Weapon Proficiency: Longsword
+slot heroic-9: Martial Weapon Proficiency: Rapier
+slot heroic-12: Skill Focus: Spellcraft
+slot Rogue-10-Rogue Special Ability-0: Improved Evasion
+slot heroic-15: Power Attack
+slot Rogue-13-Rogue Special Ability-0: Defensive Roll
+slot heroic-18: Martial Weapon Proficiency: Battle Axe
+slot Rogue-16-Rogue Special Ability-0: Skill Mastery
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Shaagh's Helm
+gear Necklace: Beads of Winter
+gear Trinket: Pearl of Power III
+gear Armor: Coat of the Wanderer (level 4)
+gear Cloak: Cannith Crafted Cloak
+gear Belt: Shadow's Embrace
+gear Ring: Brass Beaver
+gear Ring2: Nyoko's Band
+gear Gloves: Backstabber's Gloves (Level 14)
+gear Bracers: Black Opal Bracers
+gear Boots: Lightning Railworker's Boots
+gear Goggles: Scientist's Specs
+gear Main Hand: Ratkiller (level 16)

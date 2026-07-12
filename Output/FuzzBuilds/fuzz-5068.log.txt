@@ -1,0 +1,33 @@
+seed 5068, level 20
+race Half-Elf
+classes Dark Hunter 10 / Sorcerer 4 / Cleric 6
+abilities Str 15, Dex 11, Con 11, Int 13, Wis 11, Cha 14 (28/28 pts)
+slot Dark Hunter-1-Favored Enemy-0: Favored Enemy: Vermin
+slot race-1-Dilettante Feat-0: Half-Elf Dilettante: Sorcerer
+slot heroic-1: Diehard
+slot Cleric-1-Follower Of-0: Follower of the Sovereign Host
+slot heroic-3: Spell Focus: Necromancy
+slot Cleric-2-Domain-0: Domain of Death
+slot heroic-6: Iron Will
+slot heroic-9: Greater Spell Focus: Necromancy
+slot Dark Hunter-5-Favored Enemy-0: Favored Enemy: Dwarf
+slot heroic-12: Spell Focus: Transmutation
+slot heroic-15: Great Fortitude
+slot Dark Hunter-10-Favored Enemy-0: Favored Enemy: Elemental
+slot heroic-18: Martial Weapon Proficiency: Throwing Axe
+slot Cleric-5-Domain Feat-0: Improved Domain of Death
+slot Cleric-6-Deity-0: Search the Soul
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Elder's Cap
+gear Necklace: Archivist's Necklace
+gear Trinket: Shard Trinket of Mass Protection Elements
+gear Armor: Robes of the Crushing Wave
+gear Cloak: Mantle of Fury
+gear Belt: Black Wolfskin Belt
+gear Ring: Nocturne Ring
+gear Ring2: Epic Ring of the Silver Concord
+gear Gloves: Cardinal's Gloves
+gear Bracers: Mysterious Bracers (Level 14)
+gear Boots: Sparksoles
+gear Goggles: Sage's Spectacles (Level 15)
+gear Main Hand: Crystalline Scepter (Level 14)

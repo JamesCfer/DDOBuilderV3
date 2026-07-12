@@ -1,0 +1,30 @@
+seed 5063, level 20
+race Eladrin
+classes Blight Caster 7 / Rogue 13
+abilities Str 15, Dex 12, Con 12, Int 12, Wis 13, Cha 11 (28/28 pts)
+slot heroic-1: Mental Toughness
+slot heroic-3: Martial Weapon Proficiency: Longbow
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-6: Skill Focus: Use Magic Device
+slot heroic-9: Eschew Materials
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-12: Quicken Spell
+slot heroic-15: Spell Focus: Enchantment
+slot Rogue-10-Rogue Special Ability-0: Skill Mastery
+slot heroic-18: Simple Weapon Proficiency: Club
+slot Rogue-13-Rogue Special Ability-0: Crippling Strike
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Crown of Morning's Glory
+gear Necklace: Rust-Laden Pendant
+gear Trinket: Greater Cunning Trinket
+gear Armor: Breastplate of Destruction
+gear Cloak: Wretched Twilight
+gear Belt: Belt of the Green Abishai
+gear Ring: Band of Manifest Magic
+gear Ring2: Katra's Wit
+gear Gloves: Crystal-Lined Magegloves
+gear Bracers: Bracers of the Glacier
+gear Boots: Severlin's Leaden Boots (level 10)
+gear Goggles: Precision Lenses
+gear Main Hand: Blessed Longsword of the Fallen Age

@@ -1,0 +1,33 @@
+seed 5029, level 20
+race Duergar
+classes Fighter 9 / Rogue 6 / Dragon Disciple 5
+abilities Str 11, Dex 12, Con 10, Int 11, Wis 17, Cha 11 (28/28 pts)
+slot Fighter-1-Fighter Bonus Feat-0: Slicing Blow
+slot heroic-1: Simple Weapon Proficiency: Dart
+slot heroic-3: Martial Weapon Proficiency: Shortbow
+slot Dragon Disciple-1-Dragon Arts-0: Diehard
+slot Dragon Disciple-2-Dragon Arts-0: no eligible feats — left empty
+slot heroic-6: Maximize Spell
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-9: Martial Weapon Proficiency: Falchion
+slot Dragon Disciple-3-Monk Philosophy-0: Path of Harmonious Balance: Fists of Light
+slot heroic-12: Skill Focus: Spot
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-15: Spell Penetration
+slot Fighter-8-Fighter Bonus Feat-0: Tactical Combatant
+slot heroic-18: Empower Spell
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Pointed Crown
+gear Necklace: Pendant of Quiet Movements
+gear Trinket: Emblem of Elemental Evil
+gear Armor: Tarnished Blademark's Docent
+gear Cloak: Prismatic Cloak, Violet (Level 17)
+gear Belt: Official Kobold Union Buckle
+gear Ring: Ring of Nightfall
+gear Ring2: Epic Ring of the Red Abishai
+gear Gloves: Nether Grasps (Level 18)
+gear Bracers: Corsair's Cufflinks
+gear Boots: Remlin's Step
+gear Goggles: Eyes of the Howling Hatred
+gear Main Hand: The Mountain's Fist (Level 13)

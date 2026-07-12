@@ -1,0 +1,25 @@
+seed 5074, level 20
+race Eladrin
+classes Wild Mage 20
+abilities Str 14, Dex 12, Con 12, Int 11, Wis 14, Cha 13 (28/28 pts)
+slot heroic-1: Discipline
+slot heroic-3: Simple Weapon Proficiency: Club
+slot heroic-6: Eschew Materials
+slot heroic-9: Simple Weapon Proficiency: Light Mace
+slot heroic-12: Toughness
+slot heroic-15: Martial Weapon Proficiency: Throwing Hammer
+slot heroic-18: Skill Focus: Search
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Yarkuch's Helm
+gear Necklace: Pendant of the Red Abishai
+gear Trinket: Mark of the Dark Powers
+gear Armor: University Bulwark's Reinforced Shirt
+gear Cloak: Cloak of Summer's End (level 20)
+gear Belt: Daggertooth's Belt (historic)
+gear Ring: Ring of the Stormreaver Prophecy (Level 12)
+gear Ring2: Celestial Sapphire Ring
+gear Gloves: Backstabber's Gloves (Level 12)
+gear Bracers: Bracers of Wind (level 11)
+gear Boots: The High Steps
+gear Goggles: Dream Visor (Level 14)
+gear Main Hand: Bottled Fireball

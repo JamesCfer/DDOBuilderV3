@@ -1,0 +1,29 @@
+seed 5040, level 20
+race Elf
+classes Wizard 8 / Arcane Trickster 12
+abilities Str 12, Dex 13, Con 12, Int 11, Wis 12, Cha 15 (28/28 pts)
+slot heroic-1: Two Weapon Fighting
+slot Wizard-1-Metamagic Feat-0: Augment Summoning
+slot heroic-3: Martial Weapon Proficiency: Rapier
+slot heroic-6: Dodge
+slot heroic-9: Sap
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot Arcane Trickster-6-Bonus Magical Feat-0: Spell Focus: Illusion
+slot heroic-12: Enlarge Spell
+slot heroic-15: Greater Spell Focus: Illusion
+slot heroic-18: Toughness
+slot Arcane Trickster-12-Bonus Magical Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Knight's Helm
+gear Necklace: Death's Locket (Level 12)
+gear Trinket: Wooden Prayer Beads
+gear Armor: Quenched Leather Armor
+gear Cloak: Knight's Cloak
+gear Belt: Thamor's Belt
+gear Ring: Band of Faith and Fortress
+gear Ring2: Ring of the Stormreaver Prophecy (Level 14)
+gear Gloves: Epic Charged Gauntlets
+gear Bracers: Bracelets of Flourishing Fauna
+gear Boots: Bugkickers
+gear Goggles: Experimenter's Goggles
+gear Main Hand: The Balance Bat

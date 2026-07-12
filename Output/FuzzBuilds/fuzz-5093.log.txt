@@ -1,0 +1,30 @@
+seed 5093, level 20
+race Tabaxi
+classes Dark Hunter 12 / Alchemist 8
+abilities Str 10, Dex 13, Con 16, Int 11, Wis 13, Cha 11 (28/28 pts)
+slot Dark Hunter-1-Favored Enemy-0: Favored Enemy: Vermin
+slot heroic-1: Iron Will
+slot heroic-3: Two Weapon Fighting
+slot Dark Hunter-5-Favored Enemy-0: Favored Enemy: Elf
+slot heroic-6: Simple Weapon Proficiency: Quarterstaff
+slot heroic-9: Great Fortitude
+slot Alchemist-4-Alchemist Bonus Feat-0: Extend Spell
+slot heroic-12: Martial Weapon Proficiency: Maul
+slot Dark Hunter-10-Favored Enemy-0: Favored Enemy: Construct
+slot heroic-15: Martial Weapon Proficiency: Rapier
+slot heroic-18: Spell Focus: Conjuration
+slot Alchemist-8-Alchemist Bonus Feat-0: Battalion Brew
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Crown of Fireflies
+gear Necklace: Troubleshooter's Necklace
+gear Trinket: Bold Trinket
+gear Armor: Illusionist's Garb
+gear Cloak: Guardian's Cloak (Level 19)
+gear Belt: Shadow's Embrace
+gear Ring: Epic Ring of the White Abishai
+gear Ring2: Radiant Ring
+gear Gloves: Darstil's Gloves
+gear Bracers: Epic Bracers of the Hunter
+gear Boots: Epic Boots of Corrosion
+gear Goggles: Electric Eyes
+gear Main Hand: +3 Quenched Scimitar

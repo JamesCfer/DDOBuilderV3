@@ -1,0 +1,25 @@
+seed 5013, level 20
+race Tiefling
+classes Sacred Fist 16 / Bard 4
+abilities Str 14, Dex 14, Con 9, Int 14, Wis 14, Cha 11 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Warhammer
+slot heroic-3: Negotiator
+slot heroic-6: Simple Thrown Weapon Expertise
+slot heroic-9: Skill Focus: Heal
+slot heroic-12: Martial Weapon Proficiency: Scimitar
+slot heroic-15: Spell Penetration
+slot heroic-18: Empower Spell
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Epic Big Top
+gear Necklace: Epic Pendant of the Blue Abishai
+gear Trinket: Cannith Crafted Trinket
+gear Armor: Alchemical Apprentice's Robe
+gear Cloak: Cloak of the Silver Concord
+gear Belt: Electric Haze
+gear Ring: The Earth and the Sky
+gear Ring2: Band of Faith and Fortress
+gear Gloves: Brawling Gloves (legacy) (level 16)
+gear Bracers: Nimble Wrists
+gear Boots: Shadow's Footsteps
+gear Goggles: Goggles of Dusk
+gear Main Hand: Rumbling Thunder

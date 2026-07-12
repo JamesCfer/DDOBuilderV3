@@ -1,0 +1,31 @@
+seed 5053, level 20
+race Aasimar
+classes Druid 13 / Sacred Fist 7
+abilities Str 16, Dex 10, Con 13, Int 11, Wis 10, Cha 14 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Fallen Bond
+slot heroic-1: Force of Personality
+slot Druid-2-Wild Shape-0: Wild Shape: Bear
+slot heroic-3: Self Sufficient
+slot heroic-6: Mental Toughness
+slot Druid-5-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-9: Spell Focus: Abjuration
+slot Druid-8-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-12: Skill Focus: Concentration
+slot heroic-15: Discipline
+slot Druid-11-Wild Shape-0: Wild Shape: Wolf
+slot heroic-18: Quicken Spell
+slot Druid-13-Wild Shape-0: Wild Shape: Fire Elemental
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Downcast Helm
+gear Necklace: Epic Grim's Bracelet
+gear Trinket: Pearl of Power III
+gear Armor: Robe of Shadow (level 12)
+gear Cloak: Cloak of Night (level 20)
+gear Belt: Buckle of Transformation
+gear Ring: Ring of Elemental Essence
+gear Ring2: Livewood Band
+gear Gloves: Gauntlets of Innate Arcanum
+gear Bracers: Thaarak Bracelet
+gear Boots: Boots of Minor Striding
+gear Goggles: Spectacles of Spirit Sight
+gear Main Hand: Syranian Longbow

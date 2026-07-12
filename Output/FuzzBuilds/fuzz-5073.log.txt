@@ -1,0 +1,35 @@
+seed 5073, level 20
+race Gnome
+classes Fighter 10 / Blight Caster 10
+abilities Str 12, Dex 14, Con 13, Int 9, Wis 14, Cha 14 (28/28 pts)
+slot Fighter-1-Fighter Bonus Feat-0: Sap
+slot heroic-1: Bullheaded
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Thorne Knight
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-3: Simple Weapon Proficiency: Throwing Dagger
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot heroic-6: Martial Weapon Proficiency: Scimitar
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-9: Martial Weapon Proficiency: Shortsword
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-12: Simple Weapon Proficiency: Dagger
+slot Fighter-8-Fighter Bonus Feat-0: Tactical Combatant
+slot heroic-15: Skill Focus: Use Magic Device
+slot Blight Caster-8-Kin Form-0: Wild Shape: Thorn-Kin
+slot Fighter-10-Fighter Bonus Feat-0: Heavy Armor Master
+slot heroic-18: Simple Weapon Proficiency: Quarterstaff
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Downcast Bowler
+gear Necklace: Noxious Embers
+gear Trinket: Cannith Crafted Trinket
+gear Armor: Epic Docent of Grace
+gear Cloak: Cloak of Summer's End (level 12)
+gear Belt: Spare Hand (Level 15)
+gear Ring: Ring of Spring's Storms
+gear Ring2: Ring of the White Abishai
+gear Gloves: Scuffed Long-Gloves
+gear Bracers: Magewright's Toolkit
+gear Boots: Surefooted Boots (Level 13)
+gear Goggles: Disordered Vision
+gear Main Hand: Sacrificial Dagger

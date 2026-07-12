@@ -1,0 +1,31 @@
+seed 5003, level 20
+race Tiefling
+classes Druid 20
+abilities Str 10, Dex 13, Con 12, Int 15, Wis 15, Cha 9 (28/28 pts)
+slot heroic-1: Negotiator
+slot Druid-2-Wild Shape-0: Wild Shape: Bear
+slot heroic-3: Athletic
+slot Druid-5-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-6: Skill Focus: Listen
+slot Druid-8-Wild Shape-0: Wild Shape: Wolf
+slot heroic-9: Natural Fighting
+slot Druid-11-Wild Shape-0: Wild Shape: Water Elemental
+slot heroic-12: Simple Weapon Proficiency: Club
+slot Druid-13-Wild Shape-0: Wild Shape: Fire Elemental
+slot heroic-15: Spell Focus: Transmutation
+slot Druid-17-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-18: Skill Focus: Concentration
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Pointed Crown
+gear Necklace: Sage's Locket (Level 15)
+gear Trinket: Murlynd's Spoon
+gear Armor: Light Armor of the Crushing Wave
+gear Cloak: Cloak of the Mimic (Level 20)
+gear Belt: Indomitable Wrappings (level 4)
+gear Ring: Rahkir's Ring
+gear Ring2: Ring of the Ravager
+gear Gloves: Gloves of Forgotten Craft (Level 12)
+gear Bracers: Epic Kundarak Warding Bracers
+gear Boots: Krugg's Spiked Boots
+gear Goggles: Love at First Sight
+gear Main Hand: Bonesplitter

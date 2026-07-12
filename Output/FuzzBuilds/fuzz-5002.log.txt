@@ -1,0 +1,28 @@
+seed 5002, level 20
+race Human
+classes Paladin 20
+abilities Str 14, Dex 14, Con 13, Int 13, Wis 11, Cha 11 (28/28 pts)
+slot race-1-Human Bonus Feat-0: Sap
+slot Paladin-1-Follower Of-0: Follower of Onatar
+slot heroic-1: Simple Weapon Proficiency: Unarmed
+slot heroic-3: Iron Will
+slot Paladin-6-Deity-0: Onatar's Forge
+slot heroic-6: Diehard
+slot heroic-9: Stealthy
+slot heroic-12: Martial Weapon Proficiency: Throwing Axe
+slot heroic-15: Alertness
+slot heroic-18: Martial Weapon Proficiency: Longbow
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Downcast Cowl
+gear Necklace: Epic Adherent's Pendant
+gear Trinket: Golden Souvenir Coin
+gear Armor: Docent of Moonlight
+gear Cloak: Black Wolfskin Cloak
+gear Belt: Spare Hand (Level 3)
+gear Ring: Epic Ring of Spell Storing
+gear Ring2: Rockslide Ring
+gear Gloves: Backstabber's Gloves (Level 13)
+gear Bracers: Gilded Protectors
+gear Boots: Thorn Boots
+gear Goggles: Dream Visor (Level 14)
+gear Main Hand: +3 Smoldering Heavy Pick

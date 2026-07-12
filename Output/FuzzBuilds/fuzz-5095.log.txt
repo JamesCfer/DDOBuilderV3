@@ -1,0 +1,30 @@
+seed 5095, level 20
+race Tabaxi
+classes Ranger 20
+abilities Str 15, Dex 9, Con 14, Int 16, Wis 8, Cha 11 (28/28 pts)
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Goblinoid
+slot heroic-1: Martial Weapon Proficiency: Great Axe
+slot heroic-3: Toughness
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Human
+slot heroic-6: Simple Weapon Proficiency: Morningstar
+slot heroic-9: Single Weapon Fighting
+slot Ranger-10-Favored Enemy-0: Favored Enemy: Reptilian
+slot heroic-12: Simple Weapon Proficiency: Heavy Mace
+slot Ranger-15-Favored Enemy-0: Favored Enemy: Giant
+slot heroic-15: Negotiator
+slot heroic-18: Luck Of Heroes
+slot Ranger-20-Favored Enemy-0: Favored Enemy: Aberration
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Epic Helm of the Mroranon
+gear Necklace: Green Steel Necklace
+gear Trinket: Medium Shard Trinket
+gear Armor: Hero's Plate (Level 16)
+gear Cloak: Cloak of the Mimic (Level 8)
+gear Belt: Belt of Bold Brilliance
+gear Ring: Ring of the Stalker (Level 11)
+gear Ring2: Ring of the Dread Seas
+gear Gloves: Brawling Gloves (level 4)
+gear Bracers: Bracers of Method and Magic
+gear Boots: Rock Boots (Level 15)
+gear Goggles: Goggles of the Berserker
+gear Main Hand: +3 Corrosion Caustic Battle Axe

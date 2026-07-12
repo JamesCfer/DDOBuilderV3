@@ -1,0 +1,26 @@
+seed 5079, level 20
+race Dhampir
+classes Rogue 9 / Alchemist 6 / Wild Mage 5
+abilities Str 15, Dex 14, Con 13, Int 11, Wis 10, Cha 12 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Great Club
+slot heroic-3: Two Handed Fighting
+slot heroic-6: Simple Weapon Proficiency: Throwing Dagger
+slot Alchemist-4-Alchemist Bonus Feat-0: Maximize Spell
+slot heroic-9: Martial Weapon Proficiency: Battle Axe
+slot heroic-12: Augment Summoning
+slot heroic-15: Eschew Materials
+slot heroic-18: Skill Focus: Open Lock
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Gravekeeper's Cowl
+gear Necklace: Pendant of Quiet Movements
+gear Trinket: Kardin's Eye (Level 13)
+gear Armor: Disciple's Robe
+gear Cloak: Cloak of the Mimic (Level 20)
+gear Belt: Arkat's Cord (Level 12)
+gear Ring: Engraved Ring
+gear Ring2: Salt-Pearl Ring
+gear Gloves: Gloves of Tranquility
+gear Bracers: Epic Kundarak Warding Bracers
+gear Boots: Goatskin Boots (level 17)
+gear Goggles: Skirmisher's Lenses (Level 19)
+gear Main Hand: Hobble's Crossbow
