@@ -94,19 +94,11 @@ if !mainWin {
     ExitApp 2
 }
 
-; ── Let the data + document load finish (V2 reads ~17k files; the window
-; title stays 'DDOBuilder' throughout, so this is a flat wait with a modal
-; watch — a modal here is usually the parser rejecting the document). ─────
-WinActivate mainWin
-loop 90 {
-    CheckModal("doc-load")
-    Sleep 1000
-}
-
-; ── Invoke Forum Export → Forum Export (retry while UI thread busy) ──────
-DumpWindows("pre-menu")
+; ── Invoke Forum Export → Forum Export. V2's UI thread is busy loading
+; ~17k data files for several minutes on a cold CI box; MenuSelect simply
+; blocks until it responds, so the retry loop doubles as the load wait. ──
 dlgUp := false
-loop 8 {
+loop 30 {
     CheckModal("pre-menu")
     WinActivate mainWin
     Log("invoking menu Forum Export (attempt " A_Index ")")

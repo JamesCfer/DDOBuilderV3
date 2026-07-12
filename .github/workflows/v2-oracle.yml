@@ -29,6 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Exclude workspace from Defender (V2 loads 17k XML files)
+        shell: pwsh
+        run: Add-MpPreference -ExclusionPath "D:\a" -ErrorAction SilentlyContinue
+
       - name: Download DDOBuilder V2 release
         shell: pwsh
         run: |
