@@ -145,6 +145,33 @@ typedef struct tagCREATESTRUCT
     DWORD     dwExStyle;
 } CREATESTRUCT, *LPCREATESTRUCT;
 
+typedef struct tagRECT { long left; long top; long right; long bottom; } RECT, *LPRECT;
+
+// owner-draw / item message structs (declaration-only use in UI hdrs)
+typedef struct tagDRAWITEMSTRUCT { UINT CtlType; UINT CtlID; UINT itemID; UINT itemAction; UINT itemState; HWND hwndItem; HDC hDC; RECT rcItem; ULONG_PTR itemData; } DRAWITEMSTRUCT, *LPDRAWITEMSTRUCT;
+typedef struct tagMEASUREITEMSTRUCT { UINT CtlType; UINT CtlID; UINT itemID; UINT itemWidth; UINT itemHeight; ULONG_PTR itemData; } MEASUREITEMSTRUCT, *LPMEASUREITEMSTRUCT;
+typedef struct tagCOMPAREITEMSTRUCT { UINT CtlType; UINT CtlID; UINT itemID1; ULONG_PTR itemData1; UINT itemID2; ULONG_PTR itemData2; DWORD dwLocaleId; } COMPAREITEMSTRUCT, *LPCOMPAREITEMSTRUCT;
+typedef struct tagDELETEITEMSTRUCT { UINT CtlType; UINT CtlID; UINT itemID; HWND hwndItem; ULONG_PTR itemData; } DELETEITEMSTRUCT, *LPDELETEITEMSTRUCT;
+
+// 64-bit integer union
+typedef union _LARGE_INTEGER { struct { DWORD LowPart; long HighPart; } u; long long QuadPart; } LARGE_INTEGER;
+
+typedef short SHORT;
+
+// common-control (tree/list) constants + structs (UI-header decl-only)
+#define TVI_ROOT   ((HTREEITEM)-0x10000)
+#define TVI_FIRST  ((HTREEITEM)-0x0FFFF)
+#define TVI_LAST   ((HTREEITEM)-0x0FFFE)
+#define TVI_SORT   ((HTREEITEM)-0x0FFFD)
+#define LVCFMT_LEFT   0x0000
+#define LVCFMT_RIGHT  0x0001
+#define LVCFMT_CENTER 0x0002
+typedef struct tagTVITEM { UINT mask; HTREEITEM hItem; UINT state; UINT stateMask; LPTSTR pszText; int cchTextMax; int iImage; int iSelectedImage; int cChildren; LPARAM lParam; } TVITEM, *LPTVITEM;
+typedef struct tagTVINSERTSTRUCT { HTREEITEM hParent; HTREEITEM hInsertAfter; TVITEM item; } TVINSERTSTRUCT, *LPTVINSERTSTRUCT;
+typedef struct tagTVHITTESTINFO { POINT pt; UINT flags; HTREEITEM hItem; } TVHITTESTINFO, *LPTVHITTESTINFO;
+typedef int (*PFNTVCOMPARE)(LPARAM, LPARAM, LPARAM);
+typedef struct tagTVSORTCB { HTREEITEM hParent; PFNTVCOMPARE lpfnCompare; LPARAM lParam; } TVSORTCB, *LPTVSORTCB;
+
 // window-style constants (only ever OR'd into ignored args on the calc path)
 #define WS_OVERLAPPEDWINDOW 0x00CF0000L
 #define FWS_ADDTOTITLE      0x00008000L
@@ -353,6 +380,9 @@ inline HANDLE LocalFree(HANDLE mem) { free(mem); return nullptr; }
 #define IDYES 6
 #define IDNO 7
 #define ILC_COLOR32 0x20
+#define ILC_COLOR24 0x18
+#define ILC_COLOR16 0x10
+#define ILC_COLOR8  0x08
 #define ILC_MASK 0x1
 
 inline UINT RegisterWindowMessage(LPCSTR /*name*/)

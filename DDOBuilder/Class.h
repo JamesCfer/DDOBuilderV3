@@ -20,6 +20,14 @@ class Class :
 {
     public:
         Class();
+#ifdef V2CALC_LINUX
+        // ClassFile::StartElement constructs `Class race(m_loadedClasses.size())`,
+        // which requires a size_t constructor. MSVC's lazy template instantiation
+        // tolerates the call site; g++ needs the overload declared. It sets
+        // m_index to the load-order index, matching CreateClassImageLists (the
+        // UI-only reindex that never runs headless).
+        explicit Class(size_t index);
+#endif
         virtual ~Class();
         void Write(XmlLib::SaxWriter * writer) const;
 

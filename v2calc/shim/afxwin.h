@@ -12,6 +12,11 @@
 #include <cstdarg>
 #include <cstdio>
 #include <string>
+#include <vector>
+#include <map>
+#include <cmath>
+#include <cstring>
+#include <cctype>
 
 // ---------------------------------------------------------------------------
 // diagnostics
@@ -341,6 +346,7 @@ class CRect
         CRect(int l, int t, int r, int b) : left(l), top(t), right(r), bottom(b) {}
         int Width() const { return right - left; }
         int Height() const { return bottom - top; }
+        template <typename P> BOOL PtInRect(const P&) const { return FALSE; }
         int left, top, right, bottom;
 };
 
@@ -420,9 +426,18 @@ class CListBox : public CWnd {};
 class CStatic : public CWnd {};
 class CEdit : public CWnd {};
 class CButton : public CWnd {};
-class CComboBox : public CWnd {};
+class CComboBox : public CWnd
+{
+    public:
+        virtual void DrawItem(LPDRAWITEMSTRUCT) {}
+        virtual void MeasureItem(LPMEASUREITEMSTRUCT) {}
+        virtual int  CompareItem(LPCOMPAREITEMSTRUCT) { return 0; }
+        virtual void DeleteItem(LPDELETEITEMSTRUCT) {}
+};
 class CDialog : public CWnd {};
 class CDialogEx : public CDialog {};
+class CPropertyPage : public CDialog {};
+class CPropertySheet : public CWnd {};
 
 class CListCtrl : public CWnd
 {
@@ -476,7 +491,68 @@ class CFormView : public CView
         virtual void DoDataExchange(CDataExchange*) {}
 };
 
-class CDocument : public CCmdTarget {};
+class CArchive {};
+class CDocument : public CCmdTarget
+{
+    public:
+        virtual void SetModifiedFlag(BOOL = TRUE) {}
+        virtual BOOL IsModified() { return FALSE; }
+        virtual BOOL OnNewDocument() { return TRUE; }
+        virtual BOOL OnOpenDocument(LPCTSTR) { return TRUE; }
+        virtual BOOL OnSaveDocument(LPCTSTR) { return TRUE; }
+        virtual void Serialize(CArchive&) {}
+};
+class CToolTipCtrl : public CWnd {};
+class CHeaderCtrl : public CWnd {};
+
+// MFC associative-map template (afxtempl)
+template <typename K, typename AK, typename V, typename AV> class CMap
+{
+    public:
+        int GetCount() const { return (int)m_data.size(); }
+        bool IsEmpty() const { return m_data.empty(); }
+        void RemoveAll() { m_data.clear(); }
+        void SetAt(AK k, AV v) { m_data[k] = v; }
+        V& operator[](AK k) { return m_data[k]; }
+        BOOL Lookup(AK k, V& v) const { auto it = m_data.find(k); if (it == m_data.end()) return FALSE; v = it->second; return TRUE; }
+        BOOL RemoveKey(AK k) { return m_data.erase(k) ? TRUE : FALSE; }
+    private:
+        std::map<K, V> m_data;
+};
+class CWaitCursor { public: CWaitCursor() {} ~CWaitCursor() {} void Restore() {} };
+class CMFCButton : public CButton
+{
+    protected:
+        virtual void OnDraw(CDC*, const CRect&, UINT) {}
+};
+
+// MFC dynamic-array templates (afxtempl)
+template <typename T, typename A = T> class CArray
+{
+    public:
+        int GetSize() const { return (int)m_data.size(); }
+        int GetCount() const { return (int)m_data.size(); }
+        bool IsEmpty() const { return m_data.empty(); }
+        void RemoveAll() { m_data.clear(); }
+        int Add(A v) { m_data.push_back(v); return (int)m_data.size() - 1; }
+        void SetSize(int n) { m_data.resize(n); }
+        void SetAtGrow(int i, A v) { if ((int)m_data.size() <= i) m_data.resize(i + 1); m_data[i] = v; }
+        T& operator[](int i) { return m_data[i]; }
+        const T& operator[](int i) const { return m_data[i]; }
+        T& GetAt(int i) { return m_data[i]; }
+        const T& GetAt(int i) const { return m_data[i]; }
+        void SetAt(int i, A v) { m_data[i] = v; }
+        void RemoveAt(int i, int n = 1) { m_data.erase(m_data.begin() + i, m_data.begin() + i + n); }
+    private:
+        std::vector<T> m_data;
+};
+typedef CArray<DWORD> CDWordArray;
+typedef CArray<WORD> CWordArray;
+typedef CArray<int> CIntArray;
+typedef CArray<UINT> CUIntArray;
+typedef CArray<BYTE> CByteArray;
+typedef CArray<void*> CPtrArray;
+typedef CArray<CString> CStringArray;
 class CWinApp : public CCmdTarget {};
 
 // ---------------------------------------------------------------------------

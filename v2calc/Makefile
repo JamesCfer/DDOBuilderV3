@@ -77,7 +77,15 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/RequiresNoneOf.cpp \
     $(ROOT)/DDOBuilder/RequiresOneOf.cpp \
     $(ROOT)/DDOBuilder/Stance.cpp \
-    $(ROOT)/DDOBuilder/SubItem.cpp
+    $(ROOT)/DDOBuilder/SubItem.cpp \
+    $(ROOT)/DDOBuilder/Bonus.cpp \
+    $(ROOT)/DDOBuilder/Build.cpp \
+    $(ROOT)/DDOBuilder/Character.cpp \
+    $(ROOT)/DDOBuilder/Life.cpp \
+    $(ROOT)/DDOBuilder/Class.cpp \
+    $(ROOT)/DDOBuilder/ClassFile.cpp \
+    $(ROOT)/DDOBuilder/Race.cpp \
+    $(ROOT)/DDOBuilder/RaceFile.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \

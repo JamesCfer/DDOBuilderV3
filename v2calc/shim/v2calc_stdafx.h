@@ -33,3 +33,13 @@ namespace XmlLib
     template <> bool VectorToString(const std::vector<size_t> & v, std::wstring * out);
     template <> bool StringToVector(const std::wstring & s, std::vector<size_t> * out);
 }
+
+// Several model headers hold std::list<T> / std::vector<T> members where T is
+// only forward-declared (e.g. Class.h has `std::list<Feat> m_ClassFeats` with
+// `class Feat;`). MSVC instantiates the container's special members lazily; g++
+// needs T complete wherever a holder is copied/destroyed. Force-completing the
+// common offenders here (before any holder header) keeps the V2 sources
+// unmodified. Only pulls in already-compiled calc-core types.
+#ifndef V2CALC_NO_FORCE_COMPLETE
+#include "Feat.h"
+#endif
