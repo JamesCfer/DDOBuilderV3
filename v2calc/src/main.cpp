@@ -1,47 +1,56 @@
 // v2calc/src/main.cpp
 //
-// Session 1 driver: prove the unmodified V2 reader stack works on Linux by
-// loading Output/DataFiles/Feats.xml through FeatsFile (SaxContentElement +
-// DL_* macro machinery + expat-backed SaxReader) and printing a JSON result.
+// Parity oracle driver.
 //
-// Later sessions extend this to load a .DDOBuild and emit every breakdown
-// total as JSON for exact-parity CI comparison against the Windows build.
+// STATUS: loads all of DDOBuilder V2's game data (races, classes, feats)
+// through V2's own SAX readers and reports counts + a FindRace/FindClass spot
+// check. The next milestone - constructing a Build from a .DDOBuild and
+// emitting its stats - is blocked on the Build-construction closure (see
+// v2calc/README.md "Next blocker"): Build::Build() eagerly calls
+// UpdateFeats()/EquippedGear()/SetupDefaultWeaponGroups(), which drags in the
+// entire item/spell/enhancement/gear subsystem plus several UI panes. The
+// build-driver body is preserved in v2calc/src/main_build_driver.cpp.
 //
-#include <windows.h> // v2calc shim
-#include <afxwin.h>  // v2calc shim
+#include "stdafx.h" // v2calc: windows+afxwin shims + DDOBuilder game constants
 
 #include <cstdio>
 #include <string>
+#include <list>
+#include <map>
 
-#include "FeatsFile.h"
+#include "Race.h"
+#include "Class.h"
+#include "Feat.h"
+
+// provided by shim/GlobalDataLinux.cpp
+void V2CalcLoadGameData(const std::string& dataFilesDir);
+const std::list<Race>&  Races();
+const std::list<Class>& Classes();
+const std::map<std::string, Feat>& StandardFeats();
+const Race&  FindRace(const std::string& raceName);
+const Class& FindClass(const std::string& className);
 
 int main(int argc, char** argv)
 {
-    std::string path = "Output/DataFiles/Feats.xml";
-    if (argc > 1)
-    {
-        path = argv[1];
-    }
+    std::string dataDir = "Output/DataFiles";
+    if (argc > 1) dataDir = argv[1];
 
-    FeatsFile file(path);
-    file.Read();
-    const std::map<std::string, Feat> feats = file.Feats();
+    V2CalcLoadGameData(dataDir);
 
-    // sample a few names so parity checking has content, not just a count
-    std::string sampleNames;
-    size_t sampleCount = 0;
-    for (const auto& entry : feats)
-    {
-        if (sampleCount >= 3) break;
-        if (sampleCount > 0) sampleNames += ", ";
-        sampleNames += "\"" + entry.first + "\"";
-        ++sampleCount;
-    }
+    const Race&  human = FindRace("Human");
+    const Class& monk  = FindClass("Monk");
 
     printf("{\n");
-    printf("  \"file\": \"%s\",\n", path.c_str());
-    printf("  \"featCount\": %zu,\n", feats.size());
-    printf("  \"firstFeats\": [%s]\n", sampleNames.c_str());
+    printf("  \"dataDir\": \"%s\",\n", dataDir.c_str());
+    printf("  \"raceCount\": %zu,\n", Races().size());
+    printf("  \"classCount\": %zu,\n", Classes().size());
+    printf("  \"featCount\": %zu,\n", StandardFeats().size());
+    printf("  \"spotCheck\": {\n");
+    printf("    \"Human.found\": %s,\n", (human.Name() == "Human") ? "true" : "false");
+    printf("    \"Human.conModifier\": %d,\n", human.RacialModifier(Ability_Constitution));
+    printf("    \"Monk.found\": %s\n", (monk.Name() == "Monk") ? "true" : "false");
+    printf("  }\n");
     printf("}\n");
-    return feats.empty() ? 1 : 0;
+
+    return (Races().empty() || Classes().empty() || StandardFeats().empty()) ? 1 : 0;
 }

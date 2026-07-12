@@ -85,12 +85,23 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/Class.cpp \
     $(ROOT)/DDOBuilder/ClassFile.cpp \
     $(ROOT)/DDOBuilder/Race.cpp \
-    $(ROOT)/DDOBuilder/RaceFile.cpp
+    $(ROOT)/DDOBuilder/RaceFile.cpp \
+    $(ROOT)/DDOBuilder/AutomaticFeats.cpp \
+    $(ROOT)/DDOBuilder/BasicDice.cpp \
+    $(ROOT)/DDOBuilder/ClassSpell.cpp \
+    $(ROOT)/DDOBuilder/FeatSlot.cpp \
+    $(ROOT)/DDOBuilder/Spell.cpp \
+    $(ROOT)/DDOBuilder/SpellDC.cpp \
+    $(ROOT)/DDOBuilder/SpellDamage.cpp \
+    $(ROOT)/DDOBuilder/SpellDice.cpp \
+    $(ROOT)/DDOBuilder/BonusDice.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
     $(V2CALC_DIR)/shim/GlobalsLinux.cpp \
-    $(V2CALC_DIR)/shim/VectorConversionLinux.cpp
+    $(V2CALC_DIR)/shim/VectorConversionLinux.cpp \
+    $(V2CALC_DIR)/shim/DocStub.cpp \
+    $(V2CALC_DIR)/shim/GlobalDataLinux.cpp
 
 MAIN_SRC := $(V2CALC_DIR)/src/main.cpp
 

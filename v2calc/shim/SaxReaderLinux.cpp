@@ -384,3 +384,28 @@ namespace XmlLib
     SAXErrorHandlerImpl::SAXErrorHandlerImpl() {}
     SAXErrorHandlerImpl::~SAXErrorHandlerImpl() {}
 }
+
+// ---------------------------------------------------------------------------
+// v2calc parse helper
+//
+// Lets main.cpp drive a SAX parse without including XmlLib\SaxReader.h itself.
+// SaxReader.h declares a CriticalSection member, and XmlLib/Src/CriticalSection.h
+// is byte-identical to DDOBuilder/CriticalSection.h but at a different path;
+// with `#pragma once` (which keys on canonical path) a TU that pulled both -
+// e.g. main.cpp, which needs the DDOBuilder model chain (ObserverSubject.h ->
+// DDOBuilder/CriticalSection.h) *and* the reader - would see the class defined
+// twice. Keeping SaxReader.h confined to this XmlLib-only TU sidesteps that.
+// The document is passed as its XmlLib::SaxContentElement base.
+bool V2CalcParseFile(
+        XmlLib::SaxContentElement* root,
+        const std::string& path,
+        std::string* errorOut)
+{
+    XmlLib::SaxReader reader(root, L"DDOBuilderCharacterData");
+    bool ok = reader.Open(path);
+    if (!ok && errorOut != nullptr)
+    {
+        *errorOut = reader.ErrorMessage();
+    }
+    return ok;
+}
