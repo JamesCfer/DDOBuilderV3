@@ -99,11 +99,12 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $exports = Get-ChildItem Output/FuzzBuilds -Filter *.v2export.txt -ErrorAction SilentlyContinue
-          if (-not $exports) { Write-Host "no exports to commit"; exit 0 }
+          # Commit exports AND debug shots/logs — the sandbox driving this can
+          # fetch git branches but not artifact blobs.
           git config user.name "v2-oracle[bot]"
           git config user.email "v2-oracle@users.noreply.github.com"
           git checkout -B v2-oracle-results
-          git add Output/FuzzBuilds/*.v2export.txt
-          git commit -m "v2-oracle: captured $($exports.Count) forum export(s) [run ${{ github.run_id }}]"
-          git push -f origin v2-oracle-results
+          git add -f Output/FuzzBuilds/*.v2export.txt 2>$null
+          git add -f tools/v2-oracle/shots 2>$null
+          git commit -m "v2-oracle: run ${{ github.run_id }} results + debug" 2>$null
+          if ($LASTEXITCODE -eq 0) { git push -f origin v2-oracle-results } else { Write-Host "nothing to commit" }

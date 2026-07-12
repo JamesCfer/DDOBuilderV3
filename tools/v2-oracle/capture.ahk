@@ -75,9 +75,23 @@ if !mainWin {
     ExitApp 2
 }
 
-; Let the document finish loading/rendering.
+; Let the document finish loading/rendering. V2 loads ~17k data files at
+; startup; wait until the SDI title shows the document ("<name> - DDOBuilder")
+; or up to 150s, heartbeating so the log shows where time goes.
 WinActivate mainWin
-Sleep 8000
+loadDeadline := A_TickCount + 150000
+while A_TickCount < loadDeadline {
+    t := WinGetTitle(mainWin)
+    if InStr(t, " - ") || InStr(t, "fuzz") {
+        FileAppend "document loaded: '" t "'`n", "*"
+        break
+    }
+    if Mod(A_TickCount, 10000) < 1100 {
+        FileAppend "waiting for load; title='" t "'`n", "*"
+    }
+    Sleep 1000
+}
+Sleep 3000
 
 ; Dismiss any straggler modals (e.g. per-file read warnings).
 loop 5 {
@@ -92,11 +106,15 @@ loop 5 {
 }
 
 ; ── Invoke Forum Export → Forum Export ───────────────────────────────────
+DumpWindows("pre-menu")
 WinActivate mainWin
+FileAppend "invoking menu Forum Export...`n", "*"
 try {
     MenuSelect mainWin, , "Forum Export", "Forum Export"
+    FileAppend "menu invoked`n", "*"
 } catch as e {
     FileAppend "ERROR: MenuSelect failed: " e.Message "`n", "*"
+    DumpWindows("menu-fail")
     ExitApp 3
 }
 
