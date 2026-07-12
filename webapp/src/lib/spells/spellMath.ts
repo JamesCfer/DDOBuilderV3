@@ -37,12 +37,26 @@ function abilityTotal(stats: BuildStats, ab: string): number {
 export function knownSpellCount(cls: DDOClass | undefined, classLevel: number, spellLevel: number): number {
   if (!cls) return Infinity
   const idx = Math.min(Math.max(classLevel, 0), 20)
-  const row = (cls as unknown as Record<string, unknown>)[`Level${idx}`]
-  if (typeof row === 'string') {
+  const row = levelRowText((cls as unknown as Record<string, unknown>)[`Level${idx}`])
+  if (row) {
     const slots = row.trim().split(/\s+/).map(Number)
     return slots[spellLevel - 1] ?? 0
   }
   return Infinity
+}
+
+/**
+ * `Level<N>` spell-slot tables carry a `size` attribute, so fast-xml-parser
+ * wraps them as `{ '#text': '…', size: N }` rather than a bare string. Unwrap
+ * `#text`; a plain `typeof === 'string'` check silently misses the wrapped
+ * form (the cause of wrong spell caps/counts). Verified against v2calc.
+ */
+function levelRowText(raw: unknown): string {
+  if (typeof raw === 'string') return raw
+  if (raw && typeof raw === 'object' && '#text' in (raw as Record<string, unknown>)) {
+    return String((raw as Record<string, unknown>)['#text'] ?? '')
+  }
+  return ''
 }
 
 /**
@@ -56,8 +70,8 @@ export function knownSpellCount(cls: DDOClass | undefined, classLevel: number, s
 export function computeMaxSpellLevel(cls: DDOClass | undefined, classLevel: number): number {
   if (!cls) return 0
   const idx = Math.min(Math.max(classLevel, 0), 20)
-  const row = (cls as unknown as Record<string, unknown>)[`Level${idx}`]
-  if (typeof row === 'string') {
+  const row = levelRowText((cls as unknown as Record<string, unknown>)[`Level${idx}`])
+  if (row) {
     const slots = row.trim().split(/\s+/).map(Number)
     let cap = 0
     for (let i = 0; i < slots.length; i++) if (slots[i] > 0) cap = i + 1

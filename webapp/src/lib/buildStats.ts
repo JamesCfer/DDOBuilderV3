@@ -263,9 +263,25 @@ function saveBase(saveType: unknown, levels: number): number {
   return Math.floor(levels / 3)
 }
 
+/**
+ * Space-separated numeric XML tables (BAB, SpellPointsPerLevel, …) carry a
+ * `size` attribute, so fast-xml-parser wraps the text as `{ '#text': '…',
+ * size: N }` instead of a bare string. Unwrap `#text` before parsing; a plain
+ * `String()` on the object yields "[object Object]" → every number NaN → the
+ * table reads as empty (the cause of Monk BAB computing as 0). Verified
+ * against v2calc.
+ */
+function xmlText(raw: unknown): string {
+  if (raw == null) return ''
+  if (typeof raw === 'object' && '#text' in (raw as Record<string, unknown>)) {
+    return String((raw as Record<string, unknown>)['#text'] ?? '')
+  }
+  return String(raw)
+}
+
 /** V2 BAB: per-class fraction is truncated, then summed across classes. */
 function classBAB(cls: DDOClass, levels: number): number {
-  const arr = String(cls.BAB ?? '').trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
+  const arr = xmlText(cls.BAB).trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
   let raw = 0
   if (arr.length > levels) raw = arr[levels]
   else if (arr.length > 0) raw = arr[arr.length - 1]
@@ -274,8 +290,7 @@ function classBAB(cls: DDOClass, levels: number): number {
 
 /** V2 SpellPointsPerLevel is a 21-entry table indexed by class levels (0..20). */
 function spellPointsAtLevel(perLevel: unknown, levels: number): number {
-  if (perLevel == null) return 0
-  const arr = String(perLevel).trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
+  const arr = xmlText(perLevel).trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
   if (arr.length === 0) return 0
   const idx = Math.min(Math.max(levels, 0), arr.length - 1)
   return arr[idx] | 0
