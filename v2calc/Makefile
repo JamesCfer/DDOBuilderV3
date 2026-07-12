@@ -26,6 +26,7 @@ CXX      ?= g++
 CXXFLAGS := -std=c++17 -g -O0 -DV2CALC_LINUX=1 \
             -ffunction-sections -fdata-sections \
             -Wno-deprecated -Wno-unknown-pragmas \
+            -fpermissive \
             -MMD -MP
 LDFLAGS  := -Wl,--gc-sections
 LDLIBS   := -lexpat -lpthread

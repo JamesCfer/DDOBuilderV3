@@ -49,6 +49,7 @@ typedef void*               HBITMAP;
 typedef void*               HICON;
 typedef void*               HMENU;
 typedef void*               HTREEITEM;
+typedef void*               HHOOK;
 typedef void*               HDC;
 typedef void*               LPVOID;
 typedef const void*         LPCVOID;
@@ -95,7 +96,58 @@ typedef DWORD               COLORREF;
 #define IN
 #define OUT
 
+// SAL source-annotation macros - all vanish on Linux
+#define _In_
+#define _Out_
+#define _Inout_
+#define _In_opt_
+#define _Out_opt_
+#define _Inout_opt_
+#define _In_z_
+#define _In_reads_(x)
+#define _Ret_maybenull_
+#define _Success_(x)
+
 #define UNREFERENCED_PARAMETER(x) ((void)(x))
+
+// ---------------------------------------------------------------------------
+// common Win32 message / notification structs (declaration-only use in UI hdrs)
+// ---------------------------------------------------------------------------
+typedef struct tagPOINT { long x; long y; } POINT, *LPPOINT;
+typedef struct tagNMHDR
+{
+    HWND     hwndFrom;
+    UINT_PTR idFrom;
+    UINT     code;
+} NMHDR, *LPNMHDR;
+typedef struct tagMSG
+{
+    HWND    hwnd;
+    UINT    message;
+    WPARAM  wParam;
+    LPARAM  lParam;
+    DWORD   time;
+    POINT   pt;
+} MSG, *LPMSG;
+typedef struct tagCREATESTRUCT
+{
+    LPVOID    lpCreateParams;
+    HINSTANCE hInstance;
+    HMENU     hMenu;
+    HWND      hwndParent;
+    int       cy;
+    int       cx;
+    int       y;
+    int       x;
+    long      style;
+    LPCSTR    lpszName;
+    LPCSTR    lpszClass;
+    DWORD     dwExStyle;
+} CREATESTRUCT, *LPCREATESTRUCT;
+
+// window-style constants (only ever OR'd into ignored args on the calc path)
+#define WS_OVERLAPPEDWINDOW 0x00CF0000L
+#define FWS_ADDTOTITLE      0x00008000L
 
 // windows.h traditionally provides unqualified min/max. Templates (not
 // macros) so std::numeric_limits<T>::max() etc. still work.

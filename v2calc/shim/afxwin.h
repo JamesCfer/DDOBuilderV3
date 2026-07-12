@@ -411,6 +411,9 @@ class CWnd : public CCmdTarget
 {
     public:
         virtual ~CWnd() {}
+        virtual BOOL PreTranslateMessage(MSG*) { return FALSE; }
+        virtual BOOL OnCommand(WPARAM, LPARAM) { return FALSE; }
+        virtual BOOL OnNotify(WPARAM, LPARAM, LRESULT*) { return FALSE; }
 };
 
 class CListBox : public CWnd {};
@@ -438,11 +441,34 @@ class CTreeCtrl : public CWnd
         HTREEITEM GetChildItem(HTREEITEM) const { return nullptr; }
 };
 
+class CSliderCtrl : public CWnd
+{
+    public:
+        int GetPos() const { return 0; }
+        void SetPos(int) {}
+        void SetRange(int, int, BOOL = FALSE) {}
+        void SetRangeMin(int, BOOL = FALSE) {}
+        void SetRangeMax(int, BOOL = FALSE) {}
+};
+
+class CScrollBar : public CWnd {};
+
+class CCmdUI
+{
+    public:
+        void Enable(BOOL = TRUE) {}
+        void SetCheck(int = 1) {}
+        void SetText(LPCTSTR) {}
+        UINT m_nID = 0;
+};
+
 class CView : public CWnd
 {
     public:
         virtual void OnInitialUpdate() {}
 };
+
+class CScrollView : public CView {};
 
 class CFormView : public CView
 {
@@ -452,6 +478,50 @@ class CFormView : public CView
 
 class CDocument : public CCmdTarget {};
 class CWinApp : public CCmdTarget {};
+
+// ---------------------------------------------------------------------------
+// runtime-class machinery (RUNTIME_CLASS is only ever passed around as an
+// opaque tag on the calc path - never dereferenced)
+// ---------------------------------------------------------------------------
+struct CRuntimeClass
+{
+    const char* m_lpszClassName;
+};
+#ifndef RUNTIME_CLASS
+#define RUNTIME_CLASS(cls) ((CRuntimeClass*)nullptr)
+#endif
+struct CCreateContext {};
+struct AFX_CMDHANDLERINFO {};
+
+// ---------------------------------------------------------------------------
+// frame windows, toolbars, misc controls (inert UI, present only so the calc
+// core's headers - which reference the app frame - compile)
+// ---------------------------------------------------------------------------
+class CProgressCtrl : public CWnd
+{
+    public:
+        void SetRange(short, short) {}
+        void SetRange32(int, int) {}
+        int  SetPos(int) { return 0; }
+        int  StepIt() { return 0; }
+};
+
+class CFrameWnd : public CWnd
+{
+    public:
+        virtual BOOL PreCreateWindow(CREATESTRUCT&) { return TRUE; }
+        virtual BOOL LoadFrame(UINT, DWORD = 0, CWnd* = nullptr, CCreateContext* = nullptr) { return TRUE; }
+        virtual BOOL OnCmdMsg(UINT, int, void*, AFX_CMDHANDLERINFO*) { return FALSE; }
+        virtual void GetMessageString(UINT, CString&) const {}
+};
+class CFrameWndEx : public CFrameWnd {};
+class CMDIFrameWnd : public CFrameWnd {};
+class CMDIFrameWndEx : public CMDIFrameWnd {};
+class CMDIChildWndEx : public CFrameWnd {};
+
+class CMFCToolBarImages {};
+class CMFCToolBar : public CWnd {};
+class CMFCMenuBar : public CWnd {};
 
 // ---------------------------------------------------------------------------
 // Afx functions
