@@ -78,3 +78,35 @@ describe('v2calc oracle parity — AbilitySpend is a value-increase, not a point
     expect(round.baseAbilities).toEqual(b.baseAbilities)
   })
 })
+
+describe('v2calc oracle parity — Song effects + Epic/Legendary ClassLevel scaling', () => {
+  it('Song* effects route to informational song.* keys, not real totals', async () => {
+    const { parseEffect } = await import('../lib/effectParser')
+    const songPrr = parseEffect({ Type: 'SongPRR', Bonus: 'Music', AType: 'Simple', Amount: '3' } as never)
+    expect(songPrr[0].statKey).toBe('song.prr')          // V2: Breakdown_SongPRR, never real PRR
+    const songSave = parseEffect({ Type: 'SongSaveBonus', Bonus: 'Music', AType: 'Simple', Amount: '4' } as never)
+    expect(songSave.every(b => b.statKey.startsWith('song.'))).toBe(true)
+    const songAc = parseEffect({ Type: 'SongACBonus', Bonus: 'Music', AType: 'Simple', Amount: '2' } as never)
+    expect(songAc[0].statKey).toBe('song.ac')
+  })
+
+  it('ClassLevel HP effect with StackSource=Epic scales by epic-level count (0 on a heroic build, not total level)', async () => {
+    const { emptyBuild } = await import('../types/ddo')
+    // A feat carrying a Hitpoints ClassLevel effect sourced from "Epic" whose
+    // Amount ramps to 40 at index 20: on a 20/0/0 heroic build it must index
+    // Amount[epicLevels=0] = 0, NOT Amount[totalLevel=20] = 40.
+    const amount = Array.from({ length: 21 }, (_, i) => i * 2).join(' ') // [0,2,..,40]
+    const feat = {
+      Name: 'Test Epic HP', Acquire: 'Train',
+      Effect: { Type: 'Hitpoints', Bonus: 'Feat', AType: 'ClassLevel', StackSource: 'Epic', Amount: amount },
+    } as never
+    const fighter = { Name: 'Fighter', HitPoints: 10, Fortitude: 'Type2', Reflex: 'Type1', Will: 'Type1', BAB: Array.from({ length: 21 }, (_, i) => i).join(' ') } as unknown as DDOClass
+    const build = { ...emptyBuild(), classes: [{ name: 'Fighter', levels: 20 }, { name: '', levels: 0 }, { name: '', levels: 0 }], levelClasses: Array.from({ length: 20 }, () => 'Fighter'), totalLevel: 20, epicLevels: 0, legendaryLevels: 0, featChoices: { s0: 'Test Epic HP' } }
+    const stats = computeBuildStats({
+      allClasses: [fighter], allRaces: [], allFeats: [feat], allTrees: [], allSelfBuffs: [],
+      allAugments: [], allSetBonuses: [], allFiligreeBonuses: [], allFiligrees: [], gearItems: {},
+    } as never, build as never)
+    const hpFromEpicFeat = stats.resolve('hp').bonuses.filter(b => b.source.includes('Test Epic HP')).reduce((a, b) => a + b.value, 0)
+    expect(hpFromEpicFeat).toBe(0)
+  })
+})

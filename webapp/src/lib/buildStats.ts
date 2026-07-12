@@ -891,6 +891,14 @@ function buildStatMapOnce(
         ctxBaseClassLevels[c] = (ctxBaseClassLevels[c] ?? 0) + 1
       }
     }
+    // Epic/Legendary are class-like StackSources for ClassLevel-scaled effects
+    // (V2 Build::ClassLevels("Epic"/"Legendary")). Register their counts so
+    // Amount[classLevel] indexes by the epic/legendary level count — 0 on a
+    // purely-heroic build (Amount[0]), not the total character level.
+    ctxClassLevels['Epic'] = build.epicLevels ?? 0
+    ctxClassLevels['Legendary'] = build.legendaryLevels ?? 0
+    ctxBaseClassLevels['Epic'] = build.epicLevels ?? 0
+    ctxBaseClassLevels['Legendary'] = build.legendaryLevels ?? 0
     const ctxFeats = new Set<string>()
     for (const f of Object.values(build.featChoices)) if (f) ctxFeats.add(f)
     if (ctxRace) for (const f of toArray(ctxRace.GrantedFeat)) ctxFeats.add(f)
