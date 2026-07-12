@@ -42,6 +42,7 @@ BreakdownItem::~BreakdownItem()
 void BreakdownItem::SetLockState(bool bLock)
 {
     s_bUpdatesLocked = bLock;
+#if !defined(V2CALC_LINUX)
     if (!bLock)
     {
         CWnd* pWnd = AfxGetMainWnd();
@@ -51,6 +52,11 @@ void BreakdownItem::SetLockState(bool bLock)
         CStancesPane* pStancesPane = dynamic_cast<CStancesPane*>(pMainWnd->GetPaneView(RUNTIME_CLASS(CStancesPane)));
         pStancesPane->UpdateStanceStates(true);
     }
+#else
+    // Headless (v2calc): no panes to repopulate. Breakdown Total()/CappedTotal()
+    // is computed directly on demand, so the lock only gates UI repaints, which
+    // do not exist here. See v2calc/shim/BreakdownHostLinux.cpp.
+#endif
 }
 
 bool BreakdownItem::GetLockState()

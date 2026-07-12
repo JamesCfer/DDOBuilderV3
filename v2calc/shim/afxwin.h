@@ -456,6 +456,15 @@ class CListCtrl : public CWnd
         DWORD GetItemData(int) const { return 0; }
         int GetColumnWidth(int) const { return 0; }
         BOOL SetColumnWidth(int, int) { return TRUE; }
+        // UI-only list population (used by BreakdownItem::PopulateBreakdownControl
+        // / AddItems, never called on the headless compute path). Inert stubs so
+        // the calc-core TUs compile; they touch nothing.
+        void LockWindowUpdate() {}
+        void UnlockWindowUpdate() {}
+        BOOL DeleteAllItems() { return TRUE; }
+        int InsertItem(int, LPCTSTR) { return 0; }
+        int InsertItem(int, LPCTSTR, int) { return 0; }
+        BOOL SetItemText(int, int, LPCTSTR) { return TRUE; }
 };
 
 class CTreeCtrl : public CWnd

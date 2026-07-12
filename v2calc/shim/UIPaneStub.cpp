@@ -8,6 +8,11 @@
 #include "MainFrm.h"
 #include "StancesPane.h"
 
+// Slider lookups from Effect::TotalAmount/StacksAsString reach the stances pane;
+// headless there is no slider UI, so report "no slider" (effect falls back to its
+// own stack count). The pane methods above are never executed (main window null).
+const SliderItem* CStancesPane::GetSlider(const std::string&) const { return nullptr; }
+
 void CStancesPane::OnInitialUpdate() {}
 void CStancesPane::DoDataExchange(CDataExchange* pDX) {}
 void CStancesPane::UpdateActiveBuildChanged(Character* pCharacter) {}

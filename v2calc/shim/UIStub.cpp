@@ -33,6 +33,8 @@
 #include "TrainedFeat.h"
 #include "ItemAugment.h"
 #include "BreakdownItem.h"
+#include "Bonus.h"
+#include "TreeListCtrl.h"
 
 extern const std::list<Class>& Classes(); // from GlobalDataLinux.cpp
 
@@ -102,12 +104,27 @@ Spell FindSpellByName(const std::string&, bool)             { return Spell(); }
 void AddSpecialSlots(InventorySlotType, Item&)              {}
 void AddAugment(std::vector<ItemAugment>*, const std::string&, bool) {}
 bool CanEquipTo2ndWeapon(Build*, const Item&)               { return false; }
-BreakdownItem* FindBreakdown(BreakdownType)                 { return nullptr; }
+// FindBreakdown is provided by shim/BreakdownHostLinux.cpp (headless registry).
 
 const std::list<GuildBuff>&  GuildBuffs()  { static std::list<GuildBuff> x;  return x; }
 const std::list<WeaponGroup>& WeaponGroups() { static std::list<WeaponGroup> x; return x; }
 
-// ---------------------------------------------------------------------------
-// UI-pane / app hooks referenced from Build (dynamic_cast targets etc.)
-// ---------------------------------------------------------------------------
-void BreakdownItem::SetLockState(bool) {}
+// FindBonus: BreakdownItem::RemoveNonStacking consults the bonus-type registry
+// (which bonus types stack). The bonus type data file is not yet loaded, so
+// return a not-found bonus (its default StacksCap allows stacking) - this only
+// affects same-named non-stacking bonus dedup, not base/feat totals.
+const Bonus& FindBonus(const std::string&)                  { static Bonus x; return x; }
+
+// MfcControls::CTreeListCtrl tree population - never called on the compute path
+// (BreakdownItem::Populate null-guards m_pTreeList, which is null headless).
+// Present only so BreakdownItem.o links.
+namespace MfcControls
+{
+    BOOL CTreeListCtrl::SetItemText(HTREEITEM, int, LPCTSTR)        { return TRUE; }
+    BOOL CTreeListCtrl::SetItemColor(HTREEITEM, COLORREF, BOOL)     { return TRUE; }
+    HTREEITEM CTreeListCtrl::GetSelectedItem() const               { return nullptr; }
+    BOOL CTreeListCtrl::SelectItem(HTREEITEM)                       { return TRUE; }
+}
+
+// BreakdownItem::SetLockState is now provided by the real (V2CALC_LINUX-guarded)
+// BreakdownItem.cpp, compiled for the headless breakdown host.

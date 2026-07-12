@@ -94,6 +94,11 @@ void EquippedGear::SetName(const std::string& name)
 
 void EquippedGear::UpdateImages()
 {
+#if defined(V2CALC_LINUX)
+    // Headless (v2calc): icon indices are a UI concern (they index the app's
+    // image list) and never affect stat totals. There is no app object, so skip.
+    return;
+#else
     CDDOBuilderApp* pApp = static_cast<CDDOBuilderApp*>(AfxGetApp());
     for (size_t i = Inventory_Unknown + 1; i < Inventory_FinalDrawnItem; ++i)
     {
@@ -112,6 +117,7 @@ void EquippedGear::UpdateImages()
             }
         }
     }
+#endif
 }
 
 bool EquippedGear::HasItemInSlot(InventorySlotType slot) const

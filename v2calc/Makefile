@@ -144,7 +144,20 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/WeaponGroup.cpp \
     $(ROOT)/DDOBuilder/WeaponGroupRequirements.cpp \
     $(ROOT)/DDOBuilder/Selector.cpp \
-    $(ROOT)/DDOBuilder/EquipmentSlot.cpp
+    $(ROOT)/DDOBuilder/EquipmentSlot.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItem.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemAbility.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSave.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSimple.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemHitpoints.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemMDB.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemDR.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemPRR.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemMRR.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemMRRCap.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemDodge.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemBAB.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemDestinyAps.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
@@ -153,7 +166,8 @@ SHIM_SRC := \
     $(V2CALC_DIR)/shim/DocStub.cpp \
     $(V2CALC_DIR)/shim/GlobalDataLinux.cpp \
     $(V2CALC_DIR)/shim/UIStub.cpp \
-    $(V2CALC_DIR)/shim/UIPaneStub.cpp
+    $(V2CALC_DIR)/shim/UIPaneStub.cpp \
+    $(V2CALC_DIR)/shim/BreakdownHostLinux.cpp
 
 MAIN_SRC := $(V2CALC_DIR)/src/main.cpp
 

@@ -22,6 +22,8 @@
 #include "Life.h"
 #include "Build.h"
 #include "AbilityTypes.h"
+#include "BreakdownTypes.h"
+#include "BreakdownHost.h"
 
 // provided by shim/GlobalDataLinux.cpp
 void V2CalcLoadGameData(const std::string& dataFilesDir);
@@ -100,7 +102,67 @@ int main(int argc, char** argv)
                 pBuild->AbilityAtLevel(abilities[i].at, zLevel, true));
     }
     printf(" },\n");
-    printf("  \"baseAttackBonus\": %zu\n", pBuild->BaseAttackBonus(level));
+    printf("  \"baseAttackBonus\": %zu,\n", pBuild->BaseAttackBonus(level));
+
+    // 5. build V2's own BreakdownItem graph headless, drive the effect path, and
+    //    emit the fed totals (base + feat/enhancement/gear/stance/spell effects).
+    // Point the runtime active indices (default "none") at the parsed values so
+    // Character::ActiveLife()/ActiveBuild() resolve on the compute path.
+    pCharacter->V2CalcSetActiveIndices(
+            pCharacter->ActiveLifeIndex(), pCharacter->ActiveBuildIndex());
+    v2calc::ComputeBreakdowns(pCharacter, const_cast<Build*>(pBuild));
+
+    static const struct { BreakdownType bt; const char* key; } abilityTotals[] = {
+        { Breakdown_Strength,     "STR" },
+        { Breakdown_Dexterity,    "DEX" },
+        { Breakdown_Constitution, "CON" },
+        { Breakdown_Intelligence, "INT" },
+        { Breakdown_Wisdom,       "WIS" },
+        { Breakdown_Charisma,     "CHA" },
+    };
+    printf("  \"abilityTotal\": {");
+    for (size_t i = 0; i < 6; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                abilityTotals[i].key, (int)v2calc::Total(abilityTotals[i].bt));
+    }
+    printf(" },\n");
+
+    // scalar defensive/offensive breakdown totals
+    static const struct { BreakdownType bt; const char* key; bool capped; } scalars[] = {
+        { Breakdown_Hitpoints,       "hitpoints",       false },
+        { Breakdown_SaveFortitude,   "saveFortitude",   false },
+        { Breakdown_SaveReflex,      "saveReflex",      false },
+        { Breakdown_SaveWill,        "saveWill",        false },
+        { Breakdown_SavePoison,      "savePoison",      false },
+        { Breakdown_SaveDisease,     "saveDisease",     false },
+        { Breakdown_SaveTraps,       "saveTraps",       false },
+        { Breakdown_SaveSpell,       "saveSpell",       false },
+        { Breakdown_SaveMagic,       "saveMagic",       false },
+        { Breakdown_SaveEnchantment, "saveEnchantment", false },
+        { Breakdown_SaveIllusion,    "saveIllusion",    false },
+        { Breakdown_SaveFear,        "saveFear",        false },
+        { Breakdown_SaveCurse,       "saveCurse",       false },
+        { Breakdown_PRR,             "prr",             false },
+        { Breakdown_MRR,             "mrr",             true  },
+        { Breakdown_MRRCap,          "mrrCap",          false },
+        { Breakdown_Dodge,           "dodge",           true  },
+        { Breakdown_DodgeCap,        "dodgeCap",        false },
+        { Breakdown_Fortification,   "fortification",   false },
+        { Breakdown_DR,              "dr",              false },
+        { Breakdown_MaxDexBonus,     "maxDexBonus",     false },
+        { Breakdown_BAB,             "bab",             true  },
+    };
+    printf("  \"breakdowns\": {\n");
+    size_t n = sizeof(scalars) / sizeof(scalars[0]);
+    for (size_t i = 0; i < n; ++i)
+    {
+        double v = scalars[i].capped
+                 ? v2calc::Capped(scalars[i].bt)
+                 : v2calc::Total(scalars[i].bt);
+        printf("    \"%s\": %d%s\n", scalars[i].key, (int)v, (i + 1 < n) ? "," : "");
+    }
+    printf("  }\n");
     printf("}\n");
     return 0;
 }
