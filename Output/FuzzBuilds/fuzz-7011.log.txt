@@ -1,0 +1,34 @@
+seed 7011, level 20
+race Tiefling
+classes Acolyte of the Skin 11 / Cleric 9
+abilities Str 13, Dex 10, Con 12, Int 14, Wis 11, Cha 15 (28/28 pts)
+slot Acolyte of the Skin-1-True Patron-0: True Patron: Fiend
+slot heroic-1: Skill Focus: Concentration
+slot heroic-3: Point Blank Shot
+slot Cleric-1-Follower Of-0: Follower of Olladra
+slot Acolyte of the Skin-4-Pact Save Bonus-0: Fiendish Resilience
+slot Cleric-2-Domain-0: Domain of Water
+slot heroic-6: Precise Shot
+slot heroic-9: Martial Weapon Proficiency: Throwing Hammer
+slot Cleric-5-Domain Feat-0: Improved Domain of Water
+slot Acolyte of the Skin-6-Pact Ability-0: Fiendskin
+slot Cleric-6-Deity-0: Search the Soul
+slot heroic-12: Spell Focus: Evocation
+slot Acolyte of the Skin-8-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-15: Simple Weapon Proficiency: Sickle
+slot heroic-18: Resist Poison
+slot Cleric-9-Domain Feat-0: Greater Domain of Water
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Circlet of Persuasion
+gear Necklace: Rust-Laden Pendant
+gear Trinket: Anti-Beholder Crystal
+gear Armor: Docent of the Flames
+gear Cloak: Accomplice
+gear Belt: Trapsmith's Toolbelt
+gear Ring: Rulebreaker
+gear Ring2: Ring of Dragon's Breath
+gear Gloves: Gloves of the Tinkerer
+gear Bracers: Epic Saltiron Bracer
+gear Boots: Severlin's Leaden Boots (level 15)
+gear Goggles: Ornate Goggles
+gear Main Hand: +3 Quenched Greatclub

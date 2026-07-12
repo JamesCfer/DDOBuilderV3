@@ -1,0 +1,28 @@
+seed 7008, level 20
+race Wood Elf
+classes Alchemist 10 / Rogue 10
+abilities Str 11, Dex 12, Con 12, Int 11, Wis 16, Cha 12 (28/28 pts)
+slot heroic-1: Resist Poison
+slot heroic-3: Simple Weapon Proficiency: Club
+slot Alchemist-4-Alchemist Bonus Feat-0: Extend Spell
+slot heroic-6: Two Weapon Fighting
+slot heroic-9: Martial Weapon Proficiency: Maul
+slot heroic-12: Self Sufficient
+slot heroic-15: Martial Weapon Proficiency: Longsword
+slot Alchemist-8-Alchemist Bonus Feat-0: Insightful Courage
+slot heroic-18: Martial Weapon Proficiency: Rapier
+slot Rogue-10-Rogue Special Ability-0: Skill Mastery
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Crisis Helm
+gear Necklace: Epic Crimson Necklace of Prophecy
+gear Trinket: Tiny Brain in a Tiny Jar
+gear Armor: Quicksilver Cassok
+gear Cloak: Widow Weave Cloak
+gear Belt: Girdle of Giants' Brawn (Level 13)
+gear Ring: Ring of Unknown Origins
+gear Ring2: Epic Ring of the Blue Abishai
+gear Gloves: Absorption Gauntlet
+gear Bracers: War Wizard's Bracers
+gear Boots: Expeditious Boots
+gear Goggles: Goggles of the Inquisition
+gear Main Hand: Infectious War Axe

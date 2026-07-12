@@ -1,0 +1,34 @@
+seed 7004, level 20
+race Half-Orc
+classes Blight Caster 8 / Cleric 12
+abilities Str 14, Dex 13, Con 13, Int 10, Wis 12, Cha 14 (28/28 pts)
+slot heroic-1: Skill Focus: Repair
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Thorne Knight
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot Cleric-1-Follower Of-0: Follower of the Silver Flame
+slot heroic-3: Diehard
+slot Cleric-2-Domain-0: Domain of Earth
+slot heroic-6: Skill Focus: Spot
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot Cleric-5-Domain Feat-0: Improved Domain of Earth
+slot heroic-9: Simple Weapon Proficiency: Throwing Dagger
+slot Cleric-6-Deity-0: Silver Flame Exorcism
+slot heroic-12: Augment Summoning
+slot Cleric-9-Domain Feat-0: Greater Domain of Earth
+slot heroic-15: Spell Focus: Evocation
+slot Blight Caster-8-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-18: Self Sufficient
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Helm of Eternal Night
+gear Necklace: Pendant of the Red Abishai
+gear Trinket: Jade of the Twelve
+gear Armor: Mournlode Chain (Level 4)
+gear Cloak: Gravekeeper's Mystic Cloak
+gear Belt: Belt of the Blue Abishai
+gear Ring: Epic Ring of the Red Abishai
+gear Ring2: Seal of the Earth
+gear Gloves: Admiral's Gloves
+gear Bracers: Epic Bracers of the Hunter
+gear Boots: Steelweave Shinguards
+gear Goggles: Scoundrel's Lenses
+gear Main Hand: Epic Hull-Melter's Mace (level 20)

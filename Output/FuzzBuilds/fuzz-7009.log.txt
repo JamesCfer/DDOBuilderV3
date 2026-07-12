@@ -1,0 +1,29 @@
+seed 7009, level 20
+race Drow
+classes Dragon Disciple 10 / Sorcerer 10
+abilities Str 12, Dex 11, Con 12, Int 14, Wis 13, Cha 14 (28/28 pts)
+slot Dragon Disciple-1-Dragon Arts-0: Single Weapon Fighting
+slot heroic-1: Martial Weapon Proficiency: Battle Axe
+slot Dragon Disciple-2-Dragon Arts-0: no eligible feats — left empty
+slot heroic-3: Simple Weapon Proficiency: Light Crossbow
+slot Dragon Disciple-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot heroic-6: Simple Weapon Proficiency: Quarterstaff
+slot heroic-9: Spell Penetration
+slot heroic-12: Skill Focus: Search
+slot Dragon Disciple-6-Dragon Arts-0: no eligible feats — left empty
+slot heroic-15: Martial Weapon Proficiency: Light Pick
+slot heroic-18: Skill Focus: Diplomacy
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Lamordian Cap
+gear Necklace: Stolen Necklace (Level 16)
+gear Trinket: Periapt of Charisma
+gear Armor: Docent of the Black Earth
+gear Cloak: Magewright's Cloak
+gear Belt: Belt of the Seven Ideals (Level 13)
+gear Ring: Splinterskull Acolyte Ring
+gear Ring2: Celestial Ruby Ring
+gear Gloves: Backstabber's Gloves (Level 12)
+gear Bracers: Hallowed Castigators
+gear Boots: Season's Anchors
+gear Goggles: Guardian's Glasses (Level 19)
+gear Main Hand: Sirocco

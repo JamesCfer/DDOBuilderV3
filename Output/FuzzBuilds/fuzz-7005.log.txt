@@ -1,0 +1,32 @@
+seed 7005, level 20
+race Dhampir
+classes Acolyte of the Skin 20
+abilities Str 10, Dex 9, Con 10, Int 16, Wis 16, Cha 11 (28/28 pts)
+slot Acolyte of the Skin-1-True Patron-0: True Patron: Fiend
+slot heroic-1: Combat Casting
+slot heroic-3: Simple Weapon Proficiency: Dagger
+slot Acolyte of the Skin-4-Pact Save Bonus-0: Fiendish Resilience
+slot Acolyte of the Skin-6-Pact Ability-0: Fiendskin
+slot heroic-6: Martial Weapon Proficiency: Great Club
+slot Acolyte of the Skin-8-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-9: Simple Weapon Proficiency: Light Crossbow
+slot Acolyte of the Skin-12-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-12: Rapid Reload
+slot heroic-15: Light Armor Proficiency
+slot Acolyte of the Skin-16-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-18: Insightful Reflexes
+slot Acolyte of the Skin-20-Pact Save Bonus-0: no eligible feats — left empty
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Rusted Crown
+gear Necklace: Song-Chime Locket
+gear Trinket: Treasure Hunter's Spyglass (level 16)
+gear Armor: Robe of Shadow (level 8)
+gear Cloak: Cloak of Victory
+gear Belt: Spare Hand (Level 11)
+gear Ring: Epic Ring of the Green Abishai
+gear Ring2: Tumbleweed
+gear Gloves: Brawling Gloves (legacy) (level 16)
+gear Bracers: Surreptitious Shackles
+gear Boots: Icewalkers
+gear Goggles: Goggles of the Warrior
+gear Main Hand: Flamesalt Shortsword

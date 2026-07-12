@@ -1,0 +1,28 @@
+seed 7021, level 20
+race Elf
+classes Arcane Trickster 20
+abilities Str 12, Dex 13, Con 12, Int 9, Wis 9, Cha 17 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Dart
+slot heroic-3: Martial Weapon Proficiency: Hand Axe
+slot Arcane Trickster-6-Bonus Magical Feat-0: Empower Spell
+slot heroic-6: Martial Weapon Proficiency: Light Pick
+slot heroic-9: Augment Summoning
+slot Arcane Trickster-12-Bonus Magical Feat-0: no eligible feats — left empty
+slot heroic-12: Martial Weapon Proficiency: Battle Axe
+slot heroic-15: Martial Weapon Proficiency: Great Club
+slot Arcane Trickster-18-Bonus Magical Feat-0: no eligible feats — left empty
+slot heroic-18: Martial Weapon Proficiency: Scimitar
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Straw Hat
+gear Necklace: Mist Vial
+gear Trinket: Jeeka's Spangle
+gear Armor: Delighter's Docent
+gear Cloak: Walking Ancestor's Shroud
+gear Belt: Rune-Sigiled Belt
+gear Ring: Ring of Mystic Charisma
+gear Ring2: Ring of Rage
+gear Gloves: Nether Grasps (Level 18)
+gear Bracers: Verminkeeper's Bangle
+gear Boots: Hobnail Boots
+gear Goggles: Skirmisher's Lenses (Level 19)
+gear Main Hand: Assassin's Kiss

@@ -60,3 +60,21 @@ describe.skipIf(!have)('v2calc oracle parity — BAB + spell tables ({#text,size
     expect(computeMaxSpellLevel(wiz, 1)).toBe(1)
   })
 })
+
+describe('v2calc oracle parity — AbilitySpend is a value-increase, not a point cost', () => {
+  it('import: score = 8 + spend (round-trips through the exporter)', async () => {
+    const { importV2Build } = await import('../lib/v2Import')
+    const { exportV2Build } = await import('../lib/v2Export')
+    const { emptyBuild } = await import('../types/ddo')
+    const b = emptyBuild()
+    b.baseAbilities = { Strength: 16, Dexterity: 18, Constitution: 8, Intelligence: 14, Wisdom: 10, Charisma: 15 }
+    // export writes <XxxSpend> = score-8; re-import must recover the exact scores
+    const xml = exportV2Build(b)
+    // the spend field carries the value increase, not the point cost
+    expect(xml).toMatch(/<StrSpend>8<\/StrSpend>/)   // 16-8
+    expect(xml).toMatch(/<DexSpend>10<\/DexSpend>/)  // 18-8
+    expect(xml).toMatch(/<ChaSpend>7<\/ChaSpend>/)   // 15-8
+    const round = importV2Build(xml).build
+    expect(round.baseAbilities).toEqual(b.baseAbilities)
+  })
+})

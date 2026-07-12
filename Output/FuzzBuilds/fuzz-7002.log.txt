@@ -1,0 +1,26 @@
+seed 7002, level 20
+race Warforged
+classes Wild Mage 11 / Rogue 5 / Paladin 4
+abilities Str 11, Dex 11, Con 14, Int 10, Wis 15, Cha 14 (28/28 pts)
+slot heroic-1: Bullheaded
+slot heroic-3: Martial Weapon Proficiency: Great Sword
+slot Paladin-1-Follower Of-0: Favored by Silvanus
+slot heroic-6: Skill Focus: Concentration
+slot heroic-9: Maximize Spell
+slot heroic-12: Diehard
+slot heroic-15: Martial Weapon Proficiency: Shortbow
+slot heroic-18: Simple Weapon Proficiency: Morningstar
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Memories of the Unseen
+gear Necklace: Shrunken Head
+gear Trinket: Periapt of Wisdom (Myth Drannor)
+gear Armor: Outfit of Sunlight
+gear Cloak: Mantle of the Worldshaper
+gear Belt: Waistwrap of Wild Wisdom
+gear Ring: Chaos Band
+gear Ring2: Kyrian's Band
+gear Gloves: Epic Raven's Talons
+gear Bracers: Manacles of Ceaseless Toil (Level 14)
+gear Boots: Cannith Boots of Propulsion
+gear Goggles: Garstone's Lenses
+gear Main Hand: Epic Ethereal Rapier

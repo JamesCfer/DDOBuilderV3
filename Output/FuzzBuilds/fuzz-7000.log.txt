@@ -1,0 +1,33 @@
+seed 7000, level 20
+race Wood Elf
+classes Blight Caster 5 / Warlock 8 / Barbarian 7
+abilities Str 10, Dex 15, Con 12, Int 12, Wis 14, Cha 12 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Great Club
+slot Warlock-1-Warlock Pact-0: Pact: The Carceri Storm
+slot heroic-3: Two Weapon Fighting
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot heroic-6: Luck Of Heroes
+slot Warlock-4-Pact Save Bonus-0: Bulwark of the Storm
+slot Warlock-5-Pact Spell-0: Pact Magic: Ice Storm
+slot heroic-9: Spell Focus: Abjuration
+slot Warlock-6-Pact Ability-0: Warlock: Absolute Zero
+slot heroic-12: Two Weapon Defense
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-15: Martial Weapon Proficiency: Shortsword
+slot Warlock-8-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-18: Simple Weapon Proficiency: Unarmed
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Teraza's Perfect Sight
+gear Necklace: Death's Locket (Level 12)
+gear Trinket: Shimmering Arrowhead
+gear Armor: Emerald Guard
+gear Cloak: Cloak of the Forest's Blade
+gear Belt: Spare Hand (Level 11)
+gear Ring: Kilau's Band
+gear Ring2: Whisper Ring
+gear Gloves: Epic Brawling Gloves (level 20)
+gear Bracers: Guardian's Bracers (Level 15)
+gear Boots: Gravekeeper's Greaves
+gear Goggles: Black Lace Blindfold
+gear Main Hand: Spectral Longbow (level 8)

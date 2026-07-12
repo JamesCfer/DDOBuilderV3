@@ -269,18 +269,22 @@ function classAtLevel(build: CharacterBuild, charLevel: number): string {
 // ---------------------------------------------------------------------------
 
 function emitAbilitySpend(xml: Xml, build: CharacterBuild): void {
-  let total = 0
+  // V2 semantics (verified against V2-authored builds + Build::AbilityAtLevel =
+  // `8 + racial + GetAbilitySpend`): each `<XxxSpend>` is the ability VALUE
+  // INCREASE above 8 (score − 8, range 0–10), NOT the point-buy cost.
+  // `<AvailableSpend>` is the point budget (sum of point-buy costs). Writing the
+  // point cost into `*Spend` (e.g. 10 for a 16) made V2 read inflated ability
+  // scores from V3-generated files — for any ability raised to 15–18, where the
+  // cost exceeds the value increase. Found by the v2calc oracle on 30 builds.
+  let pointBudget = 0
   const spends: Record<Ability, number> = {} as Record<Ability, number>
   for (const ab of ABILITIES) {
     const score = build.baseAbilities[ab] ?? 8
-    const cost = POINT_BUY_COSTS[score] ?? 0
-    spends[ab] = cost
-    total += cost
+    spends[ab] = Math.max(0, score - 8)
+    pointBudget += POINT_BUY_COSTS[score] ?? 0
   }
   xml.open('AbilitySpend')
-  // V3 does not track the build-point pool; emit the spent total so the V2
-  // budget shows 0 remaining (import ignores AvailableSpend).
-  xml.leaf('AvailableSpend', total)
+  xml.leaf('AvailableSpend', pointBudget)
   for (const ab of ABILITIES) xml.leaf(SPEND_KEY[ab], spends[ab])
   xml.close('AbilitySpend')
 }

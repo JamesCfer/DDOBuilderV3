@@ -1,0 +1,27 @@
+seed 7010, level 20
+race Dwarf
+classes Paladin 20
+abilities Str 13, Dex 11, Con 11, Int 13, Wis 14, Cha 14 (28/28 pts)
+slot Paladin-1-Follower Of-0: Follower of the Sovereign Host
+slot heroic-1: Self Sufficient
+slot heroic-3: Skill Focus: Use Magic Device
+slot Paladin-6-Deity-0: Unyielding Sovereignty
+slot heroic-6: Martial Weapon Proficiency: Longsword
+slot heroic-9: Skill Focus: Hide
+slot heroic-12: Child of Faith
+slot heroic-15: Bullheaded
+slot heroic-18: Sap
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Shaagh's Helm
+gear Necklace: Anger's Gift
+gear Trinket: Giantcraft Siberys Compass (Level 12)
+gear Armor: Stalker's Outfit
+gear Cloak: Scarlet Scale Cloak
+gear Belt: Rune-Sigiled Belt
+gear Ring: Epic Ethereal Ring
+gear Ring2: Ring of Shadows (Level 13)
+gear Gloves: Blademaster Gauntlets
+gear Bracers: Steady Handed Armbands (Level 13)
+gear Boots: Boots of the Mire
+gear Goggles: Goggles of the Berserker
+gear Main Hand: Spectral Dagger (level 20)

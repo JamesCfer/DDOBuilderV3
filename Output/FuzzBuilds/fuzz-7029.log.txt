@@ -1,0 +1,31 @@
+seed 7029, level 20
+race Tabaxi
+classes Dark Apostate 20
+abilities Str 10, Dex 12, Con 9, Int 14, Wis 10, Cha 17 (28/28 pts)
+slot Dark Apostate-1-Follower Of-0: Follower of Onatar
+slot heroic-1: Spell Penetration
+slot Dark Apostate-2-Domain-0: Domain of Animals
+slot heroic-3: Spell Focus: Illusion
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Animals
+slot Dark Apostate-6-Deity-0: Search the Soul
+slot heroic-6: Shield Proficiency (General)
+slot Dark Apostate-9-Domain Feat-0: Greater Domain of Animals
+slot heroic-9: Simple Weapon Proficiency: Dagger
+slot heroic-12: Skill Focus: Intimidate
+slot Dark Apostate-14-Domain Feat-0: Master of the Domain of Animals
+slot heroic-15: Simple Thrown Weapon Expertise
+slot heroic-18: Martial Weapon Proficiency: Light Pick
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Minor Circlet of Blasting
+gear Necklace: Chaosmancer's Pendant
+gear Trinket: Deep Promise Onyx
+gear Armor: Brightsun
+gear Cloak: Fraying Sash of Phinorae
+gear Belt: Snakeskin Belt
+gear Ring: Salt-Pearl Ring
+gear Ring2: Epic Ring of Spell Storing
+gear Gloves: Linen Handwraps
+gear Bracers: Bracers of Order and Chaos
+gear Boots: Goatskin Boots (level 17)
+gear Goggles: Creation Forge Lenses
+gear Main Hand: Alchemical Throwing Axe

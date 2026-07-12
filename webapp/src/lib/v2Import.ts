@@ -99,21 +99,16 @@ function mapClassName(raw: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * V2 Point-Buy cost table → score lookup (Build::DetermineBuildPoints).
- * V3 stores raw scores; V2 stores spend deltas and we round down to the
- * highest score whose cost ≤ spent.
+ * V2 `<XxxSpend>` is the ability VALUE INCREASE above 8, NOT the point-buy
+ * cost. Confirmed against `Build::AbilityAtLevel` = `8 + racial +
+ * GetAbilitySpend`, where `GetAbilitySpend` returns 0..10 (indexed into the
+ * per-step cost table). So score = 8 + spend, capped at 18 (max +10). The old
+ * code treated the field as a point cost (16→score 16 instead of the correct
+ * 8+16 clamp), misreading every V2-authored build's abilities. Found by the
+ * v2calc oracle.
  */
-const COST_TO_SCORE: Record<number, number> = {
-  0: 8, 1: 9, 2: 10, 3: 11, 4: 12, 5: 13, 6: 14, 8: 15, 10: 16, 13: 17, 16: 18,
-}
-
 function spendToScore(spent: number): number {
-  let best = 8
-  for (const [costStr, scoreVal] of Object.entries(COST_TO_SCORE)) {
-    const cost = Number(costStr)
-    if (cost <= spent && scoreVal > best) best = scoreVal
-  }
-  return best
+  return 8 + Math.max(0, Math.min(10, spent))
 }
 
 function parseAbilities(spend: AnyRec | undefined): Record<Ability, number> {
