@@ -396,6 +396,23 @@ namespace v2calc
         // Drive the real effect-application path: applies feat/enhancement/
         // gear/spell/stance effects and notifies observers (our host).
         pBuild->BuildNowActive();
+
+        // Settle pass, replicating CBreakdownsPane::UpdateAllBreakdowns() which
+        // the real UI runs from BreakdownItem::SetLockState(false) at the end of
+        // BuildNowActive (that call is a UI no-op under V2CALC_LINUX). During
+        // BuildNowActive the breakdowns are locked (s_bUpdatesLocked), so
+        // Populate() is suppressed and each breakdown's m_dCachedTotal stays
+        // stale. Once unlocked, Populate() on each breakdown detects the change
+        // and fires NotifyTotalChanged(), which drives dependent breakdowns'
+        // CreateOtherEffects() to re-read now-populated siblings. This is what
+        // lets BreakdownItemHitpoints pick up the Combat Style bonus (25% per
+        // fighting-style feat of class HP, via Breakdown_StyleBonusFeats), the
+        // FalseLife/Reaper/FatePoints contributions, etc. CreateOtherEffects()
+        // clears and rebuilds m_otherEffects, so this is idempotent.
+        for (auto&& it : g_allItems)
+        {
+            it->Populate();
+        }
     }
 
     bool HasBreakdown(BreakdownType bt)
