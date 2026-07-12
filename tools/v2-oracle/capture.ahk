@@ -102,27 +102,61 @@ if !mainWin {
 ; The first 'DDOBuilder' window may be a splash/progress window; the real
 ; main frame only exists once loading ends. Re-enumerate the process's
 ; top-level windows every attempt and post the command to ALL of them.
-dlgUp := false
-loop 30 {
-    CheckModal("pre-menu")
-    targets := []
-    for hwnd in WinGetList("ahk_pid " pid) {
-        targets.Push(hwnd)
+; Wait for V2 to go IDLE (data load done) before commanding it — driving
+; it mid-load crashes the process (proven: window vanishes after the first
+; post). Poll CPU: once the process uses ~no CPU across consecutive samples,
+; loading is finished.
+Log("waiting for V2 to finish loading (CPU idle)...")
+idleStreak := 0
+loop 120 {
+    if !ProcessExist(pid) {
+        Log("ERROR: V2 exited during load")
+        ExitApp 2
     }
-    if Mod(A_Index, 5) = 1 {
-        for hwnd in targets {
-            try Log("attempt " A_Index " target: hwnd=" hwnd " class=" WinGetClass(hwnd) " title='" WinGetTitle(hwnd) "'")
+    if CheckModal("load") {
+        continue
+    }
+    t1 := ProcessCpuTime(pid)
+    Sleep 2000
+    t2 := ProcessCpuTime(pid)
+    busy := t2 - t1
+    if busy < 150 {
+        idleStreak++
+        if idleStreak >= 3 {
+            Log("V2 idle after ~" (A_Index*2) "s")
+            break
         }
+    } else {
+        idleStreak := 0
     }
-    Log("posting WM_COMMAND to " targets.Length " window(s) (attempt " A_Index ")")
-    for hwnd in targets {
-        try PostMessage 0x111, 32847, 0, , hwnd
+    if Mod(A_Index, 10) = 0 {
+        Log("still loading; cpu-delta=" busy "ms")
     }
-    if WinWait("Configure Forum Export", , 20) {
+}
+
+ProcessCpuTime(procId) {
+    ; Kernel+user CPU time (ms) via WMI Win32_Process.
+    for p in ComObjGet("winmgmts:").ExecQuery("SELECT KernelModeTime,UserModeTime FROM Win32_Process WHERE ProcessId=" procId) {
+        return (p.KernelModeTime + p.UserModeTime) / 10000   ; 100ns units → ms
+    }
+    return 0
+}
+
+dlgUp := false
+loop 10 {
+    CheckModal("pre-menu")
+    if !ProcessExist(pid) {
+        Log("ERROR: V2 exited before export dialog (crash on command?)")
+        ExitApp 2
+    }
+    mainWin := WinExist("ahk_pid " pid)
+    Log("posting WM_COMMAND 32847 to hwnd=" mainWin " (attempt " A_Index ")")
+    try PostMessage 0x111, 32847, 0, , mainWin
+    if WinWait("Configure Forum Export", , 15) {
         dlgUp := true
         break
     }
-    Sleep 5000
+    Sleep 3000
 }
 if !dlgUp {
     Log("ERROR: Configure Forum Export dialog never appeared after retries")
