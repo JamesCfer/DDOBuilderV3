@@ -1,0 +1,105 @@
+# V2 oracle — captures DDOBuilder V2's forum-export numbers for the fuzz
+# corpus on a Windows runner, entirely unattended:
+#   download official V2 release → place exe beside Output/DataFiles →
+#   drive it per .DDOBuild via AutoHotkey (open → Forum Export → clipboard)
+#   → commit fuzz-*.v2export.txt to the v2-oracle-results branch.
+#
+# Trigger manually (workflow_dispatch). Artifacts always include logs and
+# failure screenshots for remote debugging.
+
+name: v2-oracle
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max builds to capture (0 = all)"
+        default: "0"
+      release_tag:
+        description: "Maetrim/DDOBuilderV2 release tag (empty = latest)"
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download DDOBuilder V2 release
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.inputs.release_tag }}"
+          $api = if ($tag) { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/tags/$tag" }
+                 else { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/latest" }
+          $rel = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "v2-oracle" }
+          Write-Host "Release: $($rel.tag_name)"
+          $rel.assets | ForEach-Object { Write-Host "  asset: $($_.name) ($($_.size) bytes)" }
+          New-Item -ItemType Directory -Force -Path v2dl | Out-Null
+          foreach ($a in $rel.assets) {
+            Invoke-WebRequest -Uri $a.browser_download_url -OutFile ("v2dl/" + $a.name) -Headers @{ "User-Agent" = "v2-oracle" }
+          }
+          Get-ChildItem v2dl
+
+      - name: Extract DDOBuilder.exe
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path v2app | Out-Null
+          Get-ChildItem v2dl | ForEach-Object {
+            Write-Host "extracting $($_.Name)"
+            & 7z x -y -ov2app $_.FullName | Select-Object -Last 3
+          }
+          $exe = Get-ChildItem v2app -Recurse -Filter DDOBuilder.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "::error::DDOBuilder.exe not found in any release asset"
+            Get-ChildItem v2app -Recurse | Select-Object -First 100 | ForEach-Object { Write-Host $_.FullName }
+            exit 1
+          }
+          Write-Host "found: $($exe.FullName)"
+          # V2 resolves DataFiles relative to its exe (GlobalSupportFunctions
+          # ::DataFolder) — put the exe beside the repo's Output/DataFiles.
+          Copy-Item $exe.FullName Output/DDOBuilder.exe
+          # Bring along any DLLs shipped next to it in the package.
+          Get-ChildItem $exe.DirectoryName -Filter *.dll -ErrorAction SilentlyContinue |
+            ForEach-Object { Copy-Item $_.FullName Output/ }
+          "EXE=Output/DDOBuilder.exe" >> $env:GITHUB_ENV
+
+      - name: Install AutoHotkey v2
+        shell: pwsh
+        run: |
+          $url = "https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19.zip"
+          Invoke-WebRequest -Uri $url -OutFile ahk.zip
+          Expand-Archive ahk.zip -DestinationPath ahk
+          $exe = Get-ChildItem ahk -Recurse -Filter AutoHotkey64.exe | Select-Object -First 1
+          "AHK=$($exe.FullName)" >> $env:GITHUB_ENV
+
+      - name: Capture forum exports
+        shell: pwsh
+        run: |
+          pwsh tools/v2-oracle/capture.ps1 -ExePath "$env:EXE" -AhkExe "$env:AHK" -Limit ${{ github.event.inputs.limit }}
+
+      - name: Upload logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-debug
+          path: |
+            tools/v2-oracle/shots/
+            Output/FuzzBuilds/*.v2export.txt
+          if-no-files-found: warn
+
+      - name: Commit results to v2-oracle-results
+        if: always()
+        shell: pwsh
+        run: |
+          $exports = Get-ChildItem Output/FuzzBuilds -Filter *.v2export.txt -ErrorAction SilentlyContinue
+          if (-not $exports) { Write-Host "no exports to commit"; exit 0 }
+          git config user.name "v2-oracle[bot]"
+          git config user.email "v2-oracle@users.noreply.github.com"
+          git checkout -B v2-oracle-results
+          git add Output/FuzzBuilds/*.v2export.txt
+          git commit -m "v2-oracle: captured $($exports.Count) forum export(s) [run ${{ github.run_id }}]"
+          git push -f origin v2-oracle-results
