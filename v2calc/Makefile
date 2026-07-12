@@ -23,7 +23,7 @@ FARM       := $(BUILD)/farm
 OBJDIR     := $(BUILD)/obj
 
 CXX      ?= g++
-CXXFLAGS := -std=c++17 -g -O0 -DV2CALC_LINUX=1 \
+CXXFLAGS := -std=c++17 -g -O0 -DV2CALC_LINUX=1 -DNDEBUG \
             -ffunction-sections -fdata-sections \
             -Wno-deprecated -Wno-unknown-pragmas \
             -fpermissive \
