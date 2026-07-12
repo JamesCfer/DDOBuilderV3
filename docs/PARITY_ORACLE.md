@@ -60,3 +60,24 @@ suite: **V2-exact math enforced on every commit, no Windows anywhere.**
 
 Where V2 and the live game disagree (V2 has bugs too): default is *match
 V2*, exceptions logged in `PARITY_TODO.md`.
+
+## Status update — Track A set aside, Track B is the path
+
+**Track A (Windows CI GUI oracle): blocked by the environment.** Across 14
+runs the pipeline was proven to download+launch the real V2 app, and a
+major byproduct landed — the exporter now writes files V2's parser accepts
+(required-element fidelity, verified against the live app). BUT DDOBuilder
+V2 crashes non-deterministically *during data load* in the non-interactive
+GitHub-Actions session — even opening a V2-authored file, before any
+automation command (run 11 survived ~10 min; runs 13–14 died in seconds;
+3× retry per build still 0/3). This is a known limitation of driving a
+complex MFC/GDI app headlessly, not a fixable script bug. The workflow is
+kept (it would work on an interactive/self-hosted Windows runner) but is no
+longer the active path.
+
+**Track B (native `v2calc`) is now primary.** It computes V2's breakdown
+numbers by compiling V2's own calculation core on Linux — no GUI, no CI
+flakiness, and it runs inside the vitest suite for continuous parity. The
+foundation compiles (expat-backed SaxReader behind the real interface, a
+backslash-include farm, MFC shim headers); remaining work is grinding the
+data-model + Breakdown* dependency closure through g++.
