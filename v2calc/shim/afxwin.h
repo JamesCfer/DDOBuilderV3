@@ -22,6 +22,13 @@
 #ifndef VERIFY
 #define VERIFY(x) do { bool _v2c_ok = !!(x); assert(_v2c_ok); (void)_v2c_ok; } while (0)
 #endif
+// MFC exception macro used by XmlLib (throws a const char* like the V2 build)
+#ifndef THROW
+#define THROW(e) throw (e)
+#endif
+#ifndef THROW_LAST
+#define THROW_LAST() throw
+#endif
 inline void V2CalcTrace(const char* format, ...)
 {
     if (getenv("V2CALC_DEBUG") != nullptr)
@@ -67,6 +74,7 @@ class CString
         CString& operator=(const char* text) { m_str = (text != nullptr ? text : ""); return *this; }
 
         operator LPCTSTR() const { return m_str.c_str(); }
+        operator std::string() const { return m_str; }
 
         int GetLength() const { return (int)m_str.size(); }
         bool IsEmpty() const { return m_str.empty(); }
@@ -370,6 +378,27 @@ class CImageList
         HANDLE GetSafeHandle() const { return nullptr; }
 };
 
+class CFont
+{
+    public:
+        BOOL DeleteObject() { return TRUE; }
+        BOOL CreateFontIndirect(const void*) { return TRUE; }
+        HANDLE GetSafeHandle() const { return nullptr; }
+};
+
+class CDC
+{
+    public:
+        HANDLE GetSafeHdc() const { return nullptr; }
+        int GetDeviceCaps(int) const { return 0; }
+        CFont* SelectObject(CFont*) { return nullptr; }
+        CBitmap* SelectObject(CBitmap*) { return nullptr; }
+        BOOL BitBlt(int, int, int, int, CDC*, int, int, DWORD) { return TRUE; }
+        BOOL CreateCompatibleDC(CDC*) { return TRUE; }
+        COLORREF SetPixel(int, int, COLORREF) { return 0; }
+        COLORREF GetPixel(int, int) const { return 0; }
+};
+
 class CDataExchange {};
 
 class CCmdTarget
@@ -391,6 +420,23 @@ class CButton : public CWnd {};
 class CComboBox : public CWnd {};
 class CDialog : public CWnd {};
 class CDialogEx : public CDialog {};
+
+class CListCtrl : public CWnd
+{
+    public:
+        int GetItemCount() const { return 0; }
+        DWORD GetItemData(int) const { return 0; }
+        int GetColumnWidth(int) const { return 0; }
+        BOOL SetColumnWidth(int, int) { return TRUE; }
+};
+
+class CTreeCtrl : public CWnd
+{
+    public:
+        HTREEITEM GetRootItem() const { return nullptr; }
+        HTREEITEM GetNextSiblingItem(HTREEITEM) const { return nullptr; }
+        HTREEITEM GetChildItem(HTREEITEM) const { return nullptr; }
+};
 
 class CView : public CWnd
 {

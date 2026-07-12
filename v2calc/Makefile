@@ -78,7 +78,8 @@ DDO_SRC := \
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
-    $(V2CALC_DIR)/shim/GlobalsLinux.cpp
+    $(V2CALC_DIR)/shim/GlobalsLinux.cpp \
+    $(V2CALC_DIR)/shim/VectorConversionLinux.cpp
 
 MAIN_SRC := $(V2CALC_DIR)/src/main.cpp
 

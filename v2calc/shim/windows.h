@@ -48,6 +48,7 @@ typedef void*               HINSTANCE;
 typedef void*               HBITMAP;
 typedef void*               HICON;
 typedef void*               HMENU;
+typedef void*               HTREEITEM;
 typedef void*               HDC;
 typedef void*               LPVOID;
 typedef const void*         LPCVOID;

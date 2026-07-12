@@ -21,3 +21,15 @@
 // the real DDOBuilder stdafx.h (game constants, common enums); its MFC
 // includes resolve to the v2calc shim headers
 #include <v2calc_ddobuilder_stdafx.h>
+
+// XmlLib's VectorConversion only specializes int/double/BYTE/bool. size_t
+// vectors (e.g. Dice::Number/Sides) fall through to the primary template,
+// which streams a std::vector directly and does not compile. Declare size_t
+// specializations here (before any DDOBuilder header instantiates them);
+// definitions live in shim/VectorConversionLinux.cpp.
+#include <VectorConversion.h> // v2calc shim resolves via -IXmlLib
+namespace XmlLib
+{
+    template <> bool VectorToString(const std::vector<size_t> & v, std::wstring * out);
+    template <> bool StringToVector(const std::wstring & s, std::vector<size_t> * out);
+}
