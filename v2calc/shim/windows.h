@@ -33,6 +33,7 @@
 // ---------------------------------------------------------------------------
 typedef int                 BOOL;
 typedef unsigned char       BYTE;
+typedef unsigned char*      LPBYTE;
 typedef unsigned short      WORD;
 typedef unsigned int        UINT;
 typedef int                 INT;
@@ -372,6 +373,8 @@ inline HANDLE LocalFree(HANDLE mem) { free(mem); return nullptr; }
 #define MB_ICONINFORMATION 0x40
 #define MB_ICONEXCLAMATION 0x30
 #define MB_ICONSTOP 0x10
+#define MB_ICONQUESTION 0x20
+#define MB_ICONASTERISK 0x40
 #define MB_YESNO 0x4
 #define MB_YESNOCANCEL 0x3
 #define MB_OKCANCEL 0x1
@@ -383,6 +386,12 @@ inline HANDLE LocalFree(HANDLE mem) { free(mem); return nullptr; }
 #define ILC_COLOR24 0x18
 #define ILC_COLOR16 0x10
 #define ILC_COLOR8  0x08
+#define ILD_NORMAL 0x0000
+#define ILD_TRANSPARENT 0x0001
+#define ILD_BLEND25 0x0002
+#define ILD_FOCUS 0x0002
+#define ILD_SELECTED 0x0004
+#define ILD_MASK 0x0010
 #define ILC_MASK 0x1
 
 inline UINT RegisterWindowMessage(LPCSTR /*name*/)
@@ -553,3 +562,21 @@ inline int ctime_s(char* buf, size_t size, const time_t* t)
     snprintf(buf, size, "%s", tmp);
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// clipboard / global-memory stubs (EquippedGear import/export - never on the
+// calc path). All inert.
+// ---------------------------------------------------------------------------
+typedef void* HGLOBAL;
+#define CF_TEXT 1
+#define GMEM_MOVEABLE 0x0002
+inline BOOL   OpenClipboard(HWND) { return FALSE; }
+inline BOOL   CloseClipboard() { return TRUE; }
+inline BOOL   EmptyClipboard() { return TRUE; }
+inline HGLOBAL GetClipboardData(UINT) { return nullptr; }
+inline HGLOBAL SetClipboardData(UINT, HGLOBAL) { return nullptr; }
+inline HGLOBAL GlobalAlloc(UINT, size_t) { return nullptr; }
+inline HGLOBAL GlobalFree(HGLOBAL) { return nullptr; }
+inline void*  GlobalLock(HGLOBAL h) { return h; }
+inline BOOL   GlobalUnlock(HGLOBAL) { return TRUE; }
+inline size_t GlobalSize(HGLOBAL) { return 0; }

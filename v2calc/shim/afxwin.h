@@ -5,6 +5,9 @@
 // headers pulled in by the DDOBuilder calculation core. UI classes are
 // inert: they compile but do nothing.
 #pragma once
+#ifndef __AFXWIN_H__
+#define __AFXWIN_H__
+#endif
 
 #include <windows.h> // v2calc shim
 
@@ -335,6 +338,9 @@ class CSize
     public:
         CSize() : cx(0), cy(0) {}
         CSize(int w, int h) : cx(w), cy(h) {}
+        // MFC provides CSize(DWORD) (lo/hi word split); some call sites rely on
+        // the implicit conversion from an integer/bool through it.
+        CSize(DWORD dw) : cx((short)(dw & 0xffff)), cy((short)((dw >> 16) & 0xffff)) {}
         int cx;
         int cy;
 };
@@ -347,6 +353,8 @@ class CRect
         int Width() const { return right - left; }
         int Height() const { return bottom - top; }
         template <typename P> BOOL PtInRect(const P&) const { return FALSE; }
+        CPoint TopLeft() const { return CPoint(left, top); }
+        CPoint BottomRight() const { return CPoint(right, bottom); }
         int left, top, right, bottom;
 };
 
@@ -371,6 +379,7 @@ class CBitmap
         BOOL DeleteObject() { return TRUE; }
 };
 
+class CDC;
 class CImageList
 {
     public:
@@ -382,6 +391,7 @@ class CImageList
         BOOL DeleteImageList() { return TRUE; }
         BOOL SetOverlayImage(int, int) { return TRUE; }
         HANDLE GetSafeHandle() const { return nullptr; }
+        template <typename P> BOOL Draw(CDC*, int, const P&, UINT) { return TRUE; }
 };
 
 class CFont
@@ -491,6 +501,18 @@ class CFormView : public CView
         virtual void DoDataExchange(CDataExchange*) {}
 };
 
+class CFile
+{
+    public:
+        enum OpenFlags { modeRead = 0, modeWrite = 1, modeCreate = 2, shareDenyNone = 0x40, typeBinary = 0x100, typeText = 0x200 };
+        CFile() {}
+        virtual ~CFile() {}
+        BOOL Open(LPCTSTR, UINT, void* = nullptr) { return FALSE; }
+        UINT Read(void*, UINT) { return 0; }
+        void Write(const void*, UINT) {}
+        ULONGLONG GetLength() const { return 0; }
+        void Close() {}
+};
 class CArchive {};
 class CDocument : public CCmdTarget
 {
@@ -553,7 +575,20 @@ typedef CArray<UINT> CUIntArray;
 typedef CArray<BYTE> CByteArray;
 typedef CArray<void*> CPtrArray;
 typedef CArray<CString> CStringArray;
-class CWinApp : public CCmdTarget {};
+class CWinApp : public CCmdTarget
+{
+    public:
+        virtual ~CWinApp() {}
+        UINT GetProfileInt(LPCTSTR, LPCTSTR, int defaultValue) { return (UINT)defaultValue; }
+        BOOL WriteProfileInt(LPCTSTR, LPCTSTR, int) { return TRUE; }
+        CString GetProfileString(LPCTSTR, LPCTSTR, LPCTSTR defaultValue = nullptr)
+        {
+            return CString(defaultValue != nullptr ? defaultValue : "");
+        }
+        BOOL WriteProfileString(LPCTSTR, LPCTSTR, LPCTSTR) { return TRUE; }
+        CWnd* m_pMainWnd = nullptr;
+};
+class CWinAppEx : public CWinApp {};
 
 // ---------------------------------------------------------------------------
 // runtime-class machinery (RUNTIME_CLASS is only ever passed around as an
@@ -610,21 +645,13 @@ inline int AfxMessageBox(LPCTSTR text, UINT type = MB_OK, UINT helpId = 0)
     return IDOK;
 }
 
-class CWinAppShim
+// Headless: no application object exists. AfxGetApp returns a base CWinApp so
+// dynamic_cast<CDDOBuilderApp*>(...) yields null and callers fall back to their
+// default (the real app only supplies UI/registry state, never calc data - that
+// comes through the game-data globals in GlobalDataLinux.cpp).
+inline CWinApp* AfxGetApp()
 {
-    public:
-        UINT GetProfileInt(LPCTSTR, LPCTSTR, int defaultValue) { return (UINT)defaultValue; }
-        BOOL WriteProfileInt(LPCTSTR, LPCTSTR, int) { return TRUE; }
-        CString GetProfileString(LPCTSTR, LPCTSTR, LPCTSTR defaultValue = nullptr)
-        {
-            return CString(defaultValue != nullptr ? defaultValue : "");
-        }
-        BOOL WriteProfileString(LPCTSTR, LPCTSTR, LPCTSTR) { return TRUE; }
-};
-
-inline CWinAppShim* AfxGetApp()
-{
-    static CWinAppShim s_app;
+    static CWinApp s_app;
     return &s_app;
 }
 

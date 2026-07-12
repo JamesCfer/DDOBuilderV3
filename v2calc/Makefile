@@ -94,14 +94,66 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/SpellDC.cpp \
     $(ROOT)/DDOBuilder/SpellDamage.cpp \
     $(ROOT)/DDOBuilder/SpellDice.cpp \
-    $(ROOT)/DDOBuilder/BonusDice.cpp
+    $(ROOT)/DDOBuilder/BonusDice.cpp \
+    $(ROOT)/DDOBuilder/AbilitySpend.cpp \
+    $(ROOT)/DDOBuilder/ActiveStances.cpp \
+    $(ROOT)/DDOBuilder/ArtifactFiligree.cpp \
+    $(ROOT)/DDOBuilder/AttackBuff.cpp \
+    $(ROOT)/DDOBuilder/AttackChain.cpp \
+    $(ROOT)/DDOBuilder/Augment.cpp \
+    $(ROOT)/DDOBuilder/Buff.cpp \
+    $(ROOT)/DDOBuilder/Challenge.cpp \
+    $(ROOT)/DDOBuilder/CompletedQuest.cpp \
+    $(ROOT)/DDOBuilder/DestinySpendInTree.cpp \
+    $(ROOT)/DDOBuilder/Destiny_SelectedTrees.cpp \
+    $(ROOT)/DDOBuilder/EnhancementSelection.cpp \
+    $(ROOT)/DDOBuilder/EnhancementSpendInTree.cpp \
+    $(ROOT)/DDOBuilder/EnhancementTree.cpp \
+    $(ROOT)/DDOBuilder/EnhancementTreeItem.cpp \
+    $(ROOT)/DDOBuilder/Enhancement_SelectedTrees.cpp \
+    $(ROOT)/DDOBuilder/EquippedGear.cpp \
+    $(ROOT)/DDOBuilder/ExclusionGroup.cpp \
+    $(ROOT)/DDOBuilder/FeatsListObject.cpp \
+    $(ROOT)/DDOBuilder/Filigree.cpp \
+    $(ROOT)/DDOBuilder/Gem.cpp \
+    $(ROOT)/DDOBuilder/GuildBuff.cpp \
+    $(ROOT)/DDOBuilder/Item.cpp \
+    $(ROOT)/DDOBuilder/ItemAugment.cpp \
+    $(ROOT)/DDOBuilder/ItemBuff.cpp \
+    $(ROOT)/DDOBuilder/LevelTraining.cpp \
+    $(ROOT)/DDOBuilder/ObserverSubject.cpp \
+    $(ROOT)/DDOBuilder/OptionalBuff.cpp \
+    $(ROOT)/DDOBuilder/Quest.cpp \
+    $(ROOT)/DDOBuilder/ReaperSpendInTree.cpp \
+    $(ROOT)/DDOBuilder/Reaper_SelectedTrees.cpp \
+    $(ROOT)/DDOBuilder/SelectedEnhancementTrees.cpp \
+    $(ROOT)/DDOBuilder/SelectedTrees.cpp \
+    $(ROOT)/DDOBuilder/SetBonus.cpp \
+    $(ROOT)/DDOBuilder/SetBonusBuff.cpp \
+    $(ROOT)/DDOBuilder/SkillTomes.cpp \
+    $(ROOT)/DDOBuilder/SlotUpgrade.cpp \
+    $(ROOT)/DDOBuilder/SpellListAddition.cpp \
+    $(ROOT)/DDOBuilder/SpendInTree.cpp \
+    $(ROOT)/DDOBuilder/StackTracking.cpp \
+    $(ROOT)/DDOBuilder/TrainedEnhancement.cpp \
+    $(ROOT)/DDOBuilder/TrainedFeat.cpp \
+    $(ROOT)/DDOBuilder/TrainedFiligree.cpp \
+    $(ROOT)/DDOBuilder/TrainedSkill.cpp \
+    $(ROOT)/DDOBuilder/TrainedSpell.cpp \
+    $(ROOT)/DDOBuilder/WeaponFiligree.cpp \
+    $(ROOT)/DDOBuilder/WeaponGroup.cpp \
+    $(ROOT)/DDOBuilder/WeaponGroupRequirements.cpp \
+    $(ROOT)/DDOBuilder/Selector.cpp \
+    $(ROOT)/DDOBuilder/EquipmentSlot.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
     $(V2CALC_DIR)/shim/GlobalsLinux.cpp \
     $(V2CALC_DIR)/shim/VectorConversionLinux.cpp \
     $(V2CALC_DIR)/shim/DocStub.cpp \
-    $(V2CALC_DIR)/shim/GlobalDataLinux.cpp
+    $(V2CALC_DIR)/shim/GlobalDataLinux.cpp \
+    $(V2CALC_DIR)/shim/UIStub.cpp \
+    $(V2CALC_DIR)/shim/UIPaneStub.cpp
 
 MAIN_SRC := $(V2CALC_DIR)/src/main.cpp
 
@@ -133,10 +185,11 @@ farm:
 	    b=$$(basename $$h); \
 	    ln -sf "$$h" '$(FARM)/XmlLib\'"$$b"; \
 	done
-	@# resource.h is UTF-16; convert to UTF-8 (and strip BOM) so gcc can read
-	@# it. rm first: writing through a stale symlink would truncate the source!
+	@# resource.h is plain UTF-8/ASCII (converted once from its original UTF-16
+	@# so it is readable on both g++ and the Windows RC compiler). The farm just
+	@# provides the case-variant name "Resource.h" for includers that use it.
 	@rm -f '$(FARM)/Resource.h'
-	@iconv -f UTF-16 -t UTF-8 $(ROOT)/DDOBuilder/resource.h | sed 's/^\xEF\xBB\xBF//' > '$(FARM)/Resource.h'
+	@ln -sf $(ROOT)/DDOBuilder/resource.h '$(FARM)/Resource.h'
 	@ln -sf $(V2CALC_DIR)/shim/v2calc_stdafx.h '$(FARM)/stdafx.h'
 	@ln -sf $(V2CALC_DIR)/shim/v2calc_stdafx.h '$(FARM)/StdAfx.h'
 	@ln -sf $(ROOT)/DDOBuilder/stdafx.h '$(FARM)/v2calc_ddobuilder_stdafx.h'
