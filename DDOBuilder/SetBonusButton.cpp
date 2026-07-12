@@ -5,11 +5,10 @@
 #include "SetBonusButton.h"
 #include "Character.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColor = CLR_DDO_SELECT;
+    COLORREF f_selectedColor = RGB(128, 0, 0);
 }
 
 #pragma warning(push)
@@ -22,7 +21,7 @@ BEGIN_MESSAGE_MAP(CSetBonusButton, CStatic)
 END_MESSAGE_MAP()
 #pragma warning(pop)
 
-CSetBonusButton::CSetBonusButton(Character * charData, const SetBonus& setBonus) :
+CSetBonusButton::CSetBonusButton(Character* charData, const SetBonus& setBonus) :
     m_pCharacter(charData),
     m_setBonus(setBonus),
     m_stacks(0)         // stack count updated later
@@ -59,7 +58,7 @@ void CSetBonusButton::OnPaint()
     rect -= rect.TopLeft(); // convert to client rectangle
 
     // fill the background
-    pdc.FillSolidRect(rect, CLR_DDO_BG_PANEL);
+    pdc.FillSolidRect(rect, GetSysColor(COLOR_BTNFACE));
     m_image.TransparentBlt(
             pdc.GetSafeHdc(),
             3,

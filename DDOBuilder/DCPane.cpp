@@ -10,10 +10,10 @@ namespace
     const int c_windowSizeY = 48;
 }
 
-IMPLEMENT_DYNCREATE(CDCPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CDCPane, CFormView)
 
 CDCPane::CDCPane() :
-    CDDOFormView(CDCPane::IDD),
+    CFormView(CDCPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL),
     m_tipCreated(false),
@@ -35,7 +35,7 @@ void CDCPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CDCPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CDCPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -60,7 +60,7 @@ void CDCPane::Dump(CDumpContext& dc) const
 
 void CDCPane::OnInitialUpdate()
 {
-    CDDOFormView::OnInitialUpdate();
+    CFormView::OnInitialUpdate();
     if (!m_tipCreated)
     {
         m_tooltip.Create(this);

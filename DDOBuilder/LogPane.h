@@ -1,6 +1,5 @@
 
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -30,7 +29,7 @@ enum LogLevel
 };
 
 class CLogPane :
-    public CDDOFormView
+    public CFormView
 {
 // Construction
 public:

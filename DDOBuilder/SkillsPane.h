@@ -1,14 +1,13 @@
 // SkillsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 
 #include "Character.h"
 #include "SkillSpendControl.h"
 
 class CSkillsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public LifeObserver,
     public BuildObserver
@@ -28,6 +27,7 @@ class CSkillsPane :
         afx_msg BOOL OnEraseBkgnd(CDC* pDC);
         afx_msg LRESULT OnNewDocument(WPARAM wParam, LPARAM lParam);
         afx_msg LRESULT OnLoadComplete(WPARAM, LPARAM);
+        afx_msg LRESULT OnUpdate(WPARAM, LPARAM);
         DECLARE_MESSAGE_MAP()
 
         // CharacterObserver

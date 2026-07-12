@@ -5,7 +5,6 @@
 #include "SLAControl.h"
 #include "GlobalSupportFunctions.h"
 #include "Spell.h"
-#include "DDOTheme.h"
 
 namespace
 {
@@ -15,8 +14,8 @@ namespace
         SI_count
     };
     const int c_slaSlotImageSize = 36; // 36 * 36 pixels
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
 }
 
 // global image data used for drawing all enhancements trees.

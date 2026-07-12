@@ -7,11 +7,10 @@
 #include "GlobalSupportFunctions.h"
 #include "StancesPane.h"
 #include "MainFrm.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColor = CLR_DDO_SELECT;
+    COLORREF f_selectedColor = RGB(128, 0, 0);
 }
 
 #pragma warning(push)
@@ -24,7 +23,7 @@ BEGIN_MESSAGE_MAP(CStanceButton, CStatic)
 END_MESSAGE_MAP()
 #pragma warning(pop)
 
-CStanceButton::CStanceButton(Character * charData, const Stance & stance) :
+CStanceButton::CStanceButton(Character* charData, const Stance& stance) :
     m_pCharacter(charData),
     m_stance(stance),
     m_bSelected(false),
@@ -132,15 +131,15 @@ void CStanceButton::OnPaint()
     // fill the background
     if (m_bDisabled)
     {
-        pdc.FillSolidRect(rect, CLR_DDO_RED_DARK);
+        pdc.FillSolidRect(rect, RGB(255, 0, 0));
     }
     else if (m_bSelected)
     {
-        pdc.FillSolidRect(rect, CLR_DDO_ORANGE_DIM);
+        pdc.FillSolidRect(rect, GetSysColor(COLOR_HIGHLIGHT));
     }
     else
     {
-        pdc.FillSolidRect(rect, CLR_DDO_BG_PANEL);
+        pdc.FillSolidRect(rect, GetSysColor(COLOR_BTNFACE));
     }
     long size = static_cast<LONG>(32 * dScaleFactor);
     m_image.Draw(
@@ -171,7 +170,7 @@ bool CStanceButton::IsDisabled() const
     return m_bDisabled;
 }
 
-const Stance & CStanceButton::GetStance() const
+const Stance& CStanceButton::GetStance() const
 {
     return m_stance;
 }
@@ -201,7 +200,7 @@ size_t CStanceButton::NumStacks() const
     return m_stacks;
 }
 
-bool CStanceButton::IsYou(const Stance & stance)
+bool CStanceButton::IsYou(const Stance& stance)
 {
     return (stance == m_stance);
 }

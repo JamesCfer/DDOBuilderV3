@@ -7,10 +7,10 @@
 #include "GlobalSupportFunctions.h"
 #include "MainFrm.h"
 
-IMPLEMENT_DYNCREATE(CAutomaticFeatsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CAutomaticFeatsPane, CFormView)
 
 CAutomaticFeatsPane::CAutomaticFeatsPane() :
-    CDDOFormView(CAutomaticFeatsPane::IDD),
+    CFormView(CAutomaticFeatsPane::IDD),
     m_pCharacter(NULL),
     m_bHadInitialUpdate(false)
 {
@@ -28,7 +28,7 @@ void CAutomaticFeatsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CAutomaticFeatsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CAutomaticFeatsPane, CFormView)
     ON_WM_SIZE()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
     ON_REGISTERED_MESSAGE(UWM_LOAD_COMPLETE, OnLoadComplete)
@@ -94,7 +94,7 @@ void CAutomaticFeatsPane::OnInitialUpdate()
     if (!m_bHadInitialUpdate)
     {
         m_bHadInitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
     }
 }
 

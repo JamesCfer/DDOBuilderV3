@@ -35,9 +35,8 @@
 #include "StancesPane.h"
 #include "CItemImageDialog.h"
 #include "CWeaponImageDialog.h"
-#include "CDDOVisualManager.h"
+#include "CMFCVisualManagerOffice2007DarkMode.h"
 #include "WikiLinkDlg.h"
-#include "DDOLog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,6 +51,8 @@ const UINT uiFirstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
 const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
+    ON_UPDATE_COMMAND_UI_RANGE(IDC_FILIGREE_MENU_IDS_START_HERE, IDC_FILIGREE_MENU_IDS_START_HERE + c_maxFiligreeCount, &CMainFrame::OnUpdateFiligree)
+    ON_COMMAND_RANGE(IDC_FILIGREE_MENU_IDS_START_HERE, IDC_FILIGREE_MENU_IDS_START_HERE + c_maxFiligreeCount, &CMainFrame::OnFiligree)
     ON_WM_CREATE()
     ON_WM_SIZE()
     // Global help commands
@@ -108,7 +109,9 @@ CMainFrame::CMainFrame() :
     m_bWikiProcessing(false)
 {
     CopyDefaultIniToDDOBuilderIni();
-    theApp.m_nAppLook = ID_VIEW_APPLOOK_OFF_2007_BLACK; // kept for registry compat; ignored by new engine
+    theApp.m_nAppLook = theApp.GetInt(
+            _T("ApplicationLook"),
+            ID_VIEW_APPLOOK_OFF_2007_BLUE);
 }
 
 CMainFrame::~CMainFrame()
@@ -128,21 +131,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     AfxGetApp()->m_pMainWnd = this;
 
     BOOL bNameValid;
-    // Install the DDO visual engine and enable Win32 dark title bar.
-    LOG_INFO("OnCreate: installing CDDOVisualManager");
-    CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CDDOVisualManager));
-    CDockingManager::SetDockingMode(DT_SMART);
-    {
-        BOOL bDark = TRUE;
-        ::DwmSetWindowAttribute(
-            GetSafeHwnd(),
-            DWMWA_USE_IMMERSIVE_DARK_MODE,
-            &bDark, sizeof(bDark));
-    }
+    // set the visual manager and style based on persisted value
+    OnApplicationLook(theApp.m_nAppLook);
 
     if (!m_wndMenuBar.Create(this))
     {
-        LOG_ERROR("OnCreate: failed to create menu bar");
         TRACE0("Failed to create menu bar\n");
         return -1;      // fail to create
     }
@@ -152,10 +145,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // prevent the menu bar from taking the focus on activation
     CMFCPopupMenu::SetForceMenuFocus(FALSE);
 
-    if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_LEFT | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+    if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
         !m_wndToolBar.LoadToolBar(theApp.m_bHiColorIcons ? IDR_MAINFRAME_256 : IDR_MAINFRAME))
     {
-        LOG_ERROR("OnCreate: failed to create toolbar");
         TRACE0("Failed to create tool bar\n");
         return -1;      // fail to create
     }
@@ -185,7 +177,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
     EnableDocking(CBRS_ALIGN_ANY);
     DockPane(&m_wndMenuBar);
-    DockPane(&m_wndToolBar, AFX_IDW_DOCKBAR_LEFT);
+    DockPane(&m_wndToolBar);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -200,10 +192,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     EnableAutoHidePanes(CBRS_ALIGN_RIGHT);
 
     // create docking windows
-    LOG_INFO("OnCreate: creating docking windows");
     if (!CreateDockingWindows())
     {
-        LOG_ERROR("OnCreate: failed to create docking windows");
         TRACE0("Failed to create docking windows\n");
         return -1;
     }
@@ -223,7 +213,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         }
     }
     CMFCPopupMenu::SetSendMenuSelectMsg(TRUE);
-    LOG_INFO("OnCreate: complete");
     return 0;
 }
 
@@ -259,132 +248,105 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 BOOL CMainFrame::CreateDockingWindows()
 {
     // create the floating views
-    // ---- Bottom strip: Log + Stances + AutoFeats + GrantedFeats -----------
-    CCustomDockablePane * pLogPane = CreateDockablePane(
+    CCustomDockablePane* pLogPane = CreateDockablePane(
             "Log",
             GetActiveDocument(),
             RUNTIME_CLASS(CLogPane),
-            ID_DOCK_LOG,
-            AFX_IDW_DOCKBAR_BOTTOM);
+            ID_DOCK_LOG);
     pLogPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    // has to be created before builds bane for correct operation
+    // on build switch/load
+    CCustomDockablePane* pBreakdownsPane = CreateDockablePane(
+            "Breakdowns",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CBreakdownsPane),
+            ID_DOCK_BREAKDOWNS);
+    pBreakdownsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
     CCustomDockablePane* pStancesPane = CreateDockablePane(
             "Stances",
             GetActiveDocument(),
             RUNTIME_CLASS(CStancesPane),
-            ID_DOCK_STANCES,
-            AFX_IDW_DOCKBAR_BOTTOM);
+            ID_DOCK_STANCES);
     pStancesPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pClassAndLevel = CreateDockablePane(
+            "Class and Levels",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CClassAndFeatPane),
+            ID_DOCK_CLASSFEATS);
+    pClassAndLevel->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pSkills = CreateDockablePane(
+            "Skills",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CSkillsPane),
+            ID_DOCK_SKILLS);
+    pSkills->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pSpecialFeats = CreateDockablePane(
+            "Past Lives and Special Feats",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CSpecialFeatPane),
+            ID_DOCK_SPECIALFEATS);
+    pSpecialFeats->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pEnhancementsPane = CreateDockablePane(
+            "Enhancements",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CEnhancementsPane),
+            ID_DOCK_ENHANCEMENTS);
+    pEnhancementsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pDestinyPane = CreateDockablePane(
+            "Epic Destinies",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CDestinyPane),
+            ID_DOCK_DESTINY);
+    pDestinyPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
     CCustomDockablePane* pAutomaticFeatsPane = CreateDockablePane(
             "Automatic Feats",
             GetActiveDocument(),
             RUNTIME_CLASS(CAutomaticFeatsPane),
-            ID_DOCK_AUTOMATICFEATS,
-            AFX_IDW_DOCKBAR_BOTTOM);
+            ID_DOCK_AUTOMATICFEATS);
     pAutomaticFeatsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
     CCustomDockablePane* pGrantedFeatsPane = CreateDockablePane(
             "Granted Feats",
             GetActiveDocument(),
             RUNTIME_CLASS(CGrantedFeatsPane),
-            ID_DOCK_GRANTEDFEATS,
-            AFX_IDW_DOCKBAR_BOTTOM);
+            ID_DOCK_GRANTEDFEATS);
     pGrantedFeatsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    // ---- Right column: ClassAndLevel group + Enhancements group + Breakdowns
-    CCustomDockablePane * pClassAndLevel = CreateDockablePane(
-            "Class and Levels",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CClassAndFeatPane),
-            ID_DOCK_CLASSFEATS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pClassAndLevel->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    CCustomDockablePane * pSkills = CreateDockablePane(
-            "Skills",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CSkillsPane),
-            ID_DOCK_SKILLS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pSkills->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    CCustomDockablePane * pSpecialFeats = CreateDockablePane(
-            "Past Lives and Special Feats",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CSpecialFeatPane),
-            ID_DOCK_SPECIALFEATS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pSpecialFeats->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    CCustomDockablePane* pEquipmentPane = CreateDockablePane(
-            "Gear and Filigrees",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CEquipmentPane),
-            ID_DOCK_EQUIPMENT,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pEquipmentPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    CCustomDockablePane* pSpellsPane = CreateDockablePane(
-            "Spells and SLAs",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CSpellsPane),
-            ID_DOCK_SPELLS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pSpellsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    CCustomDockablePane* pEnhancementsPane = CreateDockablePane(
-            "Enhancements",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CEnhancementsPane),
-            ID_DOCK_ENHANCEMENTS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pEnhancementsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
     CCustomDockablePane* pReaperEnhancementsPane = CreateDockablePane(
             "Reaper Enhancements",
             GetActiveDocument(),
             RUNTIME_CLASS(CReaperEnhancementsPane),
-            ID_DOCK_REAPERENHANCEMENTS,
-            AFX_IDW_DOCKBAR_RIGHT);
+            ID_DOCK_REAPERENHANCEMENTS);
     pReaperEnhancementsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
-    CCustomDockablePane* pDestinyPane = CreateDockablePane(
-            "Epic Destinies",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CDestinyPane),
-            ID_DOCK_DESTINY,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pDestinyPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    // Breakdowns docks to the right on its own
-    // has to be created before builds pane for correct operation on build switch/load
-    CCustomDockablePane* pBreakdownsPane = CreateDockablePane(
-            "Breakdowns",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CBreakdownsPane),
-            ID_DOCK_BREAKDOWNS,
-            AFX_IDW_DOCKBAR_RIGHT);
-    pBreakdownsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    // ---- Left column: Builds -----------------------------------------------
-    // Builds pane must be created last, so that panes are initialised
-    // correctly in order after a file load event
-    CCustomDockablePane* pBuildsPane = CreateDockablePane(
-            "Builds",
-            GetActiveDocument(),
-            RUNTIME_CLASS(CBuildsPane),
-            ID_DOCK_BUILDS,
-            AFX_IDW_DOCKBAR_LEFT);
-    pBuildsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
-
-    // ---- Floating secondary panes (user can arrange as desired) ------------
     CCustomDockablePane* pDCsPane = CreateDockablePane(
             "DCs",
             GetActiveDocument(),
             RUNTIME_CLASS(CDCPane),
             ID_DOCK_DCS);
     pDCsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pEquipmentPane = CreateDockablePane(
+            "Gear and Filigrees",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CEquipmentPane),
+            ID_DOCK_EQUIPMENT);
+    pEquipmentPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
+    CCustomDockablePane* pSpellsPane = CreateDockablePane(
+            "Spells and SLAs",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CSpellsPane),
+            ID_DOCK_SPELLS);
+    pSpellsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
     CCustomDockablePane* pFavorPane = CreateDockablePane(
             "Quests and Favor",
@@ -428,6 +390,15 @@ BOOL CMainFrame::CreateDockingWindows()
             ID_DOCK_BONUSES);
     pBonusesPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
 
+    // Builds pane must be created last, so that panes are initialised
+    // correctly in order after a file load event
+    CCustomDockablePane* pBuildsPane = CreateDockablePane(
+            "Builds",
+            GetActiveDocument(),
+            RUNTIME_CLASS(CBuildsPane),
+            ID_DOCK_BUILDS);
+    pBuildsPane->SetDocumentAndCharacter(GetActiveDocument(), NULL);
+
     return TRUE;
 }
 
@@ -460,10 +431,87 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp,LPARAM lp)
     return lres;
 }
 
-void CMainFrame::OnApplicationLook(UINT /*id*/)
+void CMainFrame::OnApplicationLook(UINT id)
 {
-    // The DDO visual engine is the only look – no switching.
-    // Notify views so they can refresh any theme-dependent state.
+    CWaitCursor wait;
+    BOOL bDark = FALSE;
+
+    theApp.m_nAppLook = id;
+
+    switch (theApp.m_nAppLook)
+    {
+    case ID_VIEW_APPLOOK_WIN_2000:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManager));
+        break;
+
+    case ID_VIEW_APPLOOK_OFF_XP:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOfficeXP));
+        break;
+
+    case ID_VIEW_APPLOOK_WIN_XP:
+        CMFCVisualManagerWindows::m_b3DTabsXPTheme = TRUE;
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+        break;
+
+    case ID_VIEW_APPLOOK_OFF_2003:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2003));
+        CDockingManager::SetDockingMode(DT_SMART);
+        break;
+
+    case ID_VIEW_APPLOOK_VS_2005:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerVS2005));
+        CDockingManager::SetDockingMode(DT_SMART);
+        break;
+
+    case ID_VIEW_APPLOOK_VS_2008:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerVS2008));
+        CDockingManager::SetDockingMode(DT_SMART);
+        break;
+
+    case ID_VIEW_APPLOOK_WINDOWS_7:
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows7));
+        CDockingManager::SetDockingMode(DT_SMART);
+        break;
+
+    default:
+        {
+            switch (theApp.m_nAppLook)
+            {
+            case ID_VIEW_APPLOOK_OFF_2007_BLUE:
+                CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_LunaBlue);
+                break;
+
+            case ID_VIEW_APPLOOK_OFF_2007_BLACK:
+                CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_ObsidianBlack);
+                bDark = TRUE;
+                break;
+
+            case ID_VIEW_APPLOOK_OFF_2007_SILVER:
+                CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_Silver);
+                break;
+
+            case ID_VIEW_APPLOOK_OFF_2007_AQUA:
+                CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_Aqua);
+                break;
+            }
+
+            ::DwmSetWindowAttribute(
+                GetSafeHwnd(),
+                DWMWA_USE_IMMERSIVE_DARK_MODE,
+                &bDark,
+                sizeof(bDark));
+            CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007DarkMode));
+            CDockingManager::SetDockingMode(DT_SMART);
+            if (bDark == TRUE)
+            {
+                CMFCVisualManager* pVisMan = CMFCVisualManager::GetInstance();
+                CMFCVisualManagerOffice2007DarkMode* pDarkVisMan = dynamic_cast<CMFCVisualManagerOffice2007DarkMode*>(pVisMan);
+                pDarkVisMan->UpdateColours();
+            }
+        }
+    }
+    // notify all windows that the theme has changed
+    // do the same for all docked windows also
     CDocument* pDoc = GetActiveDocument();
     if (pDoc != NULL)
     {
@@ -471,19 +519,21 @@ void CMainFrame::OnApplicationLook(UINT /*id*/)
         while (pos != NULL)
         {
             CView* pView = pDoc->GetNextView(pos);
-            pView->SendMessage(UWM_THEME_CHANGED, TRUE /*bDark*/, 0L);
+            pView->SendMessage(UWM_THEME_CHANGED, bDark, 0L);
         }
     }
+
     RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ERASE);
+
+    theApp.WriteInt(_T("ApplicationLook"), theApp.m_nAppLook);
 }
 
 void CMainFrame::OnUpdateApplicationLook(CCmdUI* pCmdUI)
 {
-    // Single DDO look is always active; disable all the old look-switcher items.
-    pCmdUI->Enable(FALSE);
+    pCmdUI->SetRadio(theApp.m_nAppLook == pCmdUI->m_nID);
 }
 
-BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParentWnd, CCreateContext* pContext)
+BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParentWnd, CCreateContext* pContext) 
 {
     // base class does the real work
     if (!CFrameWndEx::LoadFrame(nIDResource, dwDefaultStyle, pParentWnd, pContext))
@@ -519,12 +569,12 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
     // do the same for all docked windows also
     for (size_t i = 0; i < m_dockablePanes.size(); ++i)
     {
-        //CView * pView = m_dockablePanes[i]->GetView();
+        //CView* pView = m_dockablePanes[i]->GetView();
         //pView->SendMessage(WM_SETTINGCHANGE, uFlags, lpszSection);
     }
 }
 
-void CMainFrame::NewDocument(CDDOBuilderDoc * pDoc)
+void CMainFrame::NewDocument(CDDOBuilderDoc* pDoc)
 {
     // make sure all the windows know who is the active document
     // there is always a document as this is an SDI application
@@ -540,14 +590,11 @@ void CMainFrame::NewDocument(CDDOBuilderDoc * pDoc)
 }
 
 CCustomDockablePane* CMainFrame::CreateDockablePane(
-        const char* paneTitle,
-        CDocument* doc,
+        const char* paneTitle, 
+        CDocument* doc, 
         CRuntimeClass* runtimeClass,
-        UINT viewID,
-        UINT nDockBarID)
+        UINT viewID)
 {
-    LOG_INFO("CreateDockablePane: \"%s\" (id=%u)", paneTitle, viewID);
-
     CCreateContext createContext;
     createContext.m_pCurrentDoc = doc;
     createContext.m_pNewViewClass = runtimeClass;
@@ -556,57 +603,49 @@ CCustomDockablePane* CMainFrame::CreateDockablePane(
     // Assorted functionality is applied to all panes
     m_dockablePanes.push_back(pane);
 
-    BOOL ok = pane->Create(
+    pane->Create(
             _T(paneTitle),
             this,
             CRect(0,0,400,400),
             TRUE,
             viewID,
-            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI,
+            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI, 
             32UL,
             15UL,
             &createContext);
-    if (!ok)
-    {
-        LOG_ERROR("CreateDockablePane: Create() failed for \"%s\" – aborting pane", paneTitle);
-        return pane;   // pane returned but m_view==NULL; SetDocumentAndCharacter guards against this
-    }
-
     pane->EnableDocking(CBRS_ALIGN_ANY);
-    LOG_INFO("CreateDockablePane: \"%s\" docking (dockBarID=%u)", paneTitle, nDockBarID);
-    DockPane(pane, nDockBarID);
+    DockPane(pane);
 
-    LOG_INFO("CreateDockablePane: \"%s\" done", paneTitle);
     return pane;
 }
 
-CLogPane & CMainFrame::GetLog()
+CLogPane& CMainFrame::GetLog()
 {
-    CView * pView = m_dockablePanes[0]->GetView();
-    CLogPane * pLogPane = dynamic_cast<CLogPane*>(pView);
+    CView* pView = m_dockablePanes[0]->GetView();
+    CLogPane* pLogPane = dynamic_cast<CLogPane*>(pView);
     return *pLogPane;
 }
 
 BOOL CMainFrame::OnCmdMsg(
         UINT nID,
         int nCode,
-        void * pExtra,
-        AFX_CMDHANDLERINFO * pHandlerInfo)
+        void* pExtra,
+        AFX_CMDHANDLERINFO* pHandlerInfo)
 {
     BOOL bReturn = FALSE;
 
     // offer the message to any views for the active open document
     POSITION pos = AfxGetApp()->m_pDocManager->GetFirstDocTemplatePosition();
-    CDocTemplate * pTemplate = AfxGetApp()->m_pDocManager->GetNextDocTemplate(pos);
+    CDocTemplate* pTemplate = AfxGetApp()->m_pDocManager->GetNextDocTemplate(pos);
     pos = pTemplate->GetFirstDocPosition();
-    CDocument * pDoc = pTemplate->GetNextDoc(pos);
+    CDocument* pDoc = pTemplate->GetNextDoc(pos);
 
     if (pDoc != NULL)
     {
         pos = pDoc->GetFirstViewPosition();
         while (pos != NULL && bReturn == FALSE)
         {
-            CView * pView = pDoc->GetNextView(pos);
+            CView* pView = pDoc->GetNextView(pos);
             if (pView != NULL)
             {
                 bReturn = pView->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
@@ -642,7 +681,7 @@ void CMainFrame::AddSmallClassImageMenuIcons()
     // as we add the class images dynamically later, we end up replacing the tool bar
     // menu commands images as they use the same index otherwise
     // TBD: Sort out the transparent background colour for these images
-    CMFCToolBarImages * toolbarImages = CMFCToolBar::GetMenuImages();
+    CMFCToolBarImages* toolbarImages = CMFCToolBar::GetMenuImages();
     {
         CBitmap bitmap;
         bitmap.LoadBitmap(IDR_MAINFRAME_256);
@@ -651,9 +690,9 @@ void CMainFrame::AddSmallClassImageMenuIcons()
 
     // add all the class images to the available tool bar toolbarImages
     // so they show correctly in drop menus
-    const std::list<Class> & classes = Classes();
+    const std::list<Class>& classes = Classes();
     // load all the small images for each class
-    CCommandManager * commandManager = GetCmdMgr(); 
+    CCommandManager* commandManager = GetCmdMgr(); 
     const CSize menuimgsize = CMFCToolBar::GetMenuImageSize(); 
     ASSERT(menuimgsize.cx == 16 && menuimgsize.cy == 15);
 
@@ -781,7 +820,7 @@ void CMainFrame::LoadComplete()
     AddSmallClassImageMenuIcons();
 
     // do the documents views (usually only 1)
-    CDocument * pDoc = GetActiveDocument();
+    CDocument* pDoc = GetActiveDocument();
     if (pDoc != NULL)
     {
         POSITION pos = pDoc->GetFirstViewPosition();
@@ -1043,8 +1082,8 @@ void CMainFrame::OnResetScreenLayout()
     // sides they need to be able to recover these. We need to do a layout reset
     // of all window locations. This is done by loading the layout profile
     // from "DefaultWorkspace" in the DDOBuilder.ini file
-    CWinApp * pApp = AfxGetApp();
-    CWinAppEx * pAppEx = dynamic_cast<CWinAppEx*>(pApp);
+    CWinApp* pApp = AfxGetApp();
+    CWinAppEx* pAppEx = dynamic_cast<CWinAppEx*>(pApp);
     if (pApp != NULL)
     {
         ShowWindow(SW_HIDE);    // hide windows while update occurs
@@ -1098,3 +1137,23 @@ void CMainFrame::OnEnableDPIScaling()
     }
 }
 
+void CMainFrame::OnUpdateFiligree(CCmdUI* pCmdUI)
+{
+    CEquipmentPane* pPane = dynamic_cast<CEquipmentPane*>(GetPaneView(RUNTIME_CLASS(CEquipmentPane)));
+    pPane->OnUpdateFiligree(pCmdUI);
+}
+
+void CMainFrame::OnFiligree(UINT id)
+{
+    CEquipmentPane* pPane = dynamic_cast<CEquipmentPane*>(GetPaneView(RUNTIME_CLASS(CEquipmentPane)));
+    pPane->OnFiligree(id);
+}
+
+void CMainFrame::GetMessageString(UINT nID, CString& rMessage) const
+{
+    rMessage = "";
+    CFrameWndEx::GetMessageString(nID, rMessage);
+    CMainFrame* pNonConst = const_cast<CMainFrame*>(this);
+    CEquipmentPane* pPane = dynamic_cast<CEquipmentPane*>(pNonConst->GetPaneView(RUNTIME_CLASS(CEquipmentPane)));
+    pPane->OnFiligreeSelect(nID);
+}

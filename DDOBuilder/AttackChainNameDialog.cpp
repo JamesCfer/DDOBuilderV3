@@ -2,19 +2,18 @@
 //
 #include "stdafx.h"
 #include "AttackChainNameDialog.h"
-#include "DDODialog.h"
 
 #include "Character.h"
 
 // CAttackChainNameDialog dialog
 
-IMPLEMENT_DYNAMIC(CAttackChainNameDialog, CDDODialog)
+IMPLEMENT_DYNAMIC(CAttackChainNameDialog, CDialog)
 
 CAttackChainNameDialog::CAttackChainNameDialog(
         CWnd* pParent,
         const Character* pCharacter,
         const std::string& defaultName) :
-    CDDODialog(CAttackChainNameDialog::IDD, pParent),
+    CDialog(CAttackChainNameDialog::IDD, pParent),
     m_pCharacter(pCharacter),
     m_name(defaultName)
 {
@@ -30,7 +29,7 @@ void CAttackChainNameDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT_GEAR_SET_NAME, m_editAttackChainName);
 }
 
-BEGIN_MESSAGE_MAP(CAttackChainNameDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CAttackChainNameDialog, CDialog)
 END_MESSAGE_MAP()
 
 // CAttackChainNameDialog message handlers
@@ -54,7 +53,7 @@ void CAttackChainNameDialog::OnOK()
     }
     else
     {
-        const std::list<AttackChain> & setups = m_pCharacter->ActiveBuild()->AttackChains();
+        const std::list<AttackChain>& setups = m_pCharacter->ActiveBuild()->AttackChains();
         bool unique = true;
         std::list<AttackChain>::const_iterator it = setups.begin();
         while (unique && it != setups.end())

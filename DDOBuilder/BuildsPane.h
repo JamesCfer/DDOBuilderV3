@@ -1,6 +1,5 @@
 // CBuildsPane form view
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 
@@ -13,7 +12,7 @@ enum TreeEntryItem
 };
 
 class CBuildsPane :
-    public CDDOFormView,
+    public CFormView,
     CharacterObserver,
     LifeObserver,
     BuildObserver

@@ -1,7 +1,6 @@
 // ItemSelectDialog.h
 #pragma once
 #include "Resource.h"
-#include "DDODialog.h"
 #include "InventorySlotTypes.h"
 #include "Item.h"
 #include "SortHeaderCtrl.h"
@@ -10,7 +9,7 @@
 
 class Build;
 
-class CItemSelectDialog : public CDDODialog
+class CItemSelectDialog : public CDialog
 {
     public:
         CItemSelectDialog(

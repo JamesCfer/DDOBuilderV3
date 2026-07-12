@@ -2,7 +2,6 @@
 //
 #include "stdafx.h"
 #include "SelectionSelectDialog.h"
-#include "DDODialog.h"
 #include "afxdialogex.h"
 #include "Build.h"
 #include "EnhancementTreeItem.h"
@@ -11,15 +10,15 @@
 
 // CSelectionSelectDialog dialog
 
-IMPLEMENT_DYNAMIC(CSelectionSelectDialog, CDDODialog)
+IMPLEMENT_DYNAMIC(CSelectionSelectDialog, CDialog)
 
 CSelectionSelectDialog::CSelectionSelectDialog(
         CWnd* pParent,
-        Build & build,
-        const EnhancementTreeItem & item,
+        Build& build,
+        const EnhancementTreeItem& item,
         const std::string& treeName,
         TreeType type) :
-    CDDODialog(CSelectionSelectDialog::IDD, pParent),
+    CDialog(CSelectionSelectDialog::IDD, pParent),
     m_build(build),
     m_item(item),
     m_treeName(treeName),
@@ -48,7 +47,7 @@ void CSelectionSelectDialog::DoDataExchange(CDataExchange* pDX)
     }
 }
 
-BEGIN_MESSAGE_MAP(CSelectionSelectDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CSelectionSelectDialog, CDialog)
     ON_WM_LBUTTONDOWN()
     ON_WM_MOUSEMOVE()
     ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
@@ -72,8 +71,8 @@ BOOL CSelectionSelectDialog::OnInitDialog()
     m_tipCreated = true;
 
      // set the button icons and text and enable states
-    const Selector & selector = m_item.Selections();
-    const std::list<EnhancementSelection> & selections = selector.Selections();
+    const Selector& selector = m_item.Selections();
+    const std::list<EnhancementSelection>& selections = selector.Selections();
     ASSERT(selections.size() <= c_maxSelections);
     std::list<EnhancementSelection>::const_iterator it = selections.begin();
     size_t index = 0;
@@ -93,12 +92,12 @@ BOOL CSelectionSelectDialog::OnInitDialog()
         m_costs[index] = (*it).Cost(0); // always 1st rank cost
         m_selections[index] = (*it).Name();
         bool excluded = false;
-        const std::list<std::string> & exclusions = selector.Exclusions();
+        const std::list<std::string>& exclusions = selector.Exclusions();
         // check all the exclusions
         std::list<std::string>::const_iterator eit = exclusions.begin();
         while (eit != exclusions.end())
         {
-            const TrainedEnhancement * te = m_build.IsTrained((*eit), "");
+            const TrainedEnhancement* te = m_build.IsTrained((*eit), "");
             if (te != NULL)
             {
                 // this previous enhancement is trained, see what was selected
@@ -151,7 +150,7 @@ void CSelectionSelectDialog::OnMouseMove(UINT nFlags, CPoint point)
     UNREFERENCED_PARAMETER(nFlags);
     // determine which selection button the mouse may be over
     CRect itemRect;
-    CWnd * pWnd = ChildWindowFromPoint(point);
+    CWnd* pWnd = ChildWindowFromPoint(point);
     if (pWnd != NULL
             && pWnd != m_pTooltipItem)
     {
@@ -183,7 +182,7 @@ LRESULT CSelectionSelectDialog::OnMouseLeave(WPARAM wParam, LPARAM lParam)
     CPoint point;
     GetCursorPos(&point);
     ScreenToClient(&point);
-    CWnd * pWnd = ChildWindowFromPoint(point);
+    CWnd* pWnd = ChildWindowFromPoint(point);
     if (pWnd != m_pTooltipItem)
     {
         // hide any tooltip when the mouse leave the area its being shown for
@@ -204,8 +203,8 @@ LRESULT CSelectionSelectDialog::OnMouseLeave(WPARAM wParam, LPARAM lParam)
 
 void CSelectionSelectDialog::ShowTip(size_t index, CRect itemRect)
 {
-    const Selector & selector = m_item.Selections();
-    const std::list<EnhancementSelection> & selections = selector.Selections();
+    const Selector& selector = m_item.Selections();
+    const std::list<EnhancementSelection>& selections = selector.Selections();
     ASSERT(selections.size() <= c_maxSelections);
     std::list<EnhancementSelection>::const_iterator it = selections.begin();
     std::advance(it, index);
@@ -239,7 +238,7 @@ void CSelectionSelectDialog::HideTip()
 }
 
 void CSelectionSelectDialog::SetTooltipText(
-        const EnhancementSelection & item,
+        const EnhancementSelection& item,
         CPoint tipTopLeft,
         CPoint tipAlternate)
 {
@@ -259,7 +258,7 @@ void CSelectionSelectDialog::OnLButtonDown(UINT nFlags, CPoint point)
     // identify the clicked on option if any
     GetCursorPos(&point);
     ScreenToClient(&point);
-    CWnd * pWnd = ChildWindowFromPoint(point);
+    CWnd* pWnd = ChildWindowFromPoint(point);
     for (size_t i = 0; i < c_maxSelections; ++i)
     {
         if (pWnd == &m_buttonOption[i]

@@ -8,7 +8,6 @@
 #include "EnhancementTreeItem.h"
 #include "SetBonus.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 
 bool InfoTipItem::s_bFontsCreated = false;
 CFont InfoTipItem::s_standardFont;
@@ -202,7 +201,7 @@ void InfoTipItem_Header::Draw(CDC* pDC, const CRect& rect)
     CSize sizeCost = pDC->GetTextExtent(m_cost);
     CSize sizeRanks = pDC->GetTextExtent(m_ranks);
     pDC->TextOut(rect.right - c_controlSpacing - sizeCost.cx, rect.top + c_controlSpacing, m_cost);
-    COLORREF old = pDC->SetTextColor(RGB(100, 190, 80));
+    COLORREF old = pDC->SetTextColor(RGB(0,128, 0));
     pDC->TextOut(rect.right - c_controlSpacing - sizeRanks.cx, rect.top + c_controlSpacing + sizeCost.cy, m_ranks);
     pDC->SetTextColor(old);
     pDC->RestoreDC(-1);
@@ -281,10 +280,10 @@ void InfoTipItem_SLAHeader::Draw(CDC* pDC, const CRect& rect)
         chargesText.Format("%d / %d Charges", m_nCharges, m_nCharges);
     }
 
-    CBrush greenBrush(RGB(18, 55, 25));
+    CBrush greenBrush(RGB(24, 74, 34));
     pDC->FillRect(rctCharges, &greenBrush);
 
-    pDC->SetTextColor(RGB(155, 220, 125));
+    pDC->SetTextColor(RGB(185, 233, 175));
     rctCharges.top += c_controlSpacing;
 
     pDC->DrawText(chargesText, rctCharges, DT_CENTER | DT_VCENTER | DT_EXPANDTABS | DT_NOPREFIX);
@@ -438,7 +437,7 @@ void InfoTipItem_Requirements::Draw(CDC* pDC, const CRect& rect)
     pDC->RestoreDC(-1);
 }
 
-// multiline text item
+// multi-line text item
 void InfoTipItem_MultilineText::SetText(const CString& text)
 {
     m_text = text;
@@ -536,7 +535,7 @@ CSize InfoTipItem_Metamagics::Measure(CDC* pDC)
 {
     // +--------------------+
     // |     Metamagics     |
-    // | [][][][][][][][][] | each [] is a metamgic icon which is 32*32
+    // | [][][][][][][][][] | each [] is a metamagic icon which is 32*32
     // +--------------------+
     double dScaleFactor = GetDPIMultiplier(m_hwnd);
     pDC->SaveDC();

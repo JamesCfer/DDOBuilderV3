@@ -2,7 +2,6 @@
 //
 #include "stdafx.h"
 #include "FeatsClassControl.h"
-#include "DDOTheme.h"
 
 #include "AutomaticFeatsPane.h"
 #include "GlobalSupportFunctions.h"
@@ -11,6 +10,7 @@
 #include "Feat.h"
 #include "Race.h"
 #include "Resource.h"
+#include "SkillsPane.h"
 #include "MainFrm.h"
 
 // CFeatsClassControl
@@ -18,11 +18,11 @@ namespace
 {
     const int c_FeatColumnWidth = 200;      // pixels
     const int c_dudLevel = MAX_BUILDER_LEVEL + 1;
-    COLORREF f_selectedColour       = CLR_DDO_SELECT;
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
-    COLORREF f_white                = CLR_DDO_TEXT;
-    COLORREF f_black                = CLR_DDO_BG_DARKEST;
+    COLORREF f_selectedColour = ::GetSysColor(COLOR_HIGHLIGHT);
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
+    COLORREF f_white = RGB(255, 255, 255);                      // white
+    COLORREF f_black = RGB(0, 0, 0);                            // black
     const int c_NumComboItems = 28;                             // seems to show 27 items at this setting
 }
 
@@ -34,9 +34,10 @@ CFeatsClassControl::CFeatsClassControl() :
     m_maxRequiredFeats(0),
     m_numClassColumns(0),
     m_bUpdatePending(false),
-    m_highlightedLevelLine(c_dudLevel),   // starts invalid
-    m_lastNotifiedLevelLine(c_dudLevel),   // starts invalid
-    m_alternateHighlightedLevelLine(c_dudLevel), // starts invalid
+    m_highlightedLevelLine(c_dudLevel),         // starts invalid
+    m_lastNotifiedLevelLine(c_dudLevel),        // starts invalid
+    m_alternateHighlightedLevelLine(c_dudLevel),// starts invalid
+    m_selectedLevelLine(c_dudLevel),            // starts invalid
     m_showingTip(false),
     m_tipCreated(false),
     m_tooltipItem(HT_None, CRect(0, 0, 0, 0), 0, 0),
@@ -168,7 +169,7 @@ CSize CFeatsClassControl::RequiredSize()
                 height += m_levelRect.Height() + 2;
             }
         }
-        height += 2;    // border
+        height += 4;    // border
         requiredSize.cx = width;
         requiredSize.cy = height;
         screenDC.RestoreDC(-1);
@@ -274,8 +275,8 @@ void CFeatsClassControl::OnPaint()
     memoryDc.FillRect(rctWindow, &normalBackgroundBrush);
     memoryDc.Draw3dRect(
             rctWindow,
-            CLR_DDO_BORDER,
-            CLR_DDO_BORDER_LT);
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
     memoryDc.SetTextColor(bDarkMode ? f_white : f_black);
 
     if (m_pCharacter != NULL)
@@ -337,8 +338,8 @@ size_t CFeatsClassControl::DrawTopLine(CDC* pDC)
         rctItem.right = rctItem.left + static_cast<LONG>(32 * dScaleFactor) + 3;
         pDC->Draw3dRect(
                 rctItem,
-                bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         const std::string& ct = (m_pCharacter->ActiveBuild() != NULL)
                 ? m_pCharacter->ActiveBuild()->Class(cc)
                 : "Unknown";
@@ -366,8 +367,8 @@ size_t CFeatsClassControl::DrawTopLine(CDC* pDC)
         rctItem.right = rctItem.left + static_cast<int>(c_FeatColumnWidth * dScaleFactor);
         pDC->Draw3dRect(
                 rctItem,
-                bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         CSize csText = pDC->GetTextExtent("1"); // just need the height of text
         pDC->TextOut(
                 rctItem.left,
@@ -397,8 +398,8 @@ size_t CFeatsClassControl::DrawTopLine(CDC* pDC)
             rctItem.right = rctItem.left + csText.cx;
             pDC->Draw3dRect(
                     rctItem,
-                    bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                    bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                    bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                    bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
             pDC->TextOut(
                     rctItem.left,
                     rctItem.top + (rctItem.Height() - csText.cy) / 2,
@@ -419,8 +420,8 @@ size_t CFeatsClassControl::DrawTopLine(CDC* pDC)
             rctItem.right = rctItem.left + csText.cx;
             pDC->Draw3dRect(
                     rctItem,
-                    bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                    bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                    bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                    bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
             pDC->TextOut(
                     rctItem.left,
                     rctItem.top + (rctItem.Height() - csText.cy) / 2,
@@ -443,15 +444,16 @@ size_t CFeatsClassControl::DrawLevelLine(
     bool bDarkMode = DarkModeEnabled();
     if (true == bDarkMode)
     {
-        if (level == m_highlightedLevelLine)
+        if (level == m_highlightedLevelLine
+            || level == m_selectedLevelLine)
         {
-            pDC->SetTextColor(CLR_DDO_GOLD_BRIGHT);
-            fillBrush.CreateSolidBrush(CLR_DDO_SELECT);
+            pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+            fillBrush.CreateSolidBrush(::GetSysColor(COLOR_HIGHLIGHT));
         }
         else if (level == m_alternateHighlightedLevelLine)
         {
-            pDC->SetTextColor(CLR_DDO_GOLD_BRIGHT);
-            fillBrush.CreateSolidBrush(CLR_DDO_RED_DARK);
+            pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+            fillBrush.CreateSolidBrush(RGB(0xFF, 0xB6, 0xC1)); // light pink
         }
         else
         {
@@ -461,15 +463,16 @@ size_t CFeatsClassControl::DrawLevelLine(
     }
     else
     {
-        if (level == m_highlightedLevelLine)
+        if (level == m_highlightedLevelLine
+            || level == m_selectedLevelLine)
         {
-            pDC->SetTextColor(CLR_DDO_GOLD_BRIGHT);
-            fillBrush.CreateSolidBrush(CLR_DDO_SELECT);
+            pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+            fillBrush.CreateSolidBrush(::GetSysColor(COLOR_HIGHLIGHT));
         }
         else if (level == m_alternateHighlightedLevelLine)
         {
-            pDC->SetTextColor(CLR_DDO_GOLD_BRIGHT);
-            fillBrush.CreateSolidBrush(CLR_DDO_RED_DARK);
+            pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+            fillBrush.CreateSolidBrush(RGB(0xFF, 0xB6, 0xC1)); // light pink
         }
         else
         {
@@ -493,8 +496,8 @@ size_t CFeatsClassControl::DrawLevelLine(
     }
     pDC->Draw3dRect(
             rctItem,
-            CLR_DDO_BORDER,
-            CLR_DDO_BORDER_LT);
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
     {
         CRect rctFill(rctItem);
         rctFill.DeflateRect(1, 1, 1, 1);
@@ -507,6 +510,8 @@ size_t CFeatsClassControl::DrawLevelLine(
             rctItem.left + (rctItem.Width() - csText.cx) / 2,
             rctItem.top + (rctItem.Height() - csText.cy) / 2,
             text);
+    HitCheckItem classLevelNumber(HT_LevelNumber, rctItem, level, 0);
+    m_hitChecks.push_back(classLevelNumber);
     // draw the selected class icon
     const std::string& classSelection = m_pCharacter->ActiveBuild()->LevelData(level).HasClass()
             ? m_pCharacter->ActiveBuild()->LevelData(level).Class()
@@ -517,8 +522,8 @@ size_t CFeatsClassControl::DrawLevelLine(
         rctItem.right = m_classRects[cc].right;
         pDC->Draw3dRect(
                 rctItem,
-                bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         CRect rctFill(rctItem);
         rctFill.DeflateRect(1, 1, 1, 1);
         pDC->FillRect(rctFill, &fillBrush);
@@ -570,8 +575,8 @@ size_t CFeatsClassControl::DrawLevelLine(
         rctItem.right = m_featRects[fc].right;
         pDC->Draw3dRect(
                 rctItem,
-                bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         CRect rctFill(rctItem);
         rctFill.DeflateRect(1, 1, 1, 1);
         pDC->FillRect(rctFill, &fillBrush);
@@ -586,8 +591,8 @@ size_t CFeatsClassControl::DrawLevelLine(
             rctItem.right = m_statRects[stats].right;
             pDC->Draw3dRect(
                     rctItem,
-                    bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                    bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                    bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                    bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
             CRect rctFill(rctItem);
             rctFill.DeflateRect(1, 1, 1, 1);
             pDC->FillRect(rctFill, &fillBrush);
@@ -620,8 +625,8 @@ size_t CFeatsClassControl::DrawLevelLine(
             rctItem.right = m_statRects[spellLevel].right;
             pDC->Draw3dRect(
                     rctItem,
-                    bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                    bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                    bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                    bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
             CRect rctFill(rctItem);
             rctFill.DeflateRect(1, 1, 1, 1);
             pDC->FillRect(rctFill, &fillBrush);
@@ -677,7 +682,7 @@ void CFeatsClassControl::DrawFeat(
         // name is blank if no feat currently trained
         if (tf.FeatName() != "")
         {
-            // does this tf have an alternate?
+            // does this trained feat have an alternate?
             if (tf.HasAlternateFeatName())
             {
                 // draw the alternate and the main feat item
@@ -782,6 +787,15 @@ LRESULT CFeatsClassControl::OnMouseLeave(WPARAM, LPARAM)
         m_highlightedLevelLine = c_dudLevel;
         Invalidate();
     }
+    if (m_lastNotifiedLevelLine != c_dudLevel
+        && m_selectedLevelLine == c_dudLevel)
+    {
+        CWnd* pWnd = AfxGetApp()->m_pMainWnd;
+        CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
+        CSkillsPane* pSkillsPane = dynamic_cast<CSkillsPane*>(
+                pMainWnd->GetPaneView(RUNTIME_CLASS(CSkillsPane)));
+        pSkillsPane->PostMessage(UWM_UPDATE, c_dudLevel, 0L); // wParam is level to display for
+    }
     if (m_showingTip)
     {
         HideTip();
@@ -812,7 +826,20 @@ void CFeatsClassControl::OnMouseMove(UINT nFlags, CPoint point)
         {
             m_highlightedLevelLine = overLevel;
             Invalidate();
-            if (m_highlightedLevelLine >= 0 && m_highlightedLevelLine < MAX_GAME_LEVEL)
+            if (m_selectedLevelLine >= 0 && m_selectedLevelLine < MAX_GAME_LEVEL)
+            {
+                m_lastNotifiedLevelLine = m_selectedLevelLine;
+                // let the automatic feats view know about the selection change
+                CWnd* pWnd = AfxGetApp()->m_pMainWnd;
+                CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
+                CAutomaticFeatsPane* pPane = dynamic_cast<CAutomaticFeatsPane*>(
+                        pMainWnd->GetPaneView(RUNTIME_CLASS(CAutomaticFeatsPane)));
+                pPane->PostMessage(UWM_UPDATE, m_lastNotifiedLevelLine, 0L); // wParam is level to display for
+                CSkillsPane* pSkillsPane = dynamic_cast<CSkillsPane*>(
+                        pMainWnd->GetPaneView(RUNTIME_CLASS(CSkillsPane)));
+                pSkillsPane->PostMessage(UWM_UPDATE, m_lastNotifiedLevelLine, 0L); // wParam is level to display for
+            }
+            else if (m_highlightedLevelLine >= 0 && m_highlightedLevelLine < MAX_GAME_LEVEL)
             {
                 m_lastNotifiedLevelLine = m_highlightedLevelLine;
                 // let the automatic feats view know about the selection change
@@ -821,6 +848,9 @@ void CFeatsClassControl::OnMouseMove(UINT nFlags, CPoint point)
                 CAutomaticFeatsPane* pPane = dynamic_cast<CAutomaticFeatsPane*>(
                         pMainWnd->GetPaneView(RUNTIME_CLASS(CAutomaticFeatsPane)));
                 pPane->PostMessage(UWM_UPDATE, m_lastNotifiedLevelLine, 0L); // wParam is level to display for
+                CSkillsPane* pSkillsPane = dynamic_cast<CSkillsPane*>(
+                        pMainWnd->GetPaneView(RUNTIME_CLASS(CSkillsPane)));
+                pSkillsPane->PostMessage(UWM_UPDATE, m_lastNotifiedLevelLine, 0L); // wParam is level to display for
             }
         }
         // hit check the mouse location and display feat tooltips if required
@@ -946,6 +976,19 @@ void CFeatsClassControl::OnLButtonUp(UINT nFlags, CPoint point)
     {
     case HT_None:
         // not on anything that can be interacted with
+        break;
+    case HT_LevelNumber:
+        // set/toggle the class level selection
+        if (m_selectedLevelLine != ht.Level())
+        {
+            m_selectedLevelLine = ht.Level();
+        }
+        else
+        {
+            // untoggle
+            m_selectedLevelLine = c_dudLevel;
+        }
+        Invalidate();
         break;
     case HT_Class1:
         // show the class select drop list menu

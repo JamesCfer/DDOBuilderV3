@@ -5,15 +5,14 @@
 
 #include "GlobalSupportFunctions.h"
 #include "Resource.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColour       = CLR_DDO_SELECT;
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
-    COLORREF f_white                = CLR_DDO_TEXT;
-    COLORREF f_black                = CLR_DDO_BG_DARKEST;
+    COLORREF f_selectedColour = ::GetSysColor(COLOR_HIGHLIGHT);
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
+    COLORREF f_white = RGB(255, 255, 255);                      // white
+    COLORREF f_black = RGB(0, 0, 0);                            // black
 }
 
 // CAutomaticFeatListControl
@@ -127,8 +126,8 @@ void CAutomaticFeatListControl::OnPaint()
     memoryDc.FillSolidRect(rctWindow, bDarkMode ? f_backgroundColourDark : f_backgroundColour);
     memoryDc.Draw3dRect(
             rctWindow,
-            CLR_DDO_BORDER,
-            CLR_DDO_BORDER_LT);
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
 
     m_headerItemSize.cx = rctWindow.Width();
     m_featItemSize.cx = rctWindow.Width();
@@ -138,8 +137,8 @@ void CAutomaticFeatListControl::OnPaint()
     CRect rctItem(0, top, m_headerItemSize.cx, top + m_headerItemSize.cy);
     memoryDc.Draw3dRect(
             rctItem,
-            CLR_DDO_BORDER,
-            CLR_DDO_BORDER_LT);
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
     CSize strSize = memoryDc.GetTextExtent(m_label.c_str());
     memoryDc.TextOut(
             rctItem.left + (rctItem.Width() - strSize.cx) / 2,
@@ -155,8 +154,8 @@ void CAutomaticFeatListControl::OnPaint()
         rctItem = CRect(0, top, m_headerItemSize.cx, top + m_featItemSize.cy);
         memoryDc.Draw3dRect(
                 rctItem,
-                bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-                bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         if ((int)iItemIndex == m_selectedItem)
         {
             CRect rctInterior(rctItem);

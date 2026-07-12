@@ -10,7 +10,6 @@
 #include "TreeListCtrl.h"
 #include "StancesPane.h"
 #include "MainFrm.h"
-#include "DDOTheme.h"
 
 bool BreakdownItem::s_bUpdatesLocked = false;
 
@@ -181,8 +180,8 @@ void BreakdownItem::Populate()
             }
             m_pTreeList->SetItemText(m_hItem, 1, Value());
             m_pTreeList->SetItemColor(m_hItem, m_bHasNonStackingEffects
-                    ? CLR_DDO_RED_BRIGHT
-                    : CLR_DDO_TEXT);
+                    ? COLORREF(RGB(255, 0, 0))
+                    : COLORREF(RGB(0, 0, 0)));
             if (m_pTreeList->GetSelectedItem() == m_hItem)
             {
                 // force an update if the actively viewed item has changed

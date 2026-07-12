@@ -5,10 +5,10 @@
 #include "GlobalSupportFunctions.h"
 #include "MainFrm.h"
 
-IMPLEMENT_DYNCREATE(CClassAndFeatPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CClassAndFeatPane, CFormView)
 
 CClassAndFeatPane::CClassAndFeatPane() :
-    CDDOFormView(CClassAndFeatPane::IDD),
+    CFormView(CClassAndFeatPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL),
     m_bHadInitialise(false),
@@ -31,7 +31,7 @@ void CClassAndFeatPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CClassAndFeatPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CClassAndFeatPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -65,7 +65,7 @@ void CClassAndFeatPane::OnInitialUpdate()
     if (!m_bHadInitialise)
     {
         m_bHadInitialise = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
         CString strLevel;
         for (size_t level = 1; level <= MAX_BUILDER_LEVEL; ++level)
         {
@@ -80,7 +80,7 @@ void CClassAndFeatPane::OnInitialUpdate()
 void CClassAndFeatPane::OnSize(UINT nType, int cx, int cy)
 {
     static CSize s_lastSize = CSize(0, 0);
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (IsWindow(m_featsAndClasses.GetSafeHwnd())
             && IsWindowVisible())
     {

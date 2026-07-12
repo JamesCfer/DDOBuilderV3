@@ -13,10 +13,10 @@ namespace
     const int c_windowSpacing = 0;
 }
 
-IMPLEMENT_DYNCREATE(CSpecialFeatPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CSpecialFeatPane, CFormView)
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CSpecialFeatPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CSpecialFeatPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -33,7 +33,7 @@ END_MESSAGE_MAP()
 
 
 CSpecialFeatPane::CSpecialFeatPane() :
-    CDDOFormView(CSpecialFeatPane::IDD),
+    CFormView(CSpecialFeatPane::IDD),
     m_pDoc(NULL),
     m_pCharacter(NULL)
 {
@@ -168,7 +168,7 @@ void CSpecialFeatPane::OnInitialUpdate()
 
 void CSpecialFeatPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     // move all our feat windows to be as many across as we can, then start the next row
     if (IsWindow(m_staticHeroic.GetSafeHwnd())
             && IsWindowVisible())

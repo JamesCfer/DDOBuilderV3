@@ -5,15 +5,14 @@
 
 #include "GlobalSupportFunctions.h"
 #include "Resource.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColour       = CLR_DDO_SELECT;
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
-    COLORREF f_white                = CLR_DDO_TEXT;
-    COLORREF f_black                = CLR_DDO_BG_DARKEST;
+    COLORREF f_selectedColour = ::GetSysColor(COLOR_HIGHLIGHT);
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
+    COLORREF f_white = RGB(255, 255, 255);                      // white
+    COLORREF f_black = RGB(0, 0, 0);                            // black
 }
 
 // CGrantedFeatListControl
@@ -141,8 +140,8 @@ void CGrantedFeatListControl::OnPaint()
     memoryDc.FillSolidRect(rctWindow, bDarkMode ? f_backgroundColourDark : f_backgroundColour);
     memoryDc.Draw3dRect(
             rctWindow,
-            bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-            bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
 
     if (m_pCharacter != NULL)
     {
@@ -173,8 +172,8 @@ size_t CGrantedFeatListControl::DrawSection(CDC* pDC, size_t iSection, size_t to
     CRect rctItem(0, top, m_headerItemSize.cx, top + m_headerItemSize.cy);
     pDC->Draw3dRect(
             rctItem,
-            bDarkMode ? CLR_DDO_BORDER : ::GetSysColor(COLOR_BTNHIGHLIGHT),
-            bDarkMode ? CLR_DDO_BORDER_LT : ::GetSysColor(COLOR_BTNSHADOW));
+            bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+            bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
     CString sectionName = m_sections[iSection].name;
     CSize strSize = pDC->GetTextExtent(sectionName);
     pDC->SetTextColor(bDarkMode ? f_white : f_black);
@@ -194,8 +193,8 @@ size_t CGrantedFeatListControl::DrawSection(CDC* pDC, size_t iSection, size_t to
         rctItem = CRect(0, top, m_headerItemSize.cx, top + m_featItemSize.cy);
         pDC->Draw3dRect(
                 rctItem,
-                CLR_DDO_BORDER,
-                CLR_DDO_BORDER_LT);
+                bDarkMode ? ::GetSysColor(COLOR_BTNSHADOW) : ::GetSysColor(COLOR_BTNHIGHLIGHT),
+                bDarkMode ? ::GetSysColor(COLOR_BTNHIGHLIGHT) : ::GetSysColor(COLOR_BTNSHADOW));
         if ((int)iSection == m_selectedSection
                 && (int)iItemIndex == m_selectedSectionItem)
         {

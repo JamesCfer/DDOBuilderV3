@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "FavorProgressBar.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 #include <algorithm>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -68,7 +67,7 @@ void CFavorProgressBar::OnPaint()
 
     CRect rect;
     GetClientRect(&rect);
-    CBrush brush(CLR_DDO_BG_DARK);
+    CBrush brush(GetSysColor(COLOR_HIGHLIGHT));
     pDC->FillRect(rect, &brush);
 
     // stop text drawing beyond the control edge on a resize
@@ -84,14 +83,14 @@ void CFavorProgressBar::OnPaint()
     CFont smallFont;
     smallFont.CreateFontIndirect(&lf);
     pDC->SelectObject(&smallFont);
-    pDC->SetBkMode(TRANSPARENT);
-    pDC->SetTextColor(CLR_DDO_TEXT_DIM);
-    CPen penTier(PS_SOLID, 1, CLR_DDO_BORDER_LT);
-    pDC->SelectObject(&penTier);
+    pDC->SetBkMode(TRANSPARENT); // don't erase the text background
+    pDC->SetTextColor(COLORREF(RGB(255, 255, 255)));   // white
+    CPen penWhite(PS_SOLID, 1, COLORREF(RGB(255, 255, 255)));
+    pDC->SelectObject(&penWhite);
 
     m_favorTiersPoints.clear();
-    CRect rectFilled(rect);
-    CRect rectEmpty(rect);
+    CRect rectRed(rect);
+    CRect rectWhite(rect);
     for (size_t tier = 0; tier < m_favorTiers.size(); ++tier)
     {
         CString tierText;
@@ -108,26 +107,26 @@ void CFavorProgressBar::OnPaint()
         if (xPos < 0) xPos = 0;
         else if (xPos + textSize.cx > rect.Width()) xPos = rect.right - textSize.cx - 1;
         pDC->TextOut(xPos, 0, tierText);
-        rectEmpty.top = textSize.cy;
-        rectFilled.top = textSize.cy;
+        rectWhite.top = textSize.cy;
+        rectRed.top = textSize.cy;
     }
-    m_favorHeight = rectEmpty.top;
+    m_favorHeight = rectWhite.top;
 
     int xCF = ((rect.Width() * m_currentFavor) / m_maxValue);
-    rectFilled.right = xCF - 1;
-    if (rectFilled.right > 0)
+    rectRed.right = xCF - 1;
+    if (rectRed.right > 0)
     {
-        CBrush brushProgress(CLR_DDO_RED);
-        pDC->FillRect(rectFilled, &brushProgress);
+        CBrush brushRed(COLORREF(RGB(255, 0, 0)));
+        pDC->FillRect(rectRed, &brushRed);
     }
-    CBrush brushEmpty(CLR_DDO_BG_DARKEST);
-    rectEmpty.left = xCF;
-    pDC->FillRect(rectEmpty, &brushEmpty);
+    CBrush brush2(GetSysColor(COLOR_BTNFACE));
+    rectWhite.left = xCF;
+    pDC->FillRect(rectWhite, &brush2);
 
-    CPen penDivider(PS_SOLID, 1, CLR_DDO_BORDER);
-    pDC->SelectObject(penDivider);
-    pDC->MoveTo(xCF-1, rectEmpty.top);
-    pDC->LineTo(xCF-1, rectEmpty.bottom + 1);
+    CPen pen(PS_SOLID, 1, COLORREF(RGB(0, 0, 0)));
+    pDC->SelectObject(pen);
+    pDC->MoveTo(xCF-1, rectWhite.top);
+    pDC->LineTo(xCF-1, rectWhite.bottom + 1);
 
     CFont* pDefaultGUIFont = CFont::FromHandle(
             (HFONT)GetStockObject(DEFAULT_GUI_FONT));
@@ -135,12 +134,12 @@ void CFavorProgressBar::OnPaint()
     CString favorText;
     favorText.Format("%s (%d / %d)", (LPCTSTR)m_patronName, m_currentFavor, m_maxValue);
     CSize textSize = pDC->GetTextExtent(favorText);
-    // text on unfilled side
-    pDC->SetTextColor(CLR_DDO_TEXT_DIM);
+    // one colour text for the unselected background
+    pDC->SetTextColor(COLORREF(RGB(0, 0, 0)));
     pDC->TextOut((rect.Width() - textSize.cx) / 2, rect.bottom - textSize.cy, favorText);
-    // brighter text on filled (progress) side
-    pDC->ExcludeClipRect(rectEmpty);
-    pDC->SetTextColor(CLR_DDO_TEXT);
+    // highlighted text colour for the selected background
+    pDC->ExcludeClipRect(rectWhite);
+    pDC->SetTextColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
     pDC->TextOut((rect.Width() - textSize.cx) / 2, rect.bottom - textSize.cy, favorText);
 
     pDC->RestoreDC(-1);

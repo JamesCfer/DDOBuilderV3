@@ -4,10 +4,10 @@
 #include "SkillsPane.h"
 #include "GlobalSupportFunctions.h"
 
-IMPLEMENT_DYNCREATE(CSkillsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CSkillsPane, CFormView)
 
 CSkillsPane::CSkillsPane() :
-    CDDOFormView(CSkillsPane::IDD),
+    CFormView(CSkillsPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL)
 {
@@ -29,17 +29,18 @@ void CSkillsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CSkillsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CSkillsPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
     ON_REGISTERED_MESSAGE(UWM_LOAD_COMPLETE, OnLoadComplete)
+    ON_REGISTERED_MESSAGE(UWM_UPDATE, OnUpdate)
 END_MESSAGE_MAP()
 #pragma warning(pop)
 
 void CSkillsPane::OnInitialUpdate()
 {
-    CDDOFormView::OnInitialUpdate();
+    CFormView::OnInitialUpdate();
 }
 
 LRESULT CSkillsPane::OnLoadComplete(WPARAM, LPARAM)
@@ -66,7 +67,7 @@ void CSkillsPane::OnSize(UINT nType, int cx, int cy)
         m_skillCtrl.MoveWindow(rctControl, TRUE);
         SetScrollSizes(MM_TEXT, requiredSize);
     }
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
 }
 
 LRESULT CSkillsPane::OnNewDocument(WPARAM wParam, LPARAM lParam)
@@ -174,3 +175,10 @@ void CSkillsPane::UpdateAbilityValueChanged(Build*, AbilityType ability)
         m_skillCtrl.Invalidate(FALSE);
     }
 }
+
+LRESULT CSkillsPane::OnUpdate(WPARAM wParam, LPARAM)
+{
+    m_skillCtrl.SetLevelHighlight(wParam); // wParam is the level to show for
+    return 0L;
+}
+

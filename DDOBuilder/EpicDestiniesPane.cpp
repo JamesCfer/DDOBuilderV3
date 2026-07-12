@@ -16,10 +16,10 @@ namespace
     COLORREF f_fatePointsOverspendColour = RGB(0xE9, 0x96, 0x7A); // dark salmon
 }
 
-IMPLEMENT_DYNCREATE(CEpicDestiniesPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CEpicDestiniesPane, CFormView)
 
 CEpicDestiniesPane::CEpicDestiniesPane() :
-    CDDOFormView(CEpicDestiniesPane::IDD),
+    CFormView(CEpicDestiniesPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL),
     m_showingTip(false),
@@ -53,7 +53,7 @@ void CEpicDestiniesPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CEpicDestiniesPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CEpicDestiniesPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -148,7 +148,7 @@ void CEpicDestiniesPane::OnInitialUpdate()
 {
     if (!m_bHadInitialUpdate)
     {
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
         m_tooltip.Create(this);
         m_tipCreated = true;
 
@@ -187,7 +187,7 @@ void CEpicDestiniesPane::OnInitialUpdate()
 
 void CEpicDestiniesPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (m_treeViews.size() > 0
             && IsWindow(m_treeViews[0]->GetSafeHwnd()))
     {
@@ -652,7 +652,7 @@ void CEpicDestiniesPane::UpdateFatePointsChanged(Build*)
 
 HBRUSH CEpicDestiniesPane::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
-    HBRUSH hbr = CDDOFormView::OnCtlColor(pDC, pWnd, nCtlColor);
+    HBRUSH hbr = CFormView::OnCtlColor(pDC, pWnd, nCtlColor);
     // colour the control based on whether the user has over spent
     // the number of fate points available. This can happen
     // if the number of available fate points changes.

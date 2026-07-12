@@ -44,10 +44,10 @@ namespace
     const char * f_treeSizeEntry = "TreeSize";
 }
 
-IMPLEMENT_DYNCREATE(CBreakdownsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CBreakdownsPane, CFormView)
 
 CBreakdownsPane::CBreakdownsPane() :
-    CDDOFormView(CBreakdownsPane::IDD),
+    CFormView(CBreakdownsPane::IDD),
     m_pCharacter(NULL),
     m_itemBreakdownTree(true, true),
     m_bDraggingDivider(false),
@@ -84,7 +84,7 @@ void CBreakdownsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CBreakdownsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CBreakdownsPane, CFormView)
     ON_WM_SIZE()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
     ON_REGISTERED_MESSAGE(UWM_LOAD_COMPLETE, OnLoadComplete)
@@ -207,7 +207,7 @@ void CBreakdownsPane::OnInitialUpdate()
     if (!m_bHadInitialUpdate)
     {
         m_bHadInitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
 
         m_treeSizePercent = AfxGetApp()->GetProfileInt(f_treeSizeKey, f_treeSizeEntry, 75);
         m_itemBreakdownTree.CreateEx(
@@ -220,15 +220,12 @@ void CBreakdownsPane::OnInitialUpdate()
                 1);
         m_itemBreakdownTree.InsertColumn(0, "Item", LVCFMT_LEFT, 250);
         m_itemBreakdownTree.InsertColumn(1, "Value", LVCFMT_LEFT, 75);
-        m_itemBreakdownTree.SetBkColor(CLR_DDO_BG_DARK);
-        m_itemBreakdownTree.SetTextColor(CLR_DDO_TEXT);
 
         m_itemBreakdownList.InsertColumn(0, "Breakdown source", LVCFMT_LEFT, 220);
         m_itemBreakdownList.InsertColumn(1, "Stacks", LVCFMT_LEFT, 50);
         m_itemBreakdownList.InsertColumn(2, "Value", LVCFMT_LEFT, 50);
         m_itemBreakdownList.InsertColumn(3, "Bonus Type", LVCFMT_LEFT, 50);
         m_itemBreakdownList.SetExtendedStyle(m_itemBreakdownList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_LABELTIP);
-        ApplyDDOTheme(m_itemBreakdownList);
         LoadColumnWidthsByName(&m_itemBreakdownList, "BreakdownList_%s");
         // Image for copy to clipboard button
         m_buttonDpsFile.SetImage(IDB_BITMAP_SAVE);

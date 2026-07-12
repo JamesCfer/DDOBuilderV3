@@ -15,7 +15,7 @@ static char THIS_FILE[] = __FILE__;
 // COutputBar
 
 CNotesPane::CNotesPane() :
-    CDDOFormView(CNotesPane::IDD),
+    CFormView(CNotesPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL)
 {
@@ -25,8 +25,8 @@ CNotesPane::~CNotesPane()
 {
 }
 
-IMPLEMENT_DYNCREATE(CNotesPane, CDDOFormView)
-BEGIN_MESSAGE_MAP(CNotesPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CNotesPane, CFormView)
+BEGIN_MESSAGE_MAP(CNotesPane, CFormView)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_EN_CHANGE(IDC_EDIT_NOTES, OnNotesChanged)
@@ -41,7 +41,7 @@ END_MESSAGE_MAP()
 
 void CNotesPane::OnInitialUpdate()
 {
-    CDDOFormView::OnInitialUpdate();
+    CFormView::OnInitialUpdate();
     UpdateFonts();
 }
 
@@ -73,7 +73,7 @@ void CNotesPane::DoDataExchange(CDataExchange* pDX)
 
 void CNotesPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (IsWindow(m_editNotes.GetSafeHwnd())
             && IsWindowVisible())
     {

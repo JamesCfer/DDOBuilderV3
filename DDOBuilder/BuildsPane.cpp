@@ -32,8 +32,8 @@ namespace
     }
 }
 
-IMPLEMENT_DYNCREATE(CBuildsPane, CDDOFormView)
-BEGIN_MESSAGE_MAP(CBuildsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CBuildsPane, CFormView)
+BEGIN_MESSAGE_MAP(CBuildsPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -57,7 +57,7 @@ BEGIN_MESSAGE_MAP(CBuildsPane, CDDOFormView)
 END_MESSAGE_MAP()
 
 CBuildsPane::CBuildsPane() :
-    CDDOFormView(CBuildsPane::IDD),
+    CFormView(CBuildsPane::IDD),
     m_pDoc(NULL),
     m_pCharacter(NULL),
     m_hPopupMenuItem(NULL),
@@ -119,7 +119,7 @@ void CBuildsPane::DoDataExchange(CDataExchange* pDX)
 
 void CBuildsPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (IsWindow(m_treeBuilds.GetSafeHwnd())
             && IsWindowVisible())
     {

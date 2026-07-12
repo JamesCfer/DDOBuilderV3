@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Resource.h"
-#include "DDODialog.h"
 #include "EnhancementTree.h"
 #include "InfoTip.h"
 #include "Character.h"
@@ -37,7 +36,7 @@ class DestinyHitBox
 
 // this dialog handles buying and revoking enhancements from epic destiny trees
 class CDestinyTreeDialog :
-    public CDDODialog,
+    public CDialog,
     public CharacterObserver
 {
     public:

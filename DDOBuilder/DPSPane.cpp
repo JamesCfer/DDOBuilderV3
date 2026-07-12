@@ -29,7 +29,7 @@ namespace
 // CDPSPane
 
 CDPSPane::CDPSPane() :
-    CDDOFormView(CDPSPane::IDD),
+    CFormView(CDPSPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL),
     m_bHadInitialUpdate(false),
@@ -44,8 +44,8 @@ CDPSPane::~CDPSPane()
 {
 }
 
-IMPLEMENT_DYNCREATE(CDPSPane, CDDOFormView)
-BEGIN_MESSAGE_MAP(CDPSPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CDPSPane, CFormView)
+BEGIN_MESSAGE_MAP(CDPSPane, CFormView)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
@@ -67,7 +67,7 @@ END_MESSAGE_MAP()
 
 void CDPSPane::OnInitialUpdate()
 {
-    CDDOFormView::OnInitialUpdate();
+    CFormView::OnInitialUpdate();
     if (!m_bHadInitialUpdate)
     {
         m_tooltip.Create(this);
@@ -116,7 +116,7 @@ void CDPSPane::DoDataExchange(CDataExchange* pDX)
 
 void CDPSPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (IsWindow(m_attackList.GetSafeHwnd())
             && IsWindowVisible())
     {

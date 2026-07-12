@@ -1,7 +1,6 @@
 // EnhancementsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include <list>
 #include <vector>
@@ -16,7 +15,7 @@ class Character;
 class CEnhancementTreeDialog;
 
 class CEnhancementsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public LifeObserver,
     public BuildObserver
