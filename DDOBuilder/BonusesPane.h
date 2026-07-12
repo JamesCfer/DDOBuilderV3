@@ -1,14 +1,13 @@
 // BonusesPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 #include "BreakdownItem.h"
 #include "CMFCButtonEx.h"
 
 class CBonusesPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public BreakdownObserver
 {

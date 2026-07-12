@@ -1,14 +1,13 @@
 // ClassAndFeatPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 #include "FeatsClassControl.h"
 #include "CMFCButtonEx.h"
 
 class CClassAndFeatPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public BuildObserver
 {

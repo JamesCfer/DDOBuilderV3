@@ -1,12 +1,11 @@
 // ContentPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 
 class CContentPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver
 {
 // Construction

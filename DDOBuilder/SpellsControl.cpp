@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "SpellsControl.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 #include "MainFrm.h"
 #include "BreakdownItem.h"
 #include "Class.h"
@@ -19,10 +18,10 @@ namespace
         SI_count
     };
     const int c_spellSlotImageSize = 36; // 36 * 36 pixels
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
-    COLORREF f_white                = CLR_DDO_TEXT;
-    COLORREF f_black                = CLR_DDO_BG_DARKEST;
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
+    COLORREF f_white = RGB(255, 255, 255);                      // white
+    COLORREF f_black = RGB(0, 0, 0);                            // black
     const int c_autoSpellOffset = 10;                           // in pixels
 }
 
@@ -266,7 +265,7 @@ void CSpellsControl::OnPaint()
                 {
                     std::list<TrainedSpell>::iterator it = trainedSpells.begin();
                     std::advance(it, spellIndex);
-                    const Spell & spell = FindClassSpellByName(m_pCharacter->ActiveBuild(), m_class, (*it).SpellName());
+                    const Spell& spell = FindClassSpellByName(m_pCharacter->ActiveBuild(), m_class, (*it).SpellName());
                     CImage spellImage;
                     HRESULT result = LoadImageFile(
                             "DataFiles\\SpellImages\\",
@@ -334,13 +333,13 @@ BOOL CSpellsControl::OnEraseBkgnd(CDC*)
     return TRUE;
 }
 
-const SpellHitBox * CSpellsControl::FindByPoint(CRect * pRect) const
+const SpellHitBox* CSpellsControl::FindByPoint(CRect* pRect) const
 {
     CPoint point;
     GetCursorPos(&point);
     ScreenToClient(&point);
     // see if we need to highlight the item under the cursor
-    const SpellHitBox * item = NULL;
+    const SpellHitBox* item = NULL;
     std::list<SpellHitBox>::const_iterator it = m_hitBoxes.begin();
     while (item == NULL && it != m_hitBoxes.end())
     {
@@ -362,7 +361,7 @@ void CSpellsControl::OnMouseMove(UINT, CPoint)
 {
     // determine which spell the mouse may be over
     CRect itemRect;
-    const SpellHitBox * item = FindByPoint(&itemRect);
+    const SpellHitBox* item = FindByPoint(&itemRect);
     if (item != NULL
             && item != m_pTooltipItem)
     {
@@ -388,13 +387,13 @@ LRESULT CSpellsControl::OnMouseLeave(WPARAM, LPARAM)
     return 0;
 }
 
-void CSpellsControl::SetCharacter(Character * pCharacter, const std::string& ct)
+void CSpellsControl::SetCharacter(Character* pCharacter, const std::string& ct)
 {
     m_pCharacter = pCharacter;
     if (m_pCharacter != NULL)
     {
         m_class = ct;
-        Build *pBuild = m_pCharacter->ActiveBuild();
+        Build* pBuild = m_pCharacter->ActiveBuild();
         // fixed spells change if character changes
         // we get updated with list for new character
         for (size_t i = 0; i < MAX_SPELL_LEVEL; ++i)
@@ -422,7 +421,7 @@ void CSpellsControl::SetCharacter(Character * pCharacter, const std::string& ct)
     }
 }
 
-void CSpellsControl::SetTrainableSpells(const std::vector<size_t> & spellsPerLevel)
+void CSpellsControl::SetTrainableSpells(const std::vector<size_t>& spellsPerLevel)
 {
     m_spellsPerLevel = spellsPerLevel;
     // re-draw on spell count change
@@ -467,7 +466,7 @@ LRESULT CSpellsControl::OnHoverComboBox(WPARAM wParam, LPARAM)
     return 0;
 }
 
-void CSpellsControl::ShowTip(const SpellHitBox & item, CRect itemRect)
+void CSpellsControl::ShowTip(const SpellHitBox& item, CRect itemRect)
 {
     if (m_showingTip)
     {
@@ -499,7 +498,7 @@ void CSpellsControl::HideTip()
 }
 
 void CSpellsControl::SetTooltipText(
-        const SpellHitBox & item,
+        const SpellHitBox& item,
         CPoint tipTopLeft,
         CPoint tipAlternate)
 {
@@ -656,7 +655,7 @@ void CSpellsControl::OnRButtonDown(UINT nFlags, CPoint point)
     if (m_hitBoxes.size() > 0)
     {
         // determine which spell slot has been clicked on
-        const SpellHitBox * item = FindByPoint();
+        const SpellHitBox* item = FindByPoint();
         if (item != NULL)
         {
             // only allow spell revocation if this is not a fixed spell (spellIndex < 0)
@@ -801,7 +800,7 @@ CSize CSpellsControl::RequiredSize()
 {
     CSize size(0, 0);
     // need to measure the standard text size for basic width.
-    CDC * pDC = GetDC();
+    CDC* pDC = GetDC();
     pDC->SaveDC();
     pDC->SelectStockObject(DEFAULT_GUI_FONT);
     CString levelLabel("Level 1");

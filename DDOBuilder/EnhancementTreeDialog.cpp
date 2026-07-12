@@ -3,9 +3,7 @@
 
 #include "stdafx.h"
 #include "EnhancementTreeDialog.h"
-#include "DDODialog.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 #include "LogPane.h"
 #include "SelectionSelectDialog.h"
 #include "MouseHook.h"
@@ -112,7 +110,7 @@ void CEnhancementTreeDialog::InitialiseStaticImages()
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CEnhancementTreeDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CEnhancementTreeDialog, CDialog)
     //{{AFX_MSG_MAP(CEnhancementTreeDialog)
     ON_WM_ERASEBKGND()
     ON_WM_PAINT()
@@ -133,7 +131,7 @@ CEnhancementTreeDialog::CEnhancementTreeDialog(
         Character* pCharacter,
         const EnhancementTree& tree,
         enum TreeType type) :
-    CDDODialog(CEnhancementTreeDialog::IDD, pParent),
+    CDialog(CEnhancementTreeDialog::IDD, pParent),
     m_pTree(&tree),
     m_type(type),
     m_pCharacter(pCharacter),
@@ -293,7 +291,7 @@ void CEnhancementTreeDialog::OnPaint()
                 32) != 0);
         CSize textSize = memoryDc.GetTextExtent(m_pTree->Name().c_str());
         memoryDc.SetBkMode(TRANSPARENT);
-        memoryDc.SetTextColor(CLR_DDO_TEXT);
+        memoryDc.SetTextColor(RGB(255, 255, 255));  // white
         memoryDc.TextOut(
                 c_iconLeft + 32 + c_controlSpacing,
                 c_iconTop + (32 - textSize.cy) / 2,

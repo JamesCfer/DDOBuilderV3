@@ -24,14 +24,16 @@ const FIX = join(__dirname, '..', '..', '..', 'Output', 'Example Builds', 'Maetr
 const have = existsSync(DATA) && existsSync(FIX)
 
 describe.skipIf(!have)('enhancement AP budget (V2 TT_allEnhancement)', () => {
-  it('imports Special feats and balances Maetrim at exactly 102 AP', () => {
+  it('imports Special feats and balances Maetrim at exactly 103 AP', () => {
+    // Upstream 2.0.0.81 updated this example build: a 4th Inherent Universal
+    // Action Point redemption (+1 UAP → 103 total) and Duergar past lives.
     const { build } = importV2Build(readFileSync(FIX, 'utf-8'))
     expect(build.pastLives['Inherent Racial Action Point']).toBe(3)
-    expect(build.pastLives['Inherent Universal Action Point']).toBe(3)
+    expect(build.pastLives['Inherent Universal Action Point']).toBe(4)
     const feats = loadFeats(DATA)
     const bonus = computeBonusActionPoints(build, feats)
-    expect(bonus.racial + bonus.universal).toBe(22)
-    expect(enhancementAPBudget(build, feats)).toBe(102) // 80 + 22 — V2-legal spend
+    expect(bonus.racial + bonus.universal).toBe(23)
+    expect(enhancementAPBudget(build, feats)).toBe(103) // 80 + 23 — V2-legal spend
     expect(build.enhancementPinned).toContain('Shintao')
     expect(build.enhancementPinned).toContain('Falconry')
   })

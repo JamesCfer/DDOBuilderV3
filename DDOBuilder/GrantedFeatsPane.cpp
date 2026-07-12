@@ -7,10 +7,10 @@
 #include "GlobalSupportFunctions.h"
 #include "MainFrm.h"
 
-IMPLEMENT_DYNCREATE(CGrantedFeatsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CGrantedFeatsPane, CFormView)
 
 CGrantedFeatsPane::CGrantedFeatsPane() :
-    CDDOFormView(CGrantedFeatsPane::IDD),
+    CFormView(CGrantedFeatsPane::IDD),
     m_pCharacter(NULL),
     m_bHadInitialUpdate(false),
     m_grantedHandle(0)
@@ -29,7 +29,7 @@ void CGrantedFeatsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CGrantedFeatsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CGrantedFeatsPane, CFormView)
     ON_WM_SIZE()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
     ON_REGISTERED_MESSAGE(UWM_LOAD_COMPLETE, OnLoadComplete)
@@ -95,7 +95,13 @@ void CGrantedFeatsPane::OnInitialUpdate()
     if (!m_bHadInitialUpdate)
     {
         m_bHadInitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
+
+        CWnd* pWnd = AfxGetApp()->m_pMainWnd;
+        CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
+        CBreakdownsPane* pBreakdownsPane = dynamic_cast<CBreakdownsPane*>(
+                pMainWnd->GetPaneView(RUNTIME_CLASS(CBreakdownsPane)));
+        pBreakdownsPane->RegisterBuildCallbackEffect(Effect_GrantFeat, this);
 
         m_listGrantedFeats.SetupControl();
     }
@@ -139,16 +145,6 @@ const std::list<Effect>& CGrantedFeatsPane::GrantedFeats() const
 
 LRESULT CGrantedFeatsPane::OnLoadComplete(WPARAM, LPARAM)
 {
-    // CBreakdownsPane is guaranteed to exist by this point (all panes created before load)
-    CWnd* pWnd = AfxGetApp()->m_pMainWnd;
-    CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
-    if (pMainWnd)
-    {
-        CBreakdownsPane* pBreakdownsPane = dynamic_cast<CBreakdownsPane*>(
-                pMainWnd->GetPaneView(RUNTIME_CLASS(CBreakdownsPane)));
-        if (pBreakdownsPane != NULL)
-            pBreakdownsPane->RegisterBuildCallbackEffect(Effect_GrantFeat, this);
-    }
     return 0;
 }
 

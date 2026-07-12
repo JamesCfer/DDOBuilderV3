@@ -1,7 +1,6 @@
 // DCPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 
 #include "Character.h"
@@ -9,7 +8,7 @@
 #include "InfoTip.h"
 
 class CDCPane :
-    public CDDOFormView,
+    public CFormView,
     public LifeObserver,
     public BuildObserver
 {

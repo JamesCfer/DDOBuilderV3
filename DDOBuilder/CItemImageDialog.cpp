@@ -4,17 +4,16 @@
 #include "StdAfx.h"
 #include "DDOBuilder.h"
 #include "CItemImageDialog.h"
-#include "DDODialog.h"
 #include "afxdialogex.h"
 #include "InventorySlotTypes.h"
 #include "GlobalSupportFunctions.h"
 
 // CItemImageDialog dialog
 
-IMPLEMENT_DYNAMIC(CItemImageDialog, CDDODialogEx)
+IMPLEMENT_DYNAMIC(CItemImageDialog, CDialogEx)
 
 CItemImageDialog::CItemImageDialog(CWnd* pParent /*=nullptr*/) :
-    CDDODialogEx(IDD_DIALOG_SETITEMIMAGES, pParent),
+    CDialogEx(IDD_DIALOG_SETITEMIMAGES, pParent),
     m_nextItem(0),
     m_selectedItemType(Inventory_Unknown)
 {
@@ -32,7 +31,7 @@ void CItemImageDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_LIST_ICONS, m_availableIcons);
 }
 
-BEGIN_MESSAGE_MAP(CItemImageDialog, CDDODialogEx)
+BEGIN_MESSAGE_MAP(CItemImageDialog, CDialogEx)
     ON_CBN_SELCHANGE(IDC_COMBO_ITEMTYPE, &CItemImageDialog::OnCbnSelchangeComboItemtype)
     ON_BN_CLICKED(IDC_BUTTON_START, &CItemImageDialog::OnBnClickedButtonStart)
     ON_BN_CLICKED(IDC_BUTTON_SETITEMIMAGE, &CItemImageDialog::OnBnClickedButtonSetitemimage)

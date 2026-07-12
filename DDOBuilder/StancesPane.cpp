@@ -12,10 +12,10 @@ namespace
     const int c_windowSizeGroupX = 48;
 }
 
-IMPLEMENT_DYNCREATE(CStancesPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CStancesPane, CFormView)
 
 CStancesPane::CStancesPane() :
-    CDDOFormView(CStancesPane::IDD),
+    CFormView(CStancesPane::IDD),
     m_pCharacter(NULL),
     m_pLastBuild(NULL),
     m_pDocument(NULL),
@@ -41,7 +41,7 @@ void CStancesPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CStancesPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CStancesPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -71,7 +71,7 @@ void CStancesPane::OnInitialUpdate()
     if (!m_bHadInitialUpdate)
     {
         m_bHadInitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
         m_tooltip.Create(this);
         m_tipCreated = true;
     }

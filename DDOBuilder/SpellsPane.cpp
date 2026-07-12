@@ -9,10 +9,10 @@
 #include "SpellsPage.h"
 #include "SpellLikeAbilityPage.h"
 
-IMPLEMENT_DYNCREATE(CSpellsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CSpellsPane, CFormView)
 
 CSpellsPane::CSpellsPane() :
-    CDDOFormView(CSpellsPane::IDD),
+    CFormView(CSpellsPane::IDD),
     m_pCharacter(NULL),
     m_pDocument(NULL),
     m_bHadInitialUpdate(false)
@@ -39,7 +39,7 @@ void CSpellsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CSpellsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CSpellsPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -79,7 +79,7 @@ void CSpellsPane::OnInitialUpdate()
     if (!m_bHadInitialUpdate)
     {
         m_bHadInitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
     }
 }
 

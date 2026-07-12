@@ -1,13 +1,12 @@
 // SelfAndPartyBuffsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 #include "InfoTip.h"
 
 class CSelfAndPartyBuffsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver
 {
 // Construction

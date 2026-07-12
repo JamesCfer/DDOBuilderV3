@@ -3,9 +3,7 @@
 
 #include "stdafx.h"
 #include "DestinyTreeDialog.h"
-#include "DDODialog.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 #include "SelectionSelectDialog.h"
 #include "MouseHook.h"
 
@@ -101,7 +99,7 @@ void CDestinyTreeDialog::InitialiseStaticImages()
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CDestinyTreeDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CDestinyTreeDialog, CDialog)
     //{{AFX_MSG_MAP(CDestinyTreeDialog)
     ON_WM_ERASEBKGND()
     ON_WM_PAINT()
@@ -119,7 +117,7 @@ CDestinyTreeDialog::CDestinyTreeDialog(
         Character * pCharacter,
         const EnhancementTree & tree,
         TreeType type) :
-    CDDODialog(CDestinyTreeDialog::IDD, pParent),
+    CDialog(CDestinyTreeDialog::IDD, pParent),
     m_tree(tree),
     m_type(type),
     m_pCharacter(pCharacter),
@@ -210,7 +208,7 @@ void CDestinyTreeDialog::OnPaint()
                 32);
         CSize textSize = memoryDc.GetTextExtent(m_tree.Name().c_str());
         memoryDc.SetBkMode(TRANSPARENT);
-        memoryDc.SetTextColor(CLR_DDO_TEXT);
+        memoryDc.SetTextColor(RGB(255, 255, 255));  // white
         memoryDc.TextOut(
                 c_iconLeft + 32 + c_controlSpacing,
                 c_iconTop + (32 - textSize.cy) / 2,

@@ -2,7 +2,7 @@
 //
 #define BUILDINFO_COMPANY "RIGamortis Software"
 #define BUILDINFO_YEAR "2026"
-#define BUILDINFO_COPYRIGHT "ï¿½ Maetrim"
+#define BUILDINFO_COPYRIGHT "© Maetrim"
 #define BUILDINFO_PRODUCT "DDOBuilder"
 
 // Version number changes to the appropriate level(s) should be made here

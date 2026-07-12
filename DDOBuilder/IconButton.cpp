@@ -5,10 +5,9 @@
 #include "IconButton.h"
 
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 namespace
 {
-    COLORREF f_selectedColor = CLR_DDO_SELECT;
+    COLORREF f_selectedColor = RGB(128, 0, 0);
 }
 
 #pragma warning(push)
@@ -47,11 +46,11 @@ void CIconButton::OnPaint()
     // fill the background
     if (m_bSelected)
     {
-        pdc.FillSolidRect(rect, CLR_DDO_ORANGE_DIM);
+        pdc.FillSolidRect(rect, GetSysColor(COLOR_HIGHLIGHT));
     }
     else
     {
-        pdc.FillSolidRect(rect, CLR_DDO_BG_PANEL);
+        pdc.FillSolidRect(rect, GetSysColor(COLOR_BTNFACE));
     }
     m_image.TransparentBlt(
             pdc.GetSafeHdc(),

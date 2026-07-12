@@ -24,8 +24,8 @@ namespace
     };
 }
 
-IMPLEMENT_DYNCREATE(CFavorPane, CDDOFormView)
-BEGIN_MESSAGE_MAP(CFavorPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CFavorPane, CFormView)
+BEGIN_MESSAGE_MAP(CFavorPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -62,7 +62,7 @@ BEGIN_MESSAGE_MAP(CFavorPane, CDDOFormView)
 END_MESSAGE_MAP()
 
 CFavorPane::CFavorPane() :
-    CDDOFormView(CFavorPane::IDD),
+    CFormView(CFavorPane::IDD),
     m_pDoc(NULL),
     m_pCharacter(NULL),
     m_bLoadComplete(false),
@@ -174,7 +174,7 @@ void CFavorPane::DoDataExchange(CDataExchange* pDX)
 
 void CFavorPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     CRect rectPatronItem(0, 0, 10, 10);
     if (IsWindow(m_listQuests.GetSafeHwnd())
             && IsWindowVisible())

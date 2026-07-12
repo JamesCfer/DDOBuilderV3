@@ -1,7 +1,6 @@
 // SpellsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include <vector>
 #include "Character.h"
@@ -12,7 +11,7 @@ class CSpellsControl;
 class CSpellLikeAbilityPage;
 
 class CSpellsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public BuildObserver
 {

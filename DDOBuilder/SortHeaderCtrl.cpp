@@ -12,7 +12,6 @@ Purpose:  Provides the header control, with drawing of the arrows, for
 ----------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "SortHeaderCtrl.h"
-#include "DDOTheme.h"
 
 CSortHeaderCtrl::CSortHeaderCtrl() :
     m_iSortColumn(-1),
@@ -52,8 +51,8 @@ void CSortHeaderCtrl::SetSortArrow(
 }
 
 void CSortHeaderCtrl::GetSortArrow(
-        int * column,
-        bool * bAscending)
+        int* column,
+        bool* bAscending)
 {
     ASSERT(column);
     ASSERT(bAscending);
@@ -80,11 +79,9 @@ void CSortHeaderCtrl::DrawItem(
     (void)dc.SelectObject(&rgn);
     VERIFY(rgn.DeleteObject());
 
-    // draw the background
-    CBrush brush(CLR_DDO_BG_MID);
+    // draw the background,
+    CBrush brush(GetSysColor(COLOR_3DFACE));
     dc.FillRect(rc, &brush);
-    dc.SetTextColor(CLR_DDO_TEXT);
-    dc.SetBkMode(TRANSPARENT);
 
     // get the column text and format.
     TCHAR szText[ 256 ];
@@ -142,8 +139,8 @@ void CSortHeaderCtrl::DrawItem(
     if(lpDrawItemStruct->itemID == (UINT)m_iSortColumn)
     {
         // set up the pens to use for drawing the arrow.
-        CPen penLight(PS_SOLID, 1, CLR_DDO_BORDER_LT);
-        CPen penShadow(PS_SOLID, 1, CLR_DDO_BORDER);
+        CPen penLight(PS_SOLID, 1, GetSysColor(COLOR_3DHILIGHT));
+        CPen penShadow(PS_SOLID, 1, GetSysColor(COLOR_3DSHADOW));
         CPen* pOldPen = dc.SelectObject(&penLight);
 
         if(m_bSortAscending)

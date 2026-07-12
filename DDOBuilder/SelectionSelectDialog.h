@@ -2,7 +2,6 @@
 //
 #pragma once
 #include "Resource.h"
-#include "DDODialog.h"
 #include <string>
 #include "InfoTip.h"
 #include "EnhancementSelectionButton.h"
@@ -11,7 +10,7 @@ class Build;
 class EnhancementTreeItem;
 
 class CSelectionSelectDialog :
-        public CDDODialog
+        public CDialog
 {
     DECLARE_DYNAMIC(CSelectionSelectDialog)
 

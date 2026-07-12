@@ -1,7 +1,6 @@
 // EpicDestiniesPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include <vector>
 #include "Character.h"
@@ -9,7 +8,7 @@
 #include "InfoTip.h"
 
 class CEpicDestiniesPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public LifeObserver,
     public BuildObserver

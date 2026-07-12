@@ -10,9 +10,7 @@
 #include "DDOBuilderDoc.h"
 #include "DDOBuilderView.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 #include "MainFrm.h"
-//#include "ActiveStanceDialog.h"
 #include <algorithm>
 #include "ForumExportDlg.h"
 #include "EnableBuddyButton.h"
@@ -28,11 +26,11 @@ namespace
     COLORREF f_abilityOverspendColour = RGB(0xE9, 0x96, 0x7A); // dark salmon
 }
 
-IMPLEMENT_DYNCREATE(CDDOBuilderView, CDDOFormView)
+IMPLEMENT_DYNCREATE(CDDOBuilderView, CFormView)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CDDOBuilderView, CDDOFormView)
+BEGIN_MESSAGE_MAP(CDDOBuilderView, CFormView)
     ON_WM_CONTEXTMENU()
     ON_WM_RBUTTONUP()
     ON_WM_ERASEBKGND()
@@ -76,7 +74,6 @@ BEGIN_MESSAGE_MAP(CDDOBuilderView, CDDOFormView)
     ON_EN_KILLFOCUS(IDC_EDIT_GUILD_LEVEL, &CDDOBuilderView::OnKillFocusGuildLevel)
     ON_BN_CLICKED(IDC_RADIO_28PT, &CDDOBuilderView::OnBnClickedRadio28pt)
     ON_BN_CLICKED(IDC_RADIO_32PT, &CDDOBuilderView::OnBnClickedRadio32pt)
-    //ON_COMMAND(ID_EDIT_RESETBUILD, &CDDOBuilderView::OnEditResetbuild)
     ON_UPDATE_COMMAND_UI(ID_EDIT_FEATS_EPICONLY, &CDDOBuilderView::OnEditFeatsUpdateEpicOnly)
     ON_UPDATE_COMMAND_UI(ID_EDIT_FEATS_SHOWUNAVAILABLE, &CDDOBuilderView::OnEditFeatsUpdateShowUnavailable)
     ON_COMMAND(ID_EDIT_FEATS_EPICONLY, &CDDOBuilderView::OnEditFeatsEpicOnly)
@@ -92,7 +89,7 @@ END_MESSAGE_MAP()
 // CDDOBuilderView construction/destruction
 
 CDDOBuilderView::CDDOBuilderView() :
-    CDDOFormView(CDDOBuilderView::IDD),
+    CFormView(CDDOBuilderView::IDD),
     m_pCharacter(NULL),
     m_bIgnoreFocus(false),
     m_bHadIntialUpdate(false)
@@ -105,7 +102,7 @@ CDDOBuilderView::~CDDOBuilderView()
 
 void CDDOBuilderView::DoDataExchange(CDataExchange* pDX)
 {
-    CDDOFormView::DoDataExchange(pDX);
+    CFormView::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_STATIC_BUILD, m_staticBuildDescription);
     DDX_Control(pDX, IDC_RADIO_28PT, m_button28Pt);
     DDX_Control(pDX, IDC_RADIO_32PT, m_button32Pt);
@@ -188,7 +185,7 @@ void CDDOBuilderView::OnInitialUpdate()
 {
     if (!m_bHadIntialUpdate)
     {
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
         m_pCharacter = GetDocument()->GetCharacter();
         m_pCharacter->AttachObserver(this);
         // controls disabled until data load complete on program startup
@@ -239,8 +236,8 @@ LRESULT CDDOBuilderView::OnLoadComplete(WPARAM, LPARAM)
 LRESULT CDDOBuilderView::OnThemeChanged(WPARAM wParam, LPARAM)
 {
     // wParam = 1 for dark mode, else = 0 for all others
-    UNREFERENCED_PARAMETER(wParam);
-    COLORREF clrText = CLR_DDO_TEXT;
+    bool bDark = (wParam != 0);
+    COLORREF clrText = bDark ? RGB(255, 255, 255) : RGB(0, 0, 0);   // white text in dark mode, else black
     m_staticBuildDescription.SetTextColour(clrText);
     m_staticAvailableSpend.SetTextColour(clrText);
     for (size_t i = 0; i < MSS_Number; ++i)
@@ -326,11 +323,11 @@ BOOL CDDOBuilderView::OnEraseBkgnd(CDC* pDC)
 
     pDC->SaveDC();
 
-    const int * pId = controlsNotToBeErased;
+    const int* pId = controlsNotToBeErased;
     while (*pId != 0)
     {
         // Get rectangle of the control.
-        CWnd * pControl = GetDlgItem(*pId);
+        CWnd* pControl = GetDlgItem(*pId);
         if (pControl && pControl->IsWindowVisible())
         {
             CRect controlClip;
@@ -344,15 +341,15 @@ BOOL CDDOBuilderView::OnEraseBkgnd(CDC* pDC)
                         + GetSystemMetrics(SM_CYHSCROLL)
                         + GetSystemMetrics(SM_CYEDGE) * 2;
                 // special case for combo boxes with image lists
-                CComboBoxEx * pCombo = dynamic_cast<CComboBoxEx*>(pControl);
+                CComboBoxEx* pCombo = dynamic_cast<CComboBoxEx*>(pControl);
                 if (pCombo != NULL)
                 {
-                    CImageList * pImage = pCombo->GetImageList();
+                    CImageList* pImage = pCombo->GetImageList();
                     if (pImage != NULL)
                     {
                         IMAGEINFO info;
                         pImage->GetImageInfo(0, &info);
-                        // limit to the the height of the selection combo
+                        // limit to the height of the selection combo
                         controlClip.bottom = controlClip.top
                                 + info.rcImage.bottom
                                 - info.rcImage.top
@@ -373,12 +370,12 @@ BOOL CDDOBuilderView::OnEraseBkgnd(CDC* pDC)
 #ifdef _DEBUG
 void CDDOBuilderView::AssertValid() const
 {
-    CDDOFormView::AssertValid();
+    CFormView::AssertValid();
 }
 
 void CDDOBuilderView::Dump(CDumpContext& dc) const
 {
-    CDDOFormView::Dump(dc);
+    CFormView::Dump(dc);
 }
 
 CDDOBuilderDoc* CDDOBuilderView::GetDocument() const // non-debug version is inline
@@ -494,7 +491,7 @@ void CDDOBuilderView::RestoreControls()
 {
     // restore loaded values
     // name
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         EnableToolTips(TRUE);
@@ -588,11 +585,11 @@ void CDDOBuilderView::RestoreControls()
 
 void CDDOBuilderView::ShowHidControls(
         size_t level,
-        CComboBox * pCombo,
+        CComboBox* pCombo,
         UINT idStatic)
 {
     // tome level up controls shown based on build level
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     pCombo->ShowWindow(pBuild->Level() >= level ? SW_SHOW : SW_HIDE);
     GetDlgItem(idStatic)->ShowWindow(pBuild->Level() >= level ? SW_SHOW : SW_HIDE);
 }
@@ -669,10 +666,10 @@ void CDDOBuilderView::EnableButtons()
 {
     // depending on the selected build points, enable/disable
     // all the ability increase/decrease buttons based on current spends
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
-        const AbilitySpend & as = pBuild->BuildPoints();
+        const AbilitySpend& as = pBuild->BuildPoints();
         m_buttonStrPlus.EnableWindow(as.CanSpendOnAbility(Ability_Strength));
         m_buttonStrMinus.EnableWindow(as.CanRevokeSpend(Ability_Strength));
         m_buttonDexPlus.EnableWindow(as.CanSpendOnAbility(Ability_Dexterity));
@@ -690,9 +687,9 @@ void CDDOBuilderView::EnableButtons()
 
 void CDDOBuilderView::DisplayAbilityValue(
         AbilityType ability,
-        CEdit * control)
+        CEdit* control)
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = pBuild->BaseAbilityValue(ability);
@@ -708,12 +705,12 @@ void CDDOBuilderView::DisplayAbilityValue(
 
 void CDDOBuilderView::DisplaySpendCost(
         AbilityType ability,
-        CEdit * control)
+        CEdit* control)
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
-        const AbilitySpend & as = pBuild->BuildPoints();
+        const AbilitySpend& as = pBuild->BuildPoints();
         size_t nextCost = as.NextPointsSpentCost(ability);
         CString text;
         if (nextCost > 0)
@@ -736,11 +733,11 @@ void CDDOBuilderView::DisplaySpendCost(
 
 void CDDOBuilderView::UpdateAvailableSpend()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         // show how many build points are yet to be spent
-        const AbilitySpend & as = pBuild->BuildPoints();
+        const AbilitySpend& as = pBuild->BuildPoints();
         int availablePoints = (int)as.AvailableSpend() - (int)as.PointsSpent();
         CString text;
         text.Format("Available Build points: %d", availablePoints);
@@ -754,7 +751,7 @@ void CDDOBuilderView::UpdateAvailableSpend()
 
 HBRUSH CDDOBuilderView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
-    HBRUSH hbr = CDDOFormView::OnCtlColor(pDC, pWnd, nCtlColor);
+    HBRUSH hbr = CFormView::OnCtlColor(pDC, pWnd, nCtlColor);
     // colour the control based on whether the user has over spent
     // the number of build points available. This can happen
     // if they adjust down the number of past lives
@@ -763,10 +760,10 @@ HBRUSH CDDOBuilderView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     {
         if (m_pDocument != NULL)
         {
-            Build * pBuild = m_pCharacter->ActiveBuild();
+            Build* pBuild = m_pCharacter->ActiveBuild();
             if (pBuild != NULL)
             {
-                const AbilitySpend & as = pBuild->BuildPoints();
+                const AbilitySpend& as = pBuild->BuildPoints();
                 int availablePoints = (int)as.AvailableSpend() - (int)as.PointsSpent();
                 setWarning = (availablePoints < 0);
             }
@@ -782,7 +779,7 @@ HBRUSH CDDOBuilderView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CDDOBuilderView::OnButtonStrPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Strength);
@@ -795,7 +792,7 @@ void CDDOBuilderView::OnButtonStrPlus()
 
 void CDDOBuilderView::OnButtonStrMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Strength);
@@ -808,7 +805,7 @@ void CDDOBuilderView::OnButtonStrMinus()
 
 void CDDOBuilderView::OnButtonDexPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Dexterity);
@@ -821,7 +818,7 @@ void CDDOBuilderView::OnButtonDexPlus()
 
 void CDDOBuilderView::OnButtonDexMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Dexterity);
@@ -834,7 +831,7 @@ void CDDOBuilderView::OnButtonDexMinus()
 
 void CDDOBuilderView::OnButtonConPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Constitution);
@@ -847,7 +844,7 @@ void CDDOBuilderView::OnButtonConPlus()
 
 void CDDOBuilderView::OnButtonConMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Constitution);
@@ -860,7 +857,7 @@ void CDDOBuilderView::OnButtonConMinus()
 
 void CDDOBuilderView::OnButtonIntPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Intelligence);
@@ -873,7 +870,7 @@ void CDDOBuilderView::OnButtonIntPlus()
 
 void CDDOBuilderView::OnButtonIntMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Intelligence);
@@ -886,7 +883,7 @@ void CDDOBuilderView::OnButtonIntMinus()
 
 void CDDOBuilderView::OnButtonWisPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Wisdom);
@@ -899,7 +896,7 @@ void CDDOBuilderView::OnButtonWisPlus()
 
 void CDDOBuilderView::OnButtonWisMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Wisdom);
@@ -912,7 +909,7 @@ void CDDOBuilderView::OnButtonWisMinus()
 
 void CDDOBuilderView::OnButtonChaPlus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->SpendOnAbility(Ability_Charisma);
@@ -925,7 +922,7 @@ void CDDOBuilderView::OnButtonChaPlus()
 
 void CDDOBuilderView::OnButtonChaMinus()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         pBuild->RevokeSpendOnAbility(Ability_Charisma);
@@ -939,7 +936,7 @@ void CDDOBuilderView::OnButtonChaMinus()
 
 void CDDOBuilderView::OnSelendokComboRace()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         // race has been chosen
@@ -963,7 +960,7 @@ void CDDOBuilderView::OnSelendokComboRace()
 
 void CDDOBuilderView::OnSelendokComboAlignment()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AlignmentType alignment = static_cast<AlignmentType>(GetComboboxSelection(&m_comboAlignment));
@@ -976,7 +973,7 @@ void CDDOBuilderView::OnSelendokComboAlignment()
 void CDDOBuilderView::OnSelendokComboTomeStr()
 {
     int value = GetComboboxSelection(&m_comboTomeStr);
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         // negative values are supreme tomes that set for all abilities
@@ -1006,7 +1003,7 @@ void CDDOBuilderView::OnSelendokComboTomeStr()
 
 void CDDOBuilderView::OnSelendokComboTomeDex()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = GetComboboxSelection(&m_comboTomeDex);
@@ -1016,7 +1013,7 @@ void CDDOBuilderView::OnSelendokComboTomeDex()
 
 void CDDOBuilderView::OnSelendokComboTomeCon()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = GetComboboxSelection(&m_comboTomeCon);
@@ -1026,7 +1023,7 @@ void CDDOBuilderView::OnSelendokComboTomeCon()
 
 void CDDOBuilderView::OnSelendokComboTomeInt()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = GetComboboxSelection(&m_comboTomeInt);
@@ -1036,7 +1033,7 @@ void CDDOBuilderView::OnSelendokComboTomeInt()
 
 void CDDOBuilderView::OnSelendokComboTomeWis()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = GetComboboxSelection(&m_comboTomeWis);
@@ -1046,7 +1043,7 @@ void CDDOBuilderView::OnSelendokComboTomeWis()
 
 void CDDOBuilderView::OnSelendokComboTomeCha()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         size_t value = GetComboboxSelection(&m_comboTomeCha);
@@ -1056,7 +1053,7 @@ void CDDOBuilderView::OnSelendokComboTomeCha()
 
 void CDDOBuilderView::OnChangeName()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         CString name;
@@ -1071,7 +1068,7 @@ void CDDOBuilderView::OnChangeName()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel4()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         int sel = GetComboboxSelection(&m_comboAILevel4);
@@ -1111,7 +1108,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel4()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel8()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel8);
@@ -1121,7 +1118,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel8()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel12()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel12);
@@ -1131,7 +1128,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel12()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel16()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel16);
@@ -1141,7 +1138,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel16()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel20()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel20);
@@ -1151,7 +1148,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel20()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel24()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel24);
@@ -1161,7 +1158,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel24()
 
 void CDDOBuilderView::OnSelendokComboAbilityLevel28()
 {
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         AbilityType value = (AbilityType)GetComboboxSelection(&m_comboAILevel28);
@@ -1201,7 +1198,7 @@ void CDDOBuilderView::OnSelendokComboAbilityLevel40()
 
 void CDDOBuilderView::UpdateBuildDescription()
 {
-    Build *pBuild = m_pCharacter->ActiveBuild();
+    Build*pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         CString text = pBuild->ComplexUIDescription().c_str();
@@ -1212,32 +1209,6 @@ void CDDOBuilderView::UpdateBuildDescription()
         m_staticBuildDescription.SetWindowText("No active build");
    }
 }
-
-// Character overrides
-//void CDDOBuilderView::UpdateAvailableBuildPointsChanged(Character * pCharacter)
-//{
-//    // show the now available build points
-//    UpdateRadioPoints();
-//    UpdateAvailableSpend();
-//    EnableButtons();
-//}
-
-//void CDDOBuilderView::UpdateClassChanged(
-//        Character * pCharacter,
-//        ClassType classFrom,
-//        ClassType classTo,
-//        size_t level)
-//{
-//    // level up view changed a class selection, keep our overall build description
-//    // up to date.
-//    UpdateBuildDescription();
-//}
-
-//void CDDOBuilderView::UpdateRaceChanged(Character * charData, RaceType race)
-//{
-//    // build points can change when Drow selected
-//    UpdateRadioPoints();
-//}
 
 void CDDOBuilderView::OnSize(UINT nType, int cx, int cy)
 {
@@ -1269,12 +1240,12 @@ void CDDOBuilderView::UpdateRadioPoints()
     // if the character has no past lives buttons [0] and [1] are available, [2]/[3] disabled
     // if the character has 1+ past life all buttons are disabled but the relevant number
     // of build points available is checked.
-    Build * pBuild = m_pCharacter->ActiveBuild();
+    Build* pBuild = m_pCharacter->ActiveBuild();
     if (pBuild != NULL)
     {
         m_bIgnoreFocus = true;
         size_t activeBuildPoints = pBuild->DetermineBuildPoints();
-        const Race & race = FindRace(pBuild->Race());
+        const Race& race = FindRace(pBuild->Race());
         std::vector<size_t> buildPoints = race.BuildPoints();
         CString strText;
         strText.Format("%d", buildPoints[0]);
@@ -1326,10 +1297,10 @@ void CDDOBuilderView::OnBnClickedRadio28pt()
     if (!m_bIgnoreFocus)
     {
         // set the number of build points to [0]
-        Build * pBuild = m_pCharacter->ActiveBuild();
+        Build* pBuild = m_pCharacter->ActiveBuild();
         if (pBuild != NULL)
         {
-            const Race & race = FindRace(pBuild->Race());
+            const Race& race = FindRace(pBuild->Race());
             std::vector<size_t> buildPoints = race.BuildPoints();
             // set the number of build points to [0]
             pBuild->SetBuildPoints(buildPoints[0]);
@@ -1345,10 +1316,10 @@ void CDDOBuilderView::OnBnClickedRadio32pt()
     if (!m_bIgnoreFocus)
     {
         // set the number of build points to [1]
-        Build * pBuild = m_pCharacter->ActiveBuild();
+        Build* pBuild = m_pCharacter->ActiveBuild();
         if (pBuild != NULL)
         {
-            const Race & race = FindRace(pBuild->Race());
+            const Race& race = FindRace(pBuild->Race());
             std::vector<size_t> buildPoints = race.BuildPoints();
             // set the number of build points to [1]
             pBuild->SetBuildPoints(buildPoints[1]);
@@ -1359,55 +1330,14 @@ void CDDOBuilderView::OnBnClickedRadio32pt()
     }
 }
 
-void CDDOBuilderView::OnEditResetbuild()
-{
-    //// make sure the user really wants to do this, as its a big change
-    //UINT ret = AfxMessageBox("Warning: This command will reset to default all of the following:\r\n"
-    //        "Ability Point Spends\r\n"
-    //        "Class Selections\r\n"
-    //        "Feat Selections\r\n"
-    //        "Skill Points\r\n"
-    //        "Enhancement Tree Selections\r\n"
-    //        "Notes\r\n"
-    //        "\r\n"
-    //        "It will not touch any selected Past Lives, Gear setups or Tomes,\r\n"
-    //        "but may affect Epic Destinies where the selections now become\r\n"
-    //        "invalid due to missing feats.\r\n"
-    //        "\r\n"
-    //        "Are you sure you wish to do this?",
-    //        MB_ICONQUESTION | MB_YESNO);
-    //if (ret == IDYES)
-    //{
-    //    CWaitCursor longOperation;
-    //    CWnd * pWnd = AfxGetMainWnd();
-    //    CMainFrame * pMainFrame = dynamic_cast<CMainFrame*>(pWnd);
-    //    if (pMainFrame != NULL)
-    //    {
-    //        // reset the windows first
-    //        pMainFrame->SetActiveDocumentAndCharacter(NULL, NULL);
-    //        // reset the build with nothing displayed
-    //        m_pCharacter->ResetBuild();
-    //        // notify the main frame that we are active so that everything gets
-    //        // reset correctly in the views
-    //        pMainFrame->SetActiveDocumentAndCharacter(GetDocument(), m_pCharacter);
-    //    }
-    //    // ensure this view is up to date
-    //    UpdateRadioPoints();
-
-    //    RestoreControls();
-    //    EnableButtons();
-    //    UpdateBuildDescription();
-    //}
-}
-
-void CDDOBuilderView::OnEditFeatsUpdateEpicOnly(CCmdUI * pCmdUi)
+void CDDOBuilderView::OnEditFeatsUpdateEpicOnly(CCmdUI* pCmdUi)
 {
     UNREFERENCED_PARAMETER(pCmdUi);
     pCmdUi->Enable(!m_pCharacter->ShowUnavailable());
     pCmdUi->SetCheck(m_pCharacter->ShowEpicOnly());
 }
 
-void CDDOBuilderView::OnEditFeatsUpdateShowUnavailable(CCmdUI * pCmdUi)
+void CDDOBuilderView::OnEditFeatsUpdateShowUnavailable(CCmdUI* pCmdUi)
 {
     UNREFERENCED_PARAMETER(pCmdUi);
     pCmdUi->SetCheck(m_pCharacter->ShowUnavailable());
@@ -1430,7 +1360,7 @@ void CDDOBuilderView::UpdateActiveLifeChanged(Character* pCharacter)
     // we always get an UpdateActiveBuildChanged, so work already done
 }
 
-void CDDOBuilderView::UpdateActiveBuildChanged(Character * pCharacter)
+void CDDOBuilderView::UpdateActiveBuildChanged(Character* pCharacter)
 {
     UpdateRadioPoints();
 
@@ -1451,7 +1381,7 @@ void CDDOBuilderView::UpdateActiveBuildChanged(Character * pCharacter)
 }
 
 // Build overrides
-void CDDOBuilderView::UpdateBuildLevelChanged(Build * pBuild)
+void CDDOBuilderView::UpdateBuildLevelChanged(Build* pBuild)
 {
     UNREFERENCED_PARAMETER(pBuild);
     UpdateBuildDescription();
@@ -1459,7 +1389,7 @@ void CDDOBuilderView::UpdateBuildLevelChanged(Build * pBuild)
 }
 
 void CDDOBuilderView::UpdateClassChanged(
-        Build * pBuild,
+        Build* pBuild,
         const std::string& classFrom,
         const std::string& classTo,
         size_t level)
@@ -1490,6 +1420,7 @@ BOOL CDDOBuilderView::OnTtnNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
     UNREFERENCED_PARAMETER(id);
     UNREFERENCED_PARAMETER(pResult);
 
+    m_tipText = "";
     UINT_PTR nID = pNMHDR->idFrom;
     nID = ::GetDlgCtrlID((HWND)nID);
 
@@ -1524,7 +1455,7 @@ BOOL CDDOBuilderView::OnTtnNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
         {
             m_tipText = "Select your race\r\n\r\n";
 
-            const Race & race = FindRace(m_pCharacter->ActiveBuild()->Race());
+            const Race& race = FindRace(m_pCharacter->ActiveBuild()->Race());
             m_tipText += race.Description().c_str();
         }
         break;
@@ -1572,7 +1503,7 @@ BOOL CDDOBuilderView::OnTtnNeedText(UINT id, NMHDR* pNMHDR, LRESULT* pResult)
         m_tipText = "To be able to spend Champion and Legend level of build points you need to assign yourself the relevant past lives.";
         break;
     }
-    // ensure multiline tooltips
+    // ensure multi-line tooltips
     ::SendMessage(pNMHDR->hwndFrom, TTM_SETMAXTIPWIDTH, 0, 800);
     TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
     pTTTA->lpszText = m_tipText.GetBuffer();

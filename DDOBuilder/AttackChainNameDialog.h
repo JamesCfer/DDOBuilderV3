@@ -2,13 +2,12 @@
 //
 #pragma once
 #include "Resource.h"
-#include "DDODialog.h"
 #include <string>
 
 class Character;
 
 class CAttackChainNameDialog :
-        public CDDODialog
+        public CDialog
 {
     DECLARE_DYNAMIC(CAttackChainNameDialog)
 

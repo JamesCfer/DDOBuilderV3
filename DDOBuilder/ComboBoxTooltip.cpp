@@ -7,15 +7,14 @@
 #include "stdafx.h"
 #include "ComboBoxTooltip.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColour       = CLR_DDO_SELECT;
-    COLORREF f_backgroundColour     = CLR_DDO_BG_DARK;
-    COLORREF f_backgroundColourDark = CLR_DDO_BG_DARKEST;
-    COLORREF f_white                = CLR_DDO_TEXT;
-    COLORREF f_black                = CLR_DDO_BG_DARKEST;
+    COLORREF f_selectedColour = ::GetSysColor(COLOR_HIGHLIGHT);
+    COLORREF f_backgroundColour = ::GetSysColor(COLOR_BTNFACE); // grey
+    COLORREF f_backgroundColourDark = RGB(83, 83, 83);
+    COLORREF f_white = RGB(255, 255, 255);                      // white
+    COLORREF f_black = RGB(0, 0, 0);                            // black
 }
 
 // CComboBoxTooltip

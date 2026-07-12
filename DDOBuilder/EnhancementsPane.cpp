@@ -18,10 +18,10 @@ namespace
     const size_t c_sizeY = 466;
 }
 
-IMPLEMENT_DYNCREATE(CEnhancementsPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CEnhancementsPane, CFormView)
 
 CEnhancementsPane::CEnhancementsPane() :
-    CDDOFormView(CEnhancementsPane::IDD),
+    CFormView(CEnhancementsPane::IDD),
     m_pDoc(NULL),
     m_pCharacter(NULL),
     m_numUniversalButtons(0),
@@ -78,7 +78,7 @@ void CEnhancementsPane::DoDataExchange(CDataExchange* pDX)
 
 #pragma warning(push)
 #pragma warning(disable: 4407) // warning C4407: cast between different pointer to member representations, compiler may generate incorrect code
-BEGIN_MESSAGE_MAP(CEnhancementsPane, CDDOFormView)
+BEGIN_MESSAGE_MAP(CEnhancementsPane, CFormView)
     ON_WM_SIZE()
     ON_WM_ERASEBKGND()
     ON_REGISTERED_MESSAGE(UWM_NEW_DOCUMENT, OnNewDocument)
@@ -100,7 +100,7 @@ void CEnhancementsPane::OnInitialUpdate()
     if (!m_bHadinitialUpdate)
     {
         m_bHadinitialUpdate = true;
-        CDDOFormView::OnInitialUpdate();
+        CFormView::OnInitialUpdate();
         m_tooltip.Create(this);
         m_tipCreated = true;
         m_buttonLoad.SetImage(IDB_BITMAP_LOAD);

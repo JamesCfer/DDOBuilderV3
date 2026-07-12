@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "ItemSelectDialog.h"
-#include "DDODialog.h"
 #include "Build.h"
 #include "Life.h"
 #include "Character.h"
@@ -24,14 +23,14 @@ namespace
     };
 }
 
-IMPLEMENT_DYNAMIC(CItemSelectDialog, CDDODialog)
+IMPLEMENT_DYNAMIC(CItemSelectDialog, CDialog)
 
 CItemSelectDialog::CItemSelectDialog(
         CWnd* pParent,
         InventorySlotType slot,
         const Item& item,
         Build* pBuild) :
-    CDDODialog(CItemSelectDialog::IDD, pParent),
+    CDialog(CItemSelectDialog::IDD, pParent),
     m_slot(slot),
     m_item(item),
     m_pBuild(pBuild),
@@ -103,7 +102,7 @@ void CItemSelectDialog::DoDataExchange(CDataExchange* pDX)
 }
 
 #pragma warning(disable: 26454) // C26454 Arithmetic overflow : '-' operation produces a negative unsigned result at compile time(io.5).
-BEGIN_MESSAGE_MAP(CItemSelectDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CItemSelectDialog, CDialog)
     ON_NOTIFY(LVN_ITEMCHANGED, IDC_ITEM_LIST, OnItemSelected)
     ON_CONTROL_RANGE(CBN_SELENDOK, IDC_COMBO_AUGMENT1, IDC_COMBO_AUGMENT1 + MAX_Augments - 1, OnAugmentSelect)
     ON_CONTROL_RANGE(CBN_SELENDCANCEL, IDC_COMBO_AUGMENT1, IDC_COMBO_AUGMENT1 + MAX_Augments - 1, OnAugmentCancel)

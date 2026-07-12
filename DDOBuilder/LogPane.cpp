@@ -14,7 +14,7 @@ static char THIS_FILE[] = __FILE__;
 // COutputBar
 
 CLogPane::CLogPane() :
-    CDDOFormView(CLogPane::IDD)
+    CFormView(CLogPane::IDD)
 {
 }
 
@@ -22,8 +22,8 @@ CLogPane::~CLogPane()
 {
 }
 
-IMPLEMENT_DYNCREATE(CLogPane, CDDOFormView)
-BEGIN_MESSAGE_MAP(CLogPane, CDDOFormView)
+IMPLEMENT_DYNCREATE(CLogPane, CFormView)
+BEGIN_MESSAGE_MAP(CLogPane, CFormView)
     ON_WM_CREATE()
     ON_WM_SIZE()
     ON_COMMAND(ID_EDIT_COPYLOGTOCLIPBOARD, &CLogPane::OnCopyLogToClipboard)
@@ -32,7 +32,7 @@ END_MESSAGE_MAP()
 
 void CLogPane::OnInitialUpdate()
 {
-    CDDOFormView::OnInitialUpdate();
+    CFormView::OnInitialUpdate();
     UpdateFonts();
 }
 
@@ -44,7 +44,7 @@ void CLogPane::DoDataExchange(CDataExchange* pDX)
 
 void CLogPane::OnSize(UINT nType, int cx, int cy)
 {
-    CDDOFormView::OnSize(nType, cx, cy);
+    CFormView::OnSize(nType, cx, cy);
     if (IsWindow(m_wndOutputLog.GetSafeHwnd()))
     {
         m_wndOutputLog.MoveWindow(0, 0, cx, cy, TRUE);

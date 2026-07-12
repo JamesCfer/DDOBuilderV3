@@ -4,17 +4,16 @@
 #include "StdAfx.h"
 #include "DDOBuilder.h"
 #include "CWeaponImageDialog.h"
-#include "DDODialog.h"
 #include "afxdialogex.h"
 #include "InventorySlotTypes.h"
 #include "GlobalSupportFunctions.h"
 
 // CWeaponImageDialog dialog
 
-IMPLEMENT_DYNAMIC(CWeaponImageDialog, CDDODialogEx)
+IMPLEMENT_DYNAMIC(CWeaponImageDialog, CDialogEx)
 
 CWeaponImageDialog::CWeaponImageDialog(CWnd* pParent /*=nullptr*/) :
-    CDDODialogEx(IDD_DIALOG_SETITEMIMAGES, pParent),
+    CDialogEx(IDD_DIALOG_SETITEMIMAGES, pParent),
     m_nextItem(0),
     m_selectedItemType(Weapon_Unknown)
 {
@@ -32,7 +31,7 @@ void CWeaponImageDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_LIST_ICONS, m_availableIcons);
 }
 
-BEGIN_MESSAGE_MAP(CWeaponImageDialog, CDDODialogEx)
+BEGIN_MESSAGE_MAP(CWeaponImageDialog, CDialogEx)
     ON_CBN_SELCHANGE(IDC_COMBO_ITEMTYPE, &CWeaponImageDialog::OnCbnSelchangeComboItemtype)
     ON_BN_CLICKED(IDC_BUTTON_START, &CWeaponImageDialog::OnBnClickedButtonStart)
     ON_BN_CLICKED(IDC_BUTTON_SETITEMIMAGE, &CWeaponImageDialog::OnBnClickedButtonSetitemimage)

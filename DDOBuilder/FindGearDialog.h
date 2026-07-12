@@ -1,7 +1,6 @@
 // FindGearDialog.h
 #pragma once
 #include "Resource.h"
-#include "DDODialog.h"
 #include "SortHeaderCtrl.h"
 #include "InfoTip.h"
 #include "Item.h"
@@ -10,7 +9,7 @@
 
 class Build;
 
-class CFindGearDialog : public CDDODialog
+class CFindGearDialog : public CDialog
 {
     public:
         CFindGearDialog(

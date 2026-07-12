@@ -4,12 +4,11 @@
 #include "stdafx.h"
 #include "EnhancementSelectionButton.h"
 #include "GlobalSupportFunctions.h"
-#include "DDOTheme.h"
 
 namespace
 {
-    COLORREF f_selectedColor   = CLR_DDO_ORANGE_DIM;
-    COLORREF f_unselectedColor = CLR_DDO_BG_DARK;
+    COLORREF f_selectedColor = RGB(128, 0, 0);
+    COLORREF f_unselectedColor = RGB(32, 32, 32);
 }
 
 #pragma warning(push)
@@ -58,18 +57,18 @@ void CEnhancementSelectionButton::OnPaint()
     // fill the background
     if (m_bSelected)
     {
-        pdc.FillSolidRect(rect, f_selectedColor);
+        pdc.FillSolidRect(rect, GetSysColor(COLOR_HIGHLIGHT));
     }
     else
     {
         // can be disabled at this point
         if (IsWindowEnabled())
         {
-            pdc.FillSolidRect(rect, f_unselectedColor);
+            pdc.FillSolidRect(rect, GetSysColor(COLOR_BTNFACE));
         }
         else
         {
-            pdc.FillSolidRect(rect, CLR_DDO_BG_DARKEST);
+            pdc.FillSolidRect(rect, GetSysColor(COLOR_GRAYTEXT));
         }
     }
     m_image.TransparentBlt(

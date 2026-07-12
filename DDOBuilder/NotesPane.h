@@ -1,12 +1,11 @@
 // NotesPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 
 class CNotesPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver
 {
 // Construction

@@ -1632,12 +1632,13 @@ function buildStatMapOnce(
     }
 
     // ── Armor PRR (BAB × armor multiplier) ───────────────────────────────
-    // V2 BreakdownItemPRR::CreateOtherEffects (BreakdownItemPRR.cpp:43-122):
-    //   Light Armor + Light Armor Proficiency: BAB × 1
-    //   Mithral Body feat: BAB × 1
+    // V2 BreakdownItemPRR::CreateOtherEffects (BreakdownItemPRR.cpp:43-122,
+    // as of upstream 2.0.0.81):
+    //   Mithral Body feat: BAB × 1, ELSE Light Armor + proficiency: BAB × 1
     //   Medium Armor + Medium Armor Proficiency: round(BAB × 1.5)
-    //   Heavy Armor + Heavy Armor Proficiency: BAB × 2
-    //   Adamantine Body feat: BAB × 2
+    //   Adamantine Body feat: BAB × 2, ELSE Heavy Armor + proficiency: BAB × 2
+    // (pre-.81 V2 double-stacked body feats with armor proficiency — two
+    // independent ifs; .81 made the body feat take precedence via else-if)
     {
       const babTotal = Math.min(MAX_BAB, resolveBonus(map.get('bab') ?? []).total)
       if (babTotal > 0) {
@@ -1657,20 +1658,18 @@ function buildStatMapOnce(
         }
         const has = (f: string) => trainedFeats.has(f)
 
-        if (armorStances.has('Light Armor') && has('Light Armor Proficiency')) {
-          add(map, 'prr', { value: babTotal, type: 'Stance', source: 'Light Armor PRR (BAB×1)' })
-        }
         if (has('Mithral Body')) {
           add(map, 'prr', { value: babTotal, type: 'Feat', source: 'Mithral Body PRR (BAB×1)' })
+        } else if (armorStances.has('Light Armor') && has('Light Armor Proficiency')) {
+          add(map, 'prr', { value: babTotal, type: 'Stance', source: 'Light Armor PRR (BAB×1)' })
         }
         if (armorStances.has('Medium Armor') && has('Medium Armor Proficiency')) {
           add(map, 'prr', { value: Math.round(babTotal * 1.5), type: 'Stance', source: 'Medium Armor PRR (BAB×1.5)' })
         }
-        if (armorStances.has('Heavy Armor') && has('Heavy Armor Proficiency')) {
-          add(map, 'prr', { value: babTotal * 2, type: 'Stance', source: 'Heavy Armor PRR (BAB×2)' })
-        }
         if (has('Adamantine Body')) {
           add(map, 'prr', { value: babTotal * 2, type: 'Feat', source: 'Adamantine Body PRR (BAB×2)' })
+        } else if (armorStances.has('Heavy Armor') && has('Heavy Armor Proficiency')) {
+          add(map, 'prr', { value: babTotal * 2, type: 'Stance', source: 'Heavy Armor PRR (BAB×2)' })
         }
       }
     }

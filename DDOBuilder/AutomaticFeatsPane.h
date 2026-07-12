@@ -1,14 +1,13 @@
 // AutomaticFeatsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 #include "Life.h"
 #include "AutomaticFeatListControl.h"
 
 class CAutomaticFeatsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public LifeObserver
 {

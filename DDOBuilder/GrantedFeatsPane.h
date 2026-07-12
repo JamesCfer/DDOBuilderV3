@@ -1,14 +1,13 @@
 // GrantedFeatsPane.h
 //
 #pragma once
-#include "DDOFormView.h"
 #include "Resource.h"
 #include "Character.h"
 #include "EffectCallbackItem.h"
 #include "GrantedFeatListControl.h"
 
 class CGrantedFeatsPane :
-    public CDDOFormView,
+    public CFormView,
     public CharacterObserver,
     public EffectCallbackItem
 {

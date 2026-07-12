@@ -2,19 +2,18 @@
 //
 #include "stdafx.h"
 #include "GearSetNameDialog.h"
-#include "DDODialog.h"
 
 #include "Character.h"
 
 // CGearSetNameDialog dialog
 
-IMPLEMENT_DYNAMIC(CGearSetNameDialog, CDDODialog)
+IMPLEMENT_DYNAMIC(CGearSetNameDialog, CDialog)
 
 CGearSetNameDialog::CGearSetNameDialog(
         CWnd* pParent,
         const Character * pCharacter,
         const std::string& defaultName) :
-    CDDODialog(CGearSetNameDialog::IDD, pParent),
+    CDialog(CGearSetNameDialog::IDD, pParent),
     m_pCharacter(pCharacter),
     m_name(defaultName)
 {
@@ -30,7 +29,7 @@ void CGearSetNameDialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT_GEAR_SET_NAME, m_editGearName);
 }
 
-BEGIN_MESSAGE_MAP(CGearSetNameDialog, CDDODialog)
+BEGIN_MESSAGE_MAP(CGearSetNameDialog, CDialog)
 END_MESSAGE_MAP()
 
 // CGearSetNameDialog message handlers
@@ -48,7 +47,7 @@ void CGearSetNameDialog::OnOK()
     // check that the name entered is unique and does not already exist
     CString name;
     m_editGearName.GetWindowText(name);
-    const std::list<EquippedGear> & setups = m_pCharacter->ActiveBuild()->GearSetups();
+    const std::list<EquippedGear>& setups = m_pCharacter->ActiveBuild()->GearSetups();
     bool unique = true;
     std::list<EquippedGear>::const_iterator it = setups.begin();
     while (unique && it != setups.end())
