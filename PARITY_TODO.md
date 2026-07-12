@@ -114,6 +114,7 @@ the PR number, so this file doubles as a changelog.
 | 93 | **X8 — Forum export `saves` section: `[TABLE]` wrapping + no-fail-on-1 marker** — V2 `ForumExportDlg.cpp:509-528` (`AddSaves`) wraps every save/sub-save row in a BBCode `[TABLE]`/`[TR][TD]` block (Fort/Will/Reflex order) and `AddTableEntryBreakdown:548-564` appends a trailing `*` to any row whose `BreakdownItemSave::HasNoFailOn1()` is true, followed by a footnote line. `effectParser.ts` already parsed `Effect_SaveNoFailOn1` into `save.{Fort,Reflex,Will,All}.noFailOn1` stat keys, but nothing ever read them — `sections.ts:saves` emitted a plain indented list with no table and silently dropped the no-fail-on-1 information. `saves` now emits a `[TABLE]` (Fort/Will/Reflex order matching V2), reads `save.<Type>.noFailOn1` + `save.All.noFailOn1` to mark the base save and its sub-save rows with `*`, and appends the "Marked with a* is no fail on a 1 if required DC met" footnote. 5 regression tests in `parityPassX8.test.ts`; `parityPassX2.test.ts` updated for the new table-cell format. | #119 |
 | 95 | **X7 — Forum export `characterHeader` vitals block** — `sections.ts:characterHeader` now emits V2's "vitals block" (`ForumExportDlg.cpp:312-392`) after the existing Name/Race/Classes lines: HP + Displacement, then one row per ability paired with its V2 combat stat (Str+Unconscious Range/Incorporeality, Dex+PRR/AC, Con+MRR(/cap)/+Healing Amp, Int+Dodge(/cap)/-Healing Amp, Wis+Fortification/Repair Amp, Cha+Spell Resistance/BAB), then trailing DR and Immunities lines (derived from `dr.*`/`immunity.*` stat keys, matching `BreakdownsPanel.tsx`'s existing convention for those two). Falls back to the pre-existing header-only lines when `stats` is null. 5 regression tests in `parityPassX7.test.ts`. | this PR |
 | 94 | **X9 — Forum export `featSelections`/`featSelectionsNoSkills` become a per-level `[TABLE]`** — V2 `ForumExportDlg.cpp:622-660` (`AddFeatSelections`) + `GetLevelEntries` (`:1992+`) iterate every heroic character level and emit one `[TR]` with `Level | Class(classLevel) | Feats`, appending class/cross-class skill-rank rows only when `bIncludeSkills` is set. V3's `sections.ts` previously flattened `build.featChoices` into a sorted `key: value` list with no class-per-level context, and the "no skills" variant used an invented (and never-matching) `"Skill:"`-prefix filter instead of V2's real semantics. New shared `featSelectionsTable()` walks heroic levels 1..min(20,totalLevel) via `buildSlots()` (`lib/levelTraining.ts`) for that level's feat slots and `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)` label, and appends `Class Skills:`/`Cross Class Skills:` rows (from `build.skillRanksByLevel`) only for the skills-included variant. 3 regression tests in `parityPassX9.test.ts`; `parityPass5.test.ts`'s outdated no-skills test updated to the corrected semantics. | this PR |
+| 96 | **U11 — Special / Favor feat training UI** — `lib/specialFeats.ts` ports V2 `CFeatSelectionDialog::OnFeatButtonLeftClick`/`RightClick` (`FeatSelectionDialog.cpp:141-191`) train/revoke/cap logic as pure functions. Acquire=Special feats (Chrism reincarnation-cache redemptions, "Tome of Destiny", …) train/revoke against `build.pastLives` + `build.pastLifeTypes` (reuses the N9/F5 plumbing so exports round-trip with the correct V2 `<Type>`); Acquire=Favor feats (House favor rewards) train/revoke against `build.favorFeats` as a flat repeatable list (`Build::m_FavorFeats` parity — training appends a copy, revoke removes the first occurrence), both capped by `Feat::MaxTimesAcquire` (default 1). New reducer actions `TRAIN_SPECIAL_FEAT`/`REVOKE_SPECIAL_FEAT`/`TRAIN_FAVOR_FEAT`/`REVOKE_FAVOR_FEAT` in `CharacterContext.tsx`; `migrateLoad` now also defaults `favorFeats` for old saves. `PastLivesPanel.tsx` (V2's `CSpecialFeatPane` — the same pane the four past-life groups were already ported from) gained "Special Feats" and "Favor Feats" sections fetched via `/api/feats?acquire=Special`/`Favor`, reusing the existing +/− tile UI via new per-group `getCount`/`onIncrement`/`onDecrement`/`canIncrement`/`canDecrement` overrides. Previously these fields were import/export/compute-only — a build authored fresh in V3 could never acquire a Special or Favor feat. 8 regression tests in `parityPassU11.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -299,18 +300,15 @@ Remaining read/write-fidelity gaps:
   binary metamagic flags with no class-level gating.
 - ✅ **U9 — complete** — FindGearDialog (#64), ContentPane (#68), Help/About (#69).
 - ✅ **U10 — BreakdownsPanel tactical DC sub-types complete** — done (#108).
-- ❌ **U11 — "Special" / "Favor" feat groups have no training UI at all.** V2
-  `SpecialFeatsPane.cpp` renders six feat groups side by side (Heroic/
-  Racial/Iconic/Epic past-life + **Special** + **Favor**), each a grid of
-  clickable `CFeatSelectionDialog` tiles (left-click trains, right-click
-  revokes). V3's `pastlives/PastLivesPanel.tsx` covers only the four
-  past-life groups; `build.favorFeats`/`Life.specialFeats` exist purely as
-  import/export/compute plumbing (`favorFeats` does feed
-  `actionPoints.ts`'s bonus-AP count; `specialFeats` doesn't feed anything —
-  see N9) with zero component ever referencing
-  `SET_FAVOR_FEAT`/`SET_SPECIAL_FEAT`-style actions. A build authored fresh
-  in V3 can never acquire a Special or Favor feat; these only populate
-  correctly when imported from a V2 `.DDOBuild` that already has them set.
+- ✅ **U11 — "Special" / "Favor" feat groups have no training UI at all** —
+  done (see Done table, #96). `PastLivesPanel.tsx` (V2's `SpecialFeatsPane`)
+  now also renders "Special Feats" and "Favor Feats" tile groups with
+  working train (+)/revoke (−) buttons, capped by `Feat::MaxTimesAcquire`,
+  matching `CFeatSelectionDialog::OnFeatButtonLeftClick`/`RightClick`. Special
+  feats train against `build.pastLives`/`pastLifeTypes` (N9/F5 parity);
+  Favor feats train against `build.favorFeats` as a repeatable flat list
+  (`Build::m_FavorFeats` parity). `lib/specialFeats.ts` holds the shared
+  pure train/revoke/cap logic.
 
 ---
 
