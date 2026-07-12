@@ -134,6 +134,29 @@ namespace
         }
     }
 
+    // Port of the per-class synthesized "Improved Heroic Durability
+    // (<ClassName> 5/10/15)" feats from CDDOBuilderApp::LoadFeats
+    // (DDOBuilder.cpp ~461-467). Every heroic (non-NotHeroic) class dynamically
+    // synthesizes 3 copies of the base "Improved Heroic Durability" feat (+5 max
+    // HP), each with an AutomaticAcquisition Requirement(Requirement_ClassAtLevel,
+    // ClassName, 5/10/15). These exist in no XML, so the headless loader must
+    // create them or v2calc under-counts HP by up to +15 per heroic class. We
+    // insert them into g_allFeats so the normal AutomaticAcquisition path in
+    // Build::AutomaticFeats grants them. Class::ImprovedHeroicDurabilityFeats()
+    // calls FindFeat("Improved Heroic Durability"), which reads g_allFeats, so
+    // this must run after g_allFeats is populated from Feats.xml.
+    void SynthesizeImprovedHeroicDurabilityFeats()
+    {
+        for (auto&& cit : g_classes)
+        {
+            std::list<Feat> ihdfs = cit.ImprovedHeroicDurabilityFeats();
+            for (auto&& it : ihdfs)
+            {
+                g_allFeats.insert(std::pair<std::string, Feat>(it.Name(), it));
+            }
+        }
+    }
+
     void SeparateFeats()
     {
         for (auto& e : g_allFeats)
@@ -219,6 +242,7 @@ void V2CalcLoadGameData(const std::string& dataFilesDir)
     FeatsFile feats(dataFilesDir + "/Feats.xml");
     feats.Read();
     g_allFeats = feats.Feats();
+    SynthesizeImprovedHeroicDurabilityFeats();
     UpdateCompletionistRequirements();
     SeparateFeats();
 }
