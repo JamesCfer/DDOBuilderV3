@@ -27,6 +27,12 @@
 #include "FeatsFile.h"
 #include "EnhancementTree.h"
 #include "LogPane.h"
+#include "Requirement.h"
+#include "Requirements.h"
+#include "RequiresOneOf.h"
+
+#include <sstream>
+#include <vector>
 
 // ---------------------------------------------------------------------------
 // storage
@@ -45,6 +51,88 @@ namespace
     std::list<Feat>                 g_destinyTreeFeats;
     std::list<Feat>                 g_favorFeats;
     std::list<EnhancementTree>      g_enhancementTrees;   // empty for now
+
+    // Port of the completionist requirement-injection from
+    // CDDOBuilderApp::LoadFeats. The Feats.xml "Completionist" / "Racial
+    // Completionist" feats ship with only a static Level automatic-acquisition
+    // requirement (Level>=3 / >=1); the Windows app dynamically rewrites their
+    // RequirementsToTrain to demand every class / racial past life feat, so they
+    // only apply when the character actually has all past lives. Without this,
+    // every character auto-acquires them (spurious +2 to all abilities/skills
+    // from each). We replicate that rewrite here against the loaded g_allFeats.
+    void UpdateCompletionistRequirements()
+    {
+        auto fit = g_allFeats.find("Completionist");
+        if (fit != g_allFeats.end())
+        {
+            Feat* completionist = &fit->second;
+            Requirements req;
+            std::vector<bool> bDone;
+            bDone.resize(g_classes.size(), false);
+            size_t ci = 0;
+            for (auto&& cit : g_classes)
+            {
+                size_t architypeCount = 1;
+                if (!cit.HasNotHeroic()
+                        && cit.GetBaseClass() != Class_Unknown
+                        && !bDone[ci])
+                {
+                    bDone[ci] = true;
+                    std::string baseClass = cit.GetBaseClass();
+                    RequiresOneOf roo;
+                    std::stringstream ss;
+                    ss << "Past Life: " << cit.Name();
+                    Requirement classRequirement(Requirement_Feat, ss.str(), 1);
+                    roo.AddRequirement(classRequirement);
+                    size_t aci = 0;
+                    for (auto&& acit : g_classes)
+                    {
+                        if (!acit.HasNotHeroic()
+                                && !bDone[aci]
+                                && acit.GetBaseClass() == baseClass)
+                        {
+                            std::stringstream ass;
+                            ass << "Past Life: " << acit.BaseClass() << " - " << acit.Name();
+                            Requirement architypeClassRequirement(Requirement_Feat, ass.str(), 1);
+                            roo.AddRequirement(architypeClassRequirement);
+                            ++architypeCount;
+                            bDone[aci] = true;
+                        }
+                        ++aci;
+                    }
+                    if (architypeCount == 1)
+                    {
+                        req.AddRequirement(classRequirement);
+                    }
+                    else
+                    {
+                        req.AddRequiresOneOf(roo);
+                    }
+                }
+                bDone[ci] = true;
+                ++ci;
+            }
+            completionist->SetRequirements(req);
+        }
+        fit = g_allFeats.find("Racial Completionist");
+        if (fit != g_allFeats.end())
+        {
+            Feat* racialCompletionist = &fit->second;
+            Requirements req;
+            for (auto&& rit : g_races)
+            {
+                if (!rit.IsIconic()
+                        && !rit.HasNoPastLife())
+                {
+                    std::stringstream ss;
+                    ss << "Past Life: " << rit.Name();
+                    Requirement raceRequirement(Requirement_Feat, ss.str(), 3);
+                    req.AddRequirement(raceRequirement);
+                }
+            }
+            racialCompletionist->SetRequirements(req);
+        }
+    }
 
     void SeparateFeats()
     {
@@ -131,6 +219,7 @@ void V2CalcLoadGameData(const std::string& dataFilesDir)
     FeatsFile feats(dataFilesDir + "/Feats.xml");
     feats.Read();
     g_allFeats = feats.Feats();
+    UpdateCompletionistRequirements();
     SeparateFeats();
 }
 
