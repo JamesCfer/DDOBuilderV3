@@ -44,6 +44,10 @@ Get-ChildItem $exeDir -Include *.exe, *.dll -Recurse -ErrorAction SilentlyContin
 
 $builds = Get-ChildItem -Path $BuildsDir -Filter *.DDOBuild | Sort-Object Name
 if ($Limit -gt 0) { $builds = $builds | Select-Object -First $Limit }
+# Control first: a V2-AUTHORED file. If it captures while fuzz builds fail,
+# the exporter's file fidelity is the problem; if both fail, the environment is.
+$control = Get-Item "Output/Example Builds/YingsMonk.DDOBuild" -ErrorAction SilentlyContinue
+if ($control) { $builds = @($control) + @($builds) }
 Write-Host "Capturing $($builds.Count) build(s) with $ExePath"
 
 $failed = @()

@@ -49,7 +49,7 @@ while A_TickCount < deadline {
     modal := WinExist("ahk_class #32770 ahk_pid " pid)
     if modal {
         title := WinGetTitle(modal)
-        FileAppend "dismissing modal during load: '" title "'`n", "*"
+        FileAppend "dismissing modal during load: '" title "' text=<" SubStr(WinGetText(modal), 1, 400) ">`n", "*"
         WinActivate modal
         Send "{Enter}"
         Sleep 500
@@ -99,7 +99,7 @@ loop 5 {
     if !modal {
         break
     }
-    FileAppend "dismissing modal post-load: '" WinGetTitle(modal) "'`n", "*"
+    FileAppend "dismissing modal post-load: '" WinGetTitle(modal) "' text=<" SubStr(WinGetText(modal), 1, 400) ">`n", "*"
     WinActivate modal
     Send "{Enter}"
     Sleep 800

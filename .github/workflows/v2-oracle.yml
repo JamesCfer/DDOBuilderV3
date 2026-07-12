@@ -104,7 +104,7 @@ jobs:
           git config user.name "v2-oracle[bot]"
           git config user.email "v2-oracle@users.noreply.github.com"
           git checkout -B v2-oracle-results
-          git add -f Output/FuzzBuilds/*.v2export.txt 2>$null
+          git add -f Output/FuzzBuilds/*.v2export.txt "Output/Example Builds/*.v2export.txt" 2>$null
           git add -f tools/v2-oracle/shots 2>$null
           git commit -m "v2-oracle: run ${{ github.run_id }} results + debug" 2>$null
           if ($LASTEXITCODE -eq 0) { git push -f origin v2-oracle-results } else { Write-Host "nothing to commit" }
