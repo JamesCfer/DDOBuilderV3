@@ -79,8 +79,23 @@ if !mainWin {
 ; startup; wait until the SDI title shows the document ("<name> - DDOBuilder")
 ; or up to 150s, heartbeating so the log shows where time goes.
 WinActivate mainWin
-loadDeadline := A_TickCount + 150000
+loadDeadline := A_TickCount + 240000
 while A_TickCount < loadDeadline {
+    ; A modal here usually means the document failed to load — abort fast.
+    modal := WinExist("ahk_class #32770 ahk_pid " pid)
+    if modal {
+        mtext := SubStr(WinGetText(modal), 1, 400)
+        FileAppend "modal during doc-load: <" mtext ">`n", "*"
+        if InStr(mtext, "failed to load") {
+            FileAppend "ERROR: document rejected by V2 parser`n", "*"
+            ProcessClose pid
+            ExitApp 6
+        }
+        WinActivate modal
+        Send "{Enter}"
+        Sleep 800
+        continue
+    }
     t := WinGetTitle(mainWin)
     if InStr(t, " - ") || InStr(t, "fuzz") {
         FileAppend "document loaded: '" t "'`n", "*"

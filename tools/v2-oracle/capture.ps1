@@ -13,7 +13,7 @@ param(
     [Parameter(Mandatory)] [string]$AhkExe,
     [string]$BuildsDir = "Output/FuzzBuilds",
     [int]$Limit = 0,
-    [int]$PerBuildTimeoutSec = 300
+    [int]$PerBuildTimeoutSec = 420
 )
 
 $ErrorActionPreference = "Continue"
