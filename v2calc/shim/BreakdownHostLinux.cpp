@@ -30,6 +30,7 @@
 #include "Character.h"
 #include "Life.h"
 #include "Build.h"
+#include "Class.h"
 #include "Effect.h"
 #include "GlobalSupportFunctions.h"
 
@@ -46,6 +47,10 @@
 #include "BreakdownItemDodge.h"
 #include "BreakdownItemBAB.h"
 #include "BreakdownItemDestinyAps.h"
+#include "BreakdownItemSpellSchool.h"
+#include "BreakdownItemCasterLevel.h"
+#include "BreakdownItemSchoolCasterLevel.h"
+#include "SpellSchoolTypes.h"
 
 #include "BreakdownHost.h"
 
@@ -270,6 +275,9 @@ namespace
         Simple(Breakdown_DodgeCap,             Effect_DodgeCapBonus,          "Dodge Cap");
         Simple(Breakdown_OverrideBAB,          Effect_OverrideBAB,            "Override BAB");
         Simple(Breakdown_Fortification,        Effect_Fortification,          "Fortification");
+        // Offensive (simple)
+        Simple(Breakdown_MeleePower,           Effect_MeleePower,             "Melee Power");
+        Simple(Breakdown_RangedPower,          Effect_RangedPower,            "Ranged Power");
 
         // Max Dex Bonus (needed by AC, Dodge)
         Reg(Breakdown_MaxDexBonus, new BreakdownItemMDB(&g_paneStub, Breakdown_MaxDexBonus, nullptr, nullptr));
@@ -311,6 +319,61 @@ namespace
 
         // Dodge (needs DodgeCap, MDB, MaxDexBonusShields)
         Reg(Breakdown_Dodge, new BreakdownItemDodge(&g_paneStub, Breakdown_Dodge, "Dodge", nullptr, nullptr));
+
+        // Spell DCs per school (BreakdownItemSpellSchool - no sibling deps)
+        struct SchoolEntry { BreakdownType bt; SpellSchoolType st; const char* name; bool specificDCOnly; };
+        static const SchoolEntry schools[] = {
+            { Breakdown_SpellSchoolAbjuration,   SpellSchool_Abjuration,   "Abjuration DC",   false },
+            { Breakdown_SpellSchoolConjuration,  SpellSchool_Conjuration,  "Conjuration DC",  false },
+            { Breakdown_SpellSchoolDivination,   SpellSchool_Divination,   "Divination DC",   false },
+            { Breakdown_SpellSchoolEnchantment,  SpellSchool_Enchantment,  "Enchantment DC",  false },
+            { Breakdown_SpellSchoolEvocation,    SpellSchool_Evocation,    "Evocation DC",    false },
+            { Breakdown_SpellSchoolIllusion,     SpellSchool_Illusion,     "Illusion DC",     false },
+            { Breakdown_SpellSchoolNecromancy,   SpellSchool_Necromancy,   "Necromancy DC",   false },
+            { Breakdown_SpellSchoolTransmutation,SpellSchool_Transmutation,"Transmutation DC",false },
+            { Breakdown_SpellSchoolFear,         SpellSchool_Fear,         "Fear DC",         true  },
+            { Breakdown_SpellSchoolGlobalDC,     SpellSchool_GlobalDC,     "Global DC Bonus", false },
+            { Breakdown_SpellSchoolRuneArm,      SpellSchool_RuneArm,      "Rune Arm DC",     true  },
+        };
+        for (auto&& s : schools)
+        {
+            Reg(s.bt, new BreakdownItemSpellSchool(&g_paneStub, s.bt, Effect_SpellDC, s.st,
+                    s.name, nullptr, nullptr, s.specificDCOnly));
+        }
+
+        // Caster levels per school (BreakdownItemSchoolCasterLevel)
+        struct SchoolCL { BreakdownType cl; BreakdownType mcl; SpellSchoolType st; };
+        static const SchoolCL schoolCLs[] = {
+            { Breakdown_CasterLevel_School_Abjuration,   Breakdown_MaxCasterLevel_School_Abjuration,   SpellSchool_Abjuration },
+            { Breakdown_CasterLevel_School_Conjuration,  Breakdown_MaxCasterLevel_School_Conjuration,  SpellSchool_Conjuration },
+            { Breakdown_CasterLevel_School_Divination,   Breakdown_MaxCasterLevel_School_Divination,   SpellSchool_Divination },
+            { Breakdown_CasterLevel_School_Enchantment,  Breakdown_MaxCasterLevel_School_Enchantment,  SpellSchool_Enchantment },
+            { Breakdown_CasterLevel_School_Evocation,    Breakdown_MaxCasterLevel_School_Evocation,    SpellSchool_Evocation },
+            { Breakdown_CasterLevel_School_Illusion,     Breakdown_MaxCasterLevel_School_Illusion,     SpellSchool_Illusion },
+            { Breakdown_CasterLevel_School_Necromancy,   Breakdown_MaxCasterLevel_School_Necromancy,   SpellSchool_Necromancy },
+            { Breakdown_CasterLevel_School_Transmutation,Breakdown_MaxCasterLevel_School_Transmutation,SpellSchool_Transmutation },
+        };
+        for (auto&& s : schoolCLs)
+        {
+            Reg(s.cl,  new BreakdownItemSchoolCasterLevel(&g_paneStub, Effect_CasterLevel,    s.st, s.cl,  nullptr, nullptr));
+            Reg(s.mcl, new BreakdownItemSchoolCasterLevel(&g_paneStub, Effect_MaxCasterLevel, s.st, s.mcl, nullptr, nullptr));
+        }
+
+        // Caster levels per caster class (BreakdownItemClassCasterLevel)
+        for (auto&& c : Classes())
+        {
+            if (c.SpellPointsAtLevel(MAX_CLASS_LEVEL - 1) > 0)
+            {
+                Reg(static_cast<BreakdownType>(Breakdown_CasterLevel_First + c.Index()),
+                    new BreakdownItemClassCasterLevel(&g_paneStub, c.Name(),
+                        static_cast<BreakdownType>(Breakdown_CasterLevel_First + c.Index()),
+                        Effect_CasterLevel, nullptr, nullptr));
+                Reg(static_cast<BreakdownType>(Breakdown_MaxCasterLevel_First + c.Index()),
+                    new BreakdownItemClassCasterLevel(&g_paneStub, c.Name(),
+                        static_cast<BreakdownType>(Breakdown_MaxCasterLevel_First + c.Index()),
+                        Effect_MaxCasterLevel, nullptr, nullptr));
+            }
+        }
     }
 }
 

@@ -152,6 +152,8 @@ int main(int argc, char** argv)
         { Breakdown_DR,              "dr",              false },
         { Breakdown_MaxDexBonus,     "maxDexBonus",     false },
         { Breakdown_BAB,             "bab",             true  },
+        { Breakdown_MeleePower,      "meleePower",      false },
+        { Breakdown_RangedPower,     "rangedPower",     false },
     };
     printf("  \"breakdowns\": {\n");
     size_t n = sizeof(scalars) / sizeof(scalars[0]);
@@ -162,7 +164,30 @@ int main(int argc, char** argv)
                  : v2calc::Total(scalars[i].bt);
         printf("    \"%s\": %d%s\n", scalars[i].key, (int)v, (i + 1 < n) ? "," : "");
     }
-    printf("  }\n");
+    printf("  },\n");
+
+    // spell DCs per school
+    static const struct { BreakdownType bt; const char* key; } spellDCs[] = {
+        { Breakdown_SpellSchoolAbjuration,    "abjuration"    },
+        { Breakdown_SpellSchoolConjuration,   "conjuration"   },
+        { Breakdown_SpellSchoolDivination,    "divination"    },
+        { Breakdown_SpellSchoolEnchantment,   "enchantment"   },
+        { Breakdown_SpellSchoolEvocation,     "evocation"     },
+        { Breakdown_SpellSchoolIllusion,      "illusion"      },
+        { Breakdown_SpellSchoolNecromancy,    "necromancy"    },
+        { Breakdown_SpellSchoolTransmutation, "transmutation" },
+        { Breakdown_SpellSchoolFear,          "fear"          },
+        { Breakdown_SpellSchoolGlobalDC,      "globalDC"      },
+        { Breakdown_SpellSchoolRuneArm,       "runeArm"       },
+    };
+    printf("  \"spellDC\": {");
+    size_t ndc = sizeof(spellDCs) / sizeof(spellDCs[0]);
+    for (size_t i = 0; i < ndc; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                spellDCs[i].key, (int)v2calc::Total(spellDCs[i].bt));
+    }
+    printf(" }\n");
     printf("}\n");
     return 0;
 }

@@ -157,7 +157,10 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/BreakdownItemMRRCap.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemDodge.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemBAB.cpp \
-    $(ROOT)/DDOBuilder/BreakdownItemDestinyAps.cpp
+    $(ROOT)/DDOBuilder/BreakdownItemDestinyAps.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSpellSchool.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemCasterLevel.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSchoolCasterLevel.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
