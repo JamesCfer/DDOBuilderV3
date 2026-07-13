@@ -105,6 +105,14 @@ class Build :
 
         void BuildNowActive();      // applies all feats/enhancements etc
         void SetLevel(size_t level);
+#ifdef V2CALC_LINUX
+        // Headless parity oracle: rebuild the class-level cache after a SAX load
+        // without running the UI-coupled BuildNowActive() path. The constructor
+        // builds m_cachedClassLevels from an empty level list (before parse), so
+        // BaseAttackBonus()/ClassLevels() need this once loading is done.
+        // UpdateCachedClassLevels() only reads m_Levels and writes the cache.
+        void V2CalcRebuildClassCache() { UpdateCachedClassLevels(); }
+#endif
 
         // name
         void SetName(const std::string& name);

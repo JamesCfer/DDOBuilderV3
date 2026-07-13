@@ -1,0 +1,31 @@
+seed 5017, level 20
+race Gnome
+classes Barbarian 7 / Dragon Disciple 7 / Wizard 6
+abilities Str 9, Dex 15, Con 12, Int 14, Wis 11, Cha 14 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Throwing Axe
+slot Dragon Disciple-1-Dragon Arts-0: Combat Casting
+slot heroic-3: Skill Focus: Jump
+slot Wizard-1-Metamagic Feat-0: Enlarge Spell
+slot Dragon Disciple-2-Dragon Arts-0: no eligible feats — left empty
+slot heroic-6: Martial Weapon Proficiency: Scimitar
+slot heroic-9: Discipline
+slot Dragon Disciple-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot heroic-12: Spell Focus: Enchantment
+slot Dragon Disciple-6-Dragon Arts-0: no eligible feats — left empty
+slot heroic-15: Martial Weapon Proficiency: Longsword
+slot heroic-18: Diehard
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Halcyonia
+gear Necklace: Epic Torc of Prince Raiyum-de II
+gear Trinket: Shard of the Shadowfell
+gear Armor: Robe of Arcane Puissance
+gear Cloak: Downcast Nimble Cloak
+gear Belt: Epic Belt of the Red Abishai
+gear Ring: Consuming Darkness (Level 17)
+gear Ring2: Signet of Lamannia
+gear Gloves: Faded Tracker's Gloves
+gear Bracers: World-Weary Wrappings
+gear Boots: Cannith Boots of Propulsion
+gear Goggles: Shadowsight (Level 16)
+gear Main Hand: Shining Reliquary Greatsword

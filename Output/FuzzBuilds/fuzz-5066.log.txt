@@ -1,0 +1,29 @@
+seed 5066, level 20
+race Tiefling
+classes Sorcerer 12 / Acolyte of the Skin 8
+abilities Str 12, Dex 13, Con 14, Int 13, Wis 12, Cha 12 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Dagger
+slot Acolyte of the Skin-1-True Patron-0: True Patron: Fiend
+slot heroic-3: Martial Weapon Proficiency: Falchion
+slot heroic-6: Simple Weapon Proficiency: Morningstar
+slot heroic-9: Luck Of Heroes
+slot Acolyte of the Skin-4-Pact Save Bonus-0: Fiendish Resilience
+slot Acolyte of the Skin-6-Pact Ability-0: Fiendskin
+slot heroic-12: Skill Focus: Swim
+slot Acolyte of the Skin-8-Pact Save Bonus-0: no eligible feats — left empty
+slot heroic-15: Martial Weapon Proficiency: Hand Axe
+slot heroic-18: Resist Poison
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Cannith Crafted Helmet
+gear Necklace: Pendant of Hidden Tools
+gear Trinket: Mysterious Bauble
+gear Armor: Renovation Regalia
+gear Cloak: Cloak of Night (level 12)
+gear Belt: Daggertooth's Belt (historic)
+gear Ring: Ring of Venom
+gear Ring2: Ring of the Stormreaver Prophecy (historic)
+gear Gloves: Gloves of the Master Illusionist (Level 19)
+gear Bracers: Barbette's Bracers
+gear Boots: Doctor Gustav's Rubber Boots
+gear Goggles: Scientist's Specs
+gear Main Hand: Spectral Great Axe (level 4)

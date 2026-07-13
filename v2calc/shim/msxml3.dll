@@ -1,0 +1,32 @@
+// v2calc/shim/msxml3.dll
+//
+// This file deliberately has a .dll name: XmlLib headers contain
+// `#import <msxml3.dll>` which MSVC expands into COM wrapper classes.
+// GCC treats #import as a plain include-once directive and resolves the
+// name against the include path, finding this shim instead.
+//
+// It declares just enough of the MSXML2 namespace for the XmlLib headers
+// to parse. None of these interfaces are functional on Linux - the real
+// SAX parsing is done by expat in v2calc/shim/SaxReaderLinux.cpp.
+#pragma once
+
+#include <windows.h> // v2calc shim
+
+namespace MSXML2
+{
+    struct ISAXLocator {};
+    struct ISAXAttributes {};
+    struct ISAXContentHandler {};
+    struct ISAXErrorHandler {};
+    struct ISAXDTDHandler {};
+    struct ISAXXMLReader {};
+
+    // In the Windows build this is a smart COM pointer. On Linux it is a
+    // dummy - SaxReaderLinux.cpp never touches it.
+    struct ISAXXMLReaderPtr
+    {
+        void* p = nullptr;
+    };
+
+    struct SAXXMLReader {};
+}

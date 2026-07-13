@@ -39,6 +39,19 @@ class Character :
         Build* ActiveBuild();  // can be NULL
         const Build* ActiveBuild() const; // can be NULL
         void SetActiveBuildIndex(size_t buildIndex);
+#ifdef V2CALC_LINUX
+        // Headless parity oracle: point the runtime active life/build indices
+        // (m_uiActive*, default 10000 = "none") at the parsed values so
+        // ActiveLife()/ActiveBuild() resolve without the UI-coupled
+        // SetActiveBuild() path (which dereferences the null main window).
+        void V2CalcSetActiveIndices(size_t lifeIndex, size_t buildIndex)
+        {
+            m_uiActiveLifeIndex = lifeIndex;
+            m_uiActiveBuildIndex = buildIndex;
+            m_ActiveLifeIndex = lifeIndex;
+            m_ActiveBuildIndex = buildIndex;
+        }
+#endif
 
         // ability tomes
         void SetAbilityTome(AbilityType ability, size_t value);

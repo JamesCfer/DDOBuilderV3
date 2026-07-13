@@ -1,0 +1,27 @@
+seed 5049, level 20
+race Dwarf
+classes Barbarian 11 / Alchemist 9
+abilities Str 16, Dex 12, Con 12, Int 11, Wis 11, Cha 12 (28/28 pts)
+slot heroic-1: Magical Training
+slot heroic-3: Shield Proficiency (General)
+slot heroic-6: Martial Weapon Proficiency: Longbow
+slot Alchemist-4-Alchemist Bonus Feat-0: Mental Toughness
+slot heroic-9: Combat Casting
+slot heroic-12: Resist Poison
+slot heroic-15: Snake Blood
+slot Alchemist-8-Alchemist Bonus Feat-0: Alchemical Studies: Verudite
+slot heroic-18: Augment Summoning
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Face of the Demon
+gear Necklace: Golden Cartouche
+gear Trinket: Lockup Property Log
+gear Armor: No Worries (level 20)
+gear Cloak: Jungle Cloak
+gear Belt: Cannith Crafted Belt
+gear Ring: Ring of Winter's Chill
+gear Ring2: Band of Faith and Fortress
+gear Gloves: Brawling Gloves (level 12)
+gear Bracers: Bracers of Twisting Shade (Level 18)
+gear Boots: Spiked Boots (historic)
+gear Goggles: Disordered Vision
+gear Main Hand: Green Steel Shuriken

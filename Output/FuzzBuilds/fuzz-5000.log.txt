@@ -1,0 +1,38 @@
+seed 5000, level 20
+race Aasimar
+classes Dark Apostate 8 / Favored Soul 12
+abilities Str 13, Dex 13, Con 11, Int 11, Wis 15, Cha 12 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Protector Bond
+slot Dark Apostate-1-Follower Of-0: Favored by Silvanus
+slot heroic-1: Spell Focus: Enchantment
+slot Dark Apostate-2-Domain-0: Domain of Destruction
+slot heroic-3: Skill Focus: Hide
+slot Favored Soul-1-Follower Of-0: Follower of the Silver Flame
+slot Favored Soul-2-Battle Feat-0: Knowledge of Battle
+slot heroic-6: Athletic
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Destruction
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot Dark Apostate-6-Deity-0: Silver Flame Exorcism
+slot heroic-9: Point Blank Shot
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Acid
+slot Favored Soul-6-Deity-0: Blessing of Silvanus
+slot heroic-12: Martial Weapon Proficiency: Great Club
+slot Favored Soul-7-Heart Feat-0: Stout of Heart
+slot heroic-15: Precise Shot
+slot Favored Soul-10-Energy Resistance-0: Energy Absorption: Sonic
+slot heroic-18: Single Weapon Fighting
+slot Favored Soul-12-Beloved Of-0: Beloved of the Divine
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Totemic Lavalier
+gear Necklace: Amber Pendant
+gear Trinket: Souvenir Coin
+gear Armor: Epic Marilith Chain
+gear Cloak: Cloak of Invisibility
+gear Belt: Chains
+gear Ring: Epic Ring of Elemental Essence
+gear Ring2: Signet of Dolurrh
+gear Gloves: Epic Bramble-Casters
+gear Bracers: Cliffdiver Luck Charms
+gear Boots: Boots of Faith
+gear Goggles: Mystic Monocle
+gear Main Hand: Impulsive Devoted Quarterstaff

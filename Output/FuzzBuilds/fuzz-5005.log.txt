@@ -1,0 +1,26 @@
+seed 5005, level 20
+race Half-Orc
+classes Barbarian 12 / Arcane Trickster 8
+abilities Str 10, Dex 12, Con 17, Int 11, Wis 12, Cha 10 (28/28 pts)
+slot heroic-1: Skill Focus: Move Silently
+slot heroic-3: Simple Weapon Proficiency: Club
+slot heroic-6: Skill Focus: Repair
+slot heroic-9: Single Weapon Fighting
+slot Arcane Trickster-6-Bonus Magical Feat-0: Heighten Spell
+slot heroic-12: Empower Spell
+slot heroic-15: Skill Focus: Balance
+slot heroic-18: Self Sufficient
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Teraza's Perfect Sight
+gear Necklace: Epic Pendant of the White Abishai
+gear Trinket: Deep Red Ioun Stone
+gear Armor: Epic Ship-Mage's Attire
+gear Cloak: Cloak of Night (level 12)
+gear Belt: Belt of Thoughtful Rememberance
+gear Ring: Brass Beaver
+gear Ring2: Oathring
+gear Gloves: Backstabber's Gloves (Level 14)
+gear Bracers: Hidden Armlets
+gear Boots: Cannith Boots of Propulsion
+gear Goggles: Dream Visor (Level 13)
+gear Main Hand: Ethereal Falchion

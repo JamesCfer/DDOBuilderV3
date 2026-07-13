@@ -1,0 +1,33 @@
+seed 5062, level 20
+race Gnome
+classes Artificer 9 / Blight Caster 11
+abilities Str 13, Dex 13, Con 10, Int 12, Wis 14, Cha 14 (28/28 pts)
+slot heroic-1: Spell Focus: Evocation
+slot heroic-3: Augment Summoning
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot Artificer-4-Artificer Bonus Feat-0: Skill Focus: Tumble
+slot heroic-6: Martial Weapon Proficiency: Great Club
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-9: Quicken Spell
+slot heroic-12: Eschew Materials
+slot Blight Caster-8-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-15: Martial Weapon Proficiency: Longsword
+slot Artificer-8-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-18: Acrobatic
+slot Blight Caster-11-Wild Shape-0: Wild Shape: Hive Master
+slot Blight Caster-11-Toggle Imbue-0: Biting Poison Imbue
+enhancements: 80/80 AP across 11 trees
+gear Helmet: The Commander of Bling (level 16)
+gear Necklace: Bluefire Necklace
+gear Trinket: Lesser Anti-Beholder Crystal
+gear Armor: Quenched Temple Robe
+gear Cloak: Gossamer Weave
+gear Belt: Arkat's Cord (Level 12)
+gear Ring: Epic Shaman's Band
+gear Ring2: Deadmonger Gang's Signet
+gear Gloves: Protector's Gloves
+gear Bracers: Construct Champion's Bands
+gear Boots: Boots of Minor Striding
+gear Goggles: Paramnesial Lenses
+gear Main Hand: Macabre Rapier

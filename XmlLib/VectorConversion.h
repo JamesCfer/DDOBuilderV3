@@ -29,6 +29,19 @@ namespace XmlLib
     template <>
     bool VectorToString(const std::vector<bool> & v, std::wstring * out);
 
+#if defined(V2CALC_LINUX)
+    // On LP64 Linux size_t is a distinct type (unsigned long) with no
+    // specialization above, so an implicit instantiation of the primary
+    // template (which streams a std::vector and fails to compile) would be
+    // selected. These declarations make the size_t specializations (defined in
+    // v2calc/shim/VectorConversionLinux.cpp) visible at every instantiation
+    // point so the primary template body is never instantiated. On MSVC size_t
+    // is unsigned long long, so this guard is Linux-only and never affects the
+    // Windows build.
+    template <>
+    bool VectorToString(const std::vector<size_t> & v, std::wstring * out);
+#endif
+
     // overload to allow control of precision (num decimal places)
     template <typename T>
     bool VectorToString(const std::vector<T> & v, size_t precision, std::wstring * out)
@@ -58,6 +71,12 @@ namespace XmlLib
 
     template <>
     bool StringToVector(const std::wstring & s, std::vector<bool> * out);
+
+#if defined(V2CALC_LINUX)
+    // see the size_t VectorToString note above (LP64-only specialization)
+    template <>
+    bool StringToVector(const std::wstring & s, std::vector<size_t> * out);
+#endif
 }
 
 

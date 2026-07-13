@@ -1,0 +1,34 @@
+seed 5094, level 20
+race Aasimar
+classes Arcane Trickster 7 / Warlock 9 / Ranger 4
+abilities Str 14, Dex 9, Con 9, Int 10, Wis 15, Cha 16 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Fallen Bond
+slot heroic-1: Hamstring
+slot heroic-3: Martial Weapon Proficiency: Shortsword
+slot Warlock-1-Warlock Pact-0: Pact: The Carceri Storm
+slot heroic-6: Iron Will
+slot Arcane Trickster-6-Bonus Magical Feat-0: Extend Spell
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Giant
+slot heroic-9: Martial Weapon Proficiency: Great Axe
+slot heroic-12: Martial Weapon Proficiency: Great Club
+slot Warlock-4-Pact Save Bonus-0: Bulwark of the Storm
+slot heroic-15: Combat Casting
+slot Warlock-5-Pact Spell-0: Pact Magic: Greater Creeping Cold
+slot Warlock-6-Pact Ability-0: Warlock: Absolute Zero
+slot heroic-18: Maximize Spell
+slot Warlock-8-Pact Save Bonus-0: no eligible feats — left empty
+slot Warlock-9-Pact Spell-0: Pact Magic: Ice Storm
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Executioner's Helm
+gear Necklace: Shiona's Pendant
+gear Trinket: Epic Crocodile Tooth
+gear Armor: Elfcraft Plate Armor
+gear Cloak: Firemouth's Cloak
+gear Belt: Festering Mummy Wrappings
+gear Ring: Skulled Ring
+gear Ring2: Ring of Spring's Storms
+gear Gloves: Hands of Waste
+gear Bracers: Defensive Wrists
+gear Boots: Skirmisher's Boots (Level 19)
+gear Goggles: Precision Lenses
+gear Main Hand: Retribution

@@ -71,10 +71,11 @@ describe('V2 importer — Yings Monk (Aasimar 20 Monk / 10 Epic / 4 Legendary)',
   })
 
   it('imports ability scores from spend table', () => {
-    // Yings has WisSpend=10 (which = score 16) per the file.
-    expect(build.baseAbilities.Wisdom).toBe(16)
-    // ConSpend=9 is not a valid V2 cost; nearest valid ≤9 is 8 (=15).
-    expect(build.baseAbilities.Constitution).toBeGreaterThanOrEqual(15)
+    // V2 `<XxxSpend>` is the VALUE INCREASE above 8 (score = 8 + spend),
+    // confirmed against Build::AbilityAtLevel and the v2calc oracle.
+    // Yings: WisSpend=10 → 18, ConSpend=9 → 17, IntSpend=0 → 8.
+    expect(build.baseAbilities.Wisdom).toBe(18)
+    expect(build.baseAbilities.Constitution).toBe(17)
     expect(build.baseAbilities.Intelligence).toBe(8)
   })
 

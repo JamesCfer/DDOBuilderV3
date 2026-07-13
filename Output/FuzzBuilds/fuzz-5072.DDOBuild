@@ -1,0 +1,952 @@
+<?xml version="1.0"?>
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats>
+    </SpecialFeats>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Fuzz 5072 (Dar11/Fav9)</Name>
+      <Race>Aasimar</Race>
+      <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
+      <Build version="1">
+        <Level>20</Level>
+        <Class1>Dark Apostate</Class1>
+        <Class2>Favored Soul</Class2>
+        <Class3>Unknown</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>7</StrSpend>
+          <DexSpend>2</DexSpend>
+          <ConSpend>4</ConSpend>
+          <IntSpend>3</IntSpend>
+          <WisSpend>6</WisSpend>
+          <ChaSpend>5</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Aasimar: Fallen Bond</FeatName>
+            <Type>Aasimar Bond</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Favored by Silvanus</FeatName>
+            <Type>Follower Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Athletic</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Follower of Olladra</FeatName>
+            <Type>Follower Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Knowledge of Battle</FeatName>
+            <Type>Battle Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Martial Weapon Proficiency: Warhammer</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Child of Faith</FeatName>
+            <Type>Child Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Domain of Air</FeatName>
+            <Type>Domain</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Magical Training</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Energy Absorption: Fire</FeatName>
+            <Type>Energy Resistance</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Negotiator</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Search the Soul</FeatName>
+            <Type>Deity</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Improved Domain of Air</FeatName>
+            <Type>Domain Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>No Deity Feat Available</FeatName>
+            <Type>Deity</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Power Attack</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Stout of Heart</FeatName>
+            <Type>Heart Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Skill Focus: Move Silently</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Favored Soul</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Greater Domain of Air</FeatName>
+            <Type>Domain Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Eschew Materials</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Apostate</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <ActiveStances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Aasimar</TreeName>
+          <TreeName>Aasimar: Scourge of the Undead</TreeName>
+          <TreeName>Dark Apostate</TreeName>
+          <TreeName>Falconry</TreeName>
+          <TreeName>Angel of Vengeance</TreeName>
+          <TreeName>Beacon of Hope</TreeName>
+          <TreeName>War Soul</TreeName>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Aasimar: Scourge of the Undead</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>ScourgeAasimarCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SACounsel</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SAScourgeWeapons</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SABold</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SAImprovedRecoveryI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Inquisitive</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveConjureBolts</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveSkills</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveDualShooter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveWandAndScrollMastery</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Vistani Knife Fighter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MistStalkerI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RapidAttack</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeaponVersatility</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Dark Apostate</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DACore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DAShadowyBulwark</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DAApostatesCurse</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Beacon of Hope</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>BoHCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHGoodHope</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHConfidence</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BoHDivineDurabilityI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Angel of Vengeance</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AoVCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AoVSmitingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AoVNimbusOfLight</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AoVScourge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperEnchantment</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeatheredTraveler</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>StrategicCombatI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TravelersToughness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperKnowTheAngles</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperAwareness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperVersatileAdeptI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperAbilityScoreI</EnhancementName>
+            <Selection>+1 Dexterity</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Falconry</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore1</EnhancementName>
+            <Selection>Summon Grey Owl</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconPracticedAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconOutInNature</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Aasimar</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AasimarCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ImprovedRecoveryI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FightTheWickedI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>Counsel</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AasimarArcanum</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DivinePurpose</EnhancementName>
+            <Selection>Divine Purpose: Fallen</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DivineResolve</EnhancementName>
+            <Selection>Charisma</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Feydark Illusionist</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkCore1</EnhancementName>
+            <Selection>White Tressym</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkIllusoryWeaponry</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkStudyTheArcane</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkFamiliarsFlourishI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkFamiliarsFlourishII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FeydarkCore2</EnhancementName>
+            <Selection>Charisma</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>War Soul</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>WarSoulCore1</EnhancementName>
+            <Selection>Smite Foe (Ranged)</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSToughness</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSSacredTouch</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSDivineMight</EnhancementName>
+            <Selection>Divine Might</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSRighteousWeaponsI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WSRighteousWeaponsII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Flame Priest's Focus</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>A long-dead leader of the Eternal Flame left their mark behind, in the hopes
+someone would take up their mantle.</Description>
+            <DropLocation>ToEE: Depths of the Temple, end chest</DropLocation>
+            <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Accuracy</Type>
+              <Value1>8</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Potency</Type>
+              <Value1>41</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>CombatMastery</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <SetBonus>Temple's Inferno</SetBonus>
+          </Helmet>
+          <Necklace>
+            <Name>Ward-Inscribed Pendant</Name>
+            <Icon>Necklace_2</Icon>
+            <Description>There is an odd glyph inscribed on this stone pendant.</Description>
+            <DropLocation>Ravens' Bane, end chest</DropLocation>
+            <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Stone</Material>
+            <Buff>
+              <Type>CurseResistance</Type>
+              <Value1>1</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deadly</Type>
+              <Value1>5</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>NaturalArmor</Type>
+              <Value1>6</Value1>
+              <BonusType>Natural Armor</BonusType>
+            </Buff>
+            <SetBonus>Crypt Raider Set (Heroic)</SetBonus>
+          </Necklace>
+          <Trinket>
+            <Name>Epic Pouch of Jerky</Name>
+            <Icon>Trinket_33a</Icon>
+            <Description>This leather pouch contains many shreds of dried meat. It's probably best that
+you don't ask what kind of meat.</Description>
+            <DropLocation>Epic version of Pouch of Jerky</DropLocation>
+            <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>FalseLife</Type>
+              <Value1>36</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>HealingAmplification</Type>
+              <Value1>38</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>17</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Heal</Description1>
+              <Item>Heal</Item>
+            </Buff>
+            <SetBonus>Epic Vulkoor's Chosen</SetBonus>
+          </Trinket>
+          <Cloak>
+            <Name>Prismatic Cloak, Green (Level 17)</Name>
+            <Icon>Cloak_7</Icon>
+            <Description>The rainbow fought;
+But the curse was wrought.</Description>
+            <DropLocation>The Tracker's Trap, Lines of Supply, Breaking the Ranks, A Break In the Ice, What Goes Up, end chest (Heroic Normal)</DropLocation>
+            <MinLevel>17</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>16</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Item>Acid</Item>
+            </Buff>
+          </Cloak>
+          <Belt>
+            <Name>Buckle of Secrets</Name>
+            <Icon>Belt_14c</Icon>
+            <Description>This buckle conceals a small compartment, which could easily house small components,
+hidden messages, or a small dose of poison.</Description>
+            <DropLocation>Zoo Creeper, Lacheln 's chest (rare)</DropLocation>
+            <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>EfficientEmpowerI</Type>
+            </Buff>
+          </Belt>
+          <Goggles>
+            <Name>Garstone's Lenses</Name>
+            <Icon>Goggles_3</Icon>
+            <Description>These blast-grade lenses come with etched targeting sights.</Description>
+            <DropLocation>Wrath of the Earth, End Chest</DropLocation>
+            <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Rune Arm Focus</Type>
+              <Value1>52</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Auto-Repair</Type>
+            </Buff>
+            <Buff>
+              <Type>Magnetism</Type>
+              <Value1>77</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>Devotion</Type>
+              <Value1>77</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Positive</Description1>
+              <Item>Positive</Item>
+            </Buff>
+            <SetBonus>Adherent of the Mists Set (Heroic)</SetBonus>
+          </Goggles>
+          <Gloves>
+            <Name>Cloth Half-Sleeve</Name>
+            <Icon>Gloves_3b</Icon>
+            <Description>This item cannot be fed to sentient jewels .</Description>
+            <DropLocation>Advance to level 15, End reward</DropLocation>
+            <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Exceptional</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+          </Gloves>
+          <Boots>
+            <Name>Krugg's Spiked Boots</Name>
+            <Icon>Boots_4</Icon>
+            <Description>These boots are fitted with dark metal spikes. They were once worn by Krugg,
+warmaster of Splinterskull.</Description>
+            <DropLocation>Assault on Splinterskull, End reward</DropLocation>
+            <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Striding</Type>
+              <Value1>10</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </Boots>
+          <Bracers>
+            <Name>Wristbound Register</Name>
+            <Icon>Bracers_5</Icon>
+            <Description>Popular among university scholars, a small compartment on this bracer opens
+to reveal a small notebook.</Description>
+            <DropLocation>Vecna Unleashed (quest), End chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Intelligence</Description1>
+              <Item>Intelligence</Item>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>89</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>ReflexSave</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalEfficiency</Type>
+              <Value1>5</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <SetBonus>Forbidden Knowledge</SetBonus>
+          </Bracers>
+          <Armor>
+            <Name>Epic Full Plate of the Ringleader</Name>
+            <Icon>HeavyArmor_1e</Icon>
+            <Description>A brilliant and gaudy set of armor that makes its wearer the center of attention.
+It is made from surprisingly durable materials.</Description>
+            <DropLocation>Epic version of Full Plate of the Ringleader</DropLocation>
+            <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Material>Dwarven Iron</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>6</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>DR 15/-</Type>
+            </Buff>
+            <Buff>
+              <Type>Command</Type>
+              <Value1>5</Value1>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>Radiance Guard</Type>
+            </Buff>
+          </Armor>
+          <Ring1>
+            <Name>Glorious Dawn (Level 14)</Name>
+            <Icon>Ring_5</Icon>
+            <Description>A ring blessed with Amaunator's love.</Description>
+            <DropLocation>A Lesson in Deception, end chest (Heroic Normal); Shadow Over Wheloon, quest chain end reward (Heroic)</DropLocation>
+            <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>Deathblock IV</Type>
+            </Buff>
+            <Buff>
+              <Type>Solar Guard III</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </Ring1>
+          <Ring2>
+            <Name>Ring of Shadows (historic)</Name>
+            <Icon>Ring_11</Icon>
+            <Description>You can just barely make out the outline of this ring as you hold it in your
+hand. It seems almost as if it has been formed out of dark clouds.</Description>
+            <DropLocation>The Prison of the Planes, Mabar room chest</DropLocation>
+            <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>10</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Hide</Description1>
+              <Item>Hide</Item>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>10</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Move Silently</Description1>
+              <Item>Move Silently</Item>
+            </Buff>
+            <Buff>
+              <Type>Dusk</Type>
+            </Buff>
+          </Ring2>
+          <MainHand>
+            <Name>Elemental Rapier of Air (level 4)</Name>
+            <Icon>Rapier_1e</Icon>
+            <Description>This rapier is part of a mass-produced line of House Cannith weapons with elementals
+bound to them. This one is infused with Air and shocks enemies as a result.</Description>
+            <DropLocation>Vaults of the Artificers, Turn in various challenge ingredients</DropLocation>
+            <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>1</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Shocking</Type>
+              <BonusType>Enhancement</BonusType>
+              <Description1>All</Description1>
+              <Item>All</Item>
+            </Buff>
+            <Buff>
+              <Type>EnergyResistance</Type>
+              <Value1>11</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+          </MainHand>
+          <NumFiligrees>0</NumFiligrees>
+        </EquippedGear>
+        <FavorFeats>
+        </FavorFeats>
+        <Notes/>
+        <Level4>Wisdom</Level4>
+        <Level8>Dexterity</Level8>
+        <Level12>Strength</Level12>
+        <Level16>Constitution</Level16>
+        <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
+      </Build>
+    </Life>
+    <GuildLevel>0</GuildLevel>
+    <ApplyGuildBuffs>0</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

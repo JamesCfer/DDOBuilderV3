@@ -384,9 +384,13 @@ function resolveValue(
       // i.e. Amount[classLevel]. For single-entry arrays this clamps to Amount[0].
       let level = classLevels
       if (ctx && effect.StackSource) {
+        // A StackSource naming a class the character has 0 of contributes 0 —
+        // fall back to 0, NOT the total character level (which over-scaled
+        // Epic/Legendary-sourced effects on heroic builds, e.g. +40 HP each
+        // from Stout of Heart's Epic/Legendary variants). V2 parity.
         level = atype === 'BaseClassLevel'
-          ? (ctx.baseClassLevels[effect.StackSource] ?? classLevels)
-          : (ctx.classLevels[effect.StackSource] ?? classLevels)
+          ? (ctx.baseClassLevels[effect.StackSource] ?? 0)
+          : (ctx.classLevels[effect.StackSource] ?? 0)
       }
       return getAmountAtRank(effect.Amount, level + 1)
     }
@@ -1120,71 +1124,30 @@ export function parseEffect(
     case 'SongDuration':
       return [make('song.duration')]
 
-    case 'SongACBonus':
-      return [make('ac', 'Music')]
-
-    case 'SongDodgeBonus':
-      return [make('dodge', 'Music')]
-
-    case 'SongSaveBonus': {
-      const targets = items.length > 0 ? items : ['All']
-      const out: ParsedBonus[] = []
-      for (const t of targets) {
-        switch (t) {
-          case 'All':
-            out.push(make('save.Fort', 'Music'))
-            out.push(make('save.Reflex', 'Music'))
-            out.push(make('save.Will', 'Music'))
-            break
-          case 'Fortitude': out.push(make('save.Fort', 'Music')); break
-          case 'Reflex':    out.push(make('save.Reflex', 'Music')); break
-          case 'Will':      out.push(make('save.Will', 'Music')); break
-          default:          break
-        }
-      }
-      return out
-    }
-
-    case 'SongAttackBonus':
-      return [make('melee.toHit', 'Music')]
-
-    case 'SongDoublestrike':
-      return [make('melee.doublestrike', 'Music')]
-
-    case 'SongDoubleshot':
-      return [make('ranged.doubleshot', 'Music')]
-
-    case 'SongDamageBonus':
-      return [make('melee.damage', 'Music')]
-
-    case 'SongUniversalSpellPower':
-      return [make('sp.Universal', 'Music')]
-
-    case 'SongSpellPenetration':
-      return [make('spellPenetration', 'Music')]
-
-    case 'SongCasterLevel':
-      if (items.length > 0) return items.map(item => make(`cl.${item}`, 'Music'))
-      return [make('cl.All', 'Music')]
-
-    case 'SongSkillBonus':
-      if (items.length > 0) return items.map(item => make(`skill.${item}`, 'Music'))
-      return []
-
-    case 'SongPRR':
-      return [make('prr', 'Music')]
-
-    case 'SongMRR':
-      return [make('mrr', 'Music')]
-
-    case 'SongHealingAmp':
-      return [make('healAmp', 'Music')]
-
-    case 'SongNegativeHealingAmp':
-      return [make('negHealAmp', 'Music')]
-
-    case 'SongRepairAmp':
-      return [make('repairAmp', 'Music')]
+    // Song (bard "Inspire …") effects are CONDITIONAL — active only while a
+    // song is up. V2 routes every one to its own informational breakdown
+    // (Breakdown_Song*, BreakdownsPane.cpp:1898-2128) and NEVER folds them into
+    // the character's real always-on PRR/MRR/Save/AC/Dodge/attack/etc. totals
+    // (BreakdownItemPRR/Save have no Song handling). V3 had folded them into the
+    // real totals, over-counting PRR/saves on every Bard/Stormsinger build.
+    // Route to informational `song.*` keys so they display separately without
+    // corrupting the real stat. Verified against v2calc.
+    case 'SongACBonus':            return [make('song.ac', 'Music')]
+    case 'SongDodgeBonus':         return [make('song.dodge', 'Music')]
+    case 'SongSaveBonus':          return [make('song.save', 'Music')]
+    case 'SongAttackBonus':        return [make('song.attack', 'Music')]
+    case 'SongDoublestrike':       return [make('song.doublestrike', 'Music')]
+    case 'SongDoubleshot':         return [make('song.doubleshot', 'Music')]
+    case 'SongDamageBonus':        return [make('song.damage', 'Music')]
+    case 'SongUniversalSpellPower': return [make('song.sp', 'Music')]
+    case 'SongSpellPenetration':   return [make('song.spellPen', 'Music')]
+    case 'SongCasterLevel':        return [make('song.cl', 'Music')]
+    case 'SongSkillBonus':         return [make('song.skill', 'Music')]
+    case 'SongPRR':                return [make('song.prr', 'Music')]
+    case 'SongMRR':                return [make('song.mrr', 'Music')]
+    case 'SongHealingAmp':         return [make('song.healAmp', 'Music')]
+    case 'SongNegativeHealingAmp': return [make('song.negHealAmp', 'Music')]
+    case 'SongRepairAmp':          return [make('song.repairAmp', 'Music')]
 
     // -----------------------------------------------------------------------
     // Damage ability multipliers (Strength 1.5x for THF, 0.5x for offhand, …)
@@ -2156,43 +2119,24 @@ export function parseItemBuff(
     // -----------------------------------------------------------------------
     case 'SongCount':              return [make('song.count')]
     case 'SongDuration':           return [make('song.duration')]
-    case 'SongACBonus':            return [make('ac', 'Music')]
-    case 'SongDodgeBonus':         return [make('dodge', 'Music')]
-    case 'SongAttackBonus':        return [make('melee.toHit', 'Music')]
-    case 'SongDoublestrike':       return [make('melee.doublestrike', 'Music')]
-    case 'SongDoubleshot':         return [make('ranged.doubleshot', 'Music')]
-    case 'SongDamageBonus':        return [make('melee.damage', 'Music')]
-    case 'SongUniversalSpellPower':return [make('sp.Universal', 'Music')]
-    case 'SongSpellPenetration':   return [make('spellPenetration', 'Music')]
-    case 'SongPRR':                return [make('prr', 'Music')]
-    case 'SongMRR':                return [make('mrr', 'Music')]
-    case 'SongHealingAmp':         return [make('healAmp', 'Music')]
-    case 'SongNegativeHealingAmp': return [make('negHealAmp', 'Music')]
-    case 'SongRepairAmp':          return [make('repairAmp', 'Music')]
-    case 'SongSaveBonus': {
-      const targets = items.length > 0 ? items : ['All']
-      const out: ParsedBonus[] = []
-      for (const t of targets) {
-        switch (t) {
-          case 'All':
-            out.push(make('save.Fort', 'Music'))
-            out.push(make('save.Reflex', 'Music'))
-            out.push(make('save.Will', 'Music'))
-            break
-          case 'Fortitude': out.push(make('save.Fort', 'Music')); break
-          case 'Reflex':    out.push(make('save.Reflex', 'Music')); break
-          case 'Will':      out.push(make('save.Will', 'Music')); break
-          default:          break
-        }
-      }
-      return out
-    }
-    case 'SongCasterLevel':
-      if (items.length > 0) return items.map(item => make(`cl.${item}`, 'Music'))
-      return [make('cl.All', 'Music')]
-    case 'SongSkillBonus':
-      if (items.length > 0) return items.map(item => make(`skill.${item}`, 'Music'))
-      return []
+    // Song effects are conditional and route to informational song.* keys in
+    // V2 — never the real totals (see the parseEffect Song block above).
+    case 'SongACBonus':            return [make('song.ac', 'Music')]
+    case 'SongDodgeBonus':         return [make('song.dodge', 'Music')]
+    case 'SongAttackBonus':        return [make('song.attack', 'Music')]
+    case 'SongDoublestrike':       return [make('song.doublestrike', 'Music')]
+    case 'SongDoubleshot':         return [make('song.doubleshot', 'Music')]
+    case 'SongDamageBonus':        return [make('song.damage', 'Music')]
+    case 'SongUniversalSpellPower':return [make('song.sp', 'Music')]
+    case 'SongSpellPenetration':   return [make('song.spellPen', 'Music')]
+    case 'SongPRR':                return [make('song.prr', 'Music')]
+    case 'SongMRR':                return [make('song.mrr', 'Music')]
+    case 'SongHealingAmp':         return [make('song.healAmp', 'Music')]
+    case 'SongNegativeHealingAmp': return [make('song.negHealAmp', 'Music')]
+    case 'SongRepairAmp':          return [make('song.repairAmp', 'Music')]
+    case 'SongSaveBonus':          return [make('song.save', 'Music')]
+    case 'SongCasterLevel':        return [make('song.cl', 'Music')]
+    case 'SongSkillBonus':         return [make('song.skill', 'Music')]
 
     // -----------------------------------------------------------------------
     // Threat / utility / misc

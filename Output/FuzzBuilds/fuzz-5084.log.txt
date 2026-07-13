@@ -1,0 +1,30 @@
+seed 5084, level 20
+race Aasimar
+classes Monk 8 / Stormsinger 12
+abilities Str 13, Dex 11, Con 11, Int 11, Wis 12, Cha 16 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Protector Bond
+slot Monk-1-Monk Bonus-0: Toughness
+slot heroic-1: Martial Weapon Proficiency: Great Club
+slot heroic-3: Skill Focus: Search
+slot Monk-2-Monk Bonus-0: no eligible feats — left empty
+slot heroic-6: Empower Healing Spell
+slot Monk-3-Monk Philosophy-0: Path of Harmonious Balance: Fists of Light
+slot heroic-9: Heighten Spell
+slot heroic-12: Skill Focus: Balance
+slot heroic-15: Stealthy
+slot Monk-6-Monk Bonus-0: no eligible feats — left empty
+slot heroic-18: Martial Weapon Proficiency: Shortsword
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Darkstorm Helm
+gear Necklace: Pendant of the Warrior's Focus
+gear Trinket: Crimson Gemstone
+gear Armor: Ironweave Robe
+gear Cloak: University Duelist's Cloak
+gear Belt: Silverthread Belt
+gear Ring: Oremi's Ring
+gear Ring2: Spinneret
+gear Gloves: Skin-tight Gloves
+gear Bracers: Saltiron Bracer
+gear Boots: Steel-Toed Steps
+gear Goggles: Epic Amethyst Loupe
+gear Main Hand: Necrotic Forum Post (level 10)

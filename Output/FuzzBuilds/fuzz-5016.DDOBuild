@@ -1,0 +1,952 @@
+<?xml version="1.0"?>
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats>
+    </SpecialFeats>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Fuzz 5016 (Bli9/Fig5/Cle6)</Name>
+      <Race>Aasimar</Race>
+      <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
+      <Build version="1">
+        <Level>20</Level>
+        <Class1>Blight Caster</Class1>
+        <Class2>Fighter</Class2>
+        <Class3>Cleric</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>4</StrSpend>
+          <DexSpend>6</DexSpend>
+          <ConSpend>5</ConSpend>
+          <IntSpend>3</IntSpend>
+          <WisSpend>6</WisSpend>
+          <ChaSpend>4</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Aasimar: Fallen Bond</FeatName>
+            <Type>Aasimar Bond</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Simple Weapon Proficiency: Heavy Crossbow</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Fighter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Sap</FeatName>
+            <Type>Fighter Bonus Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Follower of Olladra</FeatName>
+            <Type>Follower Of</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Simple Thrown Weapon Expertise</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Blighted Wolf</FeatName>
+            <Type>Wild Shape</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Biting Poison Imbue</FeatName>
+            <Type>Toggle Imbue</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Domain of Knowledge</FeatName>
+            <Type>Domain</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Skill Focus: Diplomacy</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Fighter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Heavy Armor Training</FeatName>
+            <Type>Fighter Bonus Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Thorn-Kin</FeatName>
+            <Type>Kin Form</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Simple Weapon Proficiency: Light Mace</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Fighter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Shield Proficiency (General)</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Fighter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Tactical Training</FeatName>
+            <Type>Fighter Bonus Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Negotiator</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Improved Domain of Knowledge</FeatName>
+            <Type>Domain Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Fighter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Hive Keeper</FeatName>
+            <Type>Kin Form</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Skill Focus: Tumble</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Cleric</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Search the Soul</FeatName>
+            <Type>Deity</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <ActiveStances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Aasimar</TreeName>
+          <TreeName>Aasimar: Scourge of the Undead</TreeName>
+          <TreeName>Divine Disciple</TreeName>
+          <TreeName>Radiant Servant</TreeName>
+          <TreeName>Warpriest</TreeName>
+          <TreeName>Blight Caster</TreeName>
+          <TreeName>Falconry</TreeName>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Aasimar: Scourge of the Undead</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>ScourgeAasimarCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SAImprovedRecoveryI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SABold</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SACounsel</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SADivinePurpose</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ScourgeAasimarCore2</EnhancementName>
+            <Selection>+1 Wisdom</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Aasimar</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AasimarCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AasimarCore2</EnhancementName>
+            <Selection>+1 Charisma</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>ImprovedRecoveryI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>Bold</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Radiant Servant</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>RSCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RSWandMastery</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RSAltruism</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RSDivineAidI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RSBliss</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RSDivineCleansing</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Vistani Knife Fighter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniAcrobatic</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RapidAttack</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MistStalkerI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BleedingCuts</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniHasteBoost</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Divine Disciple</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DDDACore6</EnhancementName>
+            <Selection>Divine Emissary of Darkness</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DDDADefenseOfTheHeart</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DDDASpellPoints</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DDDAPropheticZenith</EnhancementName>
+            <Selection>Nimbus of Light</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DDDACore1</EnhancementName>
+            <Selection>Deacon of Endless Darkness</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Blight Caster</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>BlightCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightKissOfTheBlight</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightSharpEdgesI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightThornOrBileI</EnhancementName>
+            <Selection>Acid Spray</Selection>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightSharpEdgesII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightEfficientMetamagicI</EnhancementName>
+            <Selection>Efficient Empower</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Inquisitive</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveDualShooter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveConjureBolts</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveSkills</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveWandAndScrollMastery</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveEyeForAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Falconry</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore1</EnhancementName>
+            <Selection>Summon Grey Owl</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconOutInNature</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconPracticedAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconRugged</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconHuntersKnowledge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconDivingShot</EnhancementName>
+            <Selection>Diving Shot</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Stalwart Defender</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>SDCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>SDImprovedStalwartDefenseI</EnhancementName>
+            <Selection>Inciting Defense</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Kensei</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>KenseiCore1</EnhancementName>
+            <Selection>Kensei Focus: Axes</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWOpeningShot</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWSkills</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWPlanarDodge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeatheredTraveler</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperEnchantment</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TravelersToughness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Warpriest</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>WPCore1</EnhancementName>
+            <Selection>Smite Foe (Melee)</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WPAwareness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WPSacredTouch</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WPDivineMight</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Helm of the Black Dragon (Level 14)</Name>
+            <Icon>Helmet_26a</Icon>
+            <Description>This helm is crafted in the likeness of a fearsome black dragon.</Description>
+            <DropLocation>Gianthold Tor, Black Dragon 's chest (Heroic Elite)</DropLocation>
+            <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Black Dragonscale</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+          </Helmet>
+          <Necklace>
+            <Name>Climber's Remembrance</Name>
+            <Icon>Necklace_14</Icon>
+            <Description>On donning this necklace, you remember a murder most foul, the determination
+of vengeance, the gleam of armor, and a fatal uphill climb.</Description>
+            <DropLocation>The Wish, end chest (rare)</DropLocation>
+            <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>1</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+          </Necklace>
+          <Trinket>
+            <Name>Urthullz Petrified Stalk</Name>
+            <Icon>Trinket_16a</Icon>
+            <Description>The Beholder who once owned the eye stalk took great sport in hunting elementals.
+He had this stalk magically enhanced and altered so he could deal with the
+dead kind as well.</Description>
+            <DropLocation>Litany of the Dead, Black dragon chamber work table</DropLocation>
+            <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Stone</Material>
+          </Trinket>
+          <Cloak>
+            <Name>Cloak of Spring</Name>
+            <Icon>Cloak_7</Icon>
+            <Description>This cloak appears to be made of still-living foliage, in the form of newly
+grown leaves.</Description>
+            <DropLocation>Witch Hunt, End chest</DropLocation>
+            <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>16</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+            <Buff>
+              <Type>ParryingNumber</Type>
+              <Value1>1</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <SetBonus>Seasons of the Feywild</SetBonus>
+          </Cloak>
+          <Belt>
+            <Name>Bubble Belt</Name>
+            <Icon>Belt_3</Icon>
+            <Description>Twisting a dial on this unusual belt's buckle causes the wearer to be surrounded
+by a bubble of air.</Description>
+            <DropLocation>Cult of the Six, End reward</DropLocation>
+            <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>UnderwaterAction</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>10</Value1>
+              <BonusType>Competence</BonusType>
+              <Item>Swim</Item>
+            </Buff>
+          </Belt>
+          <Goggles>
+            <Name>Spectacular Optics</Name>
+            <Icon>Goggles_1</Icon>
+            <Description>These lenses are enchanted to let their wearer glimpse a second into the future,
+allowing them to avoid traps and attacks.</Description>
+            <DropLocation>The Abandoned Excavation, End reward</DropLocation>
+            <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>ReflexSave</Type>
+              <Value1>4</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+          </Goggles>
+          <Gloves>
+            <Name>Nether Grasps (Level 18)</Name>
+            <Icon>Gloves_1</Icon>
+            <Description>Somehow, the smoky leather of these gloves is never lit by direct sunlight.</Description>
+            <DropLocation>The End of the Road, End chest (Heroic Elite)</DropLocation>
+            <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Spiritcraft Leather</Material>
+            <Buff>
+              <Type>Diversion</Type>
+              <Value1>20</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Lesser Arcane Casting Dexterity</Type>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>17</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Open Lock</Description1>
+              <Item>Open Lock</Item>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>8</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </Gloves>
+          <Boots>
+            <Name>Epic Kundarak Delving Boots</Name>
+            <Icon>Boots_6c</Icon>
+            <Description>These boots are Kundarak-forged and useful for exploring (and infiltrating)
+secure spaces.</Description>
+            <DropLocation>Epic version of Kundarak Delving Boots</DropLocation>
+            <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Freedom of Movement</Type>
+            </Buff>
+            <Buff>
+              <Type>Speed</Type>
+              <Value1>30</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Dexterity</Description1>
+              <Item>Dexterity</Item>
+            </Buff>
+            <Buff>
+              <Type>Exceptional Nimble Skills</Type>
+              <Value1>8</Value1>
+            </Buff>
+            <SetBonus>Epic Kundarak Delving Equipment</SetBonus>
+          </Boots>
+          <Bracers>
+            <Name>Wristbound Register</Name>
+            <Icon>Bracers_5</Icon>
+            <Description>Popular among university scholars, a small compartment on this bracer opens
+to reveal a small notebook.</Description>
+            <DropLocation>Vecna Unleashed (quest), End chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Intelligence</Description1>
+              <Item>Intelligence</Item>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>89</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>ReflexSave</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalEfficiency</Type>
+              <Value1>5</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <SetBonus>Forbidden Knowledge</SetBonus>
+          </Bracers>
+          <Armor>
+            <Name>Robe of Shadow (level 8)</Name>
+            <Icon>Cloth_1c</Icon>
+            <Description>This robe is as dark as the night sky and almost seems to crawl visibly with
+moving shadows. It boosts the power of the wearer's negative energy magic,
+and grants a measure of necromantic protection against enemy attacks.</Description>
+            <DropLocation>The Night Revels, Turn in Upgrade of Robe of Shadow (level 4)</DropLocation>
+            <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Nullification</Type>
+              <Value1>54</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>VoidLore</Type>
+              <Value1>13</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>FalseLife</Type>
+              <Value1>10</Value1>
+              <BonusType>False Life</BonusType>
+            </Buff>
+          </Armor>
+          <Ring1>
+            <Name>Ring of the Archbishop</Name>
+            <Icon>Ring_5</Icon>
+            <Description>This golden ring bears an intricate inscription commemorating a fallen hero
+of the Flame.</Description>
+            <DropLocation>Setting the Wards: The Lower Cathedral, End chest</DropLocation>
+            <MinLevel>3</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>41</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>5</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Heal</Description1>
+              <Item>Heal</Item>
+            </Buff>
+          </Ring1>
+          <Ring2>
+            <Name>Epic Ring of Baphomet</Name>
+            <Icon>Ring_5a</Icon>
+            <Description>A large brass ring bearing demonic script. The metal is warm to the touch and
+appears to shrink to fit your finger.</Description>
+            <DropLocation>Epic version of Ring of Baphomet</DropLocation>
+            <MinLevel>20</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gold</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>9</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>24</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Improved Demonic Shield</Type>
+            </Buff>
+            <Buff>
+              <Type>CurseOfFoolishness</Type>
+              <BonusType>Penalty</BonusType>
+              <Description1>Wisdom</Description1>
+              <Item>Wisdom</Item>
+            </Buff>
+            <Buff>
+              <Type>CurseOfRepulsiveness</Type>
+              <BonusType>Penalty</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <SetBonus>The Epic Desert's Starless Nights</SetBonus>
+          </Ring2>
+          <MainHand>
+            <Name>Heavy Pick of the Golden Age</Name>
+            <Icon>HeavyPick_1l</Icon>
+            <Description>Forged in the glory of Cormanthor, this weapon is remarkably well-preserved.</Description>
+            <DropLocation>Magic of Myth Drannor, rare drop in any end chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>5</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Force Blast 3</Type>
+              <Description1>All</Description1>
+              <Item>All</Item>
+            </Buff>
+            <Buff>
+              <Type>Impactful3</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Vorpal</Type>
+              <BonusType>Enhancement</BonusType>
+              <Description1>All</Description1>
+              <Item>All</Item>
+            </Buff>
+            <Buff>
+              <Type>Entropic 3</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </MainHand>
+          <NumFiligrees>0</NumFiligrees>
+        </EquippedGear>
+        <FavorFeats>
+        </FavorFeats>
+        <Notes/>
+        <Level4>Constitution</Level4>
+        <Level8>Constitution</Level8>
+        <Level12>Wisdom</Level12>
+        <Level16>Wisdom</Level16>
+        <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
+      </Build>
+    </Life>
+    <GuildLevel>0</GuildLevel>
+    <ApplyGuildBuffs>0</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

@@ -1,0 +1,26 @@
+seed 5096, level 20
+race Dragonborn
+classes Wild Mage 20
+abilities Str 15, Dex 10, Con 10, Int 16, Wis 12, Cha 10 (28/28 pts)
+slot race-1-Dragonborn Racial-0: Draconic Ancestry: Black
+slot heroic-1: Martial Weapon Proficiency: Kukri
+slot heroic-3: Martial Weapon Proficiency: Longbow
+slot heroic-6: Spell Focus: Illusion
+slot heroic-9: Snake Blood
+slot heroic-12: Negotiator
+slot heroic-15: Skill Focus: Haggle
+slot heroic-18: Resist Poison
+enhancements: 80/80 AP across 7 trees
+gear Helmet: Downcast Helm
+gear Necklace: Amulet of Natural Armor
+gear Trinket: Vibrant Purple Ioun Stone (unsuppressed)
+gear Armor: Platemail of the Barovian Lord
+gear Cloak: Nightsinger's Mantle (Level 15)
+gear Belt: Many-Pouched Belt of the Healer
+gear Ring: Morah's Band
+gear Ring2: Celestial Ruby Ring
+gear Gloves: Epic Raven's Talons
+gear Bracers: Bracelets of Subtle Life
+gear Boots: Boots of the Battlemaster
+gear Goggles: Experimenter's Goggles
+gear Main Hand: Caustic Greataxe

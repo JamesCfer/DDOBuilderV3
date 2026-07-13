@@ -1,0 +1,965 @@
+<?xml version="1.0"?>
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats>
+    </SpecialFeats>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Fuzz 5063 (Bli7/Rog13)</Name>
+      <Race>Eladrin</Race>
+      <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
+      <Build version="1">
+        <Level>20</Level>
+        <Class1>Blight Caster</Class1>
+        <Class2>Rogue</Class2>
+        <Class3>Unknown</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>7</StrSpend>
+          <DexSpend>4</DexSpend>
+          <ConSpend>4</ConSpend>
+          <IntSpend>4</IntSpend>
+          <WisSpend>5</WisSpend>
+          <ChaSpend>3</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Mental Toughness</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Martial Weapon Proficiency: Longbow</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Plague Wolf</FeatName>
+            <Type>Wild Shape</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Biting Acid Imbue</FeatName>
+            <Type>Toggle Imbue</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Skill Focus: Use Magic Device</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Eschew Materials</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Wild Shape: Hive Keeper</FeatName>
+            <Type>Kin Form</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Quicken Spell</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Focus: Enchantment</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Skill Mastery</FeatName>
+            <Type>Rogue Special Ability</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Blight Caster</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Simple Weapon Proficiency: Club</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Rogue</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Crippling Strike</FeatName>
+            <Type>Rogue Special Ability</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <ActiveStances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Blight Caster</TreeName>
+          <TreeName>Eladrin</TreeName>
+          <TreeName>Eladrin Chaos Mage</TreeName>
+          <TreeName>Falconry</TreeName>
+          <TreeName>Feydark Illusionist</TreeName>
+          <TreeName>Harper Agent</TreeName>
+          <TreeName>Horizon Walker</TreeName>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Vistani Knife Fighter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>RapidAttack</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>UndeadHunter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniAcrobatic</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Thief-Acrobat</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>TACore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TAThiefAcrobatics</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TAAcrobatStaffTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TACharming</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TATripFocus</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Falconry</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore1</EnhancementName>
+            <Selection>Summon Falcon</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconOutInNature</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconPracticedAccuracy</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconRugged</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconKillerInstinctI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Eladrin</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinKeenSenses</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinFeyStep</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinCore2</EnhancementName>
+            <Selection>+1 Dexterity</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinMinorAutumnAttunement</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinMinorSummerAttunement</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinStepThroughTheFade</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinMinorWinterAttunement</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Assassin</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AssCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AssStealthy</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AssPoisonStrikesI</EnhancementName>
+            <Selection>Heartseeker Poison</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AssVenomedBlades</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWSkills</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWConjureArrow</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWEyeForAccuracy</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeatheredTraveler</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>StrategicCombatI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Blight Caster</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>BlightCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightThornOrBileI</EnhancementName>
+            <Selection>Acid Spray</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightSharpEdgesI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>BlightPrickly</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Mechanic</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>MechCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MechThunderstone</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MechLaceratingShots</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MechMechanics</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MechSharpshooterI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MechSharpshooterII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Eladrin Chaos Mage</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinWMCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinWMChaosControlI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinWMKeenSenses</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>EladrinWMNothingIsHidden</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Inquisitive</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveEyeForAccuracy</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveDualShooter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Crown of Morning's Glory</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>As the morning brings comfort to those who lived through the night, this helm
+brings fire and light.</Description>
+            <DropLocation>Oghma's Song, end chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>SpellSave</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>8</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>22</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>16</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Light</Description1>
+              <Item>Light</Item>
+            </Buff>
+          </Helmet>
+          <Necklace>
+            <Name>Rust-Laden Pendant</Name>
+            <Icon>Necklace_14</Icon>
+            <Description>Recently recovered from the sewers' putrid waters, this necklace has spent a
+long time breaking down into its current state.</Description>
+            <DropLocation>Kill Ten Rats, End Chest</DropLocation>
+            <MinLevel>18</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>RepairLore</Type>
+              <Value1>15</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Reconstruction</Type>
+              <Value1>25</Value1>
+              <BonusType>Quality</BonusType>
+              <Description1>Repair</Description1>
+              <Item>Repair</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>8</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+          </Necklace>
+          <Trinket>
+            <Name>Greater Cunning Trinket</Name>
+            <Icon>Trinket_69</Icon>
+            <Description>Pirates have keen minds that allow them to outsmart their foes. This trinket
+gives you boosts to the effectiveness of your spells.</Description>
+            <DropLocation>Treasure of Crystal Cove, Turn in Cunning Trinket (and other ingredients) at Dusty Old Treasure of Crystal Cove</DropLocation>
+            <MinLevel>4</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Pirate Cleverness</Type>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>1</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>I</Description1>
+              <Item>Enchantment</Item>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>1</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>I</Description1>
+              <Item>Necromancy</Item>
+            </Buff>
+            <Buff>
+              <Type>EfficientMaximizeI</Type>
+            </Buff>
+          </Trinket>
+          <Cloak>
+            <Name>Wretched Twilight</Name>
+            <Icon>Cloak_28</Icon>
+            <Description>Nerezza's shadow is made of a material completely foreign to you; it flows with
+your body yet feels like you are wearing nothing.</Description>
+            <DropLocation>Ascension Chamber, Raid Warded chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Ghostly</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Nullification</Type>
+              <Value1>72</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>StealthStrike</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Sneak Attack</Type>
+              <Value1>4</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </Cloak>
+          <Belt>
+            <Name>Belt of the Green Abishai</Name>
+            <Icon>Belt_4g</Icon>
+            <Description>This belt seems to be attuned to elemental power.</Description>
+            <DropLocation>The Chronoscope, and The Chronoscope (Legendary), optional chests</DropLocation>
+            <MinLevel>5</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>Shield</Type>
+              <Value1>4</Value1>
+            </Buff>
+            <Buff>
+              <Type>FalseLife</Type>
+              <Value1>14</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>ProfaneLifeforce</Type>
+              <Value1>12</Value1>
+              <BonusType>Profane</BonusType>
+            </Buff>
+            <SetBonus>Might of the Abishai</SetBonus>
+          </Belt>
+          <Goggles>
+            <Name>Precision Lenses</Name>
+            <Icon>Goggles_16</Icon>
+            <Description>Deadly and efficient.</Description>
+            <DropLocation>White Plume Mountain, End chest</DropLocation>
+            <MinLevel>9</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Manslayer</Type>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>MeleeAlacrity</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MinorActionBoostEnhancement</Type>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+          </Goggles>
+          <Gloves>
+            <Name>Crystal-Lined Magegloves</Name>
+            <Icon>Gloves_7k</Icon>
+            <Description>The temple's leaders favor these types of gloves, as they focus their twisted
+magic as it slithers from their outstretched fingers.</Description>
+            <DropLocation>ToEE: First Level and Earth Temple, end chest</DropLocation>
+            <MinLevel>8</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Quality</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>12</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deathblock</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellResistance</Type>
+              <Value1>4</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+          </Gloves>
+          <Boots>
+            <Name>Severlin's Leaden Boots (level 10)</Name>
+            <Icon>Boots_2</Icon>
+            <Description>When you just need to put your foot down.</Description>
+            <DropLocation>Anniversary Party, Turn in 20</DropLocation>
+            <MinLevel>10</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Stunning</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>12</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Intimidate</Description1>
+              <Item>Intimidate</Item>
+            </Buff>
+            <Buff>
+              <Type>Whirlwind Ward</Type>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+          </Boots>
+          <Bracers>
+            <Name>Bracers of the Glacier</Name>
+            <Icon>Bracers_1a</Icon>
+            <Description>Crafted by the great wizard Telios, these bracers are said to have been crafted
+from the flesh of Frost Giants. Telios disappeared recently, after being asked
+by members of the twelve to investigate the ruins beneath Stormreach. There
+is said to be a matching pair of gloves to these bracers.</Description>
+            <DropLocation>A Vision of Destruction, End chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SpellPenetrationNumeral</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>III</Description1>
+            </Buff>
+            <Buff>
+              <Type>Archmagi</Type>
+            </Buff>
+            <Buff>
+              <Type>Fire Shield (Cold)</Type>
+            </Buff>
+            <SetBonus>Glacial Assault</SetBonus>
+          </Bracers>
+          <Armor>
+            <Name>Breastplate of Destruction</Name>
+            <Icon>MediumArmor_1c</Icon>
+            <Description>A mithral breastplate matching the description of this armor is said to appear
+in several stories over the past five centuries. In every story, this armor
+exuded a powerful aura, that could be channeled into the wielder's weapon,
+and weaken their foe.</Description>
+            <DropLocation>Hound of Xoriat, Raid Warded chest</DropLocation>
+            <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Material>Mithral</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>5</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MithralArmor</Type>
+            </Buff>
+            <Buff>
+              <Type>Protection</Type>
+              <Value1>4</Value1>
+              <BonusType>Deflection</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Destruction</Type>
+            </Buff>
+          </Armor>
+          <Ring1>
+            <Name>Band of Manifest Magic</Name>
+            <Icon>Ring_16</Icon>
+            <Description>A copper ring, blessed with Arcane energy.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Evocation</Description1>
+              <Item>Evocation</Item>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Conjuration</Description1>
+              <Item>Conjuration</Item>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Transmutation</Description1>
+              <Item>Transmutation</Item>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>68</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+          </Ring1>
+          <Ring2>
+            <Name>Katra's Wit</Name>
+            <Icon>Ring_44</Icon>
+            <Description>A ring said to have been originally crafted for the hag queen Sora Katra. It
+makes its wearer glowingly charismatic, and allows him or her to sway others
+with words alone.</Description>
+            <DropLocation>Diplomatic Impunity, end chests</DropLocation>
+            <MinLevel>11</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>13</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Diplomacy</Description1>
+              <Item>Diplomacy</Item>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>15</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>6</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Battle-Scarred</Type>
+            </Buff>
+            <SetBonus>Wrath of Sora Kell</SetBonus>
+          </Ring2>
+          <MainHand>
+            <Name>Blessed Longsword of the Fallen Age</Name>
+            <Icon>Longsword_1</Icon>
+            <Description>Wild magic has imbued entropy into this weapon over the years.</Description>
+            <DropLocation>Magic of Myth Drannor, any end chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SpellcastingImplement</Type>
+              <Value1>13</Value1>
+              <BonusType>Implement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>5</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>ProficiencyLongsword</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Devotion</Type>
+              <Value1>87</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>HealingLore</Type>
+              <Value1>13</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>1</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellPenetration</Type>
+              <Value1>3</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+          </MainHand>
+          <NumFiligrees>0</NumFiligrees>
+        </EquippedGear>
+        <FavorFeats>
+        </FavorFeats>
+        <Notes/>
+        <Level4>Intelligence</Level4>
+        <Level8>Dexterity</Level8>
+        <Level12>Charisma</Level12>
+        <Level16>Intelligence</Level16>
+        <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
+      </Build>
+    </Life>
+    <GuildLevel>0</GuildLevel>
+    <ApplyGuildBuffs>0</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

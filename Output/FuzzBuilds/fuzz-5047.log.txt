@@ -1,0 +1,31 @@
+seed 5047, level 20
+race Duergar
+classes Paladin 11 / Blight Caster 9
+abilities Str 13, Dex 15, Con 10, Int 14, Wis 12, Cha 11 (28/28 pts)
+slot Paladin-1-Follower Of-0: Follower of the Silver Flame
+slot heroic-1: Skill Focus: Heal
+slot heroic-3: Martial Weapon Proficiency: Great Club
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Thorne Knight
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot heroic-6: Quicken Spell
+slot Paladin-6-Deity-0: Silver Flame Exorcism
+slot heroic-9: Simple Weapon Proficiency: Dagger
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-12: Martial Weapon Proficiency: Warhammer
+slot Blight Caster-8-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-15: Skill Focus: Search
+slot heroic-18: Skill Focus: Balance
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Circlet of Persuasion
+gear Necklace: Lesser Pendant of Travel
+gear Trinket: Shimmering Arrowhead
+gear Armor: Experiment Garb
+gear Cloak: Prismatic Cloak, Green (Level 18)
+gear Belt: Belt of the Seven Ideals (historic)
+gear Ring: Ring of Mystic Dexterity
+gear Ring2: Five Rings
+gear Gloves: Purple Dragon Gauntlets
+gear Bracers: Levik's Bracers
+gear Boots: Doctor Gustav's Rubber Boots
+gear Goggles: Amethyst Loupe
+gear Main Hand: Barovian's Shuriken

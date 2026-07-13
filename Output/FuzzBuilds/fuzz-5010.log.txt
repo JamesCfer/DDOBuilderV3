@@ -1,0 +1,30 @@
+seed 5010, level 20
+race Tabaxi
+classes Paladin 8 / Alchemist 12
+abilities Str 13, Dex 14, Con 12, Int 12, Wis 13, Cha 12 (28/28 pts)
+slot Paladin-1-Follower Of-0: Follower of the Silver Flame
+slot heroic-1: Simple Thrown Weapon Expertise
+slot heroic-3: Bullheaded
+slot Alchemist-4-Alchemist Bonus Feat-0: Extend Spell
+slot heroic-6: Sap
+slot heroic-9: Skill Focus: Spot
+slot Alchemist-8-Alchemist Bonus Feat-0: Tonic of Toxins
+slot heroic-12: Martial Weapon Proficiency: Shortbow
+slot heroic-15: Skill Focus: Move Silently
+slot Paladin-6-Deity-0: Silver Flame Exorcism
+slot Alchemist-12-Alchemist Bonus Feat-0: Insightful Courage
+slot heroic-18: Martial Weapon Proficiency: Kukri
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Malicia's Crown (level 12)
+gear Necklace: Emerald Claw Amulet
+gear Trinket: Iskaryte's Gem
+gear Armor: Robes of the Black Earth
+gear Cloak: Quilted Cape
+gear Belt: Kormor's Belt
+gear Ring: Cherished Wedding Ring
+gear Ring2: Five Rings
+gear Gloves: Skirmisher's Gloves (Level 15)
+gear Bracers: Mystic Wrappings
+gear Boots: Skymage's Shoes
+gear Goggles: Tinker's Goggles
+gear Main Hand: Syranian Dagger

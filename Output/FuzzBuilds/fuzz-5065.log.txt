@@ -1,0 +1,32 @@
+seed 5065, level 20
+race Dragonborn
+classes Blight Caster 10 / Alchemist 10
+abilities Str 11, Dex 16, Con 12, Int 11, Wis 11, Cha 13 (28/28 pts)
+slot race-1-Dragonborn Racial-0: Draconic Ancestry: Black
+slot heroic-1: Simple Weapon Proficiency: Morningstar
+slot heroic-3: Martial Weapon Proficiency: Throwing Axe
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot Alchemist-4-Alchemist Bonus Feat-0: Point Blank Shot
+slot heroic-6: Slicing Blow
+slot heroic-9: Skill Focus: Jump
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-12: Martial Weapon Proficiency: Rapier
+slot Blight Caster-8-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-15: Spell Focus: Transmutation
+slot Alchemist-8-Alchemist Bonus Feat-0: Alchemical Studies: Orchidium
+slot heroic-18: Simple Weapon Proficiency: Heavy Crossbow
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Gilded Branches
+gear Necklace: Death's Locket (Level 13)
+gear Trinket: Holy Symbol of Ravenkind
+gear Armor: Scales of the Exile
+gear Cloak: Dread Pirate's Cloak (level 20)
+gear Belt: Girdle of Giants' Brawn (Level 13)
+gear Ring: Band of the Holy Way
+gear Ring2: Guardian's Ring (Level 19)
+gear Gloves: Spectral Gloves
+gear Bracers: Mysterious Bracers (Level 14)
+gear Boots: Treads of Falling Shadow (Level 16)
+gear Goggles: Jeweler's Loupe
+gear Main Hand: Green Steel Warhammer

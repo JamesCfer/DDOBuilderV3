@@ -1,0 +1,37 @@
+seed 5016, level 20
+race Aasimar
+classes Blight Caster 9 / Fighter 5 / Cleric 6
+abilities Str 12, Dex 14, Con 13, Int 11, Wis 14, Cha 12 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Fallen Bond
+slot heroic-1: Simple Weapon Proficiency: Heavy Crossbow
+slot Fighter-1-Fighter Bonus Feat-0: Sap
+slot Cleric-1-Follower Of-0: Follower of Olladra
+slot heroic-3: Simple Thrown Weapon Expertise
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Blighted Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot Cleric-2-Domain-0: Domain of Knowledge
+slot heroic-6: Skill Focus: Diplomacy
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-9: Simple Weapon Proficiency: Light Mace
+slot heroic-12: Shield Proficiency (General)
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot heroic-15: Negotiator
+slot Cleric-5-Domain Feat-0: Improved Domain of Knowledge
+slot Blight Caster-8-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-18: Skill Focus: Tumble
+slot Cleric-6-Deity-0: Search the Soul
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Helm of the Black Dragon (Level 14)
+gear Necklace: Climber's Remembrance
+gear Trinket: Urthullz Petrified Stalk
+gear Armor: Robe of Shadow (level 8)
+gear Cloak: Cloak of Spring
+gear Belt: Bubble Belt
+gear Ring: Ring of the Archbishop
+gear Ring2: Epic Ring of Baphomet
+gear Gloves: Nether Grasps (Level 18)
+gear Bracers: Wristbound Register
+gear Boots: Epic Kundarak Delving Boots
+gear Goggles: Spectacular Optics
+gear Main Hand: Heavy Pick of the Golden Age

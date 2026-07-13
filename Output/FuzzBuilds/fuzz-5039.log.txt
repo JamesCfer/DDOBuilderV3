@@ -1,0 +1,26 @@
+seed 5039, level 20
+race Human
+classes Bard 20
+abilities Str 10, Dex 13, Con 15, Int 14, Wis 13, Cha 10 (28/28 pts)
+slot race-1-Human Bonus Feat-0: Least Dragonmark of Finding
+slot heroic-1: Simple Weapon Proficiency: Light Mace
+slot heroic-3: Combat Expertise
+slot heroic-6: Dodge
+slot heroic-9: Skill Focus: Spot
+slot heroic-12: Extend Spell
+slot heroic-15: Skill Focus: Balance
+slot heroic-18: Snake Blood
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Minos Lorica (level 4)
+gear Necklace: Rattle Charm
+gear Trinket: Pearl of Power IV
+gear Armor: Gravekeeper's Docent
+gear Cloak: Lamordian Stoic Cloak
+gear Belt: Daggertooth's Belt (level 14)
+gear Ring: Signet of the Shining Sun
+gear Ring2: Ring of Master Artifice (Level 11)
+gear Gloves: Guardian's Gauntlets (Level 15)
+gear Bracers: Thaarak Bracelet
+gear Boots: Knight's Sabatons
+gear Goggles: Glimpse of the Soul
+gear Main Hand: Crystalline Frostaxe

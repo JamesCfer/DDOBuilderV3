@@ -1,0 +1,32 @@
+seed 5060, level 20
+race Aasimar
+classes Artificer 13 / Blight Caster 7
+abilities Str 10, Dex 14, Con 14, Int 11, Wis 11, Cha 15 (28/28 pts)
+slot race-1-Aasimar Bond-0: Aasimar: Protector Bond
+slot heroic-1: Skill Focus: Swim
+slot heroic-3: Spell Focus: Abjuration
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Hive Master
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot heroic-6: Magical Training
+slot Artificer-4-Artificer Bonus Feat-0: Skill Focus: Use Magic Device
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-9: Simple Weapon Proficiency: Unarmed
+slot Artificer-8-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-12: Light Armor Proficiency
+slot heroic-15: Skill Focus: Jump
+slot Artificer-12-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-18: Skill Focus: Open Lock
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Pirate's Bandana
+gear Necklace: Pendant of Subtle Pain
+gear Trinket: Subtle Sound
+gear Armor: Renovation Regalia
+gear Cloak: Hide of the Fallen
+gear Belt: Burnscar Sash
+gear Ring: Ring of Shadows (historic)
+gear Ring2: Storm Signet
+gear Gloves: Severlin's Iron Fists (level 10)
+gear Bracers: Aquatic Bracers (Level 12)
+gear Boots: Spiked Boots (historic)
+gear Goggles: Blazing Sniper's Sights
+gear Main Hand: Calomel Banded Heavy Repeater (level 12)

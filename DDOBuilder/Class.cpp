@@ -55,6 +55,15 @@ Class::Class() :
     DL_INIT(Class_PROPERTIES)
 }
 
+#ifdef V2CALC_LINUX
+Class::Class(size_t index) :
+    XmlLib::SaxContentElement(f_saxElementName, f_verCurrent),
+    m_index(index)
+{
+    DL_INIT(Class_PROPERTIES)
+}
+#endif
+
 Class::~Class()
 {
 }

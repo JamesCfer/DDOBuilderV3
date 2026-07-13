@@ -51,8 +51,13 @@ namespace XmlLib
                 EndElement(false);
             }
 
+#ifndef V2CALC_LINUX
+            // MSVC extension: in-class explicit specialization declaration.
+            // gcc rejects this; the specialization is defined at namespace
+            // scope at the end of this header which gcc finds by itself.
             template <>
             void WriteSimpleElement(const SaxString & elementName, const std::string & t);
+#endif
 
             void WriteSimpleElement(const SaxString & elementName, double t, size_t precision);
 
@@ -99,6 +104,12 @@ namespace XmlLib
     };
 
     template <>
+#if defined(V2CALC_LINUX)
+    // explicit specialization defined in a header: MSVC folds it via COMDAT,
+    // but g++ emits a strong symbol in every TU -> multiple definition. inline
+    // gives it vague linkage so the ODR-identical copies merge.
+    inline
+#endif
     void SaxWriter::WriteSimpleElement(const SaxString & elementName, const std::string & t)
     {
         StartElement(elementName, false);

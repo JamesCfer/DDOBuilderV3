@@ -1,0 +1,35 @@
+seed 5042, level 20
+race Elf
+classes Favored Soul 20
+abilities Str 11, Dex 12, Con 14, Int 12, Wis 16, Cha 9 (28/28 pts)
+slot Favored Soul-1-Follower Of-0: Favored by Amaunator
+slot heroic-1: Martial Weapon Proficiency: Great Axe
+slot Favored Soul-2-Battle Feat-0: Grace of Battle
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot heroic-3: Simple Weapon Proficiency: Unarmed
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Sonic
+slot Favored Soul-6-Deity-0: Amaunator's Flames
+slot heroic-6: Skill Focus: Balance
+slot Favored Soul-7-Heart Feat-0: Purity of Spirit
+slot heroic-9: Skill Focus: Haggle
+slot Favored Soul-10-Energy Resistance-0: Energy Absorption: Electricity
+slot Favored Soul-12-Beloved Of-0: Beloved of the Divine
+slot heroic-12: Simple Weapon Proficiency: Club
+slot Favored Soul-15-Energy Resistance-0: Energy Absorption: Acid
+slot heroic-15: Great Fortitude
+slot heroic-18: Bullheaded
+slot Favored Soul-20-Damage Reduction-0: Favored Soul of Amaunator Damage Reduction: Silver
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Helm of the Black Dragon (Level 13)
+gear Necklace: Nimble Brooch
+gear Trinket: Bracelet of Friends
+gear Armor: Researcher's Leathers
+gear Cloak: Cloak of Seasons
+gear Belt: Belt of the Green Abishai
+gear Ring: Duskbone Ring
+gear Ring2: Band of Mental Magic
+gear Gloves: Cannith Crafted Gloves
+gear Bracers: Hallowed Castigators
+gear Boots: Boots of Corrosion
+gear Goggles: Glasses of the Meditative Mind
+gear Main Hand: Wave of Despair

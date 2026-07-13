@@ -1,0 +1,34 @@
+seed 5006, level 20
+race Dhampir
+classes Warlock 8 / Druid 12
+abilities Str 12, Dex 14, Con 15, Int 12, Wis 12, Cha 10 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Sickle
+slot Warlock-1-Warlock Pact-0: Pact: Fey
+slot heroic-3: Skill Focus: Use Magic Device
+slot Druid-2-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-6: Simple Weapon Proficiency: Quarterstaff
+slot Druid-5-Wild Shape-0: Wild Shape: Fire Elemental
+slot heroic-9: Skill Focus: Listen
+slot Warlock-4-Pact Save Bonus-0: Beguiling Defenses
+slot Warlock-5-Pact Spell-0: Pact Magic: Blindness
+slot heroic-12: Martial Weapon Proficiency: Falchion
+slot Druid-8-Wild Shape-0: Wild Shape: Wolf
+slot heroic-15: Resist Poison
+slot Druid-11-Wild Shape-0: Wild Shape: Bear
+slot Warlock-6-Pact Ability-0: Warlock: Dark Delirium
+slot heroic-18: Simple Weapon Proficiency: Dart
+slot Warlock-8-Pact Save Bonus-0: no eligible feats — left empty
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Graskitch's Skullcap
+gear Necklace: Iron Beads (Level 14)
+gear Trinket: Trinket
+gear Armor: Epic Vambraces of Inner Light
+gear Cloak: Sage's Mantle (Level 19)
+gear Belt: Seaweed-woven Belt
+gear Ring: Splinterskull Acolyte Ring
+gear Ring2: Epic Ring of the Mire
+gear Gloves: Green Steel Weave Gloves
+gear Bracers: Decorated Bracers
+gear Boots: Epic Boots of Corrosion
+gear Goggles: Four Eyes
+gear Main Hand: +3 Etched Sceptre

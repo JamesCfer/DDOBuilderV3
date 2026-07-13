@@ -1,0 +1,31 @@
+seed 5070, level 20
+race Halfling
+classes Sorcerer 8 / Ranger 5 / Fighter 7
+abilities Str 16, Dex 13, Con 13, Int 13, Wis 9, Cha 10 (28/28 pts)
+slot heroic-1: Negotiator
+slot Fighter-1-Fighter Bonus Feat-0: Single Weapon Fighting
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-3: Skill Focus: Repair
+slot heroic-6: Diehard
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Elemental
+slot heroic-9: Skill Focus: Bluff
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot heroic-12: Sap
+slot heroic-15: Iron Will
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-18: Combat Casting
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Dwarf
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Freebooter's Bandana
+gear Necklace: Pendant of Subtle Pain
+gear Trinket: Shamanic Fetish (Level 12)
+gear Armor: Grand Ringmaster's Plate (level 4)
+gear Cloak: Cowl of the Giant Warriors
+gear Belt: Daggertooth's Belt (level 12)
+gear Ring: Five Rings
+gear Ring2: Ring of the Runaway
+gear Gloves: Cannith Crafted Gloves
+gear Bracers: Blademaster Bracers
+gear Boots: Flightfoot Greaves
+gear Goggles: Goggles of Insight
+gear Main Hand: Ferrocrystal Scimitar

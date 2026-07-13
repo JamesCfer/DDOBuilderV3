@@ -1,0 +1,30 @@
+seed 5091, level 20
+race Warforged
+classes Ranger 20
+abilities Str 11, Dex 12, Con 13, Int 11, Wis 13, Cha 15 (28/28 pts)
+slot Ranger-1-Favored Enemy-0: Favored Enemy: Elemental
+slot heroic-1: Magical Training
+slot heroic-3: Negotiator
+slot Ranger-5-Favored Enemy-0: Favored Enemy: Orc
+slot heroic-6: Martial Weapon Proficiency: Falchion
+slot heroic-9: Spell Focus: Abjuration
+slot Ranger-10-Favored Enemy-0: Favored Enemy: Aberration
+slot heroic-12: Hamstring
+slot Ranger-15-Favored Enemy-0: Favored Enemy: Lawful Outsider
+slot heroic-15: Simple Weapon Proficiency: Heavy Mace
+slot heroic-18: Martial Weapon Proficiency: Shortbow
+slot Ranger-20-Favored Enemy-0: Favored Enemy: Dwarf
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Helm of the Crownblade
+gear Necklace: Standard Issue Sigil
+gear Trinket: Cursekeeper
+gear Armor: Armor of Sunlight
+gear Cloak: Gravekeeper's Stoic Cloak
+gear Belt: Colethenis's Belt
+gear Ring: Rahkir's Ring
+gear Ring2: Epic Ring of Spell Storing
+gear Gloves: Birchlore Gauntlets
+gear Bracers: Epic Bracers of the Hunter
+gear Boots: Crocodile Skin Boots
+gear Goggles: Razorclaw's Lenses
+gear Main Hand: Epic Mournlode Shortsword

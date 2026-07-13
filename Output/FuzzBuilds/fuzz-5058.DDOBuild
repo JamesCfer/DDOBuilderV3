@@ -1,0 +1,884 @@
+<?xml version="1.0"?>
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats>
+    </SpecialFeats>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Fuzz 5058 (Dar20)</Name>
+      <Race>Gnome</Race>
+      <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+      </SpecialFeats>
+      <Build version="1">
+        <Level>20</Level>
+        <Class1>Dark Hunter</Class1>
+        <Class2>Unknown</Class2>
+        <Class3>Unknown</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>5</StrSpend>
+          <DexSpend>7</DexSpend>
+          <ConSpend>4</ConSpend>
+          <IntSpend>5</IntSpend>
+          <WisSpend>2</WisSpend>
+          <ChaSpend>4</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Favored Enemy: Aberration</FeatName>
+            <Type>Favored Enemy</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Diehard</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Discipline</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Favored Enemy: Ooze</FeatName>
+            <Type>Favored Enemy</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Dodge</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Alertness</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Favored Enemy: Reptilian</FeatName>
+            <Type>Favored Enemy</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Skill Focus: Haggle</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Favored Enemy: Orc</FeatName>
+            <Type>Favored Enemy</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Martial Weapon Proficiency: Throwing Hammer</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Martial Weapon Proficiency: Hand Axe</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Dark Hunter</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Favored Enemy: Construct</FeatName>
+            <Type>Favored Enemy</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <ActiveStances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Deep Gnome</TreeName>
+          <TreeName>Falconry</TreeName>
+          <TreeName>Feydark Illusionist</TreeName>
+          <TreeName>Gnome</TreeName>
+          <TreeName>Harper Agent</TreeName>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeName>Inquisitive</TreeName>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Reaper_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Falconry</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore1</EnhancementName>
+            <Selection>Summon Snow Owl</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconHuntersKnowledge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconPracticedAccuracy</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconRugged</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconWanderlust</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconDivingShot</EnhancementName>
+            <Selection>Diving Strike</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>FalconCore2</EnhancementName>
+            <Selection>Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Vistani Knife Fighter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniAcrobatic</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MistStalkerI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>UndeadHunter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>MistStalkerII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Deep Gnome</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeStealthOrAwareness</EnhancementName>
+            <Selection>Awareness</Selection>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeCore2</EnhancementName>
+            <Selection>Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeGnomishWeaponTrainingI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DeepGnomeGreaterColorSpray</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Inquisitive</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveConjureBolts</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveEyeForAccuracy</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveLawOnYourSide</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveDualShooter</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCrossbowAdept</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCrossbowAdeptII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>InquisitiveImprovedLaw</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Dark Hunter</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DHCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHAwareness</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHBleedTheWeak</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHActionBoost</EnhancementName>
+            <Selection>Sprint Boost</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHImprovedTraps</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHAssassinsTraining</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHSneakAttackI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DHAbilityI</EnhancementName>
+            <Selection>+1 Dexterity</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperEnchantment</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>TravelersToughness</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>WeatheredTraveler</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperHeroicCompanion</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Gnome</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>GnomeCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>GnomeStealthOrAwareness</EnhancementName>
+            <Selection>Awareness</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>GnomeKeenInsight</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>GnomeWandAndScrollMastery</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>GnomeCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Horizon Walker</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HWCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWSkills</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWEyeForAccuracy</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWPlanarDodge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWOpeningShot</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HWProtectionFromEvilAndGood</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Crown of Evening's Rise</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>The cool of twilight surrounds this helmet's metallic frame.</Description>
+            <DropLocation>Secrets of the Red Wizards, end chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Dodge</Type>
+              <Value1>7</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Dodge</Type>
+              <Value1>3</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Intelligence Skills - Exceptional Bonus</Type>
+              <Value1>2</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellSave</Type>
+              <Value1>2</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+          </Helmet>
+          <Necklace>
+            <Name>Necklace of Glib Tongue (Level 16)</Name>
+            <Icon>Necklace_2</Icon>
+            <Description>An ancient Wizard constructed a series of these necklaces in an attempt to make
+it easier to listen to the populace surrounding his tower.</Description>
+            <DropLocation>Mimic Hunt, Turn in 80 Mimic Tokens</DropLocation>
+            <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Alluring Skills Bonus</Type>
+              <Value1>8</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Alluring Skills Bonus</Type>
+              <Value1>8</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Alluring Skills Bonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Linguistics 10%</Type>
+            </Buff>
+          </Necklace>
+          <Trinket>
+            <Name>Treasure Hunter's Spyglass (level 16)</Name>
+            <Icon>Trinket_17</Icon>
+            <Description>A tool such as this is a great aid to the treasure-seeking pirate, for it allows
+him or her to locate small details, find secret passages and notice any traps
+that might be lurking along the way.</Description>
+            <DropLocation>Treasure of Crystal Cove, Turn in various ingredients at Euphonia's Barter Box</DropLocation>
+            <MinLevel>16</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>8</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Intelligence</Description1>
+              <Item>Intelligence</Item>
+            </Buff>
+            <Buff>
+              <Type>Astute Skills Bonus</Type>
+              <Value1>8</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Exceptional Prudent Skills</Type>
+              <Value1>8</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>TrueSeeing</Type>
+            </Buff>
+          </Trinket>
+          <Cloak>
+            <Name>Prismatic Cloak, Green (Level 17)</Name>
+            <Icon>Cloak_7</Icon>
+            <Description>The rainbow fought;
+But the curse was wrought.</Description>
+            <DropLocation>The Tracker's Trap, Lines of Supply, Breaking the Ranks, A Break In the Ice, What Goes Up, end chest (Heroic Normal)</DropLocation>
+            <MinLevel>17</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>16</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Item>Acid</Item>
+            </Buff>
+          </Cloak>
+          <Belt>
+            <Name>Skullduggery Kit (Level 15)</Name>
+            <Icon>Belt_7c</Icon>
+            <Description>Tools of the trade.</Description>
+            <DropLocation>Through a Mirror Darkly, End chest (Heroic Hard)</DropLocation>
+            <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Intelligence Skills - Exceptional Bonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Dexterity Skills - Exceptional Bonus</Type>
+              <Value1>2</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+          </Belt>
+          <Goggles>
+            <Name>Goggles of Insight</Name>
+            <Icon>Goggles_20</Icon>
+            <Description>These goggles are fitted with lenses that allow the user to perceive weaknesses
+in any opponent's armor.</Description>
+            <DropLocation>Necromancer's Doom, End reward</DropLocation>
+            <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AttackBonus</Type>
+              <Value1>1</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+          </Goggles>
+          <Gloves>
+            <Name>Sunstone Gauntlets</Name>
+            <Icon>Gloves_1</Icon>
+            <Description>This... This is a pair of gloves tied to a rock.</Description>
+            <DropLocation>Best Laid Plans, end chest</DropLocation>
+            <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Stone</Material>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>9</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Devotion</Type>
+              <Value1>94</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Positive</Description1>
+              <Item>Positive</Item>
+            </Buff>
+            <Buff>
+              <Type>HealingLore</Type>
+              <Value1>14</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>154</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <SetBonus>Hruit's Influence</SetBonus>
+          </Gloves>
+          <Boots>
+            <Name>Surefoot Boots</Name>
+            <Icon>Boots_4</Icon>
+            <Description>Made from a soft, yet sturdy leather, these boots were used by stealthy hobgoblin
+raiders to help maintain their footing on slick underground stone.</Description>
+            <DropLocation>The Seal of Shan-To-Kor, End reward</DropLocation>
+            <MinLevel>1</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Sentient Weapon</Material>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>3</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Balance</Description1>
+              <Item>Balance</Item>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>3</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Move Silently</Description1>
+              <Item>Move Silently</Item>
+            </Buff>
+          </Boots>
+          <Bracers>
+            <Name>Aquatic Bracers (Level 14)</Name>
+            <Icon>Bracers_3e</Icon>
+            <Description>These bracers are crafted from a very lightweight metal, and sport fin-like
+protrusions on their sides.</Description>
+            <DropLocation>The Crucible, Underwater chest (Heroic Elite)</DropLocation>
+            <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Magesteel</Material>
+            <Buff>
+              <Type>UnderwaterAction</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>15</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Swim</Description1>
+              <Item>Swim</Item>
+            </Buff>
+            <Buff>
+              <Type>EnergyResistance</Type>
+              <Value1>30</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Swim Like a Fish</Type>
+            </Buff>
+          </Bracers>
+          <Armor>
+            <Name>Shroud of the Abbot</Name>
+            <Icon>Cloth_1f</Icon>
+            <Description>This robe is made of pieces of the actual banner the Abbot was wrapped in when
+he was slain before being raised as a lich.</Description>
+            <DropLocation>Ascension Chamber, Raid Warded chest</DropLocation>
+            <MinLevel>14</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>ArmorBonus</Type>
+              <Value1>4</Value1>
+              <BonusType>Armor</BonusType>
+            </Buff>
+            <Buff>
+              <Type>NaturalArmor</Type>
+              <Value1>4</Value1>
+              <BonusType>Natural Armor</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Boon of Undeath</Type>
+            </Buff>
+            <Buff>
+              <Type>VoidLore</Type>
+              <Value1>15</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>V</Description1>
+            </Buff>
+            <Buff>
+              <Type>LightningLore</Type>
+              <Value1>15</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>V</Description1>
+            </Buff>
+            <Buff>
+              <Type>EnergyResistance</Type>
+              <Value1>20</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Light</Description1>
+              <Item>Light</Item>
+            </Buff>
+          </Armor>
+          <Ring1>
+            <Name>Band of Manifest Magic</Name>
+            <Icon>Ring_16</Icon>
+            <Description>A copper ring, blessed with Arcane energy.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest</DropLocation>
+            <MinLevel>13</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Evocation</Description1>
+              <Item>Evocation</Item>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Conjuration</Description1>
+              <Item>Conjuration</Item>
+            </Buff>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Transmutation</Description1>
+              <Item>Transmutation</Item>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>68</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+          </Ring1>
+          <Ring2>
+            <Name>Pactbearer's Debt</Name>
+            <Icon>Ring_2</Icon>
+            <Description>This item cannot be fed to sentient jewels .</Description>
+            <DropLocation>Advance to level 15, End reward</DropLocation>
+            <MinLevel>15</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>3</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Enchantment</Description1>
+              <Item>Enchantment</Item>
+            </Buff>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+          </Ring2>
+          <MainHand>
+            <Name>Weeping Handwraps</Name>
+            <Icon>HandWraps_1v</Icon>
+            <Description>This strip of cloth has several sigils that are obscured by bloodstains and
+gore.</Description>
+            <DropLocation>The Captives, Guldag 's chest</DropLocation>
+            <MinLevel>2</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>2</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Screaming</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+          </MainHand>
+          <NumFiligrees>0</NumFiligrees>
+        </EquippedGear>
+        <FavorFeats>
+        </FavorFeats>
+        <Notes/>
+        <Level4>Strength</Level4>
+        <Level8>Dexterity</Level8>
+        <Level12>Charisma</Level12>
+        <Level16>Wisdom</Level16>
+        <Level20>Intelligence</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
+      </Build>
+    </Life>
+    <GuildLevel>0</GuildLevel>
+    <ApplyGuildBuffs>0</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

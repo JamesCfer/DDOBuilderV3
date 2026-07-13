@@ -1,0 +1,33 @@
+seed 5014, level 20
+race Shifter
+classes Wizard 7 / Druid 13
+abilities Str 12, Dex 9, Con 12, Int 10, Wis 17, Cha 12 (28/28 pts)
+slot race-1-Animalistic Aspect-0: Wildhunt Shifter
+slot heroic-1: Skill Focus: Heal
+slot Wizard-1-Metamagic Feat-0: Eschew Materials
+slot heroic-3: Stealthy
+slot Druid-2-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-6: Magical Training
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-9: Skill Focus: Jump
+slot Druid-5-Wild Shape-0: Wild Shape: Fire Elemental
+slot heroic-12: Skill Focus: Spot
+slot Druid-8-Wild Shape-0: Wild Shape: Water Elemental
+slot heroic-15: Martial Weapon Proficiency: Longsword
+slot Druid-11-Wild Shape-0: Wild Shape: Bear
+slot heroic-18: Slicing Blow
+slot Druid-13-Wild Shape-0: Wild Shape: Wolf
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Tattered Cowl
+gear Necklace: Necklace of Fireballs
+gear Trinket: Selune's Light
+gear Armor: Assassin Initiate's Leathers (Level 13)
+gear Cloak: Witchdoctor's Mantle
+gear Belt: Awanahu Sash
+gear Ring: Morah's Band
+gear Ring2: Claw-Carved Band
+gear Gloves: Nimble Grasp
+gear Bracers: Circlet of Silver Flame
+gear Boots: Decorated Boots
+gear Goggles: Acolyte's Lenses
+gear Main Hand: Prison Break (Level 15)

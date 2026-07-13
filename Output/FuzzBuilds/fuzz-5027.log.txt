@@ -1,0 +1,31 @@
+seed 5027, level 20
+race Half-Orc
+classes Alchemist 10 / Dragon Disciple 5 / Artificer 5
+abilities Str 16, Dex 13, Con 11, Int 11, Wis 11, Cha 12 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Morningstar
+slot Dragon Disciple-1-Dragon Arts-0: Power Attack
+slot heroic-3: Magical Training
+slot Dragon Disciple-2-Dragon Arts-0: no eligible feats — left empty
+slot Alchemist-4-Alchemist Bonus Feat-0: Empower Spell
+slot heroic-6: Spell Focus: Evocation
+slot Dragon Disciple-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot heroic-9: Skill Focus: Diplomacy
+slot heroic-12: Simple Weapon Proficiency: Light Crossbow
+slot Alchemist-8-Alchemist Bonus Feat-0: Alchemical Studies: Orchidium
+slot heroic-15: Martial Weapon Proficiency: Great Sword
+slot Artificer-4-Artificer Bonus Feat-0: Skill Focus: Spellcraft
+slot heroic-18: Accelerate Spell
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Teraza's Sight
+gear Necklace: Silver Flame Amulet
+gear Trinket: Momento of War
+gear Armor: The Only Exception (level 5)
+gear Cloak: Furor's Hide
+gear Belt: Agile Belt
+gear Ring: Ring of Nightfall
+gear Ring2: Epic Ring of the Red Abishai
+gear Gloves: Runic Gloves
+gear Bracers: Torn Chitin Bracers
+gear Boots: Faded Tracker's Boots
+gear Goggles: Mentau's Goggles
+gear Main Hand: Epic Sworn Silver Warhammer

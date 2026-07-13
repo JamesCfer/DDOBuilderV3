@@ -1,0 +1,25 @@
+seed 5031, level 20
+race Elf
+classes Bard 10 / Sorcerer 10
+abilities Str 15, Dex 11, Con 12, Int 13, Wis 12, Cha 12 (28/28 pts)
+slot heroic-1: Self Sufficient
+slot heroic-3: Two Handed Fighting
+slot heroic-6: Diehard
+slot heroic-9: Augment Summoning
+slot heroic-12: Spell Focus: Evocation
+slot heroic-15: Martial Weapon Proficiency: Maul
+slot heroic-18: Martial Weapon Proficiency: Battle Axe
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Downcast Helm
+gear Necklace: Mist Vial
+gear Trinket: Deep Red Ioun Stone (unsuppressed)
+gear Armor: Giantcraft Robe
+gear Cloak: Scurvy's Wrap
+gear Belt: The Baron's Bandolier
+gear Ring: Epic Sacred Band
+gear Ring2: Seal of the Earth
+gear Gloves: Severlin's Iron Fists (level 20)
+gear Bracers: Bracers of Order and Chaos
+gear Boots: Pathfinder's Boots
+gear Goggles: Sandstorm Glasses
+gear Main Hand: Ferrocrystal Longsword

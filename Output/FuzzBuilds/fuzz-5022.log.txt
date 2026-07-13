@@ -1,0 +1,38 @@
+seed 5022, level 20
+race Elf
+classes Fighter 7 / Favored Soul 10 / Blight Caster 3
+abilities Str 10, Dex 13, Con 14, Int 11, Wis 15, Cha 12 (28/28 pts)
+slot Fighter-1-Fighter Bonus Feat-0: Stunning Blow
+slot heroic-1: Two Weapon Fighting
+slot Favored Soul-1-Follower Of-0: Follower of Aureon
+slot heroic-3: Simple Weapon Proficiency: Heavy Crossbow
+slot Favored Soul-2-Battle Feat-0: Knowledge of Battle
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-6: Martial Weapon Proficiency: Heavy Pick
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot Favored Soul-3-Child Of-0: Child of Faith
+slot heroic-9: Two Weapon Defense
+slot Favored Soul-5-Energy Resistance-0: Energy Absorption: Acid
+slot Favored Soul-6-Deity-0: Aureon's Instruction
+slot heroic-12: Simple Weapon Proficiency: Unarmed
+slot Favored Soul-7-Heart Feat-0: Purity of Spirit
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-15: Martial Weapon Proficiency: Scimitar
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Hive Master
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-18: Martial Weapon Proficiency: Longbow
+slot Favored Soul-10-Energy Resistance-0: Energy Absorption: Fire
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Lamordian Cap
+gear Necklace: Emerald Claw Talisman
+gear Trinket: Litany of the Bond
+gear Armor: Blessed Vestments
+gear Cloak: Epic Phiarlan Mirror Cloak
+gear Belt: Awanahu Sash
+gear Ring: Ring of Mystic Charisma
+gear Ring2: Duskbone Ring
+gear Gloves: Gloves of the Miner
+gear Bracers: Knight's Vambraces
+gear Boots: Epic Firestorm Greaves
+gear Goggles: Lenses of the Woodsman
+gear Main Hand: Green Steel Great Crossbow

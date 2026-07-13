@@ -76,8 +76,9 @@ describe('V2 importer — Maetrim End-Game Handwraps Monk (Aasimar 20 Monk / 10 
   })
 
   it('imports ability scores from spend table', () => {
-    expect(build.baseAbilities.Strength).toBe(8)   // StrSpend=0
-    expect(build.baseAbilities.Dexterity).toBe(11)  // DexSpend=3
-    expect(build.baseAbilities.Wisdom).toBe(15)     // WisSpend=9 → nearest valid ≤9 is 8 → score 15
+    // V2 `<XxxSpend>` = value increase above 8 (score = 8 + spend).
+    expect(build.baseAbilities.Strength).toBe(8)    // StrSpend=0 → 8
+    expect(build.baseAbilities.Dexterity).toBe(11)  // DexSpend=3 → 11
+    expect(build.baseAbilities.Wisdom).toBe(17)     // WisSpend=9 → 17
   })
 })

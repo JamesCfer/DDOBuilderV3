@@ -1,0 +1,30 @@
+seed 5058, level 20
+race Gnome
+classes Dark Hunter 20
+abilities Str 13, Dex 15, Con 12, Int 13, Wis 10, Cha 12 (28/28 pts)
+slot Dark Hunter-1-Favored Enemy-0: Favored Enemy: Aberration
+slot heroic-1: Diehard
+slot heroic-3: Discipline
+slot Dark Hunter-5-Favored Enemy-0: Favored Enemy: Ooze
+slot heroic-6: Dodge
+slot heroic-9: Alertness
+slot Dark Hunter-10-Favored Enemy-0: Favored Enemy: Reptilian
+slot heroic-12: Skill Focus: Haggle
+slot Dark Hunter-15-Favored Enemy-0: Favored Enemy: Orc
+slot heroic-15: Martial Weapon Proficiency: Throwing Hammer
+slot heroic-18: Martial Weapon Proficiency: Hand Axe
+slot Dark Hunter-20-Favored Enemy-0: Favored Enemy: Construct
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Crown of Evening's Rise
+gear Necklace: Necklace of Glib Tongue (Level 16)
+gear Trinket: Treasure Hunter's Spyglass (level 16)
+gear Armor: Shroud of the Abbot
+gear Cloak: Prismatic Cloak, Green (Level 17)
+gear Belt: Skullduggery Kit (Level 15)
+gear Ring: Band of Manifest Magic
+gear Ring2: Pactbearer's Debt
+gear Gloves: Sunstone Gauntlets
+gear Bracers: Aquatic Bracers (Level 14)
+gear Boots: Surefoot Boots
+gear Goggles: Goggles of Insight
+gear Main Hand: Weeping Handwraps

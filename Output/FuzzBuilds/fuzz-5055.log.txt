@@ -1,0 +1,30 @@
+seed 5055, level 20
+race Tiefling
+classes Artificer 20
+abilities Str 13, Dex 14, Con 12, Int 14, Wis 12, Cha 11 (28/28 pts)
+slot heroic-1: Skill Focus: Use Magic Device
+slot heroic-3: Spell Focus: Conjuration
+slot Artificer-4-Artificer Bonus Feat-0: Skill Focus: Tumble
+slot heroic-6: Spell Focus: Illusion
+slot Artificer-8-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-9: Extend Spell
+slot Artificer-12-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-12: Simple Weapon Proficiency: Dart
+slot heroic-15: Spell Focus: Evocation
+slot Artificer-16-Artificer Bonus Feat-0: no eligible feats — left empty
+slot heroic-18: Augment Summoning
+slot Artificer-20-Artificer Bonus Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Shade's Hood (Level 16)
+gear Necklace: Pendant of the Azure Sky
+gear Trinket: Vibrant Purple Ioun Stone
+gear Armor: Essence of the Scout
+gear Cloak: Cloak of the Mimic (Level 16)
+gear Belt: Skullduggery Kit (Level 14)
+gear Ring: Splinterskull Acolyte Ring
+gear Ring2: Signet of Shavarath
+gear Gloves: Gloves of the Strong
+gear Bracers: Palescale Bracers
+gear Boots: Rock Boots (level 3)
+gear Goggles: Malchor's Undersun Goggles
+gear Main Hand: Pick of Endless Light (level 4)

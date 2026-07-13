@@ -1095,9 +1095,15 @@ std::string Effect::StacksAsString() const
     case Amount_SliderValueLookup:
         {
             size_t stacks = m_stacks;
+#if defined(V2CALC_LINUX)
+            // Headless (v2calc): no main window / stances pane; slider stacks
+            // fall back to the effect's own m_stacks (see BreakdownHostLinux).
+            const CStancesPane* pStancesPane = NULL;
+#else
             CWnd* pWnd = AfxGetMainWnd();
             CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
             const CStancesPane* pStancesPane = dynamic_cast<const CStancesPane*>(pMainWnd->GetPaneView(RUNTIME_CLASS(CStancesPane)));
+#endif
             if (pStancesPane != NULL)
             {
                 const SliderItem* pSlider = pStancesPane->GetSlider(StackSource());
@@ -1431,9 +1437,15 @@ double Effect::TotalAmount(bool allowTruncate) const
         case Amount_SliderValue:
             {
                 size_t stacks = m_stacks;
+#if defined(V2CALC_LINUX)
+                // Headless (v2calc): no main window / stances pane; slider stacks
+                // fall back to the effect's own m_stacks (see BreakdownHostLinux).
+                const CStancesPane* pStancesPane = NULL;
+#else
                 CWnd* pWnd = AfxGetMainWnd();
                 CMainFrame* pMainWnd = dynamic_cast<CMainFrame*>(pWnd);
                 const CStancesPane* pStancesPane = dynamic_cast<const CStancesPane*>(pMainWnd->GetPaneView(RUNTIME_CLASS(CStancesPane)));
+#endif
                 if (pStancesPane != NULL)
                 {
                     const SliderItem* pSlider = pStancesPane->GetSlider(StackSource());

@@ -1,0 +1,30 @@
+seed 5043, level 20
+race Warforged
+classes Wizard 20
+abilities Str 14, Dex 11, Con 11, Int 15, Wis 13, Cha 11 (28/28 pts)
+slot heroic-1: Improved Damage Reduction
+slot Wizard-1-Metamagic Feat-0: Mental Toughness
+slot heroic-3: Martial Weapon Proficiency: Scimitar
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-6: Improved Mental Toughness
+slot heroic-9: Martial Weapon Proficiency: Great Club
+slot Wizard-10-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-12: Martial Weapon Proficiency: Maul
+slot heroic-15: Hamstring
+slot Wizard-15-Metamagic Feat-0: no eligible feats — left empty
+slot heroic-18: Skill Focus: Intimidate
+slot Wizard-20-Metamagic Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Helm of Clarity
+gear Necklace: Dragonmarked Necklace
+gear Trinket: Pearl of Power IX
+gear Armor: Stonedust Chain
+gear Cloak: Stormsinger Cloak
+gear Belt: Epic Belt of the Black Abishai
+gear Ring: Calitomes' Ring
+gear Ring2: Dragonmarked Ring
+gear Gloves: Gloves of Gnoll Hide
+gear Bracers: Torn Chitin Bracers
+gear Boots: Hobnail Boots
+gear Goggles: Razorclaw's Lenses
+gear Main Hand: Barovian's Kukri

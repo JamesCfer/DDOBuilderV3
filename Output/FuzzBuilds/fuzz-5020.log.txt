@@ -1,0 +1,34 @@
+seed 5020, level 20
+race Gnome
+classes Wizard 10 / Fighter 10
+abilities Str 15, Dex 10, Con 11, Int 10, Wis 16, Cha 11 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Great Axe
+slot Wizard-1-Metamagic Feat-0: Spell Focus: Evocation
+slot Fighter-1-Fighter Bonus Feat-0: Point Blank Shot
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-3: Light Armor Proficiency
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot heroic-6: Single Weapon Fighting
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-9: Martial Weapon Proficiency: Kukri
+slot heroic-12: Skill Focus: Swim
+slot Wizard-5-Metamagic Feat-0: no eligible feats — left empty
+slot Fighter-8-Fighter Bonus Feat-0: Tactical Combatant
+slot heroic-15: Empower Spell
+slot Fighter-10-Fighter Bonus Feat-0: Heavy Armor Master
+slot heroic-18: Hamstring
+slot Wizard-10-Metamagic Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 12 trees
+gear Helmet: Lamordian Cowl
+gear Necklace: Baron Aubrecker's Family Amulet
+gear Trinket: Momento of War
+gear Armor: Nightforge Docent
+gear Cloak: Cloak of Silence
+gear Belt: Admiral's Cummerbund
+gear Ring: Ring of Deftness
+gear Ring2: Gravnok's Band
+gear Gloves: Gloves of Titan's Grip
+gear Bracers: Razorclaw's Armguards
+gear Boots: Lightning Railworker's Boots
+gear Goggles: Goggles of the Berserker
+gear Main Hand: Calamitous Rapier

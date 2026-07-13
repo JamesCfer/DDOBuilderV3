@@ -1,0 +1,36 @@
+seed 5061, level 20
+race Gnome
+classes Fighter 20
+abilities Str 14, Dex 14, Con 13, Int 13, Wis 11, Cha 11 (28/28 pts)
+slot Fighter-1-Fighter Bonus Feat-0: Combat Expertise
+slot heroic-1: Augment Summoning
+slot Fighter-2-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-3: Martial Weapon Proficiency: Light Pick
+slot Fighter-4-Fighter Bonus Feat-0: Tactical Training
+slot Fighter-6-Fighter Bonus Feat-0: Heavy Armor Combatant
+slot heroic-6: Martial Weapon Proficiency: Longbow
+slot Fighter-8-Fighter Bonus Feat-0: Tactical Combatant
+slot heroic-9: Least Dragonmark of Scribing
+slot Fighter-10-Fighter Bonus Feat-0: Heavy Armor Master
+slot Fighter-12-Fighter Bonus Feat-0: Tactical Master
+slot heroic-12: Skill Focus: Move Silently
+slot Fighter-14-Fighter Bonus Feat-0: Heavy Armor Champion
+slot heroic-15: Skill Focus: Jump
+slot Fighter-16-Fighter Bonus Feat-0: Tactical Supremacy
+slot Fighter-18-Fighter Bonus Feat-0: no eligible feats — left empty
+slot heroic-18: Skill Focus: Diplomacy
+slot Fighter-20-Fighter Bonus Feat-0: no eligible feats — left empty
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Hardened Hide Helm
+gear Necklace: Cannith Crafted Necklace
+gear Trinket: Pearl of Power VII
+gear Armor: Robe of Resistance
+gear Cloak: Architect's Cloak
+gear Belt: Belt of Brute Strength
+gear Ring: Brazenband
+gear Ring2: Thamor's Ring
+gear Gloves: Fabricator's Gauntlets
+gear Bracers: Berserker Bracers
+gear Boots: Asbestos Booties
+gear Goggles: Goggles of Dusk
+gear Main Hand: Locked and Loaded

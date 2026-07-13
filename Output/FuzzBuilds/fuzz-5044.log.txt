@@ -1,0 +1,31 @@
+seed 5044, level 20
+race Wood Elf
+classes Druid 20
+abilities Str 8, Dex 13, Con 13, Int 13, Wis 15, Cha 13 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Dart
+slot Druid-2-Wild Shape-0: Wild Shape: Fire Elemental
+slot heroic-3: Spell Focus: Enchantment
+slot Druid-5-Wild Shape-0: Wild Shape: Water Elemental
+slot heroic-6: Empower Healing Spell
+slot Druid-8-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-9: Spell Focus: Illusion
+slot Druid-11-Wild Shape-0: Wild Shape: Bear
+slot heroic-12: Martial Weapon Proficiency: Kukri
+slot Druid-13-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-15: Alertness
+slot Druid-17-Wild Shape-0: Wild Shape: Wolf
+slot heroic-18: Simple Weapon Proficiency: Morningstar
+enhancements: 80/80 AP across 10 trees
+gear Helmet: Helm of Eternal Day
+gear Necklace: Amulet of the Stormreaver
+gear Trinket: Epic Shard of Vollun
+gear Armor: Mournlode Docent (Level 4)
+gear Cloak: Cloak of Seasons
+gear Belt: Epic Snakeskin Belt
+gear Ring: Ring of the Buccaneer (level 16)
+gear Ring2: Ring of Mystic Strength
+gear Gloves: Severlin's Iron Fists (level 10)
+gear Bracers: Magewright's Toolkit
+gear Boots: Faded Tracker's Boots
+gear Goggles: Guardian's Glasses (Level 19)
+gear Main Hand: Macabre Quarterstaff

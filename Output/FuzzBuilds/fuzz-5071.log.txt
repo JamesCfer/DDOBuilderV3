@@ -1,0 +1,30 @@
+seed 5071, level 20
+race Dragonborn
+classes Monk 8 / Wild Mage 12
+abilities Str 13, Dex 12, Con 13, Int 14, Wis 11, Cha 13 (28/28 pts)
+slot race-1-Dragonborn Racial-0: Draconic Ancestry: Black
+slot Monk-1-Monk Bonus-0: Power Attack
+slot heroic-1: Skill Focus: Use Magic Device
+slot Monk-2-Monk Bonus-0: no eligible feats — left empty
+slot heroic-3: Enlarge Spell
+slot Monk-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot heroic-6: Skill Focus: Haggle
+slot heroic-9: Cleave
+slot Monk-6-Monk Bonus-0: no eligible feats — left empty
+slot heroic-12: Skill Focus: Search
+slot heroic-15: Sap
+slot heroic-18: Martial Weapon Proficiency: Kukri
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Memories of the Unseen
+gear Necklace: Archivist's Necklace
+gear Trinket: Kardin's Eye (Level 13)
+gear Armor: Robe of Trivial Knowledge
+gear Cloak: Crackling Sash of Savaran
+gear Belt: Official Kobold Union Buckle
+gear Ring: Diabolist's Ring
+gear Ring2: Ivy Helix
+gear Gloves: Severlin's Iron Fists (level 10)
+gear Bracers: Bracers of Twisting Shade (Level 16)
+gear Boots: Cannith Boots of Propulsion
+gear Goggles: Razorclaw's Lenses
+gear Main Hand: Syranian Longbow

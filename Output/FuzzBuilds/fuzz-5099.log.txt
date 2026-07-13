@@ -1,0 +1,33 @@
+seed 5099, level 20
+race Half-Orc
+classes Blight Caster 20
+abilities Str 13, Dex 14, Con 13, Int 11, Wis 12, Cha 13 (28/28 pts)
+slot heroic-1: Simple Weapon Proficiency: Dagger
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Hive Master
+slot Blight Caster-2-Toggle Imbue-0: Biting Poison Imbue
+slot heroic-3: Enlarge Spell
+slot Blight Caster-4-Kin Form-0: Wild Shape: Hive Keeper
+slot heroic-6: Simple Thrown Weapon Expertise
+slot Blight Caster-8-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-9: Skill Focus: Heal
+slot Blight Caster-11-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-11-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-12: Simple Weapon Proficiency: Club
+slot Blight Caster-13-Wild Shape-0: Wild Shape: Blighted Wolf
+slot heroic-15: Heighten Spell
+slot Blight Caster-17-Wild Shape-0: Wild Shape: Thorne Knight
+slot heroic-18: Magical Training
+enhancements: 80/80 AP across 8 trees
+gear Helmet: Helm of the White Dragon (Level 12)
+gear Necklace: Mysterious Pendant
+gear Trinket: Climbing Hook
+gear Armor: Enigma Core
+gear Cloak: Cloak of Summer's End (level 16)
+gear Belt: Strap of Savviness
+gear Ring: Epic Ring of the Buccaneer (legacy) (level 20)
+gear Ring2: Ring of the Stormreaver Prophecy (Level 13)
+gear Gloves: Protector's Gloves
+gear Bracers: Mysterious Bracers (Level 7)
+gear Boots: Sludge Fin Boots
+gear Goggles: Eyes of the Howling Hatred
+gear Main Hand: Shining Reliquary Light Mace
