@@ -168,6 +168,7 @@ export function loadEnhancementTrees(dataDir: string): EnhancementTree[] {
           IsEpicDestiny: 'IsEpicDestiny' in tree ? true : undefined,
           IsRacialTree: 'IsRacialTree' in tree ? true : undefined,
           IsUniversalTree: 'IsUniversalTree' in tree ? true : undefined,
+          Legacy: 'Legacy' in tree ? true : undefined,
         }
       }) as EnhancementTree[]
     } catch { return [] }

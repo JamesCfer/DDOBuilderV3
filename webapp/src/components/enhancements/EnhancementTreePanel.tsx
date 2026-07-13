@@ -75,8 +75,14 @@ function isUniversalTree(tree: EnhancementTree): boolean {
   return tree.IsUniversalTree === true || (!tree.IsRacialTree && !tree.Requirements)
 }
 
-function isEnhancementTree(tree: EnhancementTree): boolean {
+export function isEnhancementTree(tree: EnhancementTree): boolean {
   return tree.IsReaperTree !== true && tree.IsEpicDestiny !== true
+}
+
+// V2 `EnhancementsPane.cpp:332` hides a `HasLegacy()` tree from the picker
+// unless the character already has it trained (`SupportLegacyTrees()`).
+export function isLegacyTreeVisible(tree: EnhancementTree, pinned: string[]): boolean {
+  return tree.Legacy !== true || pinned.includes(tree.Name)
 }
 
 // ---------------------------------------------------------------------------
@@ -212,6 +218,7 @@ export default function EnhancementTreePanel() {
     const classNames = build.classes.map(c => c.name).filter(Boolean)
     const raceName = build.race
     return enhTrees.filter(tree => {
+      if (!isLegacyTreeVisible(tree, pinned)) return false
       if (tree.IsRacialTree) return raceName ? treeMatchesName(tree.Name, raceName) : false
       if (tree.IsUniversalTree === true) return true
       if (isUniversalTree(tree)) return true
@@ -220,7 +227,7 @@ export default function EnhancementTreePanel() {
       if (req) return classNames.some(cn => cn === req)
       return false
     })
-  }, [enhTrees, build.race, build.classes])
+  }, [enhTrees, build.race, build.classes, pinned])
 
   // Auto-pin racial tree when build changes.
   useEffect(() => {

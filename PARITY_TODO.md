@@ -115,6 +115,7 @@ the PR number, so this file doubles as a changelog.
 | 95 | **X7 — Forum export `characterHeader` vitals block** — `sections.ts:characterHeader` now emits V2's "vitals block" (`ForumExportDlg.cpp:312-392`) after the existing Name/Race/Classes lines: HP + Displacement, then one row per ability paired with its V2 combat stat (Str+Unconscious Range/Incorporeality, Dex+PRR/AC, Con+MRR(/cap)/+Healing Amp, Int+Dodge(/cap)/-Healing Amp, Wis+Fortification/Repair Amp, Cha+Spell Resistance/BAB), then trailing DR and Immunities lines (derived from `dr.*`/`immunity.*` stat keys, matching `BreakdownsPanel.tsx`'s existing convention for those two). Falls back to the pre-existing header-only lines when `stats` is null. 5 regression tests in `parityPassX7.test.ts`. | this PR |
 | 94 | **X9 — Forum export `featSelections`/`featSelectionsNoSkills` become a per-level `[TABLE]`** — V2 `ForumExportDlg.cpp:622-660` (`AddFeatSelections`) + `GetLevelEntries` (`:1992+`) iterate every heroic character level and emit one `[TR]` with `Level | Class(classLevel) | Feats`, appending class/cross-class skill-rank rows only when `bIncludeSkills` is set. V3's `sections.ts` previously flattened `build.featChoices` into a sorted `key: value` list with no class-per-level context, and the "no skills" variant used an invented (and never-matching) `"Skill:"`-prefix filter instead of V2's real semantics. New shared `featSelectionsTable()` walks heroic levels 1..min(20,totalLevel) via `buildSlots()` (`lib/levelTraining.ts`) for that level's feat slots and `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)` label, and appends `Class Skills:`/`Cross Class Skills:` rows (from `build.skillRanksByLevel`) only for the skills-included variant. 3 regression tests in `parityPassX9.test.ts`; `parityPass5.test.ts`'s outdated no-skills test updated to the corrected semantics. | this PR |
 | 96 | **U11 — Special / Favor feat training UI** — `lib/specialFeats.ts` ports V2 `CFeatSelectionDialog::OnFeatButtonLeftClick`/`RightClick` (`FeatSelectionDialog.cpp:141-191`) train/revoke/cap logic as pure functions. Acquire=Special feats (Chrism reincarnation-cache redemptions, "Tome of Destiny", …) train/revoke against `build.pastLives` + `build.pastLifeTypes` (reuses the N9/F5 plumbing so exports round-trip with the correct V2 `<Type>`); Acquire=Favor feats (House favor rewards) train/revoke against `build.favorFeats` as a flat repeatable list (`Build::m_FavorFeats` parity — training appends a copy, revoke removes the first occurrence), both capped by `Feat::MaxTimesAcquire` (default 1). New reducer actions `TRAIN_SPECIAL_FEAT`/`REVOKE_SPECIAL_FEAT`/`TRAIN_FAVOR_FEAT`/`REVOKE_FAVOR_FEAT` in `CharacterContext.tsx`; `migrateLoad` now also defaults `favorFeats` for old saves. `PastLivesPanel.tsx` (V2's `CSpecialFeatPane` — the same pane the four past-life groups were already ported from) gained "Special Feats" and "Favor Feats" sections fetched via `/api/feats?acquire=Special`/`Favor`, reusing the existing +/− tile UI via new per-group `getCount`/`onIncrement`/`onDecrement`/`canIncrement`/`canDecrement` overrides. Previously these fields were import/export/compute-only — a build authored fresh in V3 could never acquire a Special or Favor feat. 8 regression tests in `parityPassU11.test.ts`. | this PR |
+| 97 | **D1 — Legacy enhancement trees now filtered from the picker** — V2 `EnhancementsPane.cpp:332` hides any tree with the `<Legacy/>` flag (`EnhancementTree.h`) from the tree picker unless the build already has it trained; V3's `loadEnhancementTrees` never parsed the flag and the picker showed the legacy " Shintao V1"/"HenshinMystic v1"/"NinjaSpy v1" duplicates alongside the modern trees for every Monk build. `dataLoaders.ts` now normalizes `Legacy: 'Legacy' in tree ? true : undefined` (same pattern as `IsReaperTree`/etc.); `EnhancementTree` type gained a `Legacy?: boolean` field; `EnhancementTreePanel.tsx` exports a new pure `isLegacyTreeVisible(tree, pinned)` predicate (mirrors V2's `SupportLegacyTrees()` check, simplified to "already pinned" since V3 has no modal-dialog session state) wired into the `availableTrees` picker filter. Trees already pinned (e.g. from a V2 import that kept a legacy spend) remain visible and functional — only the *picker* hides unpicked legacy trees. 4 regression tests in `parityPassD1LegacyTrees.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -325,23 +326,16 @@ Remaining read/write-fidelity gaps:
 - ✅ **Cosmetic gear effects** — done (#71).
 - ✅ **Sentient gem personality buffs** — not a gap (#71).
 - ✅ **Filigree set bonuses with conditional triggers** — done (#71).
-- ❌ **D1 — Legacy enhancement trees are never filtered; V2's
-  `SupportLegacyTrees` gate has no V3 counterpart.** V2 `EnhancementTree.h`'s
-  `Legacy` flag + `UpdateLegacyInfo()` (`EnhancementTree.cpp:44-52`) prefixes
-  legacy-tree items to dodge `InternalName` collisions with the modern tree
-  of the same class; `EnhancementsPane.cpp:332` hides any `HasLegacy()` tree
-  from the picker unless the character already has one trained
-  (`Character::SupportLegacyTrees()`, set by `Build::UpdateLegacyTrees()`,
-  `Build.cpp:6701-6731`). Confirmed in data:
-  `Legacy_Monk_Shintao_v1.tree.xml` reuses the exact same item
-  `InternalName` (`ShintaoCore1`) as the modern `Monk_Shintao.tree.xml` — by
-  design, gated on the legacy flag. V3's `dataLoaders.ts:150-175`
-  normalizes `IsReaperTree`/`IsEpicDestiny`/`IsRacialTree`/`IsUniversalTree`
-  but not `Legacy` (not even in the `EnhancementTree` type,
-  `types/ddo.ts:179-190`), and no `SupportLegacyTrees`-equivalent exists
-  anywhere. Every Monk build in V3 shows " Shintao V1"/HenshinMystic v1/
-  NinjaSpy v1 as fully selectable trees that V2 users never see unless
-  they already trained one on an old save.
+- ✅ **D1 — Legacy enhancement trees filtered from the picker** — done (see
+  Done table, #97). `dataLoaders.ts` now parses the `<Legacy/>` flag;
+  `EnhancementTreePanel.tsx`'s `availableTrees` picker filter excludes
+  `Legacy === true` trees unless the build already has that tree pinned
+  (a simplified, stateless analogue of V2's modal-dialog
+  `SupportLegacyTrees()` mechanism — appropriate for a webapp with no
+  load-time dialog session). Confirmed against real data:
+  `Legacy_Monk_Shintao_v1.tree.xml` ("Shintao V1") is hidden from the
+  picker for a fresh Monk build but the modern "Shintao" tree remains, and
+  a build with "Shintao V1" already pinned keeps seeing it.
 - ❌ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades) is parsed
   nowhere in V3.** V2 `Item.h:97` / `SlotUpgrade.h`/`.cpp` models named
   upgrades that let one of an item's augment slots additionally accept other
