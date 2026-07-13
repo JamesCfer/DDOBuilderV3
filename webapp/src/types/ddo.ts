@@ -183,6 +183,7 @@ export interface EnhancementTree {
   IsEpicDestiny?: boolean
   IsReaperTree?: boolean
   IsUniversalTree?: boolean
+  Legacy?: boolean
   Background?: string
   Icon?: string
   Requirements?: Requirements
