@@ -29,21 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Exclude workspace from Defender (V2 loads 17k XML files)
-        shell: pwsh
-        run: Add-MpPreference -ExclusionPath "D:\a" -ErrorAction SilentlyContinue
-
       - name: Download DDOBuilder V2 release
         shell: pwsh
         run: |
           $tag = "${{ github.event.inputs.release_tag }}"
           $api = if ($tag) { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/tags/$tag" }
                  else { "https://api.github.com/repos/Maetrim/DDOBuilderV2/releases/latest" }
-          # Authenticated: unauthenticated calls hit the runner-IP shared rate limit.
-          $rel = Invoke-RestMethod -Uri $api -Headers @{
-            "User-Agent" = "v2-oracle"
-            "Authorization" = "Bearer ${{ secrets.GITHUB_TOKEN }}"
-          }
+          $rel = Invoke-RestMethod -Uri $api -Headers @{ "User-Agent" = "v2-oracle" }
           Write-Host "Release: $($rel.tag_name)"
           $rel.assets | ForEach-Object { Write-Host "  asset: $($_.name) ($($_.size) bytes)" }
           New-Item -ItemType Directory -Force -Path v2dl | Out-Null
@@ -103,12 +95,11 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          # Commit exports AND debug shots/logs — the sandbox driving this can
-          # fetch git branches but not artifact blobs.
+          $exports = Get-ChildItem Output/FuzzBuilds -Filter *.v2export.txt -ErrorAction SilentlyContinue
+          if (-not $exports) { Write-Host "no exports to commit"; exit 0 }
           git config user.name "v2-oracle[bot]"
           git config user.email "v2-oracle@users.noreply.github.com"
           git checkout -B v2-oracle-results
-          git add -f Output/FuzzBuilds/*.v2export.txt "Output/Example Builds/*.v2export.txt" 2>$null
-          git add -f tools/v2-oracle/shots 2>$null
-          git commit -m "v2-oracle: run ${{ github.run_id }} results + debug" 2>$null
-          if ($LASTEXITCODE -eq 0) { git push -f origin v2-oracle-results } else { Write-Host "nothing to commit" }
+          git add Output/FuzzBuilds/*.v2export.txt
+          git commit -m "v2-oracle: captured $($exports.Count) forum export(s) [run ${{ github.run_id }}]"
+          git push -f origin v2-oracle-results

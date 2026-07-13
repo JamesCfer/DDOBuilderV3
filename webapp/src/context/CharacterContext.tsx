@@ -3,6 +3,7 @@ import type { CharacterBuild, Ability, FiligreeSlot, QuestDifficulty } from '../
 import { emptyBuild, migrateSentientGem } from '../types/ddo'
 import { aggregateLevelClasses, getLevelClasses, HEROIC_CAP } from '../lib/levelProgression'
 import { useBuildLog } from './BuildLogContext'
+import { trainSpecialFeat, revokeSpecialFeat, trainFavorFeat, revokeFavorFeat } from '../lib/specialFeats'
 
 type Action =
   | { type: 'SET_NAME'; name: string }
@@ -24,6 +25,10 @@ type Action =
   | { type: 'SET_AUGMENT'; key: string; augmentName: string }
   | { type: 'CLEAR_AUGMENT'; key: string }
   | { type: 'SET_PAST_LIFE'; source: string; count: number }
+  | { type: 'TRAIN_SPECIAL_FEAT'; featName: string }
+  | { type: 'REVOKE_SPECIAL_FEAT'; featName: string }
+  | { type: 'TRAIN_FAVOR_FEAT'; featName: string }
+  | { type: 'REVOKE_FAVOR_FEAT'; featName: string }
   | { type: 'SET_FILIGREE'; slotIndex: number; name: string }
   | { type: 'SET_FILIGREE_RARE'; slotIndex: number; rare: boolean }
   | { type: 'SET_ARTIFACT_FILIGREE'; slotIndex: number; name: string }
@@ -152,6 +157,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     alternateFeats: (raw as unknown as { alternateFeats?: Record<string, string> }).alternateFeats ?? {},
     attackChains: (raw as unknown as { attackChains?: Record<string, string[]> }).attackChains ?? {},
     activeAttackChain: (raw as unknown as { activeAttackChain?: string }).activeAttackChain ?? '',
+    favorFeats: raw.favorFeats ?? [],
   }
 }
 
@@ -277,6 +283,14 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     }
     case 'SET_PAST_LIFE':
       return { ...state, pastLives: { ...state.pastLives, [action.source]: action.count } }
+    case 'TRAIN_SPECIAL_FEAT':
+      return { ...state, ...trainSpecialFeat(state, action.featName) }
+    case 'REVOKE_SPECIAL_FEAT':
+      return { ...state, ...revokeSpecialFeat(state, action.featName) }
+    case 'TRAIN_FAVOR_FEAT':
+      return { ...state, favorFeats: trainFavorFeat(state, action.featName) }
+    case 'REVOKE_FAVOR_FEAT':
+      return { ...state, favorFeats: revokeFavorFeat(state, action.featName) }
     case 'SET_FILIGREE': {
       const filigreeSlots = [...state.filigreeSlots] as CharacterBuild['filigreeSlots']
       filigreeSlots[action.slotIndex] = { ...(filigreeSlots[action.slotIndex] ?? { name: '', rare: false }), name: action.name }
