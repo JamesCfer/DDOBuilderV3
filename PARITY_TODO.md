@@ -116,6 +116,7 @@ the PR number, so this file doubles as a changelog.
 | 94 | **X9 — Forum export `featSelections`/`featSelectionsNoSkills` become a per-level `[TABLE]`** — V2 `ForumExportDlg.cpp:622-660` (`AddFeatSelections`) + `GetLevelEntries` (`:1992+`) iterate every heroic character level and emit one `[TR]` with `Level | Class(classLevel) | Feats`, appending class/cross-class skill-rank rows only when `bIncludeSkills` is set. V3's `sections.ts` previously flattened `build.featChoices` into a sorted `key: value` list with no class-per-level context, and the "no skills" variant used an invented (and never-matching) `"Skill:"`-prefix filter instead of V2's real semantics. New shared `featSelectionsTable()` walks heroic levels 1..min(20,totalLevel) via `buildSlots()` (`lib/levelTraining.ts`) for that level's feat slots and `classLevelsAtLevel()` (`lib/levelProgression.ts`) for the `Class(N)` label, and appends `Class Skills:`/`Cross Class Skills:` rows (from `build.skillRanksByLevel`) only for the skills-included variant. 3 regression tests in `parityPassX9.test.ts`; `parityPass5.test.ts`'s outdated no-skills test updated to the corrected semantics. | this PR |
 | 96 | **U11 — Special / Favor feat training UI** — `lib/specialFeats.ts` ports V2 `CFeatSelectionDialog::OnFeatButtonLeftClick`/`RightClick` (`FeatSelectionDialog.cpp:141-191`) train/revoke/cap logic as pure functions. Acquire=Special feats (Chrism reincarnation-cache redemptions, "Tome of Destiny", …) train/revoke against `build.pastLives` + `build.pastLifeTypes` (reuses the N9/F5 plumbing so exports round-trip with the correct V2 `<Type>`); Acquire=Favor feats (House favor rewards) train/revoke against `build.favorFeats` as a flat repeatable list (`Build::m_FavorFeats` parity — training appends a copy, revoke removes the first occurrence), both capped by `Feat::MaxTimesAcquire` (default 1). New reducer actions `TRAIN_SPECIAL_FEAT`/`REVOKE_SPECIAL_FEAT`/`TRAIN_FAVOR_FEAT`/`REVOKE_FAVOR_FEAT` in `CharacterContext.tsx`; `migrateLoad` now also defaults `favorFeats` for old saves. `PastLivesPanel.tsx` (V2's `CSpecialFeatPane` — the same pane the four past-life groups were already ported from) gained "Special Feats" and "Favor Feats" sections fetched via `/api/feats?acquire=Special`/`Favor`, reusing the existing +/− tile UI via new per-group `getCount`/`onIncrement`/`onDecrement`/`canIncrement`/`canDecrement` overrides. Previously these fields were import/export/compute-only — a build authored fresh in V3 could never acquire a Special or Favor feat. 8 regression tests in `parityPassU11.test.ts`. | this PR |
 | 97 | **D1 — Legacy enhancement trees now filtered from the picker** — V2 `EnhancementsPane.cpp:332` hides any tree with the `<Legacy/>` flag (`EnhancementTree.h`) from the tree picker unless the build already has it trained; V3's `loadEnhancementTrees` never parsed the flag and the picker showed the legacy " Shintao V1"/"HenshinMystic v1"/"NinjaSpy v1" duplicates alongside the modern trees for every Monk build. `dataLoaders.ts` now normalizes `Legacy: 'Legacy' in tree ? true : undefined` (same pattern as `IsReaperTree`/etc.); `EnhancementTree` type gained a `Legacy?: boolean` field; `EnhancementTreePanel.tsx` exports a new pure `isLegacyTreeVisible(tree, pinned)` predicate (mirrors V2's `SupportLegacyTrees()` check, simplified to "already pinned" since V3 has no modal-dialog session state) wired into the `availableTrees` picker filter. Trees already pinned (e.g. from a V2 import that kept a legacy spend) remain visible and functional — only the *picker* hides unpicked legacy trees. 4 regression tests in `parityPassD1LegacyTrees.test.ts`. | this PR |
+| 98 | **D2 — `<SlotUpgrade>` item augment-slot color upgrades** — V2 `Item.h:97`/`SlotUpgrade.h`/`.cpp` lets some items (Chains/Shackles/Five Rings + Legendary variants) grant a one-time player-chosen extra augment slot (`ItemSelectDialog.cpp:462-476` `EnableControls` + `:823-881` `PopulateSlotUpgradeList`/`OnUpgradeSelect`); V3's `Item` type had no `SlotUpgrade` field and `loadItems` did no post-processing, so the Gear panel could never surface the alternate colors. `dataLoaders.ts` adds `SlotUpgrade`/`UpgradeType` to the forced-array XML parser list; `types/ddo.ts` gains a `SlotUpgrade` type + `Item.SlotUpgrade` field and `CharacterBuild.slotUpgradeChoices`/`namedSlotUpgrades` (parallel to `augmentChoices`/`namedGearAugments`). New pure `lib/gearSlotUpgrades.ts` resolves an item's native augment slots plus one synthetic slot per chosen color, appended at index `nativeCount + slotUpgradeIndex` — the same "slot:type:index" convention `buildStats.ts`/`v2Import.ts`/`v2Export.ts` already key augments on generically, so no changes were needed there. `GearPanel.tsx` renders a color picker for each unresolved `SlotUpgrade` (dispatching new `SET_SLOT_UPGRADE`, irreversible like V2 — cleared only by re-equipping the item, matching `SET_GEAR`/`CLEAR_GEAR`'s existing `augmentChoices` reset) and feeds the resolved slot list into the existing `AugmentSlot` picker. Residual: a color picked but not yet filled with an augment doesn't survive an export→V2-reimport round trip (V3's own JSON save/reload is unaffected). 7 regression tests in `parityPassD2SlotUpgrade.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -336,17 +337,18 @@ Remaining read/write-fidelity gaps:
   `Legacy_Monk_Shintao_v1.tree.xml` ("Shintao V1") is hidden from the
   picker for a fresh Monk build but the modern "Shintao" tree remains, and
   a build with "Shintao V1" already pinned keeps seeing it.
-- ❌ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades) is parsed
-  nowhere in V3.** V2 `Item.h:97` / `SlotUpgrade.h`/`.cpp` models named
-  upgrades that let one of an item's augment slots additionally accept other
-  colors; `ItemSelectDialog.cpp:462-476` and `FindGearDialog.cpp:342-347`
-  both render the extra pickable slot colors. Confirmed in data: `Chains`/
-  `Shackles`/`Five Rings` (and Legendary variants) all carry a
-  `<SlotUpgrade>` granting Blue/Colorless/Green/Yellow options. V3's `Item`
-  type (`types/ddo.ts:218-247`) has no `SlotUpgrade` field and
-  `dataLoaders.ts`'s `loadItems` (`:314-326`) does no post-processing for
-  it, so the Gear panel's augment-slot UI can never surface the alternate
-  colors — those items are stuck with only their native slot color in V3.
+- ✅ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades)** — done (see
+  Done table, #98). `dataLoaders.ts` now parses `<SlotUpgrade>`/
+  `<UpgradeType>`; `Item.SlotUpgrade` + `CharacterBuild.slotUpgradeChoices`
+  added; `lib/gearSlotUpgrades.ts` resolves an item's native augment slots
+  plus one synthetic slot per chosen color at a stable index, reusing
+  `augmentChoices`'s existing "slot:type:index" convention so
+  `buildStats.ts`/`v2Import.ts`/`v2Export.ts` needed no changes.
+  `GearPanel.tsx` now renders a color picker for `Chains`/`Shackles`/
+  `Five Rings` (and Legendary variants) matching `ItemSelectDialog.cpp:
+  462-476`/`:823-881`. V3's `FindGearDialog` never rendered augments at all
+  (a pre-existing, unrelated scope simplification), so `FindGearDialog.cpp:
+  342-347`'s equivalent needed no port.
 
 ### Spell power school coverage
 - ✅ **X6 — Missing alignment/physical spell power types in export and BreakdownsPanel** — done (#109).

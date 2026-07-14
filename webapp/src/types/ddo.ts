@@ -211,6 +211,19 @@ export interface ItemAugment {
   }
 }
 
+/**
+ * V2 `SlotUpgrade` (SlotUpgrade.h) — a one-time, player-chosen upgrade that
+ * lets an item grant one additional augment slot of a color the player
+ * picks from `UpgradeType` (e.g. Chains.item: pick Blue/Colorless/Green/
+ * Yellow). Once chosen, V2 appends a real `ItemAugment` of that type to the
+ * item and discards the `SlotUpgrade` (ItemSelectDialog.cpp:847-881
+ * `OnUpgradeSelect`).
+ */
+export interface SlotUpgrade {
+  Type: string
+  UpgradeType: string | string[]
+}
+
 export interface BaseDice {
   Number: number
   Sides: number
@@ -227,6 +240,7 @@ export interface Item {
   Material?: string
   Buff?: ItemBuff | ItemBuff[]
   ItemAugment?: ItemAugment | ItemAugment[]
+  SlotUpgrade?: SlotUpgrade | SlotUpgrade[]
   SetBonus?: string | string[]
   Requirements?: Requirements
   // Weapon-specific
@@ -473,6 +487,14 @@ export interface CharacterBuild {
   gear: Record<string, string>
   /** augment key (slot:augmentType:index) → augment name */
   augmentChoices: Record<string, string>
+  /**
+   * V2 `SlotUpgrade` resolutions (D2): key (slot:slotUpgradeType:index,
+   * where index is the SlotUpgrade's position in the item's `SlotUpgrade`
+   * list) → the chosen `UpgradeType` color. Once set, the item gains an
+   * additional augment slot of that color at `augmentChoices` index
+   * `nativeAugmentCount + index` (see `lib/gearSlotUpgrades.ts`).
+   */
+  slotUpgradeChoices: Record<string, string>
   /** className|raceName → count of past lives */
   pastLives: Record<string, number>
   /**
@@ -521,6 +543,8 @@ export interface CharacterBuild {
   namedGearSets: Record<string, Record<string, string>>
   /** setName → augmentKey (slot:type:index) → augmentName; mirrors augmentChoices but per named gear set */
   namedGearAugments?: Record<string, Record<string, string>>
+  /** setName → slotUpgradeKey (slot:upgradeType:index) → chosen color; mirrors slotUpgradeChoices but per named gear set */
+  namedSlotUpgrades?: Record<string, Record<string, string>>
   activeGearSetName: string
   /** heroic enhancement choices: treeName → itemName → rank */
   enhancementChoices: Record<string, Record<string, number>>
@@ -655,6 +679,7 @@ export function emptyBuild(): CharacterBuild {
     skillRanksByLevel: {},
     gear: {},
     augmentChoices: {},
+    slotUpgradeChoices: {},
     pastLives: {},
     filigreeSlots: Array.from({ length: 6 }, () => ({ name: '', rare: false })),
     artifactFiligreeSlots: Array.from({ length: 10 }, () => ({ name: '', rare: false })),
