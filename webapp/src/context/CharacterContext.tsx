@@ -24,6 +24,7 @@ type Action =
   | { type: 'CLEAR_GEAR'; slot: string }
   | { type: 'SET_AUGMENT'; key: string; augmentName: string }
   | { type: 'CLEAR_AUGMENT'; key: string }
+  | { type: 'SET_SLOT_UPGRADE'; key: string; upgradeType: string }
   | { type: 'SET_PAST_LIFE'; source: string; count: number }
   | { type: 'TRAIN_SPECIAL_FEAT'; featName: string }
   | { type: 'REVOKE_SPECIAL_FEAT'; featName: string }
@@ -121,6 +122,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     skillRanksByLevel: (raw as unknown as { skillRanksByLevel?: Record<number, Record<string, number>> }).skillRanksByLevel ?? {},
     gear: raw.gear ?? {},
     augmentChoices: raw.augmentChoices ?? {},
+    slotUpgradeChoices: raw.slotUpgradeChoices ?? {},
     pastLives: raw.pastLives ?? {},
     filigreeSlots: migrateFiligreeSlots(raw.filigreeSlots as unknown, 6),
     artifactFiligreeSlots: migrateFiligreeSlots((raw as unknown as { artifactFiligreeSlots?: unknown }).artifactFiligreeSlots, 10),
@@ -145,6 +147,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     sentientGem: migrateSentientGem(raw.sentientGem as unknown),
     namedGearSets: raw.namedGearSets ?? {},
     namedGearAugments: (raw as unknown as { namedGearAugments?: Record<string, Record<string, string>> }).namedGearAugments ?? {},
+    namedSlotUpgrades: (raw as unknown as { namedSlotUpgrades?: Record<string, Record<string, string>> }).namedSlotUpgrades ?? {},
     activeGearSetName: raw.activeGearSetName ?? '',
     sliderValues: (raw as unknown as { sliderValues?: Record<string, number> }).sliderValues ?? {},
     trainedSpells: (raw as unknown as { trainedSpells?: Record<string, Record<number, string[]>> }).trainedSpells ?? {},
@@ -265,6 +268,9 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
         augmentChoices: Object.fromEntries(
           Object.entries(state.augmentChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
         ),
+        slotUpgradeChoices: Object.fromEntries(
+          Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
+        ),
       }
     case 'CLEAR_GEAR': {
       const gear = { ...state.gear }
@@ -272,7 +278,10 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       const augmentChoices = Object.fromEntries(
         Object.entries(state.augmentChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
       )
-      return { ...state, gear, augmentChoices }
+      const slotUpgradeChoices = Object.fromEntries(
+        Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
+      )
+      return { ...state, gear, augmentChoices, slotUpgradeChoices }
     }
     case 'SET_AUGMENT':
       return { ...state, augmentChoices: { ...state.augmentChoices, [action.key]: action.augmentName } }
@@ -281,6 +290,11 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       delete augmentChoices[action.key]
       return { ...state, augmentChoices }
     }
+    case 'SET_SLOT_UPGRADE':
+      // V2 parity: irreversible once chosen (ItemSelectDialog.cpp:847-881
+      // OnUpgradeSelect) — the only way back is re-equipping the item
+      // (SET_GEAR/CLEAR_GEAR above already clear this slot's choices).
+      return { ...state, slotUpgradeChoices: { ...state.slotUpgradeChoices, [action.key]: action.upgradeType } }
     case 'SET_PAST_LIFE':
       return { ...state, pastLives: { ...state.pastLives, [action.source]: action.count } }
     case 'TRAIN_SPECIAL_FEAT':
@@ -500,20 +514,42 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     }
     case 'SAVE_GEAR_SET': {
       const augments = { ...(state.namedGearAugments ?? {}), [action.setName]: { ...state.augmentChoices } }
-      return { ...state, namedGearSets: { ...state.namedGearSets, [action.setName]: { ...state.gear } }, namedGearAugments: augments, activeGearSetName: action.setName }
+      const slotUpgrades = { ...(state.namedSlotUpgrades ?? {}), [action.setName]: { ...state.slotUpgradeChoices } }
+      return {
+        ...state,
+        namedGearSets: { ...state.namedGearSets, [action.setName]: { ...state.gear } },
+        namedGearAugments: augments,
+        namedSlotUpgrades: slotUpgrades,
+        activeGearSetName: action.setName,
+      }
     }
     case 'LOAD_GEAR_SET': {
       const gearSet = state.namedGearSets[action.setName]
       if (!gearSet) return state
       const setAugments = (state.namedGearAugments ?? {})[action.setName] ?? {}
-      return { ...state, gear: { ...gearSet }, augmentChoices: { ...setAugments }, activeGearSetName: action.setName }
+      const setSlotUpgrades = (state.namedSlotUpgrades ?? {})[action.setName] ?? {}
+      return {
+        ...state,
+        gear: { ...gearSet },
+        augmentChoices: { ...setAugments },
+        slotUpgradeChoices: { ...setSlotUpgrades },
+        activeGearSetName: action.setName,
+      }
     }
     case 'DELETE_GEAR_SET': {
       const sets = { ...state.namedGearSets }
       delete sets[action.setName]
       const augs = { ...(state.namedGearAugments ?? {}) }
       delete augs[action.setName]
-      return { ...state, namedGearSets: sets, namedGearAugments: augs, activeGearSetName: state.activeGearSetName === action.setName ? '' : state.activeGearSetName }
+      const slotUpgrades = { ...(state.namedSlotUpgrades ?? {}) }
+      delete slotUpgrades[action.setName]
+      return {
+        ...state,
+        namedGearSets: sets,
+        namedGearAugments: augs,
+        namedSlotUpgrades: slotUpgrades,
+        activeGearSetName: state.activeGearSetName === action.setName ? '' : state.activeGearSetName,
+      }
     }
     case 'LOAD_BUILD':
       return migrateLoad(action.build)

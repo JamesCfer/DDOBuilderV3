@@ -8,6 +8,7 @@ import GearImportDialog from './GearImportDialog'
 import { exportGearSetXml } from '../../lib/v2Export'
 import { importGearSetXml } from '../../lib/v2Import'
 import { useDocument } from '../../context/DocumentContext'
+import { resolveAugmentSlots, pendingSlotUpgrades } from '../../lib/gearSlotUpgrades'
 import styles from './GearPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -371,7 +372,8 @@ export default function GearPanel() {
     const cachedDetail = equipped ? (itemDetails[slot] ?? null) : null
     // Only use cached details if they match the equipped item (guard against stale entries during reload)
     const detail = cachedDetail && (cachedDetail as Item).Name === equipped ? cachedDetail : null
-    const augSlots = detail ? toArray(detail.ItemAugment) : []
+    const augSlots = detail ? resolveAugmentSlots(detail, slot, build.slotUpgradeChoices) : []
+    const pendingUpgrades = detail ? pendingSlotUpgrades(detail, slot, build.slotUpgradeChoices) : []
     const icon = detail?.Icon
 
     // Try to find icon from the basic list too (if detail not yet loaded)
@@ -415,19 +417,38 @@ export default function GearPanel() {
           )}
         </div>
 
-        {equipped && augSlots.length > 0 && (
+        {equipped && (augSlots.length > 0 || pendingUpgrades.length > 0) && (
           <div className={styles.augments}>
-            {augSlots.map((aug, idx) => (
+            {augSlots.map(({ augment, index }) => (
               <AugmentSlot
-                key={`${aug.Type}:${idx}`}
+                key={`${augment.Type}:${index}`}
                 slotName={slot}
-                augment={aug}
-                index={idx}
-                choice={augmentChoices[augmentKey(slot, aug.Type, idx)] ?? ''}
+                augment={augment}
+                index={index}
+                choice={augmentChoices[augmentKey(slot, augment.Type, index)] ?? ''}
                 onSet={(key, name) => dispatch({ type: 'SET_AUGMENT', key, augmentName: name })}
                 onClear={(key) => dispatch({ type: 'CLEAR_AUGMENT', key })}
                 maxItemLevel={detail?.MinLevel ?? maxLevel}
               />
+            ))}
+            {pendingUpgrades.map(({ upgrade, key, options }) => (
+              <div key={key} className={styles.augRow}>
+                <span className={styles.augType} title="Choose an additional augment slot color (cannot be undone)">
+                  {upgrade.Type}
+                </span>
+                <select
+                  className={styles.upgradeSelect}
+                  value=""
+                  onChange={e => {
+                    if (e.target.value) dispatch({ type: 'SET_SLOT_UPGRADE', key, upgradeType: e.target.value })
+                  }}
+                >
+                  <option value="">— Choose slot color —</option>
+                  {options.map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))}
+                </select>
+              </div>
             ))}
           </div>
         )}

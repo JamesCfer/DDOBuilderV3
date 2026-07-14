@@ -33,6 +33,7 @@ export const xmlParser = new XMLParser({
     'RequiresNoneOf', 'Group', 'Item', 'EnhancementTree', 'EnhancementTreeItem',
     'EnhancementSelection', 'Selector', 'FeatSlot', 'AutomaticFeats',
     'ClassSkill', 'Alignment', 'Augment', 'Buff', 'ItemAugment',
+    'SlotUpgrade', 'UpgradeType',
     'SetBonus', 'Gem', 'Stance', 'Spell', 'Patron', 'Quest', 'GuildBuff',
     'GrantedFeat', 'ClassFeat', 'RacialFeat', 'WeaponGroup', 'Weapon',
     'OptionalBuff', 'Filigree', 'SpellDC', 'SpellDamage', 'ClassSpell',
