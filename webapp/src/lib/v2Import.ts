@@ -310,6 +310,15 @@ function buildFeatSlotKey(
     return `heroic-${charLvl}`
   }
 
+  // Universal "Alter Dark Gift" feat slot — V2 grants this unconditionally
+  // to every build at character level 4 (Build::TrainableFeatTypeAtLevel,
+  // Build.cpp:1091: "you have to be level 4 to go into the Lamordia zone
+  // where this feat can be acquired"), independent of race or class. Not
+  // backed by any race/class FeatSlot XML data.
+  if (featType === 'Alter Dark Gift' && charLvl === 4) {
+    return 'alterDarkGift-4'
+  }
+
   // Race-granted feat (type is in the static race feat type set)
   if (RACE_FEAT_TYPES.has(featType)) {
     const ck = `race-${charLvl}-${featType}`

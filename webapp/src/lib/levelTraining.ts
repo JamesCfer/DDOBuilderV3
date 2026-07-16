@@ -156,6 +156,14 @@ export function buildSlots(
     slots.push({ key: `heroic-${lvl}`, level: lvl, classLevel: lvl, featType: 'Heroic', className: 'Universal' })
   })
 
+  // 2b. Universal "Alter Dark Gift" feat slot at character level 4 — granted
+  // unconditionally to every build regardless of race/class (V2
+  // Build::TrainableFeatTypeAtLevel, Build.cpp:1091), not backed by any
+  // race/class FeatSlot XML data.
+  slots.push({
+    key: 'alterDarkGift-4', level: 4, classLevel: 4, featType: 'Alter Dark Gift', className: 'Universal',
+  })
+
   // 3. Class-specific heroic feat slots — positioned at the character level
   //    where the Nth class level is reached (V2 parity).
   for (const bc of build.classes) {

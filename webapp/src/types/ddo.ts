@@ -204,11 +204,14 @@ export interface ItemBuff {
 
 export interface ItemAugment {
   Type: string
-  Augment?: {
-    Name: string
-    Description?: string
-    MinLevel?: number
-  }
+  /**
+   * V2 `ItemAugment::ItemSpecificAugments` (ItemAugment.h) — some items (e.g.
+   * "Gem of Many Facets") define their own per-slot augment options inline
+   * instead of drawing from the global Augments catalogue. V2's
+   * `GetSelectedAugment()` checks this list BEFORE falling back to
+   * `FindAugmentByName` against the global catalogue.
+   */
+  Augment?: Augment | Augment[]
 }
 
 /**

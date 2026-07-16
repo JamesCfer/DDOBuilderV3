@@ -197,6 +197,7 @@ interface FeatForLevel {
  * emitted inside the right <LevelTraining> block. Mirrors the key formats in
  * v2Import.ts buildFeatSlotKey:
  *   heroic-${lvl}
+ *   alterDarkGift-4              (universal, V2 Build.cpp:1091)
  *   race-${lvl}-${type}-${idx}
  *   epic-${epicLvl}-${type}-${idx}
  *   legendary-${legLvl}-${type}-${idx}
@@ -219,6 +220,10 @@ function featsByLevel(build: CharacterBuild): Map<number, FeatForLevel[]> {
 
     if ((m = key.match(/^heroic-(\d+)$/))) {
       push(Number(m[1]), 'Standard', name)
+      continue
+    }
+    if (key === 'alterDarkGift-4') {
+      push(4, 'Alter Dark Gift', name)
       continue
     }
     if ((m = key.match(/^race-(\d+)-(.+)-(\d+)$/))) {
