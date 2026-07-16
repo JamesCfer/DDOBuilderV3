@@ -1,7 +1,7 @@
 // Account + My Builds: sign in / register, save the current character to your
 // account, and ⭐ Star a saved build to publish it to the community.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import styles from './Community.module.css'
 import { useAuth } from '../../context/AuthContext'
@@ -12,6 +12,89 @@ import { useDocument } from '../../context/DocumentContext'
 import { migrateDocument } from '../../hooks/usePersistence'
 import { isCharacterDocument, syncBuildIntoDocument } from '../../lib/multiLife'
 import type { CharacterDocument } from '../../types/ddo'
+
+// ---------------------------------------------------------------------------
+// Google sign-in (rendered only when the server has GOOGLE_CLIENT_ID set)
+// ---------------------------------------------------------------------------
+
+// Minimal typing for the Google Identity Services script.
+interface GoogleIdApi {
+  accounts: {
+    id: {
+      initialize: (config: {
+        client_id: string
+        callback: (response: { credential: string }) => void
+      }) => void
+      renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void
+    }
+  }
+}
+
+const GSI_SRC = 'https://accounts.google.com/gsi/client'
+
+/** Loads the GIS script once and resolves with the `google` global. */
+function loadGoogleIdApi(): Promise<GoogleIdApi> {
+  const w = window as unknown as { google?: GoogleIdApi; __gsiLoading?: Promise<GoogleIdApi> }
+  if (w.google?.accounts?.id) return Promise.resolve(w.google)
+  if (w.__gsiLoading) return w.__gsiLoading
+  w.__gsiLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = GSI_SRC
+    script.async = true
+    script.onload = () => {
+      if (w.google?.accounts?.id) resolve(w.google)
+      else reject(new Error('Google Identity Services failed to initialize'))
+    }
+    script.onerror = () => reject(new Error('Could not load Google Identity Services'))
+    document.head.appendChild(script)
+  })
+  return w.__gsiLoading
+}
+
+function GoogleSignIn({ onError }: { onError: (message: string) => void }) {
+  const { loginWithGoogle } = useAuth()
+  const [clientId, setClientId] = useState<string | null>(null)
+  const buttonRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    communityApi.googleConfig()
+      .then(({ clientId: id }) => { if (!cancelled) setClientId(id) })
+      .catch(() => { /* server without the endpoint / not configured */ })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!clientId || !buttonRef.current) return
+    let cancelled = false
+    loadGoogleIdApi()
+      .then(google => {
+        if (cancelled || !buttonRef.current) return
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: response => {
+            loginWithGoogle(response.credential)
+              .catch(err => onError(err instanceof Error ? err.message : 'Google sign-in failed'))
+          },
+        })
+        google.accounts.id.renderButton(buttonRef.current, {
+          theme: 'filled_black', size: 'large', width: 240,
+        })
+      })
+      .catch(err => onError(err instanceof Error ? err.message : 'Google sign-in unavailable'))
+    return () => { cancelled = true }
+  }, [clientId, loginWithGoogle, onError])
+
+  // Server has no Google client id configured → render nothing.
+  if (!clientId) return null
+
+  return (
+    <>
+      <div className={styles.authDivider}>or</div>
+      <div ref={buttonRef} className={styles.googleBtn} />
+    </>
+  )
+}
 
 function AuthForms() {
   const { login, register } = useAuth()
@@ -72,6 +155,7 @@ function AuthForms() {
           <>Already have an account? <button type="button" onClick={() => { setMode('login'); setError(null) }}>Sign in</button></>
         )}
       </span>
+      <GoogleSignIn onError={setError} />
     </form>
   )
 }

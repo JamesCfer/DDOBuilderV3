@@ -12,6 +12,8 @@ interface AuthState {
   checking: boolean
   login: (username: string, password: string) => Promise<void>
   register: (username: string, email: string, password: string) => Promise<void>
+  /** Sign in with a Google Identity Services ID-token credential. */
+  loginWithGoogle: (credential: string) => Promise<void>
   logout: () => void
 }
 
@@ -43,6 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u)
   }, [])
 
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const { token, user: u } = await communityApi.googleLogin(credential)
+    setToken(token)
+    setUser(u)
+  }, [])
+
   const logout = useCallback(() => {
     communityApi.logout().catch(() => { /* token may already be dead */ })
     setToken(null)
@@ -50,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, checking, login, register, logout }}>
+    <AuthContext.Provider value={{ user, checking, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -300,6 +300,59 @@ app.post('/api/auth/login', (req, res) => {
   res.json({ token, user: community.publicUser(user) })
 })
 
+// ── Google sign-in (config-gated: set GOOGLE_CLIENT_ID to enable) ──────────
+// The client obtains an ID-token credential from Google Identity Services and
+// posts it here; we verify it against Google's tokeninfo endpoint and mint a
+// normal community session for the linked/created account.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? ''
+
+app.get('/api/auth/google/config', (_req, res) => {
+  res.json({ clientId: GOOGLE_CLIENT_ID || null })
+})
+
+interface GoogleTokenInfo {
+  aud?: string
+  sub?: string
+  email?: string
+  email_verified?: string | boolean
+  name?: string
+  exp?: string
+}
+
+async function verifyGoogleIdToken(credential: string): Promise<{ sub: string; email: string; name: string }> {
+  const resp = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
+  )
+  if (!resp.ok) throw new Error('Google rejected the credential')
+  const info = await resp.json() as GoogleTokenInfo
+  if (info.aud !== GOOGLE_CLIENT_ID) throw new Error('Google credential was issued for a different app')
+  if (info.email_verified !== 'true' && info.email_verified !== true) {
+    throw new Error('Google account email is not verified')
+  }
+  if (!info.sub || !info.email) throw new Error('Google credential is missing identity fields')
+  return { sub: info.sub, email: info.email, name: info.name ?? '' }
+}
+
+app.post('/api/auth/google', async (req, res) => {
+  if (!GOOGLE_CLIENT_ID) {
+    res.status(501).json({ error: 'Google sign-in is not configured on this server' })
+    return
+  }
+  const { credential } = req.body ?? {}
+  if (typeof credential !== 'string' || credential.length === 0) {
+    res.status(400).json({ error: 'Missing Google credential' })
+    return
+  }
+  try {
+    const identity = await verifyGoogleIdToken(credential)
+    const user = community.loginWithGoogle(identity.sub, identity.email, identity.name)
+    const token = community.createSession(user.id)
+    res.json({ token, user: community.publicUser(user) })
+  } catch (err) {
+    res.status(401).json({ error: err instanceof Error ? err.message : 'Google sign-in failed' })
+  }
+})
+
 app.post('/api/auth/logout', (req, res) => {
   if (!requireAuth(req, res)) return
   const token = bearerToken(req)

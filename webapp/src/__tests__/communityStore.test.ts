@@ -408,3 +408,47 @@ describe('CommunityStore — persistence', () => {
     expect(onDisk.users).toHaveLength(1)
   })
 })
+
+describe('CommunityStore — Google sign-in', () => {
+  let store: CommunityStore
+  beforeEach(() => { store = new CommunityStore(':memory:') })
+
+  it('creates a passwordless account with a username derived from the display name', () => {
+    const user = store.loginWithGoogle('google-sub-1', 'pepper@example.com', 'Pepper Mill')
+    expect(user.googleId).toBe('google-sub-1')
+    expect(user.email).toBe('pepper@example.com')
+    expect(user.username).toBe('Pepper_Mill')
+    expect(user.passwordHash).toBe('')
+    // A Google-only account can never password-login.
+    expect(store.verifyLogin('Pepper_Mill', 'anything123')).toBeNull()
+  })
+
+  it('returns the same account on repeat logins with the same Google sub', () => {
+    const first = store.loginWithGoogle('google-sub-1', 'pepper@example.com', 'Pepper')
+    const second = store.loginWithGoogle('google-sub-1', 'other-email@example.com', 'Renamed')
+    expect(second.id).toBe(first.id)
+  })
+
+  it('links to an existing password account with the same email', () => {
+    const existing = store.register('alice', 'alice@example.com', 'password123')
+    const viaGoogle = store.loginWithGoogle('google-sub-2', 'Alice@Example.com', 'Alice A')
+    expect(viaGoogle.id).toBe(existing.id)
+    expect(viaGoogle.googleId).toBe('google-sub-2')
+    // Password login still works after linking.
+    expect(store.verifyLogin('alice', 'password123')?.id).toBe(existing.id)
+  })
+
+  it('suffixes the username on collision and sanitizes short/invalid names', () => {
+    store.register('Pepper', 'first@example.com', 'password123')
+    const clash = store.loginWithGoogle('google-sub-3', 'second@example.com', 'Pepper')
+    expect(clash.username).toBe('Pepper2')
+    const tiny = store.loginWithGoogle('google-sub-4', 'x@example.com', '阿')
+    expect(tiny.username.length).toBeGreaterThanOrEqual(3)
+    expect(/^[A-Za-z0-9_]+$/.test(tiny.username)).toBe(true)
+  })
+
+  it('rejects identities missing sub or a valid email', () => {
+    expect(() => store.loginWithGoogle('', 'a@b.com')).toThrow(/subject/)
+    expect(() => store.loginWithGoogle('sub', 'not-an-email')).toThrow(/email/)
+  })
+})

@@ -58,3 +58,24 @@
   border: 1px solid var(--color-border, #444);
   border-radius: 3px;
 }
+
+/* ── Quick-set button (Supreme +8 all) ───────────────────────────────── */
+.quickBtn {
+  margin-left: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  border: 1px solid var(--color-border, #444);
+  border-radius: 4px;
+  background: var(--color-bg-panel, #1a1a2e);
+  color: var(--color-text-secondary, #aaa);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.quickBtn:hover {
+  border-color: var(--color-gold-dark, #8b6914);
+  color: var(--color-gold, #d4af37);
+}

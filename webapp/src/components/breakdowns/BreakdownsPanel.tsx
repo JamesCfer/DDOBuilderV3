@@ -23,6 +23,8 @@ interface TipState {
 // Constants
 // ---------------------------------------------------------------------------
 
+const FAVORITES_KEY = 'ddo-breakdown-favorites'
+
 const ABILITIES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const
 type Ab = typeof ABILITIES[number]
 const AB3: Record<Ab, string> = {
@@ -118,9 +120,13 @@ interface StatRowData {
   dim?: boolean
 }
 
-function StatRow({ stat, onTip }: {
+function StatRow({ stat, onTip, favKey, starred, onToggleStar }: {
   stat: StatRowData
   onTip: (t: TipState | null) => void
+  /** Stable "Section/Label" key for favorites; rows without one get no star. */
+  favKey?: string
+  starred?: boolean
+  onToggleStar?: (key: string) => void
 }) {
   const display = stat.display ?? sign(stat.total)
   return (
@@ -132,6 +138,16 @@ function StatRow({ stat, onTip }: {
       }}
       onMouseLeave={() => onTip(null)}
     >
+      {favKey && onToggleStar && (
+        <button
+          className={`${styles.starBtn} ${starred ? styles.starOn : ''}`}
+          onClick={e => { e.stopPropagation(); onToggleStar(favKey) }}
+          title={starred ? 'Remove from favorites' : 'Pin to favorites'}
+          aria-label={starred ? `Unpin ${stat.label}` : `Pin ${stat.label}`}
+        >
+          {starred ? '★' : '☆'}
+        </button>
+      )}
       <span className={styles.label}>{stat.label}</span>
       <span className={`${styles.value} ${stat.dim ? styles.valueDim : ''}`}>{display}</span>
     </div>
@@ -211,6 +227,23 @@ export default function BreakdownsPanel() {
   const [gearItems,         setGearItems]         = useState<Record<string, Item>>({})
   const [tip, setTip] = useState<TipState | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  // Favorite (starred) stat rows, pinned in a section at the top. Keys are
+  // "Section/Label"; persisted per-browser (not per-build) in localStorage.
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem(FAVORITES_KEY)
+      const parsed = raw ? JSON.parse(raw) : []
+      return Array.isArray(parsed) ? parsed.filter(v => typeof v === 'string') : []
+    } catch { return [] }
+  })
+  const toggleFavorite = useCallback((key: string) => {
+    setFavorites(prev => {
+      const next = prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+      try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+      return next
+    })
+  }, [])
 
   // Load static data once
   useEffect(() => {
@@ -605,6 +638,48 @@ export default function BreakdownsPanel() {
 
   const hasCharacter = build.race || build.classes.some(c => c.name)
 
+  // ── Favorites (starred rows pinned at top) ───────────────────────────────
+  const starSections: Array<[string, StatRowData[]]> = [
+    ['Saving Throws', saveStats],
+    ['Defense', defenseStats],
+    ['Energy Resistance & DR', energyStats],
+    ['Melee', meleeStats],
+    ['Ranged', rangedStats],
+    ['Spellcasting', spellStats],
+    ['Combat', miscStats],
+    ['Weapon Effects', weaponEffectStats],
+    ['Eldritch Blast', eldritchStats],
+    ['Immunities', immunityStats],
+    ['Hireling', hirelingStats],
+    ['Class Resources', classResourceStats],
+    ['Action Points', apPoolStats],
+    ['Turn Undead', turnUndeadStats],
+    ['Ki', kiStats],
+    ['Songs', songStats],
+    ['Special Effects', specialEffectStats],
+    ['Skills', skillStats],
+  ]
+  const rowIndex = new Map<string, [string, StatRowData]>()
+  for (const [sec, rows] of starSections) {
+    for (const s of rows) rowIndex.set(`${sec}/${s.label}`, [sec, s])
+  }
+
+  function renderRows(section: string, rows: StatRowData[]) {
+    return rows.map(s => {
+      const key = `${section}/${s.label}`
+      return (
+        <StatRow
+          key={s.label + (s.indent ? '-sub' : '')}
+          stat={s}
+          onTip={setTip}
+          favKey={key}
+          starred={favorites.includes(key)}
+          onToggleStar={toggleFavorite}
+        />
+      )
+    })
+  }
+
   return (
     <div className="panel" ref={panelRef} style={{ position: 'relative' }}>
       <div className="panel-header">Analysis</div>
@@ -616,6 +691,26 @@ export default function BreakdownsPanel() {
           <p className={styles.empty}>Select a race and classes to see stats.</p>
         ) : (
           <div className={styles.sections}>
+
+            {favorites.length > 0 && (
+              <Section title="★ Favorites">
+                {favorites.map(key => {
+                  const found = rowIndex.get(key)
+                  if (!found) return null
+                  const [section, stat] = found
+                  return (
+                    <StatRow
+                      key={key}
+                      stat={{ ...stat, label: `${stat.label.trim()} · ${section}` }}
+                      onTip={setTip}
+                      favKey={key}
+                      starred
+                      onToggleStar={toggleFavorite}
+                    />
+                  )
+                })}
+              </Section>
+            )}
 
             <Section title="Ability Scores">
               <div className={styles.abilityGrid}>
@@ -644,25 +739,25 @@ export default function BreakdownsPanel() {
             </Section>
 
             <Section title="Saving Throws">
-              {saveStats.map(s => <StatRow key={s.label + (s.indent ? '-sub' : '')} stat={s} onTip={setTip} />)}
+              {renderRows('Saving Throws', saveStats)}
             </Section>
 
             <Section title="Defense">
-              {defenseStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Defense', defenseStats)}
             </Section>
 
             {energyStats.length > 0 && (
               <Section title="Energy Resistance &amp; DR">
-                {energyStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+                {renderRows('Energy Resistance & DR', energyStats)}
               </Section>
             )}
 
             <Section title="Melee">
-              {meleeStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Melee', meleeStats)}
             </Section>
 
             <Section title="Ranged">
-              {rangedStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Ranged', rangedStats)}
             </Section>
 
             <Section title="Spell Powers">
@@ -691,63 +786,63 @@ export default function BreakdownsPanel() {
             </Section>
 
             <Section title="Spellcasting" defaultOpen={spellStats.some(s => !s.dim)}>
-              {spellStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Spellcasting', spellStats)}
             </Section>
 
             <Section title="Combat">
-              {miscStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Combat', miscStats)}
             </Section>
 
             {weaponEffectStats.length > 0 && (
               <Section title="Weapon Effects" defaultOpen={false}>
-                {weaponEffectStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+                {renderRows('Weapon Effects', weaponEffectStats)}
               </Section>
             )}
 
             {eldritchStats.length > 0 && (
               <Section title="Eldritch Blast" defaultOpen={false}>
-                {eldritchStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+                {renderRows('Eldritch Blast', eldritchStats)}
               </Section>
             )}
 
             {immunityStats.length > 0 && (
               <Section title="Immunities" defaultOpen={false}>
-                {immunityStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+                {renderRows('Immunities', immunityStats)}
               </Section>
             )}
 
             {hirelingStats.length > 0 && (
               <Section title="Hireling" defaultOpen={false}>
-                {hirelingStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+                {renderRows('Hireling', hirelingStats)}
               </Section>
             )}
 
             <Section title="Class Resources" defaultOpen={false}>
-              {classResourceStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Class Resources', classResourceStats)}
             </Section>
 
             <Section title="Action Points" defaultOpen={false}>
-              {apPoolStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Action Points', apPoolStats)}
             </Section>
 
             <Section title="Turn Undead" defaultOpen={false}>
-              {turnUndeadStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Turn Undead', turnUndeadStats)}
             </Section>
 
             <Section title="Ki" defaultOpen={false}>
-              {kiStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Ki', kiStats)}
             </Section>
 
             <Section title="Songs" defaultOpen={false}>
-              {songStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Songs', songStats)}
             </Section>
 
             <Section title="Special Effects" defaultOpen={false}>
-              {specialEffectStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Special Effects', specialEffectStats)}
             </Section>
 
             <Section title="Skills" defaultOpen={false}>
-              {skillStats.map(s => <StatRow key={s.label} stat={s} onTip={setTip} />)}
+              {renderRows('Skills', skillStats)}
             </Section>
 
           </div>
