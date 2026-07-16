@@ -23,6 +23,8 @@ interface PLGroup {
   onDecrement?: (name: string) => void
   canIncrement?: (name: string, max: number) => boolean
   canDecrement?: (name: string) => boolean
+  /** Show "+1 all" / "Clear" bulk buttons (past-life groups only). */
+  bulk?: boolean
 }
 
 export default function PastLivesPanel() {
@@ -49,14 +51,17 @@ export default function PastLivesPanel() {
     {
       title: 'Heroic Past Lives (max 3 each)',
       entries: heroicClasses.map(c => ({ name: c.Name, max: CLASS_PL_MAX })),
+      bulk: true,
     },
     {
       title: 'Racial Past Lives (max 3 each)',
       entries: heroicRaces.map(r => ({ name: r.Name, max: RACIAL_PL_MAX })),
+      bulk: true,
     },
     {
       title: 'Iconic Past Lives (max 1 each)',
       entries: iconicRaces.map(r => ({ name: r.Name, max: ICONIC_PL_MAX })),
+      bulk: true,
     },
   ]
 
@@ -78,6 +83,7 @@ export default function PastLivesPanel() {
           name: f.Name,
           max: f.MaxTimesAcquire ?? EPIC_PL_MAX_DEFAULT,
         })),
+        bulk: true,
       })
     }
   }
@@ -118,6 +124,21 @@ export default function PastLivesPanel() {
     dispatch({ type: 'SET_PAST_LIFE', source: name, count })
   }
 
+  // "Completionist" bulk helpers: +1 to every entry in a group (clicking a
+  // 3-max group's button three times trains full completionist), and Clear.
+  function bulkIncrement(group: PLGroup) {
+    for (const entry of group.entries) {
+      const current = build.pastLives[entry.name] ?? 0
+      if (current < entry.max) setCount(entry.name, current + 1)
+    }
+  }
+
+  function bulkClear(group: PLGroup) {
+    for (const entry of group.entries) {
+      if ((build.pastLives[entry.name] ?? 0) > 0) setCount(entry.name, 0)
+    }
+  }
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -129,7 +150,25 @@ export default function PastLivesPanel() {
       <div className="panel-body">
         {groups.map(group => (
           <section key={group.title} className={styles.section}>
-            <div className={styles.sectionTitle}>{group.title}</div>
+            <div className={styles.sectionTitle}>
+              {group.title}
+              {group.bulk && (
+                <span className={styles.bulkBtns}>
+                  <button
+                    className={styles.bulkBtn}
+                    onClick={() => bulkIncrement(group)}
+                    disabled={group.entries.every(e => (build.pastLives[e.name] ?? 0) >= e.max)}
+                    title="Add one past life of every entry in this group (click repeatedly for full completionist)"
+                  >+1 all</button>
+                  <button
+                    className={styles.bulkBtn}
+                    onClick={() => bulkClear(group)}
+                    disabled={group.entries.every(e => (build.pastLives[e.name] ?? 0) === 0)}
+                    title="Clear every past life in this group"
+                  >Clear</button>
+                </span>
+              )}
+            </div>
             <div className={styles.grid}>
               {group.entries.map(entry => {
                 const count = group.getCount ? group.getCount(entry.name) : (build.pastLives[entry.name] ?? 0)
