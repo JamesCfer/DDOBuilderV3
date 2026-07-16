@@ -3,6 +3,23 @@
 
 import type { CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Race } from '../types/ddo'
 import { meetsRequirements } from './requirements'
+import { destinyPointPool } from './v2Formulas'
+
+/**
+ * The build's destiny point pool. `destinyPointPool` mirrors V2's
+ * BreakdownItemDestinyAps control flow and expects the FULL character level
+ * (V2 Build::Level() — heroic + epic + legendary); V3's `build.totalLevel`
+ * is heroic-only, so the epic/legendary levels must be added back or a
+ * level-34 build computes a pool with no epic/legendary points at all.
+ */
+export function destinyPoolForBuild(
+  build: CharacterBuild,
+  fatePoints = 0,
+  destinyApBonus = 0,
+): number {
+  const charLevel = (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+  return destinyPointPool(charLevel, fatePoints) + destinyApBonus
+}
 
 function rankOf(choices: Record<string, number>, item: EnhancementTreeItem): number {
   return choices[item.InternalName ?? item.Name] ?? choices[item.Name] ?? 0
