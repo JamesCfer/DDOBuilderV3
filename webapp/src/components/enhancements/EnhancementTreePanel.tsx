@@ -268,7 +268,22 @@ export default function EnhancementTreePanel() {
           <div className={styles.statusMsg}>Select a race and class to see enhancement trees.</div>
         )}
 
-        {!loading && !error && hasCharacter && (
+        {/* The server answers 200 with an empty list when its data directory
+            has no EnhancementTrees folder (loadEnhancementTrees returns []).
+            Without this guard that misconfiguration renders as a misleading
+            "No trees selected" while the build's pins stay intact. */}
+        {!loading && !error && hasCharacter && enhTrees.length === 0 && (
+          <div className={`${styles.statusMsg} ${styles.errorMsg}`}>
+            The server returned no enhancement trees. Its data directory is
+            missing the DataFiles/EnhancementTrees folder — open /api/health to
+            see the directory the server resolved, and start the server from
+            the webapp/ folder (or set DATA_FILES_PATH to the full path of
+            Output/DataFiles). Your build's trained trees are unaffected and
+            will appear once the data loads.
+          </div>
+        )}
+
+        {!loading && !error && hasCharacter && enhTrees.length > 0 && (
           <>
             <div className={styles.toolbar}>
               <button className={styles.addTreeBtn} onClick={() => setPickerOpen(true)}>
