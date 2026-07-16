@@ -86,6 +86,15 @@ export const communityApi = {
       method: 'POST', body: JSON.stringify({ username, password }),
     }),
 
+  /** Google client id when the server has Google sign-in configured. */
+  googleConfig: () => req<{ clientId: string | null }>('/api/auth/google/config'),
+
+  /** Exchange a Google Identity Services ID-token credential for a session. */
+  googleLogin: (credential: string) =>
+    req<{ token: string; user: CommunityUser }>('/api/auth/google', {
+      method: 'POST', body: JSON.stringify({ credential }),
+    }),
+
   logout: () => req<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
 
   me: () => req<{ user: CommunityUser }>('/api/auth/me'),

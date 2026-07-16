@@ -14,7 +14,20 @@ export default function TomesPanel() {
       <div className="panel-header">Tomes</div>
       <div className="panel-body">
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Ability Tomes</h3>
+          <h3 className={styles.sectionTitle}>
+            Ability Tomes
+            <button
+              className={styles.quickBtn}
+              onClick={() => {
+                for (const ab of ABILITIES) {
+                  dispatch({ type: 'SET_ABILITY_TOME', ability: ab, bonus: 8 })
+                }
+              }}
+              title="Set every ability tome to +8 (Supreme Tome of Ability)"
+            >
+              Supreme +8 all
+            </button>
+          </h3>
           <div className={styles.abilityGrid}>
             {ABILITIES.map(ab => (
               <div key={ab} className={styles.abilityRow}>

@@ -18,7 +18,10 @@ export interface CommunityUser {
   id: string
   username: string
   email: string
+  /** Empty string for Google-only accounts (password login always fails). */
   passwordHash: string
+  /** Google `sub` claim when the account is linked to a Google identity. */
+  googleId?: string
   createdAt: string
 }
 
@@ -154,6 +157,60 @@ export class CommunityStore {
     const expected = Buffer.from(hashHex, 'hex')
     const actual = scryptSync(password, Buffer.from(saltHex, 'hex'), expected.length)
     return timingSafeEqual(actual, expected) ? user : null
+  }
+
+  /**
+   * Sign in (or up) with a verified Google identity. Resolution order mirrors
+   * common OAuth linking rules:
+   *   1. an account already linked to this Google `sub` → return it;
+   *   2. an account with the same (Google-verified) email → link and return;
+   *   3. otherwise create a passwordless account with a unique username
+   *      derived from the Google display name / email local part.
+   */
+  loginWithGoogle(googleId: string, email: string, displayName = ''): CommunityUser {
+    if (typeof googleId !== 'string' || googleId.length === 0) {
+      throw new Error('Google identity is missing its subject id')
+    }
+    if (typeof email !== 'string' || !email.includes('@')) {
+      throw new Error('Google identity is missing a valid email address')
+    }
+    const linked = this.state.users.find(u => u.googleId === googleId)
+    if (linked) return linked
+
+    const lowerEmail = email.toLowerCase()
+    const byEmail = this.state.users.find(u => u.email.toLowerCase() === lowerEmail)
+    if (byEmail) {
+      byEmail.googleId = googleId
+      this.persist()
+      return byEmail
+    }
+
+    const user: CommunityUser = {
+      id: randomBytes(8).toString('hex'),
+      username: this.uniqueUsername(displayName || email.split('@')[0]),
+      email,
+      passwordHash: '',
+      googleId,
+      createdAt: now(),
+    }
+    this.state.users.push(user)
+    this.persist()
+    return user
+  }
+
+  /** Sanitizes a display name into a free username (suffixes on collision). */
+  private uniqueUsername(base: string): string {
+    let sanitized = base.replace(/[^A-Za-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+    if (sanitized.length < 3) sanitized = `user_${sanitized}`.replace(/_$/, '')
+    sanitized = sanitized.slice(0, 24)
+    const taken = (name: string) =>
+      this.state.users.some(u => u.username.toLowerCase() === name.toLowerCase())
+    if (!taken(sanitized)) return sanitized
+    for (let i = 2; ; i++) {
+      const suffix = String(i)
+      const candidate = sanitized.slice(0, 24 - suffix.length) + suffix
+      if (!taken(candidate)) return candidate
+    }
   }
 
   userById(id: string): CommunityUser | undefined {
