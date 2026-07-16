@@ -65,61 +65,32 @@
   font-style: italic;
 }
 
-/* ── Tree selector tabs ──────────────────────────────────────────────── */
-.tabs {
+/* ── Side-by-side tree columns (like Epic Destinies) ─────────────────── */
+.multiTreeScroll {
+  overflow: auto;
+  max-height: calc(100vh - 160px);
+  padding: 8px;
+}
+
+.multiTreeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 6px 8px 0;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
+  gap: 8px;
+  align-items: flex-start;
 }
 
-.tab {
+.treeColumn {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 4px 10px;
   border: 1px solid var(--color-border);
-  border-bottom: none;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  font-size: 11px;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  max-width: 140px;
-}
-
-.tab:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
-}
-
-.tabActive {
-  background: var(--color-bg-panel);
-  color: var(--color-red, #c84a4a);
-  border-color: var(--color-border-light);
-  border-bottom-color: var(--color-bg-panel);
-  position: relative;
-  z-index: 1;
-}
-
-.tabName {
-  white-space: nowrap;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
+  background: var(--color-bg-panel);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,74,74,0.07);
+  flex-shrink: 0;
 }
 
-.tabAP {
-  font-size: 10px;
-  color: var(--color-red, #c84a4a);
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-/* ── Active tree info bar ────────────────────────────────────────────── */
+/* ── Per-tree info bar ───────────────────────────────────────────────── */
 .treeHeader {
   display: flex;
   align-items: center;

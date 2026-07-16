@@ -56,7 +56,6 @@ export default function ReaperPanel() {
   const [allTrees, setAllTrees] = useState<EnhancementTree[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTreeName, setActiveTreeName] = useState<string | null>(null)
   const [reaperSelections, setReaperSelections] = useState<Record<string, TreeSelections>>({})
 
   const reaperAP = build.reaperAP
@@ -73,18 +72,6 @@ export default function ReaperPanel() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Auto-select first tab when trees load
-  useEffect(() => {
-    if (allTrees.length > 0) {
-      setActiveTreeName(prev => {
-        const stillPresent = allTrees.some(t => t.Name === prev)
-        return stillPresent ? prev : allTrees[0].Name
-      })
-    } else {
-      setActiveTreeName(null)
-    }
-  }, [allTrees])
-
   // ── Choices via context ───────────────────────────────────────────────────
   const reaperChoices = build.reaperChoices
 
@@ -100,28 +87,14 @@ export default function ReaperPanel() {
     }
   }
 
-  function handleReset() {
-    if (!activeTreeName) return
-    const treeChoices = reaperChoices[activeTreeName] ?? {}
+  function handleReset(treeName: string) {
+    const treeChoices = reaperChoices[treeName] ?? {}
     for (const itemName of Object.keys(treeChoices)) {
-      dispatch({ type: 'SET_REAPER_CHOICE', treeName: activeTreeName, itemName, rank: 0 })
+      dispatch({ type: 'SET_REAPER_CHOICE', treeName, itemName, rank: 0 })
     }
   }
 
   // ── Derived values ────────────────────────────────────────────────────────
-  const activeTree = useMemo(
-    () => allTrees.find(t => t.Name === activeTreeName) ?? null,
-    [allTrees, activeTreeName],
-  )
-
-  const activeTreeChoices: TreeChoices = activeTree
-    ? (reaperChoices[activeTree.Name] ?? {})
-    : {}
-
-  const activeTreeSpent = activeTree
-    ? computeTreeSpent(activeTree, activeTreeChoices)
-    : 0
-
   const totalSpentAllTrees = useMemo(() => {
     return allTrees.reduce((sum, tree) => {
       return sum + computeTreeSpent(tree, reaperChoices[tree.Name] ?? {})
@@ -183,70 +156,48 @@ export default function ReaperPanel() {
               </div>
             </div>
 
+            {/* All reaper trees side by side (like Epic Destinies) */}
             {allTrees.length > 0 && (
-              <>
-                {/* Tree selector tabs */}
-                <div className={styles.tabs}>
+              <div className={styles.multiTreeScroll}>
+                <div className={styles.multiTreeRow}>
                   {allTrees.map(tree => {
-                    const spent = computeTreeSpent(tree, reaperChoices[tree.Name] ?? {})
-                    const isActive = tree.Name === activeTreeName
+                    const treeChoices: TreeChoices = reaperChoices[tree.Name] ?? {}
+                    const spent = computeTreeSpent(tree, treeChoices)
                     return (
-                      <button
-                        key={tree.Name}
-                        className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
-                        onClick={() => setActiveTreeName(tree.Name)}
-                        title={tree.Name}
-                      >
-                        <span className={styles.tabName}>{tree.Name}</span>
-                        {spent > 0 && (
-                          <span className={styles.tabAP}>{spent} REP</span>
-                        )}
-                      </button>
+                      <div key={tree.Name} className={styles.treeColumn}>
+                        <div className={styles.treeHeader}>
+                          <div className={styles.treeTitle}>
+                            {tree.Name}
+                            <span className={styles.treeBadge}>Reaper</span>
+                          </div>
+                          <div className={styles.treeAP}>
+                            <span className={styles.apCurrent}>{spent}</span>
+                            <span className={styles.apLabel}>&nbsp;REP</span>
+                            {spent > 0 && (
+                              <button
+                                className={styles.resetBtn}
+                                onClick={() => handleReset(tree.Name)}
+                                title="Reset this reaper tree"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <TreeGrid
+                          tree={tree}
+                          choices={treeChoices}
+                          selections={reaperSelections[tree.Name] ?? {}}
+                          totalSpentAllTrees={totalSpentAllTrees}
+                          totalAP={reaperAP}
+                          onChoicesChange={(updated) => handleChoicesChange(tree.Name, updated)}
+                          onSelectionsChange={(updated) => setReaperSelections(prev => ({ ...prev, [tree.Name]: updated }))}
+                        />
+                      </div>
                     )
                   })}
                 </div>
-
-                {/* Active tree header bar */}
-                {activeTree && (
-                  <div className={styles.treeHeader}>
-                    <div className={styles.treeTitle}>
-                      {activeTree.Name}
-                      <span className={styles.treeBadge}>Reaper</span>
-                    </div>
-                    <div className={styles.treeAP}>
-                      <span className={styles.apCurrent}>{activeTreeSpent}</span>
-                      <span className={styles.apLabel}>&nbsp;REP in tree</span>
-                      <span className={styles.apRemaining}>
-                        ({reaperAP - totalSpentAllTrees} remaining)
-                      </span>
-                      {activeTreeSpent > 0 && (
-                        <button
-                          className={styles.resetBtn}
-                          onClick={handleReset}
-                          title="Reset this reaper tree"
-                        >
-                          Reset
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Grid */}
-                {activeTree && (
-                  <div className={styles.gridWrapper}>
-                    <TreeGrid
-                      tree={activeTree}
-                      choices={activeTreeChoices}
-                      selections={reaperSelections[activeTree.Name] ?? {}}
-                      totalSpentAllTrees={totalSpentAllTrees}
-                      totalAP={reaperAP}
-                      onChoicesChange={(updated) => handleChoicesChange(activeTree.Name, updated)}
-                      onSelectionsChange={(updated) => setReaperSelections(prev => ({ ...prev, [activeTree.Name]: updated }))}
-                    />
-                  </div>
-                )}
-              </>
+              </div>
             )}
           </>
         )}

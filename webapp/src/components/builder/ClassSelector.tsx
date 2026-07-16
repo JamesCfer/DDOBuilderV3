@@ -61,6 +61,17 @@ export default function ClassSelector() {
     dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
   }
 
+  function clearAll() {
+    dispatch({ type: 'SET_LEVEL_CLASSES', levels: Array.from({ length: HEROIC_LEVELS }, () => '') })
+  }
+
+  function clearClass(className: string) {
+    dispatch({
+      type: 'SET_LEVEL_CLASSES',
+      levels: levelClasses.slice(0, HEROIC_LEVELS).map(c => (c === className ? '' : c)),
+    })
+  }
+
   const heroicClasses = classes.filter(c => !c.NotHeroic)
   const heroicAssigned = levelClasses.filter(Boolean).length
   const classCountFull = usedClassNames.length >= 3
@@ -140,6 +151,25 @@ export default function ClassSelector() {
                     {name.slice(0, 3)}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Clear: per-class + all */}
+            {heroicAssigned > 0 && (
+              <div className={styles.fillEmpty}>
+                <span className={styles.quickFillLabel}>Clear:</span>
+                {usedClassNames.map(name => (
+                  <button key={name} className={styles.quickFillBtn}
+                    onClick={() => clearClass(name)}
+                    title={`Clear every level assigned to ${name}`}>
+                    {name.slice(0, 3)}
+                  </button>
+                ))}
+                <button className={styles.quickFillBtn}
+                  onClick={clearAll}
+                  title="Clear all 20 heroic level assignments">
+                  All
+                </button>
               </div>
             )}
 
