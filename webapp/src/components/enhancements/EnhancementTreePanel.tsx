@@ -4,6 +4,7 @@ import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { findActiveLife } from '../../lib/multiLife'
 import { enhancementAPBudget } from '../../lib/actionPoints'
+import { availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible } from '../../lib/treeAvailability'
 import type { DDOClass, EnhancementTree, EnhancementTreeItem, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
@@ -50,40 +51,13 @@ function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): number {
   }, 0)
 }
 
-function treeMatchesName(treeName: string, name: string): boolean {
-  if (!name) return false
-  const t = treeName.toLowerCase()
-  const n = name.toLowerCase()
-  return t.includes(n) || n.includes(t)
-}
-
-function treeRequiresClassType(tree: EnhancementTree, types: string[]): string | null {
-  const reqs = tree.Requirements
-  if (!reqs) return null
-  const reqList = reqs.Requirement
-    ? (Array.isArray(reqs.Requirement) ? reqs.Requirement : [reqs.Requirement])
-    : []
-  for (const req of reqList) {
-    if (types.includes(req.Type)) {
-      return Array.isArray(req.Item) ? req.Item[0] : req.Item ?? null
-    }
-  }
-  return null
-}
-
 function isUniversalTree(tree: EnhancementTree): boolean {
   return tree.IsUniversalTree === true || (!tree.IsRacialTree && !tree.Requirements)
 }
 
-export function isEnhancementTree(tree: EnhancementTree): boolean {
-  return tree.IsReaperTree !== true && tree.IsEpicDestiny !== true
-}
-
-// V2 `EnhancementsPane.cpp:332` hides a `HasLegacy()` tree from the picker
-// unless the character already has it trained (`SupportLegacyTrees()`).
-export function isLegacyTreeVisible(tree: EnhancementTree, pinned: string[]): boolean {
-  return tree.Legacy !== true || pinned.includes(tree.Name)
-}
+// Re-exported from lib/treeAvailability (V2 DetermineTrees parity) — kept
+// here for back-compat with existing importers.
+export { isEnhancementTree, isLegacyTreeVisible }
 
 // ---------------------------------------------------------------------------
 // Tree picker modal
@@ -92,15 +66,11 @@ export function isLegacyTreeVisible(tree: EnhancementTree, pinned: string[]): bo
 interface TreePickerProps {
   allTrees: EnhancementTree[]
   selected: string[]
-  build: { race: string; classes: { name: string; levels: number }[] }
   onToggle: (name: string) => void
   onClose: () => void
 }
 
-function TreePicker({ allTrees, selected, build, onToggle, onClose }: TreePickerProps) {
-  const classNames = build.classes.map(c => c.name).filter(Boolean)
-  const raceName = build.race
-
+function TreePicker({ allTrees, selected, onToggle, onClose }: TreePickerProps) {
   const racial: EnhancementTree[] = []
   const classTrees: EnhancementTree[] = []
   const universal: EnhancementTree[] = []
@@ -122,13 +92,11 @@ function TreePicker({ allTrees, selected, build, onToggle, onClose }: TreePicker
         <div className={styles.pickerSectionLabel}>{label}</div>
         <div className={styles.pickerTreeGrid}>
           {trees.map(tree => {
+            // Every tree offered here already passed the V2 requirement-engine
+            // availability filter (availableEnhancementTrees) — no per-tree
+            // name heuristics needed.
             const on = selected.includes(tree.Name)
             const full = !on && selected.length >= MAX_VISIBLE
-            const matchesRace = tree.IsRacialTree && treeMatchesName(tree.Name, raceName)
-            const matchesClass = !tree.IsRacialTree && classNames.some(cn => treeMatchesName(tree.Name, cn))
-            const baseClass = treeRequiresClassType(tree, ['BaseClass', 'Class'])
-            const matchesBaseClass = baseClass ? classNames.some(cn => cn === baseClass || treeMatchesName(tree.Name, cn)) : false
-            const available = matchesRace || matchesClass || matchesBaseClass || isUniversalTree(tree)
             return (
               <button
                 key={tree.Name}
@@ -136,11 +104,10 @@ function TreePicker({ allTrees, selected, build, onToggle, onClose }: TreePicker
                   styles.pickerTree,
                   on ? styles.pickerTreeOn : '',
                   full ? styles.pickerTreeDisabled : '',
-                  !available ? styles.pickerTreeUnavailable : '',
                 ].join(' ')}
                 disabled={full && !on}
                 onClick={() => onToggle(tree.Name)}
-                title={tree.Name + (available ? '' : ' (not available for current build)')}
+                title={tree.Name}
               >
                 <DdoIcon category="EnhancementImages" name={tree.Icon ?? tree.Name} size={32} />
                 <span className={styles.pickerTreeName}>{tree.Name}</span>
@@ -213,21 +180,14 @@ export default function EnhancementTreePanel() {
     allTrees.filter(isEnhancementTree),
     [allTrees])
 
-  // Available trees for current build
-  const availableTrees = useMemo<EnhancementTree[]>(() => {
-    const classNames = build.classes.map(c => c.name).filter(Boolean)
-    const raceName = build.race
-    return enhTrees.filter(tree => {
-      if (!isLegacyTreeVisible(tree, pinned)) return false
-      if (tree.IsRacialTree) return raceName ? treeMatchesName(tree.Name, raceName) : false
-      if (tree.IsUniversalTree === true) return true
-      if (isUniversalTree(tree)) return true
-      if (classNames.some(cn => treeMatchesName(tree.Name, cn))) return true
-      const req = treeRequiresClassType(tree, ['Class', 'BaseClass'])
-      if (req) return classNames.some(cn => cn === req)
-      return false
-    })
-  }, [enhTrees, build.race, build.classes, pinned])
+  // Available trees for current build — V2 requirement-engine evaluation
+  // (CEnhancementsPane::DetermineTrees parity). Archetype classes reach their
+  // base class's trees via BaseClass requirements, universal trees gate on
+  // their tree-access feats (incl. Life-level special feats), iconic races
+  // see exactly their own racial tree.
+  const availableTrees = useMemo<EnhancementTree[]>(
+    () => availableEnhancementTrees(enhTrees, build, allClasses, currentRace, pinned, specialFeats),
+    [enhTrees, build, allClasses, currentRace, pinned, specialFeats])
 
   // Auto-pin racial tree when build changes.
   useEffect(() => {
@@ -374,7 +334,6 @@ export default function EnhancementTreePanel() {
         <TreePicker
           allTrees={availableTrees}
           selected={pinned}
-          build={build}
           onToggle={toggleTree}
           onClose={() => setPickerOpen(false)}
         />

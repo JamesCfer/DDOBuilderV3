@@ -66,6 +66,16 @@ export interface RequirementContext {
    * (build.activeBuffs). When absent, they pass conservatively.
    */
   activeBuffs?: string[]
+  /**
+   * V2 parity: Requirement.cpp:870-911 EvaluateFeat counts acquisitions
+   * (trained + special/favor) and compares against the requirement's Value
+   * (default 1) — e.g. universal-tree access via "<X> Favor Rewards" ×3.
+   * When provided, Feat/FeatAnySource requirements with Value > 1 compare
+   * against these counts; when absent, they fall back to set membership
+   * (the pre-existing behavior). Build with buildFeatCountMap() from
+   * lib/treeAvailability.ts.
+   */
+  featCounts?: Record<string, number>
 }
 
 function getFeatSet(ctx: RequirementContext): Set<string> {
@@ -89,10 +99,14 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
     case 'BAB':
       return totalBAB(build, allClasses) >= value
     case 'Feat':
-    case 'FeatAnySource':
+    case 'FeatAnySource': {
       // V2 Requirement.cpp:870-911: both check the trained-feat set; FeatAnySource
       // additionally accepts granted feats, which getFeatSet already folds in.
+      // With Value set, V2 requires that many acquisitions (trained + special);
+      // honored when the caller supplies featCounts, else set membership.
+      if (ctx.featCounts) return (ctx.featCounts[item] ?? 0) >= (req.Value ?? 1)
       return getFeatSet(ctx).has(item)
+    }
     case 'Race':
       return build.race === item
     case 'RaceConstruct':

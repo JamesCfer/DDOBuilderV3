@@ -142,6 +142,74 @@ describe('augment-granted set bonuses (V2 Item::HasSetBonus parity)', () => {
   })
 })
 
+describe('item-specific augment options (V2 ItemAugment::GetSelectedAugment parity)', () => {
+  // V2 ItemAugment.cpp:66-79 GetSelectedAugment(): items like "Gem of Many
+  // Facets" define their own per-slot augment choices inline
+  // (ItemSpecificAugments) that never appear in the global Augments
+  // catalogue. V2 checks the item's own list FIRST, falling back to
+  // FindAugmentByName only when not found there.
+  const facetItem: Item = {
+    Name: 'Gem of Many Facets',
+    ItemAugment: [
+      {
+        Type: 'Set Bonus 2',
+        Augment: [
+          {
+            Name: "Elder's Knowledge", Type: 'Facets Set Bonus 2',
+            SetBonus: "Elder's Knowledge",
+          },
+          { Name: "Vulkoor's Might", Type: 'Facets Set Bonus 2', SetBonus: "Vulkoor's Might" },
+        ],
+      },
+    ],
+  } as unknown as Item
+
+  const knowledgeSet: SetBonus = {
+    Type: "Elder's Knowledge",
+    Buff: [
+      { EquippedCount: 2, Effect: { Type: 'PRR', Bonus: 'Artifact', AType: 'Simple', Amount: 10 } },
+    ],
+  } as unknown as SetBonus
+
+  it('an item-specific augment choice is not silently dropped', () => {
+    // Native SetBonus on Helmet (1) + the Gem's item-specific augment choice
+    // (1) = count 2 → tier reached. Before the fix, the Gem's augment name
+    // wasn't found in the (empty) global catalogue and was skipped entirely.
+    const helmet: Item = { Name: 'Elder Helmet', SetBonus: "Elder's Knowledge" } as Item
+    const build = {
+      ...makeEmptyBuild(),
+      gear: { Helmet: 'Elder Helmet', Trinket: 'Gem of Many Facets' } as Record<string, string>,
+      augmentChoices: { 'Trinket:Set Bonus 2:1': "Elder's Knowledge" },
+    }
+    const stats = computeBuildStats({
+      ...emptyInput(),
+      gearItems: { Helmet: helmet, Trinket: facetItem },
+      allAugments: [], // deliberately empty — the augment is NOT in the global catalogue
+      allSetBonuses: [knowledgeSet],
+    }, build)
+    expect(stats.total('prr')).toBe(10)
+  })
+
+  it('falls back to the global catalogue when no item-specific match exists', () => {
+    const globalAugment: Augment = {
+      Name: 'Globally Catalogued Augment', Type: 'Colorless',
+      Effect: { Type: 'PRR', Bonus: 'Artifact', AType: 'Simple', Amount: 5 },
+    }
+    const build = {
+      ...makeEmptyBuild(),
+      gear: { Trinket: 'Gem of Many Facets' } as Record<string, string>,
+      augmentChoices: { 'Trinket:Colorless:0': 'Globally Catalogued Augment' },
+    }
+    const stats = computeBuildStats({
+      ...emptyInput(),
+      gearItems: { Trinket: facetItem },
+      allAugments: [globalAugment],
+      allSetBonuses: [],
+    }, build)
+    expect(stats.total('prr')).toBe(5)
+  })
+})
+
 describe('filigree rare-effect gating (V2 Filigree::RareEffects parity)', () => {
   // A filigree whose normal effect is +2 Fire spell power and whose RARE effect
   // adds a further +3. V2 Filigree.cpp:56-80 + Effect_Rare DL_FLAG: the rare

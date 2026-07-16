@@ -124,6 +124,18 @@ describe('buildSlots (U7 — level training)', () => {
     expect(epicLevels).toEqual([21, 23])
   })
 
+  it('places a universal "Alter Dark Gift" slot at character level 4 for every build', () => {
+    // V2 Build::TrainableFeatTypeAtLevel (Build.cpp:1091) grants this slot
+    // unconditionally at level==3 (0-based) = character level 4, regardless
+    // of race or class — not backed by any race/class FeatSlot XML data.
+    const build = makeBuild(Array(5).fill('Fighter'))
+    const slots = buildSlots(build, allClasses, [mockHuman])
+    const slot = slots.find(s => s.key === 'alterDarkGift-4')
+    expect(slot).toBeDefined()
+    expect(slot!.level).toBe(4)
+    expect(slot!.featType).toBe('Alter Dark Gift')
+  })
+
   it('returns slots sorted by level', () => {
     const build = makeBuild(['Fighter', 'Fighter', 'Fighter'])
     const slots = buildSlots(build, allClasses, [mockHuman])

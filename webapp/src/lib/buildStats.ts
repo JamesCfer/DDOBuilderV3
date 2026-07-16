@@ -562,15 +562,43 @@ function deriveArmorStances(gearItems: Record<string, Item>): Set<string> {
   return stances
 }
 
+/**
+ * Resolve a selected augment name against its host item's own embedded
+ * augment options FIRST, falling back to the global Augments catalogue.
+ * V2 parity: `ItemAugment::GetSelectedAugment()` (ItemAugment.cpp:66-79)
+ * checks `ItemSpecificAugments()` before `FindAugmentByName()`. Some items
+ * (e.g. "Gem of Many Facets") define unique per-item augment choices —
+ * usually set-bonus grants — inline that never appear in the global
+ * Augments/*.xml catalogue.
+ */
+function resolveAugment(
+  key: string,
+  augName: string,
+  gearItems: Record<string, Item>,
+  allAugments: Augment[],
+): Augment | undefined {
+  const slot = key.split(':')[0]
+  const item = gearItems[slot]
+  if (item) {
+    for (const ia of toArray(item.ItemAugment)) {
+      for (const specific of toArray(ia.Augment)) {
+        if (specific.Name === augName) return specific
+      }
+    }
+  }
+  return allAugments.find(a => a.Name === augName)
+}
+
 function accumulateAugments(
   map: StatMap,
   augmentChoices: Record<string, string>,
+  gearItems: Record<string, Item>,
   allAugments: Augment[],
   ctx?: EffectContext,
 ): void {
-  for (const augName of Object.values(augmentChoices)) {
+  for (const [key, augName] of Object.entries(augmentChoices)) {
     if (!augName) continue
-    const aug = allAugments.find(a => a.Name === augName)
+    const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
     const source = `Augment: ${aug.Name}`
     for (const eff of toArray(aug.Effect)) {
@@ -587,8 +615,6 @@ function accumulateSetBonuses(
   allAugments: Augment[],
   ctx?: EffectContext,
 ): void {
-  const augByName = new Map<string, Augment>(allAugments.map(a => [a.Name, a]))
-
   // Group selected augments by their host gear slot. The augment key is
   // "slot:augmentType:index" (GearPanel augmentKey), so the slot is the
   // first ":"-delimited segment.
@@ -596,7 +622,7 @@ function accumulateSetBonuses(
   for (const [key, augName] of Object.entries(augmentChoices)) {
     if (!augName) continue
     const slot = key.split(':')[0]
-    const aug = augByName.get(augName)
+    const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
     const arr = augmentsBySlot.get(slot) ?? []
     arr.push(aug)
@@ -1267,7 +1293,7 @@ function buildStatMapOnce(
     if (build.sentientGem.minorAugment) {
       allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
     }
-    accumulateAugments(map, allAugmentChoices, allAugments, ctx)
+    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx)
 
     // ── Gear set bonuses ──────────────────────────────────────────────────
     // Pass the merged augment choices so augment-granted set bonuses (and
