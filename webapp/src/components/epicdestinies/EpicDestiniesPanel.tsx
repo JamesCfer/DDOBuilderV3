@@ -5,9 +5,7 @@ import type { EnhancementTree, EnhancementTreeItem, Item } from '../../types/ddo
 import TreeGrid, { type TreeChoices } from '../enhancements/TreeGrid'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useBuildStats } from '../../hooks/useBuildStats'
-import { destinyPointPool } from '../../lib/v2Formulas'
-import { tier5LockedTree, availableDestinyTrees } from '../../lib/destiny'
-import { availableTwistItems } from '../../lib/twists'
+import { tier5LockedTree, availableDestinyTrees, destinyPoolForBuild } from '../../lib/destiny'
 import styles from './EpicDestiniesPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -53,7 +51,6 @@ function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): number {
 export default function EpicDestiniesPanel() {
   const { build, dispatch } = useCharacter()
 
-  const [viewingSlot, setViewingSlot] = useState<0 | 1 | 2>(0)
   const [gearItems, setGearItems] = useState<Record<string, Item>>({})
 
   // Static data + full build stats. Stats give us the aggregated fate-point and
@@ -134,24 +131,16 @@ export default function EpicDestiniesPanel() {
   // Selected (non-empty) slot names
   const selectedSlots = selectedDestinyTrees.filter(n => n !== '')
 
-  // The tree currently being viewed
-  const viewedTreeName = selectedDestinyTrees[viewingSlot] ?? ''
-  const viewedTree = useMemo(
-    () => allTrees.find(t => t.Name === viewedTreeName) ?? null,
-    [allTrees, viewedTreeName],
-  )
-
-  const viewedChoices: TreeChoices = viewedTree ? (destinyChoices[viewedTree.Name] ?? {}) : {}
-  const viewedSpent = viewedTree ? computeTreeSpent(viewedTree, viewedChoices) : 0
-
   // Destiny points are a single shared pool spent across ALL selected trees;
   // there is no per-tree cap. V2 BreakdownItemDestinyAps sums:
   //   level-based pool + floor(fatePoints/3) + DestinyAPBonus effects.
+  // The level-based part uses the FULL character level (heroic + epic +
+  // legendary — V2 Build::Level()), not the heroic-only totalLevel.
   const fatePoints = Math.max(0, Math.round(stats.total('fatePoint')))
   const destinyApBonus = Math.max(0, Math.round(stats.total('destinyAP')))
   const destinyPool = useMemo(
-    () => destinyPointPool(build.totalLevel, fatePoints) + destinyApBonus,
-    [build.totalLevel, fatePoints, destinyApBonus],
+    () => destinyPoolForBuild(build, fatePoints, destinyApBonus),
+    [build, fatePoints, destinyApBonus],
   )
   const totalSpentAllTrees = useMemo(
     () => selectedSlots.reduce((sum, name) => {
@@ -176,7 +165,6 @@ export default function EpicDestiniesPanel() {
       return
     }
     dispatch({ type: 'SET_SELECTED_DESTINY', slot, name })
-    if (slot === viewingSlot) setViewingSlot(slot)
   }
 
   function handleChoicesChange(treeName: string, updated: TreeChoices) {
@@ -263,105 +251,58 @@ export default function EpicDestiniesPanel() {
           )}
         </div>
 
-        {/* ── Twists of Fate ───────────────────────────────────────────── */}
-        {selectedSlots.length > 0 && (() => {
-          const candidates = availableTwistItems(availableForSelect)
-          const byTree = availableForSelect.map(t => ({
-            treeName: t.Name,
-            items: candidates.filter(c => c.treeName === t.Name),
-          })).filter(g => g.items.length > 0)
-          const twistChoices = build.twistChoices ?? ['', '', '', '', '']
-          return (
-            <div className={styles.twistsSection}>
-              <div className={styles.slotSectionTitle} style={{ padding: '8px 12px 4px' }}>
-                Twists of Fate (up to 5)
-              </div>
-              <div className={styles.slotRows} style={{ padding: '0 12px 8px' }}>
-                {([0, 1, 2, 3, 4] as const).map(slot => (
-                  <div key={slot} className={styles.slotRow}>
-                    <span className={styles.slotLabel}>Twist {slot + 1}</span>
-                    <select
-                      className={styles.slotSelect}
-                      value={twistChoices[slot] ?? ''}
-                      onChange={e => dispatch({ type: 'SET_TWIST_CHOICE', slot, value: e.target.value })}
-                    >
-                      <option value="">— None —</option>
-                      {byTree.map(g => (
-                        <optgroup key={g.treeName} label={g.treeName}>
-                          {g.items.map(c => (
-                            <option key={c.key} value={c.key}>{c.item.Name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* ── 3. Tabs + Tree Grid ───────────────────────────────────────── */}
+        {/* ── Shared pool + side-by-side tree grids (V2 DestinyPane) ─────── */}
         {selectedSlots.length > 0 && (
           <>
-            <div className={styles.tabs}>
-              {([0, 1, 2] as const).map(slot => {
-                const name = selectedDestinyTrees[slot]
-                if (!name) return null
-                const tree = allTrees.find(t => t.Name === name)
-                const spent = tree ? computeTreeSpent(tree, destinyChoices[name] ?? {}) : 0
-                const isViewing = slot === viewingSlot
-                const isActive = activeEpicDestiny === name
-                return (
-                  <button
-                    key={slot}
-                    className={`${styles.tab} ${isViewing ? styles.tabActive : ''} ${isActive ? styles.tabIsActive : ''}`}
-                    onClick={() => setViewingSlot(slot)}
-                  >
-                    <span className={styles.tabName}>{name}</span>
-                    <span className={styles.tabAP}>{spent} spent{isActive ? ' ⚡' : ''}</span>
-                  </button>
-                )
-              })}
+            <div className={styles.poolBar}>
+              <span className={atDestinyCap ? styles.apCapReached : styles.apCurrent}>{totalSpentAllTrees}</span>
+              <span className={styles.apSep}>/</span>
+              <span className={styles.apCap}>{destinyPool}</span>
+              <span className={styles.apLabel}>&nbsp;destiny points spent</span>
             </div>
 
-            {viewedTree && (
-              <>
-                <div className={styles.treeHeader}>
-                  <div className={styles.treeTitle}>
-                    {viewedTree.Name}
-                    {activeEpicDestiny === viewedTree.Name && <span className={styles.activeBadge}>Active</span>}
-                  </div>
-                  <div className={styles.treeAP}>
-                    <span className={styles.apLabel}>{viewedSpent} in this tree&nbsp;·&nbsp;</span>
-                    <span className={atDestinyCap ? styles.apCapReached : styles.apCurrent}>{totalSpentAllTrees}</span>
-                    <span className={styles.apSep}>/</span>
-                    <span className={styles.apCap}>{destinyPool}</span>
-                    <span className={styles.apLabel}>&nbsp;destiny points</span>
-                    {viewedSpent > 0 && (
-                      <button className={styles.resetBtn} onClick={() => handleReset(viewedTree.Name)}>
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.gridWrapper}>
-                  <TreeGrid
-                    tree={viewedTree}
-                    choices={viewedChoices}
-                    selections={build.destinySelections?.[viewedTree.Name] ?? {}}
-                    totalSpentAllTrees={totalSpentAllTrees}
-                    totalAP={destinyPool}
-                    tier5Locked={lockedTier5Tree !== '' && lockedTier5Tree !== viewedTree.Name}
-                    build={build}
-                    allClasses={bundle.allClasses}
-                    race={race}
-                    onChoicesChange={(updated) => handleChoicesChange(viewedTree.Name, updated)}
-                    onSelectionsChange={(updated) => handleSelectionsChange(viewedTree.Name, updated)}
-                  />
-                </div>
-              </>
-            )}
+            <div className={styles.multiTreeScroll}>
+              <div className={styles.multiTreeRow}>
+                {selectedSlots.map(name => {
+                  const tree = allTrees.find(t => t.Name === name)
+                  if (!tree) return null
+                  const treeChoices: TreeChoices = destinyChoices[name] ?? {}
+                  const spent = computeTreeSpent(tree, treeChoices)
+                  return (
+                    <div key={name} className={styles.treeColumn}>
+                      <div className={styles.treeHeader}>
+                        <div className={styles.treeTitle}>
+                          {name}
+                          {activeEpicDestiny === name && <span className={styles.activeBadge}>Primary</span>}
+                        </div>
+                        <div className={styles.treeAP}>
+                          <span className={styles.apCurrent}>{spent}</span>
+                          <span className={styles.apLabel}>&nbsp;spent</span>
+                          {spent > 0 && (
+                            <button className={styles.resetBtn} onClick={() => handleReset(name)}>
+                              Reset
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <TreeGrid
+                        tree={tree}
+                        choices={treeChoices}
+                        selections={build.destinySelections?.[name] ?? {}}
+                        totalSpentAllTrees={totalSpentAllTrees}
+                        totalAP={destinyPool}
+                        tier5Locked={lockedTier5Tree !== '' && lockedTier5Tree !== name}
+                        build={build}
+                        allClasses={bundle.allClasses}
+                        race={race}
+                        onChoicesChange={(updated) => handleChoicesChange(name, updated)}
+                        onSelectionsChange={(updated) => handleSelectionsChange(name, updated)}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </>
         )}
 

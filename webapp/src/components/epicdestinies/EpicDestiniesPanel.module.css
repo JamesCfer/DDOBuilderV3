@@ -120,77 +120,44 @@
   border-color: var(--color-gold-dark);
 }
 
-/* ── Twists of Fate ──────────────────────────────────────────────────── */
-.twistsSection {
-  border-top: 1px solid var(--color-border);
+/* ── Shared destiny point pool bar ───────────────────────────────────── */
+.poolBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 12px;
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
-/* ── Tree selector tabs ──────────────────────────────────────────────── */
-.tabs {
+/* ── Side-by-side tree columns (V2 DestinyPane) ──────────────────────── */
+.multiTreeScroll {
+  overflow: auto;
+  max-height: calc(100vh - 160px);
+  padding: 8px;
+}
+
+.multiTreeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
-  padding: 6px 8px 0;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
+  gap: 8px;
+  align-items: flex-start;
 }
 
-.tab {
+.treeColumn {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 4px 10px;
   border: 1px solid var(--color-border);
-  border-bottom: none;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
-  font-size: 11px;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  max-width: 160px;
-  min-width: 80px;
-}
-
-.tab:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
-}
-
-.tabActive {
-  background: var(--color-bg-panel);
-  color: var(--color-gold);
-  border-color: var(--color-border-light);
-  border-bottom-color: var(--color-bg-panel);
-  position: relative;
-  z-index: 1;
-}
-
-.tabIsActive {
-  border-color: var(--color-gold-dark);
-}
-
-.tabName {
-  white-space: nowrap;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
+  background: var(--color-bg-panel);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,152,42,0.07);
+  flex-shrink: 0;
 }
 
-.tabAP {
-  font-size: 10px;
-  color: var(--color-gold-dark);
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-.tabActive .tabAP {
-  color: var(--color-gold);
-}
-
-/* ── Active tree info bar ────────────────────────────────────────────── */
+/* ── Per-tree info bar ───────────────────────────────────────────────── */
 .treeHeader {
   display: flex;
   align-items: center;
