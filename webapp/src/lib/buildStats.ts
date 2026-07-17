@@ -366,7 +366,7 @@ function computeTreeAP(items: EnhancementTreeItem[], choices: Record<string, num
   return items.reduce((sum, item) => sum + costUpToRank(item, enhancementRank(choices, item)), 0)
 }
 
-function getSelectorOptions(item: EnhancementTreeItem): EnhancementSelection[] {
+export function getSelectorOptions(item: EnhancementTreeItem): EnhancementSelection[] {
   if (!item.Selector || item.Selector.length === 0) return []
   const group = item.Selector[0]
   const raw = group.EnhancementSelection
