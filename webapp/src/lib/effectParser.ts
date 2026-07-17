@@ -1586,6 +1586,7 @@ function parseItemBuffViaTemplate(
   buff: ItemBuff,
   source: string,
   catalogue: Map<string, ItemBuffTemplate>,
+  ctx?: EffectContext,
 ): ParsedBonus[] {
   const tpl = catalogue.get(buff.Type)
   if (!tpl) return []
@@ -1605,7 +1606,10 @@ function parseItemBuffViaTemplate(
     if (itemBonus) cloned.Bonus = itemBonus
     if (itemFilter) cloned.Item = itemFilter
     if (hasValue1) cloned.Amount = buff.Value1
-    out.push(...parseEffect(cloned, 1, source))
+    // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
+    // +8 CON while the item stance is toggled on) evaluate against the
+    // active-stance set instead of being conservatively dropped.
+    out.push(...parseEffect(cloned, 1, source, 0, 0, ctx))
   }
   return out
 }
@@ -1622,6 +1626,7 @@ export function parseItemBuff(
   buff: ItemBuff,
   source: string,
   catalogue?: Map<string, ItemBuffTemplate>,
+  ctx?: EffectContext,
 ): ParsedBonus[] {
   const value = buff.Value1 ?? 0
   const items = toStringArray(buff.Item as string | string[] | undefined)
@@ -2384,7 +2389,7 @@ export function parseItemBuff(
     // Unknown buff type → resolve via the ItemBuffs.xml template catalogue
     // (V2 Item::FindEffect/BuffValue) before giving up.
     default:
-      if (catalogue) return parseItemBuffViaTemplate(buff, source, catalogue)
+      if (catalogue) return parseItemBuffViaTemplate(buff, source, catalogue, ctx)
       return []
   }
 }

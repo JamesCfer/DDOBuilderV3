@@ -74,15 +74,20 @@ maybeDescribe('V2 round-trip with real XML catalogues — Yings Monk', () => {
     // hits 50-70 once every source compounds. (Upper band bumped after the
     // Completionist / Item="All" AbilityBonus fix, which now correctly adds
     // +2 to every ability for this 40+-past-life build.)
+    // (Upper band bumped again after the InternalName choice-key fix —
+    // enhancement/destiny/reaper tree WIS nodes now actually apply.)
     const wis = stats.total('ability.Wisdom')
     expect(wis).toBeGreaterThanOrEqual(24)
-    expect(wis).toBeLessThanOrEqual(90)
+    expect(wis).toBeLessThanOrEqual(120)
   })
 
   it('HP is in the expected Monk end-game band (500+)', () => {
+    // Band widened after the InternalName choice-key fix: destiny/reaper HP
+    // nodes and percent-HP enhancements now apply, putting an end-game monk
+    // in the high-2000s (V2 shows ~2800 for comparable builds).
     const hp = stats.total('hp')
     expect(hp).toBeGreaterThanOrEqual(500)
-    expect(hp).toBeLessThanOrEqual(1500)
+    expect(hp).toBeLessThanOrEqual(3500)
   })
 
   it('AC is at least 30 (Aasimar Monk with WIS bonus + items)', () => {
