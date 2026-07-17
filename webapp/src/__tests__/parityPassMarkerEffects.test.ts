@@ -45,6 +45,6 @@ describe('NotNeeded/SpellInfo marker effects survive the null-Amount guard', () 
       Type: 'SLACharge', Bonus: 'Racial', Item: ['Healing Hands'],
       AType: 'Simple', Amount: { '#text': 1, size: 1 },
     }), 1, 't')
-    expect(out).toEqual([{ statKey: 'slaCharge.Healing Hands', value: 1, bonusType: 'Racial', source: 't', percent: false }])
+    expect(out).toEqual([{ statKey: 'slaCharge.Healing Hands', value: 1, bonusType: 'Racial', source: 't', percent: false, asItemEffect: false }])
   })
 })

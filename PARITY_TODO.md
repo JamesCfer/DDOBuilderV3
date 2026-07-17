@@ -120,6 +120,7 @@ the PR number, so this file doubles as a changelog.
 | 99 | **User-reported import bugs found via 5 real `.DDOBuild` files** — (1) **Universal "Alter Dark Gift" feat slot** (V2 `Build::TrainableFeatTypeAtLevel`, `Build.cpp:1091`) is granted unconditionally to every build at character level 4 regardless of race/class, with no backing race/class FeatSlot XML data ("you have to be level 4 to go into the Lamordia zone where this feat can be acquired"). `v2Import.ts`'s `buildFeatSlotKey` had no case for it, so it fell through to the class-slot fallback (`${className}-${classLevel}-Alter Dark Gift-${idx}`) — a key `lib/levelTraining.ts`'s `buildSlots()` (the live FeatSlots/LevelTrainingPanel UI) never generates, silently orphaning the trained feat (present in data, invisible in the app). Hit 3 of the 5 uploaded builds. Fixed with a dedicated `alterDarkGift-4` key on both the import and `buildSlots()` sides, plus the matching reverse-mapping case in `v2Export.ts`'s `featsByLevel`. (2) **Item-specific embedded augment options** (V2 `ItemAugment::GetSelectedAugment()`, `ItemAugment.cpp:66-79`, `ItemSpecificAugments`) — items like "Gem of Many Facets" define unique per-slot augment choices (usually set-bonus grants) inline on the item itself rather than in the global `Augments/*.xml` catalogue; V2 checks the item's own list before falling back to the global catalogue. `buildStats.ts`'s `accumulateAugments`/`accumulateSetBonuses` only ever checked the global `allAugments` array, so these item-specific augment selections (and the set-bonus stacks they contribute to) were silently dropped — confirmed on a real build where "Legendary Elder's Knowledge" needed 2 contributing sources to reach its 2pc tier, one of which was invisible to V3. New `resolveAugment()` helper checks the host item's `ItemAugment[].Augment` list first, matching V2's resolution order; `ItemAugment.Augment` widened from a single mistyped object to `Augment \| Augment[]` (its true runtime shape — `Type`/`SetBonus`/`Effect` were already present in parsed XML, just never read). 4 regression tests added (`parityAlterDarkGift.test.ts`, 2 new cases in `augmentSetBonus.test.ts`, 1 new case in `levelTraining.test.ts`). | this PR |
 | 100 | **Enhancement-tree availability rewritten on the requirement engine (archetypes / iconic races / universal trees)** — `EnhancementTreePanel`'s `availableTrees` used a tree-name ↔ class/race-name substring heuristic, so archetype classes never saw their base class's trees (Arcane Trickster ↛ Thief-Acrobat/Mechanic, Dragon Lord ↛ Stalwart Defender, Blight Caster ↛ Season's Herald), `RequiresOneOf` class alternatives were ignored (Vanguard for Paladin), iconic races never matched their racial tree ("Aasimar Scourge" ↛ "Aasimar: Scourge of the Undead"), and universal trees gated on Enhancement/Feat requirements never resolved (Arcane Archer (Elf), Harper Agent) — worse, the panel's mount-time prune then silently DROPPED those trees from the imported pinned list. Confirmed against 4 of 5 real user-submitted `.DDOBuild` files ("the trees don't all open"). V2 does no name matching: `CEnhancementsPane::DetermineTrees` (`EnhancementsPane.cpp:316-340`) evaluates each tree's `<Requirements>` through the Requirement engine, where `BaseClass` counts archetype levels toward their base class (`Build::BaseClassLevels`), `Race` is strict equality (an iconic race sees its own tree INSTEAD of the base race's — heuristic was over-granting there), and `Feat` counts special/favor acquisitions against `Value` (`Requirement.cpp:870`). New `lib/treeAvailability.ts` exports `availableEnhancementTrees()` (requirement-engine filter + reaper/destiny/Legacy exclusions) and `buildFeatCountMap()` (featChoices + pastLives counts + favorFeats + Life specialFeats — the "Harper Agent Tree" UniversalTree grant lives in Life-level `<SpecialFeats>`); `RequirementContext` gains optional `featCounts` so `Feat`/`FeatAnySource` honor `Value` (V2 `EvaluateFeat` count semantics) when counts are supplied, preserving the prior set-membership behavior for all existing callers. Panel + TreePicker now consume the shared filter; heuristic helpers deleted. Verified all 17 builds/lives across the 5 user files now keep every spent/pinned tree visible. 7 regression tests in `parityTreeAvailability.test.ts`. | this PR |
 | 101 | **N10 — Percent-effect rounding truncates per-effect, not combined** — V2 `BreakdownItem.cpp:474-503` (`DoPercentageEffects`) truncates each active `<Percent/>`-tagged effect's contribution individually and sums the already-truncated amounts; only `BreakdownItemHitpoints` opts into combined truncation (`DoAllPercentsAtOnce()`, `:498-501`). `webapp/src/lib/buildStats.ts`'s percent post-pass previously applied the Hitpoints-only combined-truncation formula to every stat. Fixed: the `hp` stat key keeps combined truncation (`trunc(base * percentSum / 100)`); every other percent-tagged stat (ACBonus, Weapon_Attack, SpellPoints, ...) now truncates each active resolved percent bonus individually and sums the truncated amounts, matching V2. 2 regression tests in `parityPassN10.test.ts`. | this PR |
+| 103 | **N12 + N13 + empty-element flag bug (the real "numbers don't add up")** — Real catalogue XML writes boolean effect flags as self-closing elements (`<Percent />`, `<ApplyAsItemEffect />`), which fast-xml-parser surfaces as empty strings — but `effectParser.ts` checked `=== true`, so with REAL data **all ~186 percent effects were applied as flat amounts** (unit-test fixtures wrote `Percent: true` and passed; the running app never matched). New `flagSet()` helper treats presence (`""`/`true`) as set; `Effect.Percent`/`ApplyAsItemEffect` types widened to `boolean \| string`. **N12** — central `<Rank>` gate in `parseEffect` (V2 `EnhancementTreeItem::GetEffects` `:509-510`): a Rank-tagged effect fires once, at/after that rank, with a single stack (was: scaled by trained rank, e.g. Dwarf "Child of the Mountain" +5/+10/+15% HP instead of 0/0/+5%; Rogue Assassin "Light Armor Mastery" +75% instead of +25%); the GrantFeat-local gate removed (now redundant). **N13** — `ParsedBonus.asItemEffect` set from the flag; `addParsed` routes flagged effects into the `fromGear` pool so they obey gear-style "Highest Only" stacking (V2 `m_itemEffects`, `BreakdownItem.cpp:623-698`). End-to-end: imported Maetrim monk HP 1663→1895, AC 150→152. Oracle still 98/98 vs compiled V2 math. 4 real-data regression tests in `parityPassN12N13.test.ts` (Dwarf tree, all three bugs meet in one enhancement). | #140 |
 | 102 | **N11 — `Bonus="Temporary"` effects no longer inflated by same-stat percentage bonuses** — V2 `BreakdownItem.cpp:793-812` (`RemoveTemporary`) pulls any effect whose bonus type is `"Temporary"` out of the bonus list **before** `baseTotal` is computed for percentage purposes, then adds it back flatly after all percentage effects apply (`:236-238`). `webapp/src/lib/buildStats.ts`'s percent post-pass computed `base` from every non-percent bonus including `Temporary`-typed ones, so a Temporary bonus (e.g. Bard "Inspire Greatness" +20 Temporary HP) inflated the base that a stat's own %-bonuses (e.g. Frenzied Berserker +25% HP) scale against. Fixed: `base` now excludes `type === 'Temporary'` bonuses; the Temporary contribution itself is still added back flatly (unchanged — it was never removed from `rebuilt`). 2 regression tests in `parityPassN11.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
@@ -238,44 +239,11 @@ non-trivial number of live effects:
   regression tests in `parityPassN10.test.ts`.
 - ✅ **N11 — `Bonus="Temporary"` effects no longer inflated by percentage
   bonuses on the same stat** — done (#102 in Done table above).
-- ❌ **N12 — `<Rank>` effect gate only honored for `GrantFeat` (~120
-  occurrences elsewhere).** V2 `Effect.h:625` / `EnhancementTreeItem.cpp:
-  509-510`: an effect tagged `<Rank>` only applies once the enhancement/feat
-  is trained to *at least* that rank — V2 applies effects incrementally per
-  rank purchased, so this is "fires once, at/after that specific rank," not
-  "scale by rank." `webapp/src/lib/effectParser.ts` only checks
-  `effect.Rank` inside the `GrantFeat` branch (~line 594-596); every other
-  call path (`accumulateEnhancementTree`/`accumulateFeat` in
-  `webapp/src/lib/buildStats.ts:453-493`) passes `rank` straight into
-  `resolveValue` with no Rank gate. Concrete breakage: Dwarf/Duergar "Child
-  of the Mountain" (`Dwarf.tree.xml:346-349`, rank-3-only +5% HP) computes
-  as `5*rank` (0/0/+5% intended vs +5/+10/+15% actual); Rogue Assassin
-  "Light Armor Mastery" (`Rogue_Assassin.tree.xml:1268-1271`, rank-3-only
-  +25% HP) computes as `25*rank` — **+75% HP at rank 3 instead of +25%**, a
-  steady-state (not just leveling-transient) error for a commonly-picked
-  enhancement. ~120 affected occurrences by AType: 80 `Simple`, 28
-  `NotNeeded` (Immunity/SaveNoFailOn1/GrantSpell/SongCount), 9 `Stacks`, 3
-  `SpellInfo`, 2 `SliderValue`.
-- ❌ **N13 — `<ApplyAsItemEffect/>` flag never read (526 occurrences across
-  94 data files).** V2 `BreakdownItem.cpp:623-698` routes a Feat/
-  Enhancement/Spell effect into `m_itemEffects` instead of `m_effects` when
-  this flag is set; `BreakdownItem::Total()` (`:205-221`) only runs
-  `RemoveNonStacking` ("Highest Only" per bonus type — Done-item #46's
-  `fromGear` split) against `m_itemEffects`, so `ApplyAsItemEffect` is V2's
-  per-effect opt-in to gear-style non-stacking for an otherwise-stacking
-  enhancement/feat effect. `webapp/src/lib/buildStats.ts`'s
-  `addParsed(map, bonuses, fromGear = false)` is called from
-  `accumulateEnhancementTree`/`accumulateFeat` with the default `false` in
-  every case; `ParsedBonus` (`effectParser.ts:198-206`) has no field to
-  carry the flag. Concrete instances: Bard Swashbuckler "Swashbuckling"
-  (Weapon_CriticalRange, Competence, tagged `ApplyAsItemEffect`), the same
-  three HP% effects from N12 (all three also carry the flag), Fighter
-  DragonLord tree (49 occurrences), Wizard Pale Master, Paladin Sacred
-  Defender, Cleric Dark Apostate, Shiradi Champion, Barbarian Occult
-  Slayer, `Spells.xml` (44), `SelfAndPartyBuffs.xml` (26). Net effect: any
-  of these effects sharing a bonus-type name with a gear item or another
-  `ApplyAsItemEffect` source is double-counted (additively stacked) in V3
-  instead of taking the highest, as V2's `RemoveNonStacking` requires.
+- ✅ **N12 — `<Rank>` effect gate now honored for all effect types** —
+  done (#103 in Done table above).
+- ✅ **N13 — `<ApplyAsItemEffect/>` routes into the gear "Highest Only"
+  pool** — done (#103 in Done table above), together with the empty-element
+  flag-parsing bug that also disabled ALL `<Percent/>` effects with real data.
 
 `parseItemBuff` correctly has no handling for either `Rank` or
 `ApplyAsItemEffect` — neither field ever appears in `ItemBuffs.xml` (0

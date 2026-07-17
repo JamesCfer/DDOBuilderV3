@@ -130,7 +130,11 @@ function add(map: StatMap, key: string, bonus: RawBonus): void {
 
 function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGear = false): void {
   for (const pb of bonuses) {
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear, percent: pb.percent })
+    // V2 <ApplyAsItemEffect/>: the effect joins m_itemEffects, i.e. the gear
+    // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
+    // (BreakdownItem.cpp:623-698, :205-221).
+    const asGear = fromGear || pb.asItemEffect === true
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent })
   }
 }
 
