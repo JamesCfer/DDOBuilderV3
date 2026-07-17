@@ -203,6 +203,18 @@ export interface ParsedBonus {
   // V2 <Percent/> flag: the value is a percentage of the stat's base total
   // (BreakdownItem::DoPercentageEffects), not a flat amount.
   percent?: boolean
+  // V2 <ApplyAsItemEffect/> flag: the effect joins m_itemEffects, whose bonus
+  // types obey gear-style "Highest Only" stacking (BreakdownItem.cpp:623-698).
+  asItemEffect?: boolean
+}
+
+/**
+ * True when a boolean-flag XML element is present. Self-closing elements
+ * (`<Percent />`, `<ApplyAsItemEffect />`) parse to "" via fast-xml-parser,
+ * while unit-test fixtures write literal `true` — both count as set.
+ */
+export function flagSet(v: unknown): boolean {
+  return v !== undefined && v !== null && v !== false
 }
 
 // ---------------------------------------------------------------------------
@@ -539,6 +551,16 @@ export function parseEffect(
     )
   }
 
+  // V2 EnhancementTreeItem::GetEffects (EnhancementTreeItem.cpp:509-510):
+  // an effect tagged <Rank> is only included when applying that specific
+  // rank — Build::ApplyAllCurrentEffects loops rank 1..R, so the effect
+  // fires exactly once, at/after the tagged rank, with a single stack.
+  // It is never scaled by the trained rank count.
+  if (typeof effect.Rank === 'number') {
+    if (Math.max(1, rank) < effect.Rank) return []
+    rank = 1
+  }
+
   // V2 Effect::IsActive → Requirements::Met. Gate the effect entirely if any
   // top-level requirement, OneOf group, or NoneOf group fails.
   // When no ctx is supplied, fall back to the legacy stance-only check.
@@ -592,8 +614,8 @@ export function parseEffect(
   // "Magical Studies"). AType is always NotNeeded (no Amount), so this must
   // fire before the `resolved === null` early-return below.
   if (effect.Type === 'GrantFeat') {
-    const effectMinRank = effect.Rank ?? 1
-    if (rank < effectMinRank) return []
+    // The <Rank> gate is handled centrally above (a tagged effect only
+    // reaches here once the enhancement is trained to at least that rank).
     const featNames = toStringArray(effect.Item)
     return featNames
       .filter(n => n && n !== 'None')
@@ -653,7 +675,11 @@ export function parseEffect(
   const items = toStringArray(effect.Item)
 
   function make(statKey: string, bt = bonusType): ParsedBonus {
-    return { statKey, value, bonusType: bt, source, percent: effect.Percent === true }
+    return {
+      statKey, value, bonusType: bt, source,
+      percent: flagSet(effect.Percent),
+      asItemEffect: flagSet(effect.ApplyAsItemEffect),
+    }
   }
 
   const type = effect.Type
@@ -1618,7 +1644,7 @@ export function parseItemBuff(
   }
 
   function make(statKey: string, bt = bonusType): ParsedBonus {
-    return { statKey, value, bonusType: bt, source, percent: buff.Percent === true }
+    return { statKey, value, bonusType: bt, source, percent: flagSet(buff.Percent) }
   }
 
   const type = buff.Type

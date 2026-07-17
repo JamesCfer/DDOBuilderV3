@@ -44,10 +44,10 @@ export interface Effect {
   DisplayName?: string
   Requirements?: Requirements
   StackSource?: string
-  ApplyAsItemEffect?: boolean
+  ApplyAsItemEffect?: boolean | string  // <ApplyAsItemEffect/> parses as "" — check with flagSet()
   Rare?: boolean             // effect only applies when filigree slot is marked rare
   Cap?: unknown              // V2 Effect Cap() — clamps AbilityTotal/Index amounts
-  Percent?: boolean          // V2 <Percent/> — Amount is a % of the stat base
+  Percent?: boolean | string    // V2 <Percent/> parses as "" — check with flagSet()
   Rank?: number              // V2 Effect Rank() — minimum enhancement rank required to fire
 }
 
@@ -199,7 +199,7 @@ export interface ItemBuff {
   BonusType?: string
   Description1?: string
   Item?: string
-  Percent?: boolean          // V2 <Percent/> — Value1 is a % of the stat base
+  Percent?: boolean | string    // V2 <Percent/> parses as "" — check with flagSet()
 }
 
 export interface ItemAugment {

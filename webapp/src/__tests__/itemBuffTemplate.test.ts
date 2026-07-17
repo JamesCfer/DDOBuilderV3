@@ -47,7 +47,7 @@ describe('parseItemBuff template resolution (synthetic catalogue)', () => {
     const buff: ItemBuff = { Type: 'PhysicalSheltering', Value1: 30, BonusType: 'Enhancement' }
     const res = parseItemBuff(buff, 'Helm', catalogue)
     expect(res).toEqual([
-      { statKey: 'prr', value: 30, bonusType: 'Enhancement', source: 'Helm', percent: false },
+      { statKey: 'prr', value: 30, bonusType: 'Enhancement', source: 'Helm', percent: false, asItemEffect: false },
     ])
   })
 
