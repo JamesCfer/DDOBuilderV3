@@ -280,7 +280,17 @@ function communityError(res: express.Response, err: unknown): void {
   res.status(status).json({ error: message })
 }
 
+// When Google sign-in is configured the site is Google-only: password
+// registration and login are rejected. The routes stay functional for dev
+// setups that run without a GOOGLE_CLIENT_ID.
+function rejectWhenGoogleOnly(res: express.Response): boolean {
+  if (!GOOGLE_CLIENT_ID) return false
+  res.status(403).json({ error: 'Password sign-in is disabled — use Google sign-in' })
+  return true
+}
+
 app.post('/api/auth/register', (req, res) => {
+  if (rejectWhenGoogleOnly(res)) return
   try {
     const { username, email, password } = req.body ?? {}
     const user = community.register(username, email, password)
@@ -290,6 +300,7 @@ app.post('/api/auth/register', (req, res) => {
 })
 
 app.post('/api/auth/login', (req, res) => {
+  if (rejectWhenGoogleOnly(res)) return
   const { username, password } = req.body ?? {}
   const user = community.verifyLogin(username, password)
   if (!user) {

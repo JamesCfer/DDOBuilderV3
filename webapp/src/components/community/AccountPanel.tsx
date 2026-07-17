@@ -51,18 +51,9 @@ function loadGoogleIdApi(): Promise<GoogleIdApi> {
   return w.__gsiLoading
 }
 
-function GoogleSignIn({ onError }: { onError: (message: string) => void }) {
+function GoogleSignIn({ clientId, onError }: { clientId: string; onError: (message: string) => void }) {
   const { loginWithGoogle } = useAuth()
-  const [clientId, setClientId] = useState<string | null>(null)
   const buttonRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    communityApi.googleConfig()
-      .then(({ clientId: id }) => { if (!cancelled) setClientId(id) })
-      .catch(() => { /* server without the endpoint / not configured */ })
-    return () => { cancelled = true }
-  }, [])
 
   useEffect(() => {
     if (!clientId || !buttonRef.current) return
@@ -85,15 +76,7 @@ function GoogleSignIn({ onError }: { onError: (message: string) => void }) {
     return () => { cancelled = true }
   }, [clientId, loginWithGoogle, onError])
 
-  // Server has no Google client id configured → render nothing.
-  if (!clientId) return null
-
-  return (
-    <>
-      <div className={styles.authDivider}>or</div>
-      <div ref={buttonRef} className={styles.googleBtn} />
-    </>
-  )
+  return <div ref={buttonRef} className={styles.googleBtn} />
 }
 
 function AuthForms() {
@@ -104,6 +87,16 @@ function AuthForms() {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // undefined = config still loading; null = Google not configured (dev).
+  const [clientId, setClientId] = useState<string | null | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+    communityApi.googleConfig()
+      .then(({ clientId: id }) => { if (!cancelled) setClientId(id) })
+      .catch(() => { if (!cancelled) setClientId(null) })
+    return () => { cancelled = true }
+  }, [])
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -117,6 +110,19 @@ function AuthForms() {
     } finally {
       setBusy(false)
     }
+  }
+
+  // Google configured → Google-only sign-in (the server rejects password auth).
+  if (clientId === undefined) return <div className={styles.authBox}>…</div>
+  if (clientId) {
+    return (
+      <div className={styles.authBox}>
+        <h3>Sign in</h3>
+        <p>Sign in with your Google account to save builds and join the community.</p>
+        {error && <span className={styles.error}>{error}</span>}
+        <GoogleSignIn clientId={clientId} onError={setError} />
+      </div>
+    )
   }
 
   return (
@@ -155,7 +161,6 @@ function AuthForms() {
           <>Already have an account? <button type="button" onClick={() => { setMode('login'); setError(null) }}>Sign in</button></>
         )}
       </span>
-      <GoogleSignIn onError={setError} />
     </form>
   )
 }
