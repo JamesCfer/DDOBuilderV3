@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { api } from '../../api'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import type { DDOClass, Race, Feat, EnhancementTree, Item, Augment, SetBonus, FiligreeSetBonus, Filigree, OptionalBuff, GuildBuff } from '../../types/ddo'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import type { ResolvedBonus } from '../../lib/bonus'
 import { SKILLS, SCHOOL_DCS, SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../../lib/gamedata'
@@ -212,19 +212,8 @@ function SpellPowerRow({ name, spKey, stats, onTip }: {
 
 export default function BreakdownsPanel() {
   const { build } = useCharacter()
-  const [allClasses,        setAllClasses]        = useState<DDOClass[]>([])
-  const [allRaces,          setAllRaces]          = useState<Race[]>([])
-  const [allFeats,          setAllFeats]          = useState<Feat[]>([])
-  const [allTrees,          setAllTrees]          = useState<EnhancementTree[]>([])
-  const [allSelfBuffs,      setAllSelfBuffs]      = useState<OptionalBuff[]>([])
-  const [allAugments,       setAllAugments]       = useState<Augment[]>([])
-  const [allSetBonuses,     setAllSetBonuses]     = useState<SetBonus[]>([])
-  const [allFiligreeBonuses,setAllFiligreeBonuses]= useState<FiligreeSetBonus[]>([])
-  const [allFiligrees,      setAllFiligrees]      = useState<Filigree[]>([])
-  const [allWeaponGroups,   setAllWeaponGroups]   = useState<import('../../lib/weapons/groups').WeaponGroupSpec[]>([])
-  const [allGuildBuffs,     setAllGuildBuffs]     = useState<GuildBuff[]>([])
-  const [allItemBuffs,      setAllItemBuffs]      = useState<import('../../server/dataLoaders').ItemBuffSpec[]>([])
-  const [gearItems,         setGearItems]         = useState<Record<string, Item>>({})
+  const bundle = useStaticBundle()
+  const gearItems = useGearItems(build.gear)
   const [tip, setTip] = useState<TipState | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -245,54 +234,12 @@ export default function BreakdownsPanel() {
     })
   }, [])
 
-  // Load static data once
-  useEffect(() => {
-    api.classes().then(setAllClasses)
-    api.races().then(setAllRaces)
-    api.feats().then(setAllFeats)
-    api.enhancements().then(setAllTrees)
-    api.selfbuffs().then(setAllSelfBuffs)
-    api.augments().then(setAllAugments)
-    api.setbonuses().then(setAllSetBonuses)
-    api.filigreeSetBonuses().then(setAllFiligreeBonuses)
-    api.filigree().then(setAllFiligrees)
-    api.weaponGroups().then(setAllWeaponGroups).catch(() => setAllWeaponGroups([]))
-    api.guildbuffs().then(setAllGuildBuffs).catch(() => setAllGuildBuffs([]))
-    api.itemBuffs().then(setAllItemBuffs).catch(() => setAllItemBuffs([]))
-  }, [])
-
-  // Resolve gear items whenever equipped slots change
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null)
-      )
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-
   const hideTip = useCallback(() => setTip(null), [])
 
   // ── Build stats ──────────────────────────────────────────────────────────
-  const statsInput = useMemo(
-    () => ({
-      allClasses, allRaces, allFeats, allTrees, gearItems,
-      allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-      allWeaponGroups, allGuildBuffs, allItemBuffs,
-    }),
-    [allClasses, allRaces, allFeats, allTrees, gearItems,
-     allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-     allWeaponGroups, allGuildBuffs, allItemBuffs],
-  )
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
+  const { allClasses } = bundle
 
   // ── Class aggregates for labels ──────────────────────────────────────────
   const casterClasses = build.classes

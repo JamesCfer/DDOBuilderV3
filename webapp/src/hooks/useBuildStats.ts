@@ -47,6 +47,8 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       input.allClasses, input.allRaces, input.allFeats, input.allTrees,
       input.allSelfBuffs, input.allAugments, input.allSetBonuses,
       input.allFiligreeBonuses, input.allFiligrees, input.gearItems,
+      input.allWeaponGroups, input.allSpells, input.allGuildBuffs,
+      input.allItemBuffs,
       resolvedSpecialFeats,
     ],
   )

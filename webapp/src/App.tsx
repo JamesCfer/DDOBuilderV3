@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { preloadStaticBundle } from './hooks/useStaticBundle'
 import { CharacterProvider, useCharacter } from './context/CharacterContext'
 import { BuildLogProvider } from './context/BuildLogContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -108,6 +109,11 @@ function AppInner() {
   const { dispatch } = useCharacter()
   const { setDoc } = useDocument()
   const [page, setPage] = useState<Page>('Character')
+
+  // Warm the shared catalogue bundle at startup so every tab — especially
+  // Analysis — has the complete dataset ready instead of each tab fetching
+  // its own copy on first visit.
+  useEffect(() => { preloadStaticBundle() }, [])
   const [tabs, setTabs] = useState<Record<Page, string>>(() => (
     Object.fromEntries(PAGES.map(p => [p, PAGE_TABS[p][0]])) as Record<Page, string>
   ))

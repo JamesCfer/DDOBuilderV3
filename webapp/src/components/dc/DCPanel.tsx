@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../../api'
+import { useMemo, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import type {
-  Ability, DDOClass, Race, Feat, EnhancementTree, Item,
-  Augment, SetBonus, FiligreeSetBonus, Filigree, OptionalBuff,
-} from '../../types/ddo'
+import type { Ability, DDOClass } from '../../types/ddo'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { SPELL_SCHOOLS } from '../../lib/gamedata'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import type { BuildStats } from '../../hooks/useBuildStats'
@@ -64,58 +62,11 @@ export default function DCPanel() {
   const { build } = useCharacter()
   const [activeTab, setActiveTab] = useState<string | null>(null)
 
-  // Static data
-  const [allClasses,         setAllClasses]         = useState<DDOClass[]>([])
-  const [allRaces,           setAllRaces]           = useState<Race[]>([])
-  const [allFeats,           setAllFeats]           = useState<Feat[]>([])
-  const [allTrees,           setAllTrees]           = useState<EnhancementTree[]>([])
-  const [allSelfBuffs,       setAllSelfBuffs]       = useState<OptionalBuff[]>([])
-  const [allAugments,        setAllAugments]        = useState<Augment[]>([])
-  const [allSetBonuses,      setAllSetBonuses]      = useState<SetBonus[]>([])
-  const [allFiligreeBonuses, setAllFiligreeBonuses] = useState<FiligreeSetBonus[]>([])
-  const [allFiligrees,       setAllFiligrees]       = useState<Filigree[]>([])
-  const [allWeaponGroups,    setAllWeaponGroups]    = useState<import('../../lib/weapons/groups').WeaponGroupSpec[]>([])
-  const [allItemBuffs,       setAllItemBuffs]       = useState<import('../../server/dataLoaders').ItemBuffSpec[]>([])
-  const [gearItems,          setGearItems]          = useState<Record<string, Item>>({})
+  const bundle = useStaticBundle()
+  const gearItems = useGearItems(build.gear)
+  const { allClasses, allFeats, allTrees } = bundle
 
-  useEffect(() => {
-    api.classes().then(setAllClasses)
-    api.races().then(setAllRaces)
-    api.feats().then(setAllFeats)
-    api.enhancements().then(setAllTrees)
-    api.selfbuffs().then(setAllSelfBuffs)
-    api.augments().then(setAllAugments)
-    api.setbonuses().then(setAllSetBonuses)
-    api.filigreeSetBonuses().then(setAllFiligreeBonuses)
-    api.filigree().then(setAllFiligrees)
-    api.weaponGroups().then(setAllWeaponGroups).catch(() => setAllWeaponGroups([]))
-    api.itemBuffs().then(setAllItemBuffs).catch(() => setAllItemBuffs([]))
-  }, [])
-
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null)
-      )
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-
-  const statsInput = useMemo(() => ({
-    allClasses, allRaces, allFeats, allTrees, gearItems,
-    allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-    allWeaponGroups, allItemBuffs,
-  }), [allClasses, allRaces, allFeats, allTrees, gearItems,
-      allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-      allWeaponGroups, allItemBuffs])
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
 
   const stats = useBuildStats(statsInput)
 

@@ -1,7 +1,11 @@
 // Shared loader that fetches every static dataset useBuildStats needs.
 // Replaces the boilerplate `Promise.all([api.classes(), api.races(), …])`
 // blocks in BreakdownsPanel / CombatPanel / DCPanel / ForumExportPanel /
-// BuildCompare / SpellsPanel.
+// BuildCompare / SpellsPanel / AutomaticFeats / EpicDestiniesPanel.
+//
+// The bundle is fetched ONCE per app session (module-level cache shared by
+// every consumer) and warmed at app start, so switching tabs never refetches
+// the catalogues and every panel computes stats from the same complete data.
 
 import { useEffect, useState } from 'react'
 import { api } from '../api'
@@ -28,6 +32,8 @@ export interface StaticBundle {
   allSpells: Spell[]
   allBonusTypes: BonusTypeSpec[]
   allItemBuffs: ItemBuffSpec[]
+  /** True once every catalogue fetch has settled. */
+  loaded: boolean
 }
 
 const empty: StaticBundle = {
@@ -35,14 +41,22 @@ const empty: StaticBundle = {
   allSelfBuffs: [], allAugments: [], allSetBonuses: [],
   allFiligreeBonuses: [], allFiligrees: [], allWeaponGroups: [],
   allGuildBuffs: [], allSpells: [], allBonusTypes: [], allItemBuffs: [],
+  loaded: false,
 }
 
-export function useStaticBundle(): StaticBundle {
-  const [bundle, setBundle] = useState<StaticBundle>(empty)
+// Module-level cache: one fetch set per app session, shared by all consumers.
+let cache: StaticBundle | null = null
+let inflight: Promise<StaticBundle> | null = null
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([
+/**
+ * Kick off (or join) the one shared catalogue load. Called from App at
+ * startup so the data is loading before the user reaches any stats tab, and
+ * from useStaticBundle on first consumer mount.
+ */
+export function preloadStaticBundle(): Promise<StaticBundle> {
+  if (cache) return Promise.resolve(cache)
+  if (!inflight) {
+    inflight = Promise.all([
       api.classes().catch(() => [] as DDOClass[]),
       api.races().catch(() => [] as Race[]),
       api.feats().catch(() => [] as Feat[]),
@@ -62,15 +76,38 @@ export function useStaticBundle(): StaticBundle {
       allSetBonuses, allFiligreeBonuses, allFiligrees, allWeaponGroups,
       allGuildBuffs, allSpells, allBonusTypes, allItemBuffs,
     ]) => {
-      if (cancelled) return
       if (allBonusTypes.length > 0) {
         initBonusTypes(allBonusTypes)
       }
-      setBundle({
+      cache = {
         allClasses, allRaces, allFeats, allTrees, allSelfBuffs, allAugments,
         allSetBonuses, allFiligreeBonuses, allFiligrees, allWeaponGroups,
         allGuildBuffs, allSpells, allBonusTypes, allItemBuffs,
-      })
+        loaded: true,
+      }
+      return cache
+    })
+  }
+  return inflight
+}
+
+/** Test-only: clear the module-level cache between test files/cases. */
+export function resetStaticBundleForTests(): void {
+  cache = null
+  inflight = null
+}
+
+export function useStaticBundle(): StaticBundle {
+  const [bundle, setBundle] = useState<StaticBundle>(() => cache ?? empty)
+
+  useEffect(() => {
+    if (cache) {
+      setBundle(cache)
+      return
+    }
+    let cancelled = false
+    preloadStaticBundle().then(b => {
+      if (!cancelled) setBundle(b)
     })
     return () => { cancelled = true }
   }, [])

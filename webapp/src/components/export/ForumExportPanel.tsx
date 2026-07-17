@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import { DEFAULT_SECTIONS, emitForumExport, type SectionDef } from '../../lib/export/sections'
-import type {
-  DDOClass, Race, Feat, EnhancementTree, Item, Augment, SetBonus,
-  FiligreeSetBonus, Filigree, OptionalBuff, Stance,
-} from '../../types/ddo'
+import type { Feat, Stance } from '../../types/ddo'
 import styles from './ForumExportPanel.module.css'
 
 export default function ForumExportPanel() {
@@ -14,60 +13,20 @@ export default function ForumExportPanel() {
   const [copied, setCopied] = useState(false)
   const [enabled, setEnabled] = useState<Set<string>>(() => new Set(DEFAULT_SECTIONS.map(s => s.id)))
 
-  // Stats input
-  const [allClasses, setAllClasses] = useState<DDOClass[]>([])
-  const [allRaces, setAllRaces] = useState<Race[]>([])
-  const [allFeats, setAllFeats] = useState<Feat[]>([])
-  const [allTrees, setAllTrees] = useState<EnhancementTree[]>([])
-  const [allSelfBuffs, setAllSelfBuffs] = useState<OptionalBuff[]>([])
-  const [allAugments, setAllAugments] = useState<Augment[]>([])
-  const [allSetBonuses, setAllSetBonuses] = useState<SetBonus[]>([])
-  const [allFiligreeBonuses, setAllFiligreeBonuses] = useState<FiligreeSetBonus[]>([])
-  const [allFiligrees, setAllFiligrees] = useState<Filigree[]>([])
+  const bundle = useStaticBundle()
+  const gearItems = useGearItems(build.gear)
+  const { allClasses, allRaces, allSelfBuffs } = bundle
+
+  // Panel-specific data not part of the shared bundle
   const [allStances, setAllStances] = useState<Stance[]>([])
   const [epicPastLifeFeats, setEpicPastLifeFeats] = useState<Feat[]>([])
-  const [allItemBuffs, setAllItemBuffs] = useState<import('../../server/dataLoaders').ItemBuffSpec[]>([])
-  const [gearItems, setGearItems] = useState<Record<string, Item>>({})
 
   useEffect(() => {
-    api.classes().then(setAllClasses)
-    api.races().then(setAllRaces)
-    api.feats().then(setAllFeats)
-    api.enhancements().then(setAllTrees)
-    api.selfbuffs().then(setAllSelfBuffs)
-    api.augments().then(setAllAugments)
-    api.setbonuses().then(setAllSetBonuses)
-    api.filigreeSetBonuses().then(setAllFiligreeBonuses)
-    api.filigree().then(setAllFiligrees)
     api.stances().then(setAllStances).catch(() => setAllStances([]))
     api.feats({ acquire: 'EpicPastLife' }).then(setEpicPastLifeFeats).catch(() => setEpicPastLifeFeats([]))
-    api.itemBuffs().then(setAllItemBuffs).catch(() => setAllItemBuffs([]))
   }, [])
 
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null)
-      )
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-
-  const statsInput = useMemo(() => ({
-    allClasses, allRaces, allFeats, allTrees, gearItems,
-    allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-    allItemBuffs,
-  }), [allClasses, allRaces, allFeats, allTrees, gearItems,
-      allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-      allItemBuffs])
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
 
   const sections: SectionDef[] = useMemo(

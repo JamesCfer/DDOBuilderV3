@@ -550,8 +550,8 @@ function deriveArmorStances(gearItems: Record<string, Item>): Set<string> {
   } else {
     stances.add('Cloth Armor')
   }
-  // Shield stance from off-hand
-  const shield = gearItems['OffHand'] ?? gearItems['Shield']
+  // Shield stance from off-hand ('Off Hand' is the canonical app slot name)
+  const shield = gearItems['Off Hand'] ?? gearItems['OffHand'] ?? gearItems['Shield']
   if (shield) {
     const t = shield.Armor
     if (t === 'Tower Shield' || t === 'TowerShield') stances.add('Tower Shield')
@@ -804,8 +804,11 @@ export function weaponInfoFromItem(item: Item | undefined, slot: string): Weapon
   }
 }
 
+// Canonical app slot names are 'Main Hand' / 'Off Hand' (GearPanel,
+// v2Import); the Weapon1/MainHand/Weapon2/OffHand spellings are legacy
+// fixture conventions kept for back-compat.
 export function extractWeaponInfo(gearItems: Record<string, Item>): WeaponInfo | null {
-  for (const slot of ['Weapon1', 'MainHand', 'Weapon']) {
+  for (const slot of ['Main Hand', 'Weapon1', 'MainHand', 'Weapon']) {
     const wi = weaponInfoFromItem(gearItems[slot], slot)
     if (wi) return wi
   }
@@ -814,7 +817,7 @@ export function extractWeaponInfo(gearItems: Record<string, Item>): WeaponInfo |
 
 /** Off-hand weapon for two-weapon fighting (null if no off-hand weapon). */
 export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): WeaponInfo | null {
-  for (const slot of ['Weapon2', 'OffHand']) {
+  for (const slot of ['Off Hand', 'Weapon2', 'OffHand']) {
     const wi = weaponInfoFromItem(gearItems[slot], slot)
     if (wi) return wi
   }
@@ -1018,10 +1021,10 @@ function buildStatMapOnce(
     for (const [slot, item] of Object.entries(gearItems)) {
       if (item.Weapon) {
         ctxWeaponTypes.add(item.Weapon)
-        if (slot === 'Weapon1' || slot === 'MainHand' || slot === 'Weapon') {
+        if (slot === 'Main Hand' || slot === 'Weapon1' || slot === 'MainHand' || slot === 'Weapon') {
           mainWeaponType ||= item.Weapon
         }
-        if (slot === 'Weapon2' || slot === 'OffHand') {
+        if (slot === 'Off Hand' || slot === 'Weapon2' || slot === 'OffHand') {
           offWeaponType ||= item.Weapon
         }
       }
