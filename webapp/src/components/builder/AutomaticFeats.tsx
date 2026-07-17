@@ -1,61 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../../api'
+import { useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
 import { buildAutomaticFeatGroups } from '../../lib/automaticFeats'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
-import type {
-  DDOClass, Race, Feat, EnhancementTree, Item,
-  Augment, SetBonus, FiligreeSetBonus, Filigree, OptionalBuff,
-} from '../../types/ddo'
 import styles from './AutomaticFeats.module.css'
 
 export default function AutomaticFeats() {
   const { build } = useCharacter()
-  const [allClasses,         setAllClasses]         = useState<DDOClass[]>([])
-  const [allRaces,           setAllRaces]            = useState<Race[]>([])
-  const [allFeats,           setAllFeats]            = useState<Feat[]>([])
-  const [allTrees,           setAllTrees]            = useState<EnhancementTree[]>([])
-  const [allSelfBuffs,       setAllSelfBuffs]        = useState<OptionalBuff[]>([])
-  const [allAugments,        setAllAugments]         = useState<Augment[]>([])
-  const [allSetBonuses,      setAllSetBonuses]       = useState<SetBonus[]>([])
-  const [allFiligreeBonuses, setAllFiligreeBonuses]  = useState<FiligreeSetBonus[]>([])
-  const [allFiligrees,       setAllFiligrees]        = useState<Filigree[]>([])
-  const [gearItems,          setGearItems]           = useState<Record<string, Item>>({})
+  const bundle = useStaticBundle()
+  const gearItems = useGearItems(build.gear)
+  const { allClasses, allRaces } = bundle
 
-  useEffect(() => {
-    api.classes().then(setAllClasses)
-    api.races().then(setAllRaces)
-    api.feats().then(setAllFeats)
-    api.enhancements().then(setAllTrees)
-    api.selfbuffs().then(setAllSelfBuffs)
-    api.augments().then(setAllAugments)
-    api.setbonuses().then(setAllSetBonuses)
-    api.filigreeSetBonuses().then(setAllFiligreeBonuses)
-    api.filigree().then(setAllFiligrees)
-  }, [])
-
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null)
-      )
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-
-  const statsInput = useMemo(() => ({
-    allClasses, allRaces, allFeats, allTrees, gearItems,
-    allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-  }), [allClasses, allRaces, allFeats, allTrees, gearItems,
-      allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees])
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
 
   const stats = useBuildStats(statsInput)
 

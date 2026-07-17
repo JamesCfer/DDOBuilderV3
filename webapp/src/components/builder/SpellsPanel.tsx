@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../../api'
+import { useMemo, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import type {
-  Spell, DDOClass, Race, Feat, EnhancementTree, Item,
-  Augment, SetBonus, FiligreeSetBonus, Filigree, OptionalBuff,
-} from '../../types/ddo'
+import type { Spell, DDOClass } from '../../types/ddo'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import {
   computeSpellDC, computeCasterLevel, computeMaxCasterLevel,
@@ -49,67 +47,13 @@ function buildClassTabs(
 export default function SpellsPanel() {
   const { build, dispatch } = useCharacter()
 
-  const [allSpells, setAllSpells] = useState<Spell[]>([])
-  const [allClasses, setAllClasses] = useState<DDOClass[]>([])
-  const [allRaces, setAllRaces] = useState<Race[]>([])
-  const [allFeats, setAllFeats] = useState<Feat[]>([])
-  const [allTrees, setAllTrees] = useState<EnhancementTree[]>([])
-  const [allSelfBuffs, setAllSelfBuffs] = useState<OptionalBuff[]>([])
-  const [allAugments, setAllAugments] = useState<Augment[]>([])
-  const [allSetBonuses, setAllSetBonuses] = useState<SetBonus[]>([])
-  const [allFiligreeBonuses, setAllFiligreeBonuses] = useState<FiligreeSetBonus[]>([])
-  const [allFiligrees, setAllFiligrees] = useState<Filigree[]>([])
-  const [allItemBuffs, setAllItemBuffs] = useState<import('../../server/dataLoaders').ItemBuffSpec[]>([])
-  const [gearItems, setGearItems] = useState<Record<string, Item>>({})
-  const [loading, setLoading] = useState(true)
+  const bundle = useStaticBundle()
+  const gearItems = useGearItems(build.gear)
+  const { allClasses, allSpells } = bundle
+  const loading = !bundle.loaded
   const [activeTab, setActiveTab] = useState<string | null>(null)
 
-  useEffect(() => {
-    setLoading(true)
-    Promise.all([
-      api.spells().catch(() => [] as Spell[]),
-      api.classes().catch(() => [] as DDOClass[]),
-      api.races().catch(() => [] as Race[]),
-      api.feats().catch(() => [] as Feat[]),
-      api.enhancements().catch(() => [] as EnhancementTree[]),
-      api.selfbuffs().catch(() => [] as OptionalBuff[]),
-      api.augments().catch(() => [] as Augment[]),
-      api.setbonuses().catch(() => [] as SetBonus[]),
-      api.filigreeSetBonuses().catch(() => [] as FiligreeSetBonus[]),
-      api.filigree().catch(() => [] as Filigree[]),
-      api.itemBuffs().catch(() => [] as import('../../server/dataLoaders').ItemBuffSpec[]),
-    ]).then(([sp, cls, ra, fe, tr, sb, aug, sbn, fbn, fil, ib]) => {
-      setAllSpells(sp); setAllClasses(cls); setAllRaces(ra); setAllFeats(fe)
-      setAllTrees(tr); setAllSelfBuffs(sb); setAllAugments(aug)
-      setAllSetBonuses(sbn); setAllFiligreeBonuses(fbn); setAllFiligrees(fil)
-      setAllItemBuffs(ib)
-    }).finally(() => setLoading(false))
-  }, [])
-
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null)
-      )
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-
-  const statsInput = useMemo(() => ({
-    allClasses, allRaces, allFeats, allTrees, gearItems,
-    allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-    allItemBuffs,
-  }), [allClasses, allRaces, allFeats, allTrees, gearItems,
-      allSelfBuffs, allAugments, allSetBonuses, allFiligreeBonuses, allFiligrees,
-      allItemBuffs])
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
 
   const tabs = buildClassTabs(build.classes, allClasses, allSpells)

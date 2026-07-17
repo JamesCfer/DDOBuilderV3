@@ -4,52 +4,15 @@
 //
 // V2 parity: DDOBuilder.h supports multiple active builds for stat comparison.
 
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../../api'
+import { useMemo, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { usePersistence } from '../../hooks/usePersistence'
+import { useStaticBundle, type StaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
-import type {
-  CharacterBuild, DDOClass, Race, Feat, EnhancementTree, Item,
-  Augment, SetBonus, FiligreeSetBonus, Filigree, OptionalBuff,
-} from '../../types/ddo'
-import type { ItemBuffSpec } from '../../server/dataLoaders'
+import type { CharacterBuild } from '../../types/ddo'
 import styles from './BuildCompare.module.css'
-
-interface DataBundle {
-  allClasses: DDOClass[]
-  allRaces: Race[]
-  allFeats: Feat[]
-  allTrees: EnhancementTree[]
-  allSelfBuffs: OptionalBuff[]
-  allAugments: Augment[]
-  allSetBonuses: SetBonus[]
-  allFiligreeBonuses: FiligreeSetBonus[]
-  allFiligrees: Filigree[]
-  allItemBuffs: ItemBuffSpec[]
-}
-
-function useGearItems(build: CharacterBuild): Record<string, Item> {
-  const [gearItems, setGearItems] = useState<Record<string, Item>>({})
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(it => it ? [slot, it] as [string, Item] : null),
-      ),
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
-  return gearItems
-}
 
 /**
  * Hook that runs `useBuildStats` against an arbitrary CharacterBuild by
@@ -97,8 +60,8 @@ const STATS_TO_SHOW: Array<{ label: string; key: string; fmt?: (n: number) => st
   { label: 'CHA', key: 'ability.Charisma' },
 ]
 
-function StatColumn({ build, data }: { build: CharacterBuild; data: DataBundle }) {
-  const gearItems = useGearItems(build)
+function StatColumn({ build, data }: { build: CharacterBuild; data: StaticBundle }) {
+  const gearItems = useGearItems(build.gear)
   const statsInput = useMemo(() => ({ ...data, gearItems }), [data, gearItems])
   // useBuildStats accepts a build override so this column computes stats for
   // the supplied saved build instead of the active one.
@@ -125,22 +88,8 @@ export default function BuildCompare() {
   const { saves } = usePersistence()
   const [otherId, setOtherId] = useState<string | null>(null)
 
-  const [data, setData] = useState<DataBundle | null>(null)
-
-  useEffect(() => {
-    Promise.all([
-      api.classes(), api.races(), api.feats(), api.enhancements(),
-      api.selfbuffs(), api.augments(), api.setbonuses(),
-      api.filigreeSetBonuses(), api.filigree(),
-      api.itemBuffs().catch(() => [] as ItemBuffSpec[]),
-    ]).then(([classes, races, feats, trees, selfBuffs, augs, sets, fbn, fil, itemBuffs]) => {
-      setData({
-        allClasses: classes, allRaces: races, allFeats: feats, allTrees: trees,
-        allSelfBuffs: selfBuffs, allAugments: augs, allSetBonuses: sets,
-        allFiligreeBonuses: fbn, allFiligrees: fil, allItemBuffs: itemBuffs,
-      })
-    }).catch(() => setData(null))
-  }, [])
+  const bundle = useStaticBundle()
+  const data = bundle.loaded ? bundle : null
 
   // U6 — builds of the current Character document (other lives/builds),
   // grouped per life, listed before the saved-character builds (V2 compares

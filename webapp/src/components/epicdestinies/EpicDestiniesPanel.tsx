@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from 'react'
-import { api } from '../../api'
+import { useEffect, useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import type { EnhancementTree, EnhancementTreeItem, Item } from '../../types/ddo'
+import type { EnhancementTree, EnhancementTreeItem } from '../../types/ddo'
 import TreeGrid, { type TreeChoices } from '../enhancements/TreeGrid'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import { tier5LockedTree, availableDestinyTrees, destinyPoolForBuild } from '../../lib/destiny'
 import styles from './EpicDestiniesPanel.module.css'
@@ -51,13 +51,11 @@ function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): number {
 export default function EpicDestiniesPanel() {
   const { build, dispatch } = useCharacter()
 
-  const [gearItems, setGearItems] = useState<Record<string, Item>>({})
-
   // Static data + full build stats. Stats give us the aggregated fate-point and
   // destiny-AP-bonus effect totals (FatePoint / DestinyAPBonus), exactly the
   // sources V2's BreakdownItemDestinyAps feeds into the destiny point pool.
   const bundle = useStaticBundle()
-  const loading = bundle.allTrees.length === 0
+  const loading = !bundle.loaded
 
   // Epic destiny trees, derived from the shared bundle.
   const allTrees = useMemo(
@@ -66,32 +64,9 @@ export default function EpicDestiniesPanel() {
   )
 
   // Resolve equipped gear so gear-granted fate points/destiny APs are counted.
-  useEffect(() => {
-    const slots = Object.entries(build.gear).filter(([, name]) => name)
-    if (slots.length === 0) { setGearItems({}); return }
-    let cancelled = false
-    Promise.all(
-      slots.map(([slot, name]) =>
-        api.item(name).then(item => item ? [slot, item] as [string, Item] : null),
-      ),
-    ).then(results => {
-      if (cancelled) return
-      const map: Record<string, Item> = {}
-      for (const r of results) { if (r) map[r[0]] = r[1] }
-      setGearItems(map)
-    })
-    return () => { cancelled = true }
-  }, [build.gear])
+  const gearItems = useGearItems(build.gear)
 
-  const statsInput = useMemo(() => ({
-    allClasses: bundle.allClasses, allRaces: bundle.allRaces, allFeats: bundle.allFeats,
-    allTrees: bundle.allTrees, gearItems,
-    allSelfBuffs: bundle.allSelfBuffs, allAugments: bundle.allAugments,
-    allSetBonuses: bundle.allSetBonuses, allFiligreeBonuses: bundle.allFiligreeBonuses,
-    allFiligrees: bundle.allFiligrees, allWeaponGroups: bundle.allWeaponGroups,
-    allSpells: bundle.allSpells, allGuildBuffs: bundle.allGuildBuffs,
-    allItemBuffs: bundle.allItemBuffs,
-  }), [bundle, gearItems])
+  const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
 
   // ── Build state accessors ─────────────────────────────────────────────────
