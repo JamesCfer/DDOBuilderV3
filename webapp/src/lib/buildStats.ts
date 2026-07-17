@@ -2001,7 +2001,12 @@ function buildStatMapOnce(
       const pctBonuses = bonuses.filter(b => b.percent)
       if (pctBonuses.length === 0) continue
       const flatBonuses = bonuses.filter(b => !b.percent)
-      const base = resolveBonus(flatBonuses).total
+      // V2 RemoveTemporary (BreakdownItem.cpp:793-812): Bonus="Temporary"
+      // effects are pulled out before baseTotal is computed for percentage
+      // purposes, then added back flatly after all percentage effects apply
+      // (:236-238) — a Temporary bonus is never itself scaled, nor does it
+      // inflate the base that other %-bonuses on the same stat scale against.
+      const base = resolveBonus(flatBonuses.filter(b => b.type !== 'Temporary')).total
       const resolvedPct = resolveBonus(pctBonuses.map(b => ({ ...b, percent: false })))
       const rebuilt = flatBonuses
       if (key === 'hp') {
