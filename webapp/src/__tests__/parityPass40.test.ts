@@ -74,6 +74,11 @@ describe('BAB override boosts BAB to character level (max 25)', () => {
         classes: [{ name: 'Wizard', levels: 5 }],
         levelClasses: fiveWizard,
         totalLevel: 5,
+        // The boost target is the FULL character level (V2 Build::Level());
+        // emptyBuild() defaults epic 10 / legendary 4, so zero them for a
+        // genuine level-5 scenario.
+        epicLevels: 0,
+        legendaryLevels: 0,
         featChoices: { '1': 'Tenser-like' },
       }),
     )

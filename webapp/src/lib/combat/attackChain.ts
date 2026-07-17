@@ -201,13 +201,16 @@ export function collectAvailableAttacks(input: CollectAvailableAttacksInput): Av
     for (const item of items) {
       const it = item as RawAttackCarrier
       const itemName = str(it.Name)
-      const ranks = choices[itemName] ?? 0
+      // Choices are keyed by InternalName (V2 imports, TreeGrid) with a
+      // display-Name fallback for legacy saves.
+      const internalName = str((it as Record<string, unknown>).InternalName as string | undefined)
+      const ranks = (internalName ? choices[internalName] : undefined) ?? choices[itemName] ?? 0
       if (ranks <= 0) continue
       // Stacks = ranks trained: the Cooldown/Duration vectors are sized per
       // rank (e.g. Kensei Attack Boost size="3", Fighter_Kensei.tree.xml:875).
       addStacks(out, attacksOf(item), ranks)
       // Attack objects inside the chosen sub-selection (DPSPane.cpp:299-324).
-      const selName = selections[itemName]
+      const selName = (internalName ? selections[internalName] : undefined) ?? selections[itemName]
       if (selName && it.Selector) {
         const selectors = Array.isArray(it.Selector) ? it.Selector : [it.Selector]
         for (const sel of selectors) {

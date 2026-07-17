@@ -143,6 +143,28 @@ function toArray<T>(val: T | T[] | undefined): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
+// V2 .DDOBuild files and the TreeGrid UI both key enhancement choices by the
+// item's InternalName (e.g. "WCCore1"); older V3 saves used the display Name.
+// Every rank/selection lookup must accept either key (same policy as
+// exclusionGroups.ts / TreeGrid.tsx itemKey).
+type EnhKeyed = { Name: string; InternalName?: string }
+
+export function enhancementRank(
+  choices: Record<string, number> | undefined,
+  item: EnhKeyed,
+): number {
+  if (!choices) return 0
+  return choices[item.InternalName ?? ''] ?? choices[item.Name] ?? 0
+}
+
+export function enhancementSelection(
+  selections: Record<string, string> | undefined,
+  item: EnhKeyed,
+): string | undefined {
+  if (!selections) return undefined
+  return selections[item.InternalName ?? ''] ?? selections[item.Name]
+}
+
 function abMod(score: number): number {
   return Math.floor((score - 10) / 2)
 }
@@ -223,9 +245,9 @@ export function buildRuntimeGroupAdds(
     const tree = allTrees.find(t => t.Name === treeName)
     if (!tree) return
     for (const item of (tree.EnhancementTreeItem ?? [])) {
-      const rank = choices[item.Name] ?? 0
+      const rank = enhancementRank(choices, item)
       if (rank <= 0) continue
-      const selectedOption = selections[item.Name]
+      const selectedOption = enhancementSelection(selections, item)
       if (selectedOption) {
         const options = getSelectorOptions(item)
         const opt = options.find(o => o.Name === selectedOption)
@@ -341,7 +363,7 @@ function costUpToRank(item: EnhancementTreeItem, rank: number): number {
 }
 
 function computeTreeAP(items: EnhancementTreeItem[], choices: Record<string, number>): number {
-  return items.reduce((sum, item) => sum + costUpToRank(item, choices[item.Name] ?? 0), 0)
+  return items.reduce((sum, item) => sum + costUpToRank(item, enhancementRank(choices, item)), 0)
 }
 
 function getSelectorOptions(item: EnhancementTreeItem): EnhancementSelection[] {
@@ -473,11 +495,11 @@ function accumulateEnhancementTree(
   const treeAP = computeTreeAP(items, choices)
 
   for (const item of items) {
-    const rank = choices[item.Name] ?? 0
+    const rank = enhancementRank(choices, item)
     if (rank <= 0) continue
 
     const source = `${tree.Name}: ${item.Name}`
-    const selectedOption = selections[item.Name]
+    const selectedOption = enhancementSelection(selections, item)
 
     if (selectedOption) {
       const options = getSelectorOptions(item)
@@ -500,11 +522,12 @@ function accumulateGear(
   map: StatMap,
   gearItems: Record<string, Item>,
   buffCatalogue?: Map<string, ItemBuffTemplate>,
+  ctx?: EffectContext,
 ): void {
   for (const [slot, item] of Object.entries(gearItems)) {
     const source = `${item.Name} (${slot})`
     for (const buff of toArray(item.Buff)) {
-      addParsed(map, parseItemBuff(buff, source, buffCatalogue), true)
+      addParsed(map, parseItemBuff(buff, source, buffCatalogue, ctx), true)
     }
     // Armor bonus from armor/shield items — treated as Armor bonus type
     if (item.ArmorBonus) {
@@ -775,13 +798,21 @@ function accumulateTrainedSpells(
   ctx?: EffectContext,
 ): void {
   if (!trainedSpells) return
-  for (const [, byLevel] of Object.entries(trainedSpells)) {
+  for (const [className, byLevel] of Object.entries(trainedSpells)) {
     for (const names of Object.values(byLevel)) {
       for (const spellName of names) {
         const spell = allSpells.find(s => s.Name === spellName)
         if (!spell) continue
         for (const eff of toArray(spell.Effect)) {
-          addParsed(map, parseEffect(eff, 1, `Spell: ${spell.Name}`, 0, 0, ctx))
+          // V2 Build::ApplySpellEffects (Build.cpp:2388-2404): stamps the
+          // spell's class as StackSource for ClassLevel/ClassCasterLevel
+          // amounts, and calls SetApplyAsItemEffect() on EVERY spell effect —
+          // trained-spell effects join the gear "Highest Only" pool.
+          const atype = (eff as { AType?: string }).AType
+          const stamped = (atype === 'ClassLevel' || atype === 'ClassCasterLevel') && !eff.StackSource
+            ? { ...eff, StackSource: className }
+            : eff
+          addParsed(map, parseEffect(stamped, 1, `Spell: ${spell.Name}`, 0, 0, ctx), true)
         }
       }
     }
@@ -964,6 +995,17 @@ function buildStatMapOnce(
     for (const choices of Object.values(build.reaperChoices ?? {})) {
       for (const [name, rank] of Object.entries(choices)) {
         if (rank > 0) ctxEnhancements.add(name)
+      }
+    }
+    // Choice keys may be InternalNames (V2 imports, current TreeGrid) or
+    // display Names (legacy saves); requirement <Item> refs use InternalName.
+    // Add each trained item's OTHER name so both namespaces resolve.
+    for (const tree of allTrees) {
+      for (const item of tree.EnhancementTreeItem ?? []) {
+        const internal = item.InternalName
+        if (!internal) continue
+        if (ctxEnhancements.has(internal)) ctxEnhancements.add(item.Name)
+        else if (ctxEnhancements.has(item.Name)) ctxEnhancements.add(internal)
       }
     }
     // Pass 1: inherent-only ability totals (base + race + levelup). The
@@ -1282,7 +1324,7 @@ function buildStatMapOnce(
     }
 
     // ── Gear item buffs ───────────────────────────────────────────────────
-    accumulateGear(map, gearItems, buffCatalogue)
+    accumulateGear(map, gearItems, buffCatalogue, ctx)
 
     // ── Augments ─────────────────────────────────────────────────────────
     // Include sentient-gem augments alongside regular slot augments (Stream 3).
@@ -1680,7 +1722,9 @@ function buildStatMapOnce(
       const babOverride = resolveBonus(map.get('babOverride') ?? []).total
       if (babOverride > 0) {
         const classBabSum = resolveBonus(map.get('bab') ?? []).total
-        const boost = Math.min(MAX_BAB, build.totalLevel) - classBabSum
+        // V2 Build::Level() — the FULL character level (heroic+epic+legendary).
+        const charLevel = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+        const boost = Math.min(MAX_BAB, charLevel) - classBabSum
         if (boost > 0) {
           add(map, 'bab', { value: boost, type: 'Stacking', source: 'BAB boost to character level (max 25)' })
         }
@@ -1856,8 +1900,12 @@ function buildStatMapOnce(
         for (const treeName of halfElfTreeNames) {
           const sels = build.enhancementSelections[treeName] ?? {}
           const choices = build.enhancementChoices[treeName] ?? {}
+          const heTree = allTrees.find(t => t.Name === treeName)
           for (const enhName of dilettanteEnhNames) {
-            if ((choices[enhName] ?? 0) > 0 && sels[enhName] === 'Improved Dilettante: Paladin') {
+            const item = heTree?.EnhancementTreeItem?.find(i => i.Name === enhName)
+            const rank = item ? enhancementRank(choices, item) : (choices[enhName] ?? 0)
+            const sel = item ? enhancementSelection(sels, item) : sels[enhName]
+            if (rank > 0 && sel === 'Improved Dilettante: Paladin') {
               improvedCount += 1
             }
           }
@@ -1958,11 +2006,17 @@ function buildStatMapOnce(
     {
       const dodgeRaw = resolveBonus(map.get('dodge') ?? []).total
       if (dodgeRaw > 0) {
+        // V2 Breakdown_MaxDexBonus->Total() = the armor's printed
+        // MaximumDexterityBonus PLUS Effect_MaxDexBonus effects; the dodge cap
+        // compares against that total, not the effects alone.
+        const armorItem = gearItems['Armor'] ?? gearItems['Body']
+        const printedMdb = typeof armorItem?.MaximumDexterityBonus === 'number'
+          ? armorItem.MaximumDexterityBonus : undefined
         const cap = effectiveDodgeCap({
           dodgeCap:    resolveBonus(map.get('dodgeCap') ?? []).total,
           hasDodgeCap: (map.get('dodgeCap') ?? []).length > 0,
-          mdb:         resolveBonus(map.get('mdb') ?? []).total,
-          hasMdb:      (map.get('mdb') ?? []).length > 0,
+          mdb:         resolveBonus(map.get('mdb') ?? []).total + (printedMdb ?? 0),
+          hasMdb:      (map.get('mdb') ?? []).length > 0 || printedMdb !== undefined,
           mdbShields:  resolveBonus(map.get('mdbShields') ?? []).total,
           isClothArmor: armorStances.has('Cloth Armor'),
           isTowerShield: armorStances.has('Tower Shield'),
