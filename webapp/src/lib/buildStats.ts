@@ -134,7 +134,7 @@ function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGe
     // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
     // (BreakdownItem.cpp:623-698, :205-221).
     const asGear = fromGear || pb.asItemEffect === true
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent })
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts })
   }
 }
 
@@ -1469,6 +1469,36 @@ function buildStatMapOnce(
       add(map, 'mrrCap', { value: 50,  type: 'Stance', source: 'Cloth Armor' })
     } else if (armorStances.has('Light Armor')) {
       add(map, 'mrrCap', { value: 100, type: 'Stance', source: 'Light Armor' })
+    }
+
+    // ── Stack-merge (V2 BreakdownItem::AddEffect + Amount_Stacks) ──────────
+    // Identical AType=Stacks effects (same DisplayName/Type/Bonus/Item/Amount)
+    // are ONE effect in V2 whose value is Amount[stackCount-1], NOT the sum.
+    // Collapse each stackGroup to a single bonus valued from the count — e.g.
+    // Monk "Ocean Stance: Strength Penalty" from Ocean Stance + Adept/Master/
+    // Grandmaster of Forms merges to a single -2 (Amount="-2 -2 -2 -2") not -8;
+    // the positive tier bonuses (WIS/dodge/saves/Ki, Amount="2 2 3 4") read the
+    // tier count. MUST run before Phase 2 reads ability totals (line below), so
+    // the merged ability values feed saves/HP/skills within this same pass.
+    for (const [key, bonuses] of map) {
+      if (!bonuses.some(b => b.stackGroup)) continue
+      const groups = new Map<string, RawBonus[]>()
+      const passthrough: RawBonus[] = []
+      for (const b of bonuses) {
+        if (b.stackGroup && b.stackAmounts && b.stackAmounts.length > 1) {
+          const g = groups.get(b.stackGroup) ?? []
+          g.push(b); groups.set(b.stackGroup, g)
+        } else {
+          passthrough.push(b)
+        }
+      }
+      const rebuilt = passthrough
+      for (const g of groups.values()) {
+        const amounts = g[0].stackAmounts!
+        const idx = Math.min(g.length - 1, amounts.length - 1)
+        rebuilt.push({ ...g[0], value: amounts[idx], stackGroup: undefined, stackAmounts: undefined, source: `${g[0].source} (×${g.length} stacks → Amount[${idx}])` })
+      }
+      map.set(key, rebuilt)
     }
 
     // =========================================================================

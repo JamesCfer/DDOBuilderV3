@@ -27,6 +27,14 @@ export interface RawBonus {
   // V2 <Percent/> flag: value is a percentage of the stat's base total
   // (applied in a post-pass in useBuildStats), not a flat amount.
   percent?: boolean
+  // V2 stack-merge (BreakdownItem::AddEffect + Amount_Stacks): identical
+  // AType=Stacks effects (same DisplayName/Type/Bonus/Item/Amount) MERGE into
+  // one effect whose value is Amount[stackCount-1], NOT the sum. stackGroup is
+  // the identity key; stackAmounts is the parsed Amount table. Collapsed in a
+  // post-pass in buildStats. e.g. Monk "Ocean Stance: Strength Penalty" from
+  // Ocean Stance + Adept/Master/Grandmaster of Forms = one -2, not -8.
+  stackGroup?: string
+  stackAmounts?: number[]
 }
 
 export interface ResolvedBonus extends RawBonus {
