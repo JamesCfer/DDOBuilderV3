@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
+import { useDocument } from '../../context/DocumentContext'
+import { findActiveLife } from '../../lib/multiLife'
 import { useSettings } from '../../context/SettingsContext'
 import type { CharacterBuild, DDOClass, Feat, Race, Requirement } from '../../types/ddo'
 import { buildSlots } from '../../lib/levelTraining'
@@ -146,6 +148,8 @@ function IconPicker({ options, current, onSelect, onClose }: IconPickerProps) {
 // ---------------------------------------------------------------------------
 export default function FeatSlots() {
   const { build, dispatch } = useCharacter()
+  const { doc } = useDocument()
+  const specialFeats = findActiveLife(doc)?.specialFeats ?? []
   const { settings, isIgnored } = useSettings()
   const [allClasses, setAllClasses] = useState<DDOClass[]>([])
   const [allRaces, setAllRaces] = useState<Race[]>([])
@@ -167,6 +171,7 @@ export default function FeatSlots() {
         epicOnly: settings.showEpicOnly,
         showUnavailable: settings.showUnavailable,
         isIgnored,
+        specialFeats,
       })
     : []
 

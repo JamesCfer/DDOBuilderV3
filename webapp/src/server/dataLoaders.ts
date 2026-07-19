@@ -87,6 +87,25 @@ export function loadClasses(dataDir: string): DDOClass[] {
 
 export function loadFeats(dataDir: string): Feat[] {
   const out: Feat[] = []
+  // V2 CDDOBuilderApp::UpdateFeats (DDOBuilder.cpp:1293-1320): every feat named
+  // in a class/race FeatSlot's <FeatUpdateList> gets that slot's FeatType ADDED
+  // to its Group list, so plain group matching offers it in ALL slots of that
+  // type (e.g. "Two Weapon Fighting" gains group "Monk Bonus" from the Monk
+  // level-1 slot's list and is then offered in the level-2/6 Monk Bonus slots
+  // too). Collected while walking the class/race files below, applied at the end.
+  const groupAmendments: Array<{ featType: string, featNames: string[] }> = []
+  const collectSlotAmendments = (owner: Record<string, unknown>) => {
+    const slots = owner?.FeatSlot
+    for (const slot of (Array.isArray(slots) ? slots : slots ? [slots] : [])) {
+      const s = slot as Record<string, unknown>
+      const featType = typeof s.FeatType === 'string' ? s.FeatType : ''
+      const list = s.FeatUpdateList
+      const names = (Array.isArray(list) ? list : list ? [list] : []).filter(
+        (n): n is string => typeof n === 'string' && n.length > 0,
+      )
+      if (featType && names.length) groupAmendments.push({ featType, featNames: names })
+    }
+  }
   // Standard feats
   try {
     const parsed = readXml(path.join(dataDir, 'Feats.xml')) as { Feats?: { Feat?: unknown[] } }
@@ -106,6 +125,7 @@ export function loadFeats(dataDir: string): Feat[] {
           const classes = parsed?.Classes?.Class
           const classList = Array.isArray(classes) ? classes : classes ? [classes] : []
           for (const cls of classList) {
+            collectSlotAmendments(cls as Record<string, unknown>)
             const classFeats = (cls as Record<string, unknown>)?.Feat
             if (!classFeats) continue
             const list = Array.isArray(classFeats) ? classFeats : [classFeats]
@@ -130,6 +150,7 @@ export function loadFeats(dataDir: string): Feat[] {
           const races = parsed?.Races?.Race
           const raceList = Array.isArray(races) ? races : races ? [races] : []
           for (const race of raceList) {
+            collectSlotAmendments(race as Record<string, unknown>)
             const raceFeats = (race as Record<string, unknown>)?.Feat
             if (!raceFeats) continue
             const list = Array.isArray(raceFeats) ? raceFeats : [raceFeats]
@@ -138,6 +159,19 @@ export function loadFeats(dataDir: string): Feat[] {
         } catch { /* skip bad file */ }
       }
     } catch { /* no Races dir */ }
+  }
+  // Apply the V2 UpdateFeats group amendments now that every feat is loaded.
+  if (groupAmendments.length) {
+    const byName = new Map<string, Feat>()
+    for (const f of out) if (f?.Name && !byName.has(f.Name)) byName.set(f.Name, f)
+    for (const { featType, featNames } of groupAmendments) {
+      for (const name of featNames) {
+        const feat = byName.get(name)
+        if (!feat) continue // V2 logs unknown names; nothing to amend
+        const groups = Array.isArray(feat.Group) ? feat.Group : feat.Group ? [feat.Group] : []
+        if (!groups.includes(featType)) feat.Group = [...groups, featType]
+      }
+    }
   }
   return out
 }

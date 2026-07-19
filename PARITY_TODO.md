@@ -124,6 +124,7 @@ the PR number, so this file doubles as a changelog.
 | 103 | **N12 + N13 + empty-element flag bug (the real "numbers don't add up")** — Real catalogue XML writes boolean effect flags as self-closing elements (`<Percent />`, `<ApplyAsItemEffect />`), which fast-xml-parser surfaces as empty strings — but `effectParser.ts` checked `=== true`, so with REAL data **all ~186 percent effects were applied as flat amounts** (unit-test fixtures wrote `Percent: true` and passed; the running app never matched). New `flagSet()` helper treats presence (`""`/`true`) as set; `Effect.Percent`/`ApplyAsItemEffect` types widened to `boolean \| string`. **N12** — central `<Rank>` gate in `parseEffect` (V2 `EnhancementTreeItem::GetEffects` `:509-510`): a Rank-tagged effect fires once, at/after that rank, with a single stack (was: scaled by trained rank, e.g. Dwarf "Child of the Mountain" +5/+10/+15% HP instead of 0/0/+5%; Rogue Assassin "Light Armor Mastery" +75% instead of +25%); the GrantFeat-local gate removed (now redundant). **N13** — `ParsedBonus.asItemEffect` set from the flag; `addParsed` routes flagged effects into the `fromGear` pool so they obey gear-style "Highest Only" stacking (V2 `m_itemEffects`, `BreakdownItem.cpp:623-698`). End-to-end: imported Maetrim monk HP 1663→1895, AC 150→152. Oracle still 98/98 vs compiled V2 math. 4 real-data regression tests in `parityPassN12N13.test.ts` (Dwarf tree, all three bugs meet in one enhancement). | #140 |
 | 102 | **N11 — `Bonus="Temporary"` effects no longer inflated by same-stat percentage bonuses** — V2 `BreakdownItem.cpp:793-812` (`RemoveTemporary`) pulls any effect whose bonus type is `"Temporary"` out of the bonus list **before** `baseTotal` is computed for percentage purposes, then adds it back flatly after all percentage effects apply (`:236-238`). `webapp/src/lib/buildStats.ts`'s percent post-pass computed `base` from every non-percent bonus including `Temporary`-typed ones, so a Temporary bonus (e.g. Bard "Inspire Greatness" +20 Temporary HP) inflated the base that a stat's own %-bonuses (e.g. Frenzied Berserker +25% HP) scale against. Fixed: `base` now excludes `type === 'Temporary'` bonuses; the Temporary contribution itself is still added back flatly (unchanged — it was never removed from `rebuilt`). 2 regression tests in `parityPassN11.test.ts`. | this PR |
 | 105 | **N14 — Attack feat's base off-hand attack chance** — V2 `Feats.xml`'s universal "Attack" feat (granted automatically to every character, `Acquire: Automatic`) carries an unconditional `OffHandAttackBonus` effect of +20 ("Standard off hand attack chance") alongside the base helpless-damage (+50%) and strikethrough (+20%) values already modeled in Done item #52. `buildStats.ts` added those two but never this third one, so `offhand.attack` was always 0 unless a TWF-style feat/enhancement happened to add to it. Added the base `offhand.attack` +20 alongside the other two Attack-feat base adds. Golden-build diff (`exampledps.DDOBuild`): Off Hand Attack Chance now matches V2 exactly (20/20, was 0/20); 34/55 → 33/55 mismatching overall. 2 regression tests in `parityPassN14.test.ts`. | this PR |
+| 106 | **"Feats not showing up" + golden stat engine (user complaints)** — (a) **Feat picker overhaul**: a sweep of 102 real `.DDOBuild` files (1690 trained slots) found 347 feats V2 trained that V3's picker refused to offer or showed locked. Root causes: BAB class tables parse as `{'#text'}` objects → `totalBAB` returned 0 for everyone (every BAB-gated feat locked); `Level` requirements compared heroic-only `totalLevel` (all epic/legendary feats locked — fix also unlocks `Level 25+` destiny-tree gates); `FeatUpdateList` treated as per-slot whitelist instead of V2's load-time Group amendment (`CDDOBuilderApp::UpdateFeats`); automatic class feats and past lives missing from prerequisite sets (V2 `Build::CurrentFeats`); same-level feats couldn't satisfy each other. After: 2/1690 failures, both illegal fuzz artifacts. (b) **Epic/Legendary pseudo-class `AutomaticFeats` applied** (`classesWithEpicPseudo`, 4 sites + `MaxTimesAcquire` clamp): Epic/Legendary Power ×14 = +84 melee/ranged/universal spell power (all three now V2-exact), Epic Skills ×10 = +10 all skills, Epic/Legendary Knowledge = +7 caster levels. (c) **Per-level cross-class skill ranks** (V2 `SkillAtLevel`): 0.5-rank decided by the class trained at each level, not the whole-build union. (d) **Trained-spell `StackSource` stamped unconditionally** (Spells.xml carries literal "Unknown") **+ `ClassCasterLevel` resolves against the caster-level breakdown** via a new fixed-point feedback channel (Merfolk's Blessing → Swim 73 exact). (e) **`<NumFiligrees>` honored on import** (was hardcoded 6, dropping filigrees 7-10: Sanctified Fervor +5 MP, Nystul 5pc +40 MRR Cap — both now exact). (f) **Spell-power governing-skill fold moved after the `skill.All` fan-out** (elemental spell powers ±1). Golden diff 34/55 → 25/55 mismatching. 18 regression tests (`parityFeatEligibility.test.ts`, `parityGoldenPass106.test.ts`). | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -225,20 +226,28 @@ Max-Dex/False-Life/Reaper-HP/Song-Count/Sneak-Dice/Imbue-Dice/Spell-Pen/
 Fate-Points/Displacement/Incorporeality/Movement-Speed). Remaining
 mismatches, largest first — each needs a source-by-source V2 trace:
 
-- ❌ **G-SP — All spell powers short ~100** (Universal −84, each element
-  −103): a large universal source plus ~19/element is missing — suspect
-  the active destiny MANTLE stances (Holy Mantle / Mantle of Fury /
-  Amaunator's Flames — tree-item `<Stance>` blocks whose effects may use
-  ATypes or Stance-payload wiring V3 doesn't yet apply) and/or implement
-  bonuses ("Weapon Enchantment 18" row in the export).
-- ❌ **G-MP — Melee Power −89 / Ranged Power −84**: same suspects as G-SP
-  (mantles), plus possible per-reaper-point passives.
-- ❌ **G-MRR — MRR −31 / MRR Cap −40 / PRR −24**.
-- ❌ **G-HP — HP −208** (down from −1189): remaining shortfall roughly
-  matches the percent-HP base being short via the above missing sources.
-- ❌ **G-SKILL — all skills ~−9** (Swim −32: its extra −20 is "Merfolk's
-  Blessing" whose effect parses to 0): a uniform ~+9 skill source missing
-  (suspect item skill buffs or a mantle).
+- ✅ **G-SP / G-MP — melee power, ranged power, universal spell power all
+  V2-exact** (#106): Epic/Legendary Power auto-feats ×14 were the missing
+  84; elemental spell powers now ±1 (governing-skill fold reordered after
+  `skill.All` fan-out; residue is the ±1 ability cluster). The old mantle /
+  implement suspicions were investigated and ruled out (mantles grant no
+  MP/RP/SP; implement bonus requires Divine Crusader "Strike with Poise"
+  rank 3, not trained on the golden build).
+- 🟡 **G-MRR — MRR Cap ✅ exact** (Nystul 5pc via the NumFiligrees import
+  fix); **PRR still −24, MRR −28**. Open lead: "Legendary Bulwark" augment
+  (slotted ×3, carries only a `<SetBonus>` ref + `<SuppressSetBonus/>`) —
+  check augment-borne set-bonus stacking and set-bonus suppression.
+- 🟡 **G-HP — HP −52** (was −208; Nystul 4pc +100 HP + CON knock-on closed
+  most of it). Note the Legendary Bulwark 3pc is +10% Legendary HP — if V3
+  is missing it the remaining gap must be re-measured after the set-bonus
+  lead above.
+- ✅ **G-SKILL — skills V2-exact except the ±1 ability-mod cluster** (#106):
+  Epic Skills ×10 (uniform +10), per-level cross-class half-ranks
+  (Balance/Perform), Merfolk's Blessing at caster level 25 (Swim 73 exact).
+- ❌ **G-SAVES — saves now OVER: Fort +5, Reflex +5, Will +11** (were
+  −2/−1/+5 before Epic Saves ×5 landed). Something double-counts ~+5 on
+  all saves plus ~+6 more on Will; the pre-existing +5 Will overcount was
+  never explained. Needs a source-by-source save trace.
 - ✅ **G-AB (partial) — Off-Hand Attack Chance −20 fixed (N14)**: the
   universal "Attack" feat (`Feats.xml`, granted automatically to every
   character) carries an unconditional `OffHandAttackBonus` effect of +20
@@ -247,9 +256,12 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   `buildStats.ts` added the two but missed this third one, so `offhand.attack`
   was always 0 absent a TWF-style feat/enhancement. Added
   `add(map, 'offhand.attack', { value: 20, ... })` next to the other two
-  Attack-feat base adds. Golden diff: 20/20 exact now (was 0/20). Remaining
-  G-AB residues (DEX +1, INT/WIS/CHA −1, Will +5, Fort −2, AC −5, Dodge +3,
-  Ki −5) still open — likely several unrelated one-source misses.
+  Attack-feat base adds. Golden diff: 20/20 exact now (was 0/20).
+- ❌ **G-AB — DEX +1, CON +1, INT/WIS/CHA −1, AC −5, Dodge +3, Ki −5**:
+  small residues. Ki −5 is a pure WIS-mod knock-on (base 40 + WIS mod ×5);
+  Dodge +3 may be a cap difference (V2 caps vs MDB). CON +1 appeared with
+  the NumFiligrees fix (Nystul's +1 CON filigree counted where V2's export
+  shows 63) — likely the same stacking-rule root cause as the other ±1s.
 
 Fifth review pass (2026-07). A full switch/case diff of `Effect.h`/`Effect.cpp`
 against `effectParser.ts` again found **no missing Type/AType cases**

@@ -564,7 +564,11 @@ function parseBuildNode(
     ?? getRec(buildNode, 'Filigrees')
     ?? buildNode
   out.sentientGem.personality = asStr(sentientNode.Personality)
-  out.filigreeSlots = parseFiligreeSlots(sentientNode, 'Filigree', 6)
+  // V2 writes <NumFiligrees> alongside the <Filigree> entries — weapons can
+  // carry up to 10 (sentient weapon + Reaper's Deception upgrades); the old
+  // hardcoded 6 silently dropped filigrees 7-10 of real endgame builds.
+  const numFiligrees = Number((sentientNode as AnyRec).NumFiligrees) || 6
+  out.filigreeSlots = parseFiligreeSlots(sentientNode, 'Filigree', numFiligrees)
   out.artifactFiligreeSlots = parseFiligreeSlots(sentientNode, 'ArtifactFiligree', 10)
 
   // ── Active stances ───────────────────────────────────────────────────────

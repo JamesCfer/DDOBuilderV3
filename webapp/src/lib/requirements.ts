@@ -22,10 +22,29 @@ import {
 // BAB helper (V2 parity: per-class table sum)
 // ---------------------------------------------------------------------------
 
+// Space-separated numeric XML tables (BAB, …) carry a `size` attribute, so
+// fast-xml-parser wraps the text as `{ '#text': '…', size: N }` instead of a
+// bare string. A plain String() yields "[object Object]" → every number NaN →
+// the table reads as empty and every class contributes 0 BAB, locking every
+// feat with a BAB prerequisite. (Duplicated from buildStats.ts xmlText — a
+// direct import would create a module cycle.)
+function xmlText(raw: unknown): string {
+  if (raw == null) return ''
+  if (typeof raw === 'object' && '#text' in (raw as Record<string, unknown>)) {
+    return String((raw as Record<string, unknown>)['#text'] ?? '')
+  }
+  return String(raw)
+}
+
+// V2 Build::BaseAttackBonus: per-class table lookup, fractions dropped per
+// class before summing.
 function classBABAtLevels(cls: DDOClass | undefined, levels: number): number {
   if (!cls?.BAB) return Math.floor(levels * 0.75)
-  const arr = String(cls.BAB).trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
-  return arr[Math.min(levels, arr.length - 1)] ?? 0
+  const arr = xmlText(cls.BAB).trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
+  let raw = 0
+  if (arr.length > levels) raw = arr[levels]
+  else if (arr.length > 0) raw = arr[arr.length - 1]
+  return Math.trunc(raw)
 }
 
 function totalBAB(build: CharacterBuild, allClasses: DDOClass[]): number {
@@ -178,7 +197,11 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       return classLevelsAtLevel(build, item, build.totalLevel || 20, allClasses, true) >= value
     case 'Level':
     case 'SpecificLevel':
-      return build.totalLevel >= value
+      // V2 Requirement.cpp EvaluateLevel: compares against the CHARACTER level
+      // (heroic + epic + legendary), not the heroic-only totalLevel — epic
+      // feats gated `Level 21+` and destiny abilities gated `Level 25+` were
+      // always failing.
+      return (build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)) >= value
     case 'Alignment':
       return build.alignment === item
     case 'Enhancement': {
