@@ -33,8 +33,15 @@ export function buildAutomaticFeatGroups(
     }
   }
 
-  for (const bc of build.classes) {
-    if (!bc.name || bc.levels === 0) continue
+  // Include the Epic/Legendary pseudo-classes — V2's automatic-feats table
+  // lists their per-level grants (Epic Power/Skills/Saves/Knowledge,
+  // Legendary Power/Knowledge) like any other class's.
+  const classEntries: Array<{ name: string, levels: number, baseCharLevel?: number }> =
+    build.classes.filter(bc => bc.name && bc.levels > 0).map(bc => ({ name: bc.name, levels: bc.levels }))
+  const b = build as Pick<CharacterBuild, 'epicLevels' | 'legendaryLevels'> & typeof build
+  if ((b.epicLevels ?? 0) > 0) classEntries.push({ name: 'Epic', levels: b.epicLevels ?? 0, baseCharLevel: 20 })
+  if ((b.legendaryLevels ?? 0) > 0) classEntries.push({ name: 'Legendary', levels: b.legendaryLevels ?? 0, baseCharLevel: 30 })
+  for (const bc of classEntries) {
     const cls = allClasses.find(c => c.Name === bc.name)
     if (!cls?.AutomaticFeats) continue
     for (const autoFeat of cls.AutomaticFeats) {
@@ -45,7 +52,9 @@ export function buildAutomaticFeatGroups(
       // V2 parity: the auto-feat is granted at the character level where the
       // class hits this class-level. Surface this so the panel and forum
       // export can sort and label correctly for multi-class builds.
-      const charLvl = characterLevelForClassLevel(build, bc.name, classLvl)
+      const charLvl = bc.baseCharLevel !== undefined
+        ? bc.baseCharLevel + classLvl
+        : characterLevelForClassLevel(build, bc.name, classLvl)
       const sourceLabel = charLvl
         ? `Lv ${charLvl} — ${bc.name} ${classLvl}`
         : `${bc.name} Lv ${classLvl}`

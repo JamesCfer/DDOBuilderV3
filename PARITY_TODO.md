@@ -125,6 +125,7 @@ the PR number, so this file doubles as a changelog.
 | 102 | **N11 — `Bonus="Temporary"` effects no longer inflated by same-stat percentage bonuses** — V2 `BreakdownItem.cpp:793-812` (`RemoveTemporary`) pulls any effect whose bonus type is `"Temporary"` out of the bonus list **before** `baseTotal` is computed for percentage purposes, then adds it back flatly after all percentage effects apply (`:236-238`). `webapp/src/lib/buildStats.ts`'s percent post-pass computed `base` from every non-percent bonus including `Temporary`-typed ones, so a Temporary bonus (e.g. Bard "Inspire Greatness" +20 Temporary HP) inflated the base that a stat's own %-bonuses (e.g. Frenzied Berserker +25% HP) scale against. Fixed: `base` now excludes `type === 'Temporary'` bonuses; the Temporary contribution itself is still added back flatly (unchanged — it was never removed from `rebuilt`). 2 regression tests in `parityPassN11.test.ts`. | this PR |
 | 105 | **N14 — Attack feat's base off-hand attack chance** — V2 `Feats.xml`'s universal "Attack" feat (granted automatically to every character, `Acquire: Automatic`) carries an unconditional `OffHandAttackBonus` effect of +20 ("Standard off hand attack chance") alongside the base helpless-damage (+50%) and strikethrough (+20%) values already modeled in Done item #52. `buildStats.ts` added those two but never this third one, so `offhand.attack` was always 0 unless a TWF-style feat/enhancement happened to add to it. Added the base `offhand.attack` +20 alongside the other two Attack-feat base adds. Golden-build diff (`exampledps.DDOBuild`): Off Hand Attack Chance now matches V2 exactly (20/20, was 0/20); 34/55 → 33/55 mismatching overall. 2 regression tests in `parityPassN14.test.ts`. | this PR |
 | 106 | **"Feats not showing up" + golden stat engine (user complaints)** — (a) **Feat picker overhaul**: a sweep of 102 real `.DDOBuild` files (1690 trained slots) found 347 feats V2 trained that V3's picker refused to offer or showed locked. Root causes: BAB class tables parse as `{'#text'}` objects → `totalBAB` returned 0 for everyone (every BAB-gated feat locked); `Level` requirements compared heroic-only `totalLevel` (all epic/legendary feats locked — fix also unlocks `Level 25+` destiny-tree gates); `FeatUpdateList` treated as per-slot whitelist instead of V2's load-time Group amendment (`CDDOBuilderApp::UpdateFeats`); automatic class feats and past lives missing from prerequisite sets (V2 `Build::CurrentFeats`); same-level feats couldn't satisfy each other. After: 2/1690 failures, both illegal fuzz artifacts. (b) **Epic/Legendary pseudo-class `AutomaticFeats` applied** (`classesWithEpicPseudo`, 4 sites + `MaxTimesAcquire` clamp): Epic/Legendary Power ×14 = +84 melee/ranged/universal spell power (all three now V2-exact), Epic Skills ×10 = +10 all skills, Epic/Legendary Knowledge = +7 caster levels. (c) **Per-level cross-class skill ranks** (V2 `SkillAtLevel`): 0.5-rank decided by the class trained at each level, not the whole-build union. (d) **Trained-spell `StackSource` stamped unconditionally** (Spells.xml carries literal "Unknown") **+ `ClassCasterLevel` resolves against the caster-level breakdown** via a new fixed-point feedback channel (Merfolk's Blessing → Swim 73 exact). (e) **`<NumFiligrees>` honored on import** (was hardcoded 6, dropping filigrees 7-10: Sanctified Fervor +5 MP, Nystul 5pc +40 MRR Cap — both now exact). (f) **Spell-power governing-skill fold moved after the `skill.All` fan-out** (elemental spell powers ±1). Golden diff 34/55 → 25/55 mismatching. 18 regression tests (`parityFeatEligibility.test.ts`, `parityGoldenPass106.test.ts`). | this PR |
+| 107 | **Golden residues: augment values, tomes, stacks, self-buffs (34→9 total journey to 9/55)** — (a) **ChooseLevel augment values** (V2 `Build.cpp:4975-5012`): a ChooseLevel augment's effect Amount is REPLACED by `LevelValue[SelectedLevelIndex]` (`LevelValue2` for the 2nd effect under DualValues; fallback index = host item MinLevel−1). V3 used the printed Amount (the max) — Sapphire of Dodge +17 instead of +14, Sapphire of Defense/Resistance & MRR gems similar. `SelectedLevelIndex` now imports (`augmentLevelChoices`), applies, and round-trips through `.DDOBuild` export. Dodge 18 ✓ exact, PRR −24→−4, MRR −28→−8. (b) **Augment effects join the item pool** (V2 `RemoveNonStacking` operates on `m_itemEffects`, which includes augments): a Resistance augment no longer stacks with an item Resistance bonus (Will −8 overcount). (c) **Tome cap by character level**: `tomeCapAtLevel` was fed heroic `totalLevel` (20) forever — +8 tomes capped at +7. INT/WIS/CHA/CON now exact; Max Ki 65 ✓ (WIS knock-on). (d) **Duplicate `<Type>` stack multiplier** (V2 merges per-Type copies via `m_stacks`, `Effect.cpp:1191`): Fury of the Wild "Primal Scream" declares `<Type>AbilityBonus</Type>` twice with `AType=Stacks Amount="0 2 4"` → 2 stacks → +2; V3's per-type fan-out passed rank 1 → Amount[0]=0. Fan-out now multiplies rank by the duplicate count. (e) **Self/party buffs split from stances** (V2 `Life::SelfAndPartyBuffs`): `accumulateSelfBuffs` consumed `activeBuffs`, so a STANCE named like a catalogue buff ("Primal Scream", "Rage") double-applied the party-buff entry (+4 DEX/STR/CON on top of the stance's +2). New `CharacterBuild.selfBuffs` list: import/TOGGLE_BUFF/panel/stats all use it. (f) Display: Epic/Legendary auto-feat rows in `buildAutomaticFeatGroups` (panel + forum export, V2 table parity); forum-export Skills prints half-rank totals ("32" not "33"). Golden diff 25/55 → **9/55**; DEX/STR/spell-powers/Dodge/Ki all exact. 8 regression tests in `parityGoldenPass107.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -254,21 +255,23 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   that session is stance-state: V2 had Power Attack / Enhanced Bloodrage /
   Mantle of Fury / Fallen Bond active; V3's export lists them inactive —
   verify V3 restores ActiveStances from import into the live session.
-- ❌ **Display gaps vs V2 export (same comparison)**: (1) the Automatic
-  Feats panel/export omits AutomaticAcquisition-granted feats (Attack,
-  Sneak, Heroic Durability, Defensive Fighting, Sunder, Trip, Improved
-  Heroic Durability (Class 5/10/15)) and the Epic/Legendary per-level rows
-  (Epic Power/Skills/Saves/Knowledge…) — the stats engine counts them
-  (#106) but `buildAutomaticFeatGroups` doesn't list them; (2) the forum
-  export Skills section prints raw spend counts ("Balance: 33 ranks") where
-  V2 prints half-rank totals ("32.0").
+- 🟡 **Display gaps vs V2 export**: Epic/Legendary auto-feat rows and
+  half-rank skill totals done (#107). Remaining: (1) AutomaticAcquisition
+  feats (Attack, Sneak, Heroic Durability, Defensive Fighting, Sunder,
+  Trip, Improved Heroic Durability (Class 5/10/15)) still absent from the
+  Automatic Feats listing (stats count them); (2) the export's Dodge line
+  doesn't render V2's `dodge/cap` form ("18/25").
 - ✅ **G-SKILL — skills V2-exact except the ±1 ability-mod cluster** (#106):
   Epic Skills ×10 (uniform +10), per-level cross-class half-ranks
   (Balance/Perform), Merfolk's Blessing at caster level 25 (Swim 73 exact).
-- ❌ **G-SAVES — saves now OVER: Fort +5, Reflex +5, Will +11** (were
-  −2/−1/+5 before Epic Saves ×5 landed). Something double-counts ~+5 on
-  all saves plus ~+6 more on Will; the pre-existing +5 Will overcount was
-  never explained. Needs a source-by-source save trace.
+- ❌ **G-SAVES — uniform +4 over on Fort/Reflex/Will** (was +5/+5/+11;
+  the Sapphire-of-Resistance gear-pool fix and tome-cap knock-ons closed the
+  rest). One +4-ish source V2 lacks (or values differently). V3's Fort
+  ledger: base 14 + Epic Saves 5 + Scion of Arborea 4 + GH 4 + Song of
+  Heroism 4 + Confront any Foe 3 + Sapphire 11 + Quality 2 + Insightful 6 +
+  Nystul 1 + CON 26 = 80 vs V2 76. Prime suspects: Scion of Arborea +4
+  (check gating in V2), or Confront any Foe +3 + Legendary base +1. Needs
+  V2 per-source save rows to pin.
 - ✅ **G-AB (partial) — Off-Hand Attack Chance −20 fixed (N14)**: the
   universal "Attack" feat (`Feats.xml`, granted automatically to every
   character) carries an unconditional `OffHandAttackBonus` effect of +20
@@ -278,11 +281,12 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   was always 0 absent a TWF-style feat/enhancement. Added
   `add(map, 'offhand.attack', { value: 20, ... })` next to the other two
   Attack-feat base adds. Golden diff: 20/20 exact now (was 0/20).
-- ❌ **G-AB — DEX +1, CON +1, INT/WIS/CHA −1, AC −5, Dodge +3, Ki −5**:
-  small residues. Ki −5 is a pure WIS-mod knock-on (base 40 + WIS mod ×5);
-  Dodge +3 may be a cap difference (V2 caps vs MDB). CON +1 appeared with
-  the NumFiligrees fix (Nystul's +1 CON filigree counted where V2's export
-  shows 63) — likely the same stacking-rule root cause as the other ±1s.
+- ✅ **G-AB mostly closed (#107)**: INT/WIS/CHA/CON/DEX, Dodge, Max Ki all
+  V2-exact (tome cap + augment LevelValue + Primal Scream stacks + self-buff
+  split). Remaining: **STR −1** (76 vs 77 — one +1 source short; trace the
+  STR ledger vs V2), **AC −4**, **HP −78**, **PRR −4**, **MRR −8**. All
+  five need V2 per-source breakdown rows to close — the arithmetic is now
+  tight enough that each is likely a single mis-valued source.
 
 Fifth review pass (2026-07). A full switch/case diff of `Effect.h`/`Effect.cpp`
 against `effectParser.ts` again found **no missing Type/AType cases**

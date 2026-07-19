@@ -554,8 +554,18 @@ export function parseEffect(
   // elements to an array, so effect.Type may be string[] rather than string.
   // Expand by re-calling with each individual type.
   if (Array.isArray(effect.Type)) {
-    return (effect.Type as unknown as string[]).flatMap(t =>
-      parseEffect({ ...effect, Type: t }, rank, source, classLevels, treeTotalAP, ctx),
+    // V2 applies one effect copy per <Type> element and merges identical
+    // copies by stacking (m_stacks). Data uses DUPLICATE Type entries as a
+    // stack multiplier — e.g. Fury of the Wild "Primal Scream" declares
+    // <Type>AbilityBonus</Type> twice with AType=Stacks Amount="0 2 4":
+    // two merged stacks → Amount[1] = +2. Fan out per UNIQUE type with
+    // rank × duplicate-count so Stacks/Simple amounts match V2's stacking.
+    const typeCounts = new Map<string, number>()
+    for (const t of effect.Type as unknown as string[]) {
+      typeCounts.set(t, (typeCounts.get(t) ?? 0) + 1)
+    }
+    return [...typeCounts.entries()].flatMap(([t, n]) =>
+      parseEffect({ ...effect, Type: t }, Math.max(1, rank) * n, source, classLevels, treeTotalAP, ctx),
     )
   }
 

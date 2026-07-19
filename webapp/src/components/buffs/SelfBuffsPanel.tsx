@@ -19,7 +19,7 @@ export default function SelfBuffsPanel() {
     ? buffs.filter(b => b.Name.toLowerCase().includes(search.toLowerCase()))
     : buffs
 
-  const activeCount = build.activeBuffs.length
+  const activeCount = (build.selfBuffs ?? []).length
 
   return (
     <div className="panel">
@@ -44,7 +44,7 @@ export default function SelfBuffsPanel() {
         ) : (
           <ul className={styles.list}>
             {filtered.map(buff => {
-              const isActive = build.activeBuffs.includes(buff.Name)
+              const isActive = (build.selfBuffs ?? []).includes(buff.Name)
               return (
                 <li
                   key={buff.Name}

@@ -436,6 +436,7 @@ function emitGearSet(
   snapshot?: Partial<Record<Ability, number>>,
   itemCatalogue?: ItemCatalogue,
   sentient?: SentientInfo,
+  augmentLevels?: Record<string, number>,
 ): void {
   xml.open('EquippedGear')
   xml.leaf('Name', setName)
@@ -460,7 +461,7 @@ function emitGearSet(
     // empty ones, so to round-trip the indices we rebuild a sparse array and pad
     // gaps with empty <ItemAugment/> placeholders.
     const prefix = `${v3Slot}:`
-    const slotAugs: { type: string; name: string }[] = []
+    const slotAugs: { type: string; name: string; key: string }[] = []
     for (const [k, augName] of Object.entries(augments)) {
       if (!k.startsWith(prefix)) continue
       // Key is `slot:type:index`; the augment `type` may itself contain colons
@@ -472,7 +473,7 @@ function emitGearSet(
       const type = k.slice(firstColon + 1, lastColon)
       const idx = Number(k.slice(lastColon + 1))
       if (!type || !augName || !Number.isInteger(idx)) continue
-      slotAugs[idx] = { type, name: augName }
+      slotAugs[idx] = { type, name: augName, key: k }
     }
     for (let i = 0; i < slotAugs.length; i++) {
       const a = slotAugs[i]
@@ -486,7 +487,7 @@ function emitGearSet(
       } else {
         xml.leaf('Type', a.type)
         xml.leaf('SelectedAugment', a.name)
-        xml.leaf('SelectedLevelIndex', 0)
+        xml.leaf('SelectedLevelIndex', augmentLevels?.[a.key] ?? 0)
       }
       xml.close('ItemAugment')
     }
@@ -674,7 +675,7 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
     }
   } else if (Object.keys(build.gear ?? {}).length > 0) {
     const name = build.activeGearSetName || 'Standard'
-    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient)
+    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices)
   }
   // GearSetSnapshot — names the snapshot baseline set (F3).
   if (build.gearSetSnapshot) xml.leaf('GearSetSnapshot', build.gearSetSnapshot)

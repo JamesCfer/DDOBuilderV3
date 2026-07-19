@@ -197,9 +197,11 @@ const V2_TO_V3_SLOT: Record<string, string> = {
 function parseGear(equippedGearNode: AnyRec): {
   gear: Record<string, string>
   augmentChoices: Record<string, string>
+  augmentLevelChoices: Record<string, number>
 } {
   const gear: Record<string, string> = {}
   const augmentChoices: Record<string, string> = {}
+  const augmentLevelChoices: Record<string, number> = {}
   for (const [v2Slot, v3Slot] of Object.entries(V2_TO_V3_SLOT)) {
     const item = getRec(equippedGearNode, v2Slot)
     if (!item) continue
@@ -216,10 +218,17 @@ function parseGear(equippedGearNode: AnyRec): {
       const type = asStr(ar.Type)
       const augName = asStr(ar.SelectedAugment)
       if (!type || !augName) continue
-      augmentChoices[`${v3Slot}:${type}:${augIdx}`] = augName
+      const augKey = `${v3Slot}:${type}:${augIdx}`
+      augmentChoices[augKey] = augName
+      // V2 ItemAugment::SelectedLevelIndex — index into a ChooseLevel
+      // augment's LevelValue table (Build.cpp:4975-5012).
+      const sli = Number(ar.SelectedLevelIndex)
+      if (!isNaN(sli) && ar.SelectedLevelIndex !== undefined && ar.SelectedLevelIndex !== '') {
+        augmentLevelChoices[augKey] = sli
+      }
     }
   }
-  return { gear, augmentChoices }
+  return { gear, augmentChoices, augmentLevelChoices }
 }
 
 function parseFiligreeSlots(parent: AnyRec, tag: 'Filigree' | 'ArtifactFiligree', count: number): FiligreeSlot[] {
@@ -542,6 +551,7 @@ function parseBuildNode(
     const g = parseGear(activeGearSet)
     out.gear = g.gear
     out.augmentChoices = g.augmentChoices
+    out.augmentLevelChoices = g.augmentLevelChoices
     out.activeGearSetName = activeGearName || asStr(activeGearSet.Name) || ''
     // Save every gear set as a named-set so the user can switch.
     out.namedGearSets = {}
@@ -577,10 +587,10 @@ function parseBuildNode(
 
   // SelfAndPartyBuffs live at the Life level in V2 XML (after </Build>), not
   // inside the Build node.
-  const selfBuffs = arr(life.SelfAndPartyBuffs as string | string[] | undefined).map(asStr).filter(Boolean)
-  for (const b of selfBuffs) {
-    if (!out.activeBuffs.includes(b)) out.activeBuffs.push(b)
-  }
+  // Stored as the dedicated selfBuffs list; NOT merged into activeBuffs —
+  // a stance sharing a catalogue buff's name (e.g. "Primal Scream") must not
+  // pull the party-buff effects on top of the stance-gated ones.
+  out.selfBuffs = arr(life.SelfAndPartyBuffs as string | string[] | undefined).map(asStr).filter(Boolean)
 
   // ── Past lives (Character.SpecialFeats with Type=*PastLife) ─────────────
   // Character-level FeatsListObject holds past lives plus character-wide
