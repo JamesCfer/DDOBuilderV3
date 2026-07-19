@@ -1,16 +1,10 @@
-// Golden-build regression for parity pass 106 (V2 breakdown export values,
-// exampledps.DDOBuild — Bard 18/Barb 1/Ftr 1, L34).
+// Golden-build regression (passes 106-108) — data-driven against the REAL V2
+// forum export committed at Output/UserBuilds/exampledps.cc1.v2export.txt,
+// which was captured from the same save as Output/UserBuilds/exampledps.DDOBuild.
 //
-// Locks in the stat-engine fixes:
-//  - Epic/Legendary pseudo-class AutomaticFeats applied (Epic/Legendary Power
-//    ×14 → +84 melee/ranged/universal-spell power; Epic Skills ×10 → +10 all
-//    skills; Epic/Legendary Knowledge → +7 caster levels)
-//  - per-level cross-class skill half-ranks (V2 Build::SkillAtLevel)
-//  - trained-spell StackSource stamped unconditionally + ClassCasterLevel
-//    resolved against the caster-level breakdown (Merfolk's Blessing → Swim)
-//  - <NumFiligrees> honored on import (was hardcoded 6, dropping 4 filigrees
-//    incl. the Nystul 5pc +40 MRR Cap)
-//  - spell-power governing-skill fold runs after the skill.All fan-out
+// Every stat V2 printed must match V3 exactly, except the documented
+// KNOWN_OPEN set (tracked in PARITY_TODO.md). When either file is refreshed
+// from V2, this test follows automatically — no hand-copied numbers.
 
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync } from 'fs'
@@ -20,13 +14,18 @@ import { computeBuildStats } from '../lib/buildStats'
 import { loadAllCatalogues } from '../server/dataLoaders'
 import { initBonusTypes } from '../lib/bonus'
 import { findActiveLife } from '../lib/multiLife'
+import { parseV2Export } from '../lib/export/parseV2Export'
 import type { Item } from '../types/ddo'
 
 const DATA = join(__dirname, '..', '..', '..', 'Output', 'DataFiles')
 const FIXTURE = join(__dirname, '..', '..', '..', 'Output', 'UserBuilds', 'exampledps.DDOBuild')
-const have = existsSync(DATA) && existsSync(FIXTURE)
+const EXPORT = join(__dirname, '..', '..', '..', 'Output', 'UserBuilds', 'exampledps.cc1.v2export.txt')
+const have = existsSync(DATA) && existsSync(FIXTURE) && existsSync(EXPORT)
 
-describe.skipIf(!have)('golden build V2-exact stats (pass 106)', () => {
+// Residues still under investigation — see PARITY_TODO.md "Golden-build residue".
+const KNOWN_OPEN = new Set(['ac', 'hp', 'mrr', 'prr'])
+
+describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   const cat = loadAllCatalogues(DATA)
   initBonusTypes(cat.allBonusTypes)
   const { build, document } = importV2Build(readFileSync(FIXTURE, 'utf-8')) as ReturnType<typeof importV2Build> & { document?: unknown }
@@ -45,29 +44,43 @@ describe.skipIf(!have)('golden build V2-exact stats (pass 106)', () => {
     allSpells: cat.allSpells, allGuildBuffs: cat.allGuildBuffs,
     allItemBuffs: cat.allItemBuffs, specialFeats, gearItems,
   }, build)
+  const parsed = parseV2Export(readFileSync(EXPORT, 'utf-8'))
+
+  const composed = (key: string): number => {
+    if (key.startsWith('sp.') && key !== 'sp.Universal') {
+      return stats.total(key) + stats.total('sp.Universal')
+    }
+    if (key === 'speed') return stats.total('speed') - 100
+    return stats.total(key)
+  }
+
+  it('parses a meaningful number of stats from the export', () => {
+    expect(Object.keys(parsed.stats).length).toBeGreaterThan(40)
+  })
+
+  it('every V2-printed stat matches V3 (excluding documented open residues)', () => {
+    const failures: string[] = []
+    for (const [key, v2] of Object.entries(parsed.stats)) {
+      if (KNOWN_OPEN.has(key)) continue
+      const v3 = composed(key)
+      if (Math.abs(v3 - v2) > 0.5) failures.push(`${key}: V2=${v2} V3=${v3}`)
+    }
+    expect(failures).toEqual([])
+  })
+
+  it('documented open residues stay within their known bounds (catch regressions)', () => {
+    // If any of these drift FURTHER from V2 than the recorded gap, a
+    // regression slipped in; if they close, move them out of KNOWN_OPEN.
+    const gaps: Record<string, number> = { ac: -4, hp: -78, mrr: -8, prr: -4 }
+    for (const [key, gap] of Object.entries(gaps)) {
+      const v2 = parsed.stats[key]
+      if (v2 === undefined) continue
+      const diff = composed(key) - v2
+      expect(Math.abs(diff), `${key} drifted: diff=${diff}, recorded=${gap}`).toBeLessThanOrEqual(Math.abs(gap))
+    }
+  })
 
   it('all 10 weapon filigrees import (NumFiligrees honored)', () => {
     expect(build.filigreeSlots.filter(f => f.name).length).toBe(10)
-  })
-  it('Melee Power 266 (V2 exact)', () => {
-    expect(stats.total('melee.power')).toBe(266)
-  })
-  it('Ranged Power 176 (V2 exact)', () => {
-    expect(stats.total('ranged.power')).toBe(176)
-  })
-  it('Universal Spell Power 128 (V2 exact)', () => {
-    expect(stats.total('sp.Universal')).toBe(128)
-  })
-  it('MRR Cap 170 (V2 exact — Nystul 5pc from filigrees 7-10)', () => {
-    expect(stats.total('mrrCap')).toBe(170)
-  })
-  it('Swim 73 (V2 exact — Merfolk\'s Blessing at caster level 25)', () => {
-    expect(stats.total('skill.Swim')).toBe(73)
-  })
-  it('Perform 54 (V2 exact — cross-class half-ranks per level)', () => {
-    expect(stats.total('skill.Perform')).toBe(54)
-  })
-  it('Sonic Spell Power 182 (V2 exact — skill fold after skill.All fan-out)', () => {
-    expect(stats.total('sp.Sonic') + stats.total('sp.Universal')).toBe(182)
   })
 })

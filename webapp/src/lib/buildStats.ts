@@ -281,7 +281,7 @@ export function buildRuntimeGroupAdds(
     collectEnhTree(treeName, choices, build.destinySelections?.[treeName] ?? {})
   }
   for (const [treeName, choices] of Object.entries(build.reaperChoices ?? {})) {
-    collectEnhTree(treeName, choices, {})
+    collectEnhTree(treeName, choices, build.reaperSelections?.[treeName] ?? {})
   }
 
   return { adds, merges }
@@ -298,6 +298,11 @@ const MAX_BAB = 25
 
 function saveBase(saveType: unknown, levels: number): number {
   const s = String(saveType ?? '')
+  // Epic/Legendary pseudo-classes declare <Fortitude>None</Fortitude> etc. —
+  // V2 contributes NOTHING for them (epic levels grant no base saves). The
+  // old poor-progression fallback silently added +3/+1, inflating every save
+  // by a uniform +4 at level 34.
+  if (s === 'None' || s === '') return 0
   if (s === 'Strong' || s === 'Type2') return 2 + Math.floor(levels / 2)
   return Math.floor(levels / 3)
 }
@@ -1380,7 +1385,9 @@ function buildStatMapOnce(
     for (const [treeName, choices] of Object.entries(build.reaperChoices)) {
       const tree = allTrees.find(t => t.Name === treeName)
       if (!tree) continue
-      accumulateEnhancementTree(map, tree, choices, {}, build.totalLevel, ctx)
+      // Reaper selector picks (e.g. Dread Adversary "Reaper's Offense III:
+      // +1 Strength" — UNGATED, counts outside reaper difficulty in V2).
+      accumulateEnhancementTree(map, tree, choices, build.reaperSelections?.[treeName] ?? {}, build.totalLevel, ctx)
     }
 
     // ── Gear item buffs ───────────────────────────────────────────────────
@@ -1630,6 +1637,7 @@ function buildStatMapOnce(
     add(map, 'helpless', { value: 50, type: 'Base', source: 'Attack (base helpless damage)' })
     add(map, 'melee.strikethrough', { value: 20, type: 'Base', source: 'Attack (base strikethrough)' })
     add(map, 'offhand.attack', { value: 20, type: 'Base', source: 'Attack (base off-hand attack chance)' })
+    add(map, 'unconsciousRange', { value: -10, type: 'Base', source: 'Attack (standard death at -10)' })
 
     // V2 BreakdownItemMaximumKi.cpp:31-58 — Maximum Ki = base 40 + WIS mod × 5
     // (plus any KiMaximum effects, parsed into ki.max). V2 adds the base + WIS

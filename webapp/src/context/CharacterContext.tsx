@@ -143,6 +143,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     skillTomes: raw.skillTomes ?? {},
     activeBuffs: raw.activeBuffs ?? [],
     selfBuffs: raw.selfBuffs ?? [],
+    reaperSelections: raw.reaperSelections ?? {},
     augmentLevelChoices: raw.augmentLevelChoices ?? {},
     completedQuests: raw.completedQuests ?? {},
     notes: raw.notes ?? '',
