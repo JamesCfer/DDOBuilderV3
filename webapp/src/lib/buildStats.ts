@@ -143,6 +143,20 @@ function toArray<T>(val: T | T[] | undefined): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
+// V2 walks ALL LevelTraining entries — including the Epic/Legendary
+// pseudo-class levels — when collecting class AutomaticFeats
+// (Build::UpdateFeats, Build.cpp:2437-2465). Epic.class.xml grants
+// "Epic Skills" (+1 all skills) and "Epic Power" (+6 ranged/spell power)
+// at EVERY epic level, Legendary.class.xml similar; iterating only
+// build.classes silently dropped all of them (−10 all skills, −84
+// ranged/spell power at level 34 on the golden build).
+function classesWithEpicPseudo(build: CharacterBuild): Array<{ name: string, levels: number }> {
+  const out = build.classes.filter(bc => bc.name && bc.levels > 0)
+  if ((build.epicLevels ?? 0) > 0) out.push({ name: 'Epic', levels: build.epicLevels ?? 0 })
+  if ((build.legendaryLevels ?? 0) > 0) out.push({ name: 'Legendary', levels: build.legendaryLevels ?? 0 })
+  return out
+}
+
 // V2 .DDOBuild files and the TreeGrid UI both key enhancement choices by the
 // item's InternalName (e.g. "WCCore1"); older V3 saves used the display Name.
 // Every rank/selection lookup must accept either key (same policy as
@@ -196,8 +210,7 @@ export function buildRuntimeGroupAdds(
   for (const f of Object.values(build.featChoices)) if (f) featNames.add(f)
   const race = allRaces.find(r => r.Name === build.race)
   if (race) for (const f of toArray(race.GrantedFeat)) featNames.add(f as string)
-  for (const bc of build.classes) {
-    if (!bc.name || bc.levels <= 0) continue
+  for (const bc of classesWithEpicPseudo(build)) {
     const cls = allClasses.find(c => c.Name === bc.name)
     if (!cls) continue
     for (const af of toArray(cls.AutomaticFeats)) {
@@ -809,7 +822,11 @@ function accumulateTrainedSpells(
           // amounts, and calls SetApplyAsItemEffect() on EVERY spell effect —
           // trained-spell effects join the gear "Highest Only" pool.
           const atype = (eff as { AType?: string }).AType
-          const stamped = (atype === 'ClassLevel' || atype === 'ClassCasterLevel') && !eff.StackSource
+          // V2 stamps the spell's class UNCONDITIONALLY — Spells.xml carries a
+          // literal StackSource "Unknown" on some spells (e.g. Merfolk's
+          // Blessing), which must be overwritten or the effect resolves to
+          // class level 0 and contributes nothing.
+          const stamped = (atype === 'ClassLevel' || atype === 'ClassCasterLevel')
             ? { ...eff, StackSource: className }
             : eff
           addParsed(map, parseEffect(stamped, 1, `Spell: ${spell.Name}`, 0, 0, ctx), true)
@@ -913,6 +930,7 @@ function buildStatMapOnce(
   build: CharacterBuild,
   abilityTotalsOverride?: Record<string, number>,
   skillTotalsOverride?: Record<string, number>,
+  casterLevelsOverride?: Record<string, number>,
 ): StatMap {
   const map: StatMap = new Map()
 
@@ -966,8 +984,7 @@ function buildStatMapOnce(
     const ctxFeats = new Set<string>()
     for (const f of Object.values(build.featChoices)) if (f) ctxFeats.add(f)
     if (ctxRace) for (const f of toArray(ctxRace.GrantedFeat)) ctxFeats.add(f)
-    for (const bc of build.classes) {
-      if (!bc.name || bc.levels <= 0) continue
+    for (const bc of classesWithEpicPseudo(build)) {
       const cls = allClasses.find(c => c.Name === bc.name)
       for (const af of toArray(cls?.AutomaticFeats)) {
         const lvl = af.Level ?? 0
@@ -1137,6 +1154,7 @@ function buildStatMapOnce(
       weaponClassOffhand: ctxWeaponClassOff,
       materialBySlot: ctxMaterialBySlot,
       skillTotals: skillTotalsOverride,
+      casterLevels: casterLevelsOverride,
     }
 
     // ── Ability base scores ───────────────────────────────────────────────
@@ -1182,8 +1200,7 @@ function buildStatMapOnce(
     // here because the feat itself is an idempotent grant (rank=1); the
     // important V2 behavior is that the feat fires only when its class
     // level has been reached, which `bc.levels` already encodes.
-    for (const bc of build.classes) {
-      if (!bc.name || bc.levels <= 0) continue
+    for (const bc of classesWithEpicPseudo(build)) {
       const cls = allClasses.find(c => c.Name === bc.name)
       if (!cls) continue
 
@@ -1204,9 +1221,12 @@ function buildStatMapOnce(
           autoFeatCounts.set(featName, (autoFeatCounts.get(featName) ?? 0) + 1)
         }
       }
-      for (const [featName, count] of autoFeatCounts) {
+      for (const [featName, rawCount] of autoFeatCounts) {
         const feat = allFeats.find(f => f.Name === featName)
-        if (feat) accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, build.totalLevel, ctx)
+        if (!feat) continue
+        // V2 stops granting once MaxTimesAcquire is reached.
+        const count = Math.min(rawCount, feat.MaxTimesAcquire ?? rawCount)
+        accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, build.totalLevel, ctx)
       }
     }
 
@@ -1625,6 +1645,21 @@ function buildStatMapOnce(
       if (!cls?.ClassSkill) continue
       for (const s of toArray(cls.ClassSkill)) classSkillSet.add(s)
     }
+    // V2 Build::SkillAtLevel (Build.cpp:2019-2054): each spend counts 1.0 rank
+    // if the skill is a class skill OF THE CLASS TRAINED AT THAT LEVEL, else
+    // 0.5 — a per-level decision, not a per-build union (a Bard 18/Ftr 1/Barb 1
+    // spending Perform at its Fighter level gets 0.5, not 1.0).
+    const perClassSkills = new Map<string, Set<string>>()
+    const classSkillsFor = (name: string | undefined): Set<string> => {
+      if (!name) return new Set()
+      let set = perClassSkills.get(name)
+      if (!set) {
+        set = new Set(toArray(allClasses.find(c => c.Name === name)?.ClassSkill))
+        perClassSkills.set(name, set)
+      }
+      return set
+    }
+    const skillLevelClasses = getLevelClasses(build)
 
     const abilModMap: Record<string, number> = {
       Strength: strMod, Dexterity: dexMod, Constitution: conModFull,
@@ -1650,10 +1685,24 @@ function buildStatMapOnce(
           source: `${ability} mod`,
         })
       }
-      // V2 stores trained levels; rank = trained for class skill, trained/2 for cross-class.
-      const trained = build.skillRanks?.[skill] ?? 0
-      if (trained > 0) {
-        const ranksValue = classSkillSet.has(skill) ? trained : trained / 2
+      // V2 stores trained levels; rank = 1.0 per spend at a level whose class
+      // has the skill as a class skill, 0.5 otherwise (SkillAtLevel). Use the
+      // per-level spend data when available; fall back to the whole-build
+      // union heuristic for legacy saves without per-level data.
+      const byLevel = build.skillRanksByLevel
+      let ranksValue = 0
+      if (byLevel && Object.keys(byLevel).length > 0) {
+        for (const [lvlStr, ranks] of Object.entries(byLevel)) {
+          const spent = ranks?.[skill] ?? 0
+          if (!spent) continue
+          const clsName = skillLevelClasses[Number(lvlStr) - 1]
+          ranksValue += spent * (classSkillsFor(clsName).has(skill) ? 1 : 0.5)
+        }
+      } else {
+        const trained = build.skillRanks?.[skill] ?? 0
+        ranksValue = classSkillSet.has(skill) ? trained : trained / 2
+      }
+      if (ranksValue > 0) {
         add(map, `skill.${skill}`, { value: ranksValue, type: 'Ranks', source: 'Skill ranks' })
       }
 
@@ -1681,38 +1730,6 @@ function buildStatMapOnce(
           type: 'Stacking',
           source: `Negative levels (-1 × ${negLevels})`,
         })
-      }
-    }
-
-    // V2 BreakdownItemSpellPower.cpp:112-150 — each element's spell power adds
-    // the *total* of a governing skill: Heal → Positive/Negative, Perform →
-    // Sonic, Repair → Repair/Rust, Spellcraft → everything else. (The universal
-    // spell power is added at the display layer.) V3 never folded the skill in,
-    // so e.g. Heal ranks gave no Positive/Negative spell power. Fold the
-    // governing-skill total into each element's sp.<element> key.
-    {
-      const skillTotal = (name: string) => resolveBonus(map.get(`skill.${name}`) ?? []).total
-      const SP_SKILL: Record<string, string> = {
-        Positive: 'Heal', Negative: 'Heal',
-        Sonic: 'Perform',
-        Repair: 'Repair', Rust: 'Repair',
-      }
-      // Default governing skill for every other element is Spellcraft.
-      const SP_ELEMENTS = [
-        'Acid', 'Cold', 'Electric', 'Fire', 'Force', 'LightAlignment',
-        'Negative', 'Positive', 'Repair', 'Rust', 'Sonic', 'Poison',
-        'Physical', 'Chaos', 'Evil', 'Lawful', 'Untyped',
-      ]
-      for (const el of SP_ELEMENTS) {
-        const skill = SP_SKILL[el] ?? 'Spellcraft'
-        const bonus = skillTotal(skill)
-        if (bonus !== 0) {
-          add(map, `sp.${el}`, {
-            value: bonus,
-            type: 'Skill Bonus',
-            source: `${skill} skill bonus`,
-          })
-        }
       }
     }
 
@@ -1746,8 +1763,7 @@ function buildStatMapOnce(
       if (babTotal > 0) {
         const trainedFeats = new Set<string>(Object.values(build.featChoices).filter(Boolean))
         // Auto-feats from classes & race
-        for (const bc of build.classes) {
-          if (!bc.name || bc.levels <= 0) continue
+        for (const bc of classesWithEpicPseudo(build)) {
           const cls = allClasses.find(c => c.Name === bc.name)
           for (const af of toArray(cls?.AutomaticFeats)) {
             const names = af.Feats
@@ -2049,6 +2065,41 @@ function buildStatMapOnce(
       }
     }
 
+    // (Runs AFTER the skill.All fan-out so the folded value equals the FINAL
+    // skill total — V2's observer re-fires on any skill change.)
+    // V2 BreakdownItemSpellPower.cpp:112-150 — each element's spell power adds
+    // the *total* of a governing skill: Heal → Positive/Negative, Perform →
+    // Sonic, Repair → Repair/Rust, Spellcraft → everything else. (The universal
+    // spell power is added at the display layer.) V3 never folded the skill in,
+    // so e.g. Heal ranks gave no Positive/Negative spell power. Fold the
+    // governing-skill total into each element's sp.<element> key.
+    {
+      const skillTotal = (name: string) => resolveBonus(map.get(`skill.${name}`) ?? []).total
+      const SP_SKILL: Record<string, string> = {
+        Positive: 'Heal', Negative: 'Heal',
+        Sonic: 'Perform',
+        Repair: 'Repair', Rust: 'Repair',
+      }
+      // Default governing skill for every other element is Spellcraft.
+      const SP_ELEMENTS = [
+        'Acid', 'Cold', 'Electric', 'Fire', 'Force', 'LightAlignment',
+        'Negative', 'Positive', 'Repair', 'Rust', 'Sonic', 'Poison',
+        'Physical', 'Chaos', 'Evil', 'Lawful', 'Untyped',
+      ]
+      for (const el of SP_ELEMENTS) {
+        const skill = SP_SKILL[el] ?? 'Spellcraft'
+        const bonus = skillTotal(skill)
+        if (bonus !== 0) {
+          add(map, `sp.${el}`, {
+            value: bonus,
+            type: 'Skill Bonus',
+            source: `${skill} skill bonus`,
+          })
+        }
+      }
+    }
+
+
     // ── Percentage effects (V2 BreakdownItem::DoPercentageEffects) ────────
     // Effects tagged <Percent/> add (base × percent / 100) of the stat's own
     // base total rather than a flat amount (e.g. Frenzied Berserker +25% HP).
@@ -2128,18 +2179,34 @@ export function buildStatMap(input: BuildStatsInput, build: CharacterBuild): Sta
     }
     return out
   }
+  // Bonus caster levels per class (cl.<Class> effects + cl.All) for V2
+  // ClassCasterLevel resolution: BreakdownItemCasterLevel totals class levels
+  // PLUS CasterLevel effects (Epic/Legendary Knowledge, gear +CL), so e.g.
+  // Merfolk's Blessing on a Bard 18 with Epic Knowledge ×5 + Legendary
+  // Knowledge ×2 reads its Amount table at caster level 25, not 18.
+  const casterOf = (m: StatMap): Record<string, number> => {
+    const out: Record<string, number> = {}
+    for (const key of m.keys()) {
+      if (key.startsWith('cl.')) out[key.slice(3)] = resolveBonus(m.get(key) ?? []).total
+    }
+    return out
+  }
   let map = buildStatMapOnce(input, build)
   let totals = totalsOf(map)
   let skills = skillsOf(map)
+  let casters = casterOf(map)
   for (let i = 0; i < 3; i++) {
-    const next = buildStatMapOnce(input, build, totals, skills)
+    const next = buildStatMapOnce(input, build, totals, skills, casters)
     const nextTotals = totalsOf(next)
     const nextSkills = skillsOf(next)
+    const nextCasters = casterOf(next)
     const stable = ABILITIES.every(ab => nextTotals[ab] === totals[ab])
       && Object.keys({ ...skills, ...nextSkills }).every(k => nextSkills[k] === skills[k])
+      && Object.keys({ ...casters, ...nextCasters }).every(k => nextCasters[k] === casters[k])
     map = next
     totals = nextTotals
     skills = nextSkills
+    casters = nextCasters
     if (stable) break
   }
   return map

@@ -6,6 +6,7 @@
 import type { CharacterBuild, DDOClass, Feat, Race } from '../types/ddo'
 import { buildSnapshotAtCharacterLevel } from './levelProgression'
 import { meetsRequirements } from './requirements'
+import { buildAutomaticFeatGroups } from './automaticFeats'
 import type { SlotEntry } from './levelTraining'
 
 // V2 behavior: feats with <Group>X</Group> can be trained in slots whose
@@ -39,19 +40,56 @@ export function buildSnapshotForSlot(
   // owning class hits the relevant class-level, so the included entry is correct.
   const snap = buildSnapshotAtCharacterLevel(build, slot.level)
 
-  // Feat choices: only feats trained in a strictly-earlier slot count. Same-
-  // level slots (e.g. two heroic feats at level 1) cannot satisfy each other.
+  // Feat choices: feats trained at this character level or earlier count —
+  // INCLUDING other slots at the same level. V2 Build::CurrentFeats(level)
+  // gathers every level's TrainedFeats up to and including `level`, so e.g.
+  // Dodge and Mobility can both be trained at character level 1 (standard +
+  // class bonus slot) with Mobility's Dodge prerequisite satisfied.
   const featChoices: Record<string, string> = {}
   for (const [key, value] of Object.entries(build.featChoices)) {
     if (!value || key === slot.key) continue
     const other = slots.find(s => s.key === key)
     if (!other) continue
-    if (other.level < slot.level) {
+    if (other.level <= slot.level) {
       featChoices[key] = value
     }
   }
 
   return { ...snap, featChoices }
+}
+
+/**
+ * V2 Build::CurrentFeats(level) equivalent: the full feat set that
+ * prerequisite checks evaluate against at a slot — trained feats up to and
+ * including the slot's level (already in `snap.featChoices`), automatic
+ * class/race feats granted by then, and special feats (past lives, favor
+ * rewards, Life special feats) which V2 always includes regardless of level.
+ */
+export function prereqFeatCounts(
+  snap: CharacterBuild,
+  slotLevel: number,
+  allClasses: DDOClass[],
+  race: Race | undefined,
+  specialFeats: string[] = [],
+): Record<string, number> {
+  const counts: Record<string, number> = {}
+  const add = (name: string, n = 1) => {
+    if (name) counts[name] = (counts[name] ?? 0) + n
+  }
+  for (const v of Object.values(snap.featChoices)) if (v) add(v)
+  // Automatic class/race feats granted at or before this character level.
+  for (const g of buildAutomaticFeatGroups(snap, allClasses, race ? [race] : [])) {
+    if ((g.charLevel ?? 0) <= slotLevel) g.feats.forEach(f => add(f))
+  }
+  // Special feats: past lives (heroic/racial keys are stored stripped of the
+  // "Past Life: " prefix — requirements name the full feat), favor feats,
+  // and any Life-level special feats the caller supplies.
+  for (const [name, n] of Object.entries(snap.pastLives ?? {})) {
+    add(name.startsWith('Past Life') ? name : `Past Life: ${name}`, n)
+  }
+  for (const f of snap.favorFeats ?? []) add(f)
+  for (const f of specialFeats) add(f)
+  return counts
 }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +107,8 @@ export interface OptionSettings {
   showUnavailable?: boolean
   /** V2 IsInIgnoreList when "Ignore Lists Active". */
   isIgnored?: (name: string) => boolean
+  /** Life-level special feats (V2 Build::SpecialFeats) for prerequisite counts. */
+  specialFeats?: string[]
 }
 
 export function featOptionsForSlot(
@@ -82,6 +122,12 @@ export function featOptionsForSlot(
 ): FeatOption[] {
   // Snapshot of the build state just before this slot is chosen
   const snap = buildSnapshotForSlot(slot, slots, build)
+  // V2 Build::CurrentFeats(level): trained + automatic + special feats all
+  // count toward prerequisites (e.g. Stunning Fist requires the automatic
+  // Monk feat "Flurry of Blows"; epic feats require "Past Life: X" ×N).
+  const featCounts = prereqFeatCounts(snap, slot.level, allClasses, race, opt.specialFeats)
+  const featSet = new Set(Object.keys(featCounts))
+  const reqCtx = { build: snap, allClasses, race, feats: featSet, featCounts }
 
   // Exclude already-chosen feats in other slots (use FULL build for exclusion
   // so feats taken later are still blocked from being double-taken)
@@ -90,8 +136,6 @@ export function featOptionsForSlot(
       .filter(([k, v]) => k !== slot.key && v)
       .map(([, v]) => v)
   )
-
-  const updateList = slot.featUpdateList
 
   return feats
     .filter(f => {
@@ -103,12 +147,14 @@ export function featOptionsForSlot(
       if (opt.isIgnored?.(f.Name) && !opt.showUnavailable
           && build.featChoices[slot.key] !== f.Name) return false
 
-      // If the slot has an explicit FeatUpdateList, it's the authoritative whitelist
-      if (updateList && updateList.length > 0) {
-        return updateList.includes(f.Name)
-      }
-
-      // Otherwise: match feat group to slot type (V2 behavior, Build.cpp:1523-1527)
+      // Match feat group to slot type (V2 behavior, Build.cpp:1523-1527).
+      // NOTE: a slot's FeatUpdateList is NOT a per-slot whitelist — V2's
+      // UpdateFeats (DDOBuilder.cpp:1293-1320) folds those names into the
+      // feats' Group lists at load time (see loadFeats), after which ALL
+      // slots of that FeatType use plain group matching. Treating the list
+      // as authoritative both hid group-tagged feats from the listed slot
+      // (Stunning Fist in Monk Bonus level 1) and hid listed feats from
+      // unlisted same-type slots (Two Weapon Fighting in Monk Bonus 2/6).
       const featGroups = Array.isArray(f.Group) ? f.Group : f.Group ? [f.Group] : []
       const epicOnly = (opt.epicOnly ?? false) && !(opt.showUnavailable ?? false)
       if (slotMatchesFeat(slot.featType, featGroups, epicOnly)) return true
@@ -120,13 +166,13 @@ export function featOptionsForSlot(
         const condGroups = Array.isArray(cg.Group) ? cg.Group : cg.Group ? [cg.Group] : []
         if (condGroups.length > 0
           && slotMatchesFeat(slot.featType, condGroups, epicOnly)
-          && meetsRequirements(cg.Requirements, { build: snap, allClasses, race })) {
+          && meetsRequirements(cg.Requirements, reqCtx)) {
           return true
         }
       }
       return false
     })
-    .map(f => ({ feat: f, prereqsMet: meetsRequirements(f.Requirements, { build: snap, allClasses, race }) }))
+    .map(f => ({ feat: f, prereqsMet: meetsRequirements(f.Requirements, reqCtx) }))
     .sort((a, b) => {
       if (a.prereqsMet !== b.prereqsMet) return a.prereqsMet ? -1 : 1
       return a.feat.Name.localeCompare(b.feat.Name)

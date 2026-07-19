@@ -128,6 +128,11 @@ export function buildSnapshotAtCharacterLevel(
     levelClasses: lc,
     classes,
     totalLevel: lc.filter(Boolean).length,
+    // Epic/legendary levels only count once the snapshot level reaches them
+    // (V2 evaluates requirements "at level": a level-15 snapshot has no epic
+    // levels even if the full build is level 34).
+    epicLevels: Math.max(0, Math.min(build.epicLevels ?? 0, charLevel - 20)),
+    legendaryLevels: Math.max(0, Math.min(build.legendaryLevels ?? 0, charLevel - 30)),
   }
 }
 

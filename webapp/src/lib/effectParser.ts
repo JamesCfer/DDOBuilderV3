@@ -54,6 +54,7 @@ export interface EffectContext {
   weaponClassOffhand?: Set<string>          // off-hand weapon class memberships
   materialBySlot?: Record<string, string>   // V2 slot name (Weapon1, …) → equipped item Material
   skillTotals?: Record<string, number>      // skill → resolved total (fixed-point pass 2+)
+  casterLevels?: Record<string, number>     // class → bonus caster levels from cl.* effects (fixed-point pass 2+)
 }
 
 // ---------------------------------------------------------------------------
@@ -403,6 +404,13 @@ function resolveValue(
         level = atype === 'BaseClassLevel'
           ? (ctx.baseClassLevels[effect.StackSource] ?? 0)
           : (ctx.classLevels[effect.StackSource] ?? 0)
+        // V2 Effect.cpp:1286-1313 — ClassCasterLevel reads the class's CASTER
+        // LEVEL breakdown (class levels + CasterLevel effects incl. "All"),
+        // not the raw class level. Only classes with actual levels get the
+        // bonus (a 0-level class's spells stay inert).
+        if (atype === 'ClassCasterLevel' && level > 0 && ctx.casterLevels) {
+          level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)
+        }
       }
       return getAmountAtRank(effect.Amount, level + 1)
     }
