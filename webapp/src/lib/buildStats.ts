@@ -629,20 +629,54 @@ function resolveAugment(
   return allAugments.find(a => a.Name === augName)
 }
 
+// V2 Build.cpp:4975-5012 (ApplyItem augment loop): a ChooseLevel augment's
+// effect Amount is REPLACED by LevelValue[SelectedLevelIndex] (LevelValue2 for
+// the second effect when DualValues); with no stored index V2 falls back to
+// indexing by the host item's MinLevel. The augment's printed Amount is only
+// the display maximum (e.g. Sapphire of Dodge: Amount 17, LevelValue
+// "1 3 5 6 8 9 11 12 14" — index 8 → +14, not +17).
+function chooseLevelValues(raw: unknown): number[] {
+  if (raw == null) return []
+  const text = typeof raw === 'object' && '#text' in (raw as Record<string, unknown>)
+    ? String((raw as Record<string, unknown>)['#text'] ?? '')
+    : String(raw)
+  return text.trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
+}
+
 function accumulateAugments(
   map: StatMap,
   augmentChoices: Record<string, string>,
   gearItems: Record<string, Item>,
   allAugments: Augment[],
   ctx?: EffectContext,
+  augmentLevelChoices?: Record<string, number>,
 ): void {
   for (const [key, augName] of Object.entries(augmentChoices)) {
     if (!augName) continue
     const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
     const source = `Augment: ${aug.Name}`
-    for (const eff of toArray(aug.Effect)) {
-      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx))
+    const augAny = aug as Augment & { ChooseLevel?: unknown, DualValues?: unknown, LevelValue2?: unknown }
+    const hasChooseLevel = augAny.ChooseLevel !== undefined
+    const levelValues = hasChooseLevel ? chooseLevelValues(augAny.LevelValue) : []
+    const levelValues2 = hasChooseLevel ? chooseLevelValues(augAny.LevelValue2) : []
+    const hostItem = gearItems[key.split(':')[0]]
+    const fallbackIdx = Math.max(0, (hostItem?.MinLevel ?? 1) - 1)
+    const levelIdx = augmentLevelChoices?.[key] ?? fallbackIdx
+    let effIndex = 0
+    for (const rawEff of toArray(aug.Effect)) {
+      let eff = rawEff
+      if (hasChooseLevel && levelValues.length > 0) {
+        const table = (augAny.DualValues !== undefined && effIndex === 1 && levelValues2.length > 0)
+          ? levelValues2 : levelValues
+        const idx = Math.min(Math.max(0, levelIdx), table.length - 1)
+        eff = { ...rawEff, Amount: table[idx] }
+      }
+      effIndex++
+      // V2 augment effects live in the item pool (m_itemEffects) — they obey
+      // "Highest Only" bonus-type stacking against other gear bonuses (e.g. a
+      // Sapphire of Resistance does NOT stack with an item Resistance bonus).
+      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
     }
   }
 }
@@ -761,13 +795,17 @@ function accumulateFiligrees(
   }
 }
 
+// V2 Life::SelfAndPartyBuffs — the OptionalBuff catalogue applies ONLY to
+// buffs the user selected in the buffs pane, NOT to active stances. A stance
+// that happens to share a catalogue buff's name (e.g. the Fury of the Wild
+// "Primal Scream" stance vs the party-buff entry) must not double-apply.
 function accumulateSelfBuffs(
   map: StatMap,
-  activeBuffNames: string[],
+  selfBuffNames: string[],
   allSelfBuffs: OptionalBuff[],
   ctx?: EffectContext,
 ): void {
-  for (const buffName of activeBuffNames) {
+  for (const buffName of selfBuffNames) {
     const buff = allSelfBuffs.find(b => b.Name === buffName)
     if (!buff) continue
     const source = `Buff: ${buff.Name}`
@@ -1159,7 +1197,9 @@ function buildStatMapOnce(
 
     // ── Ability base scores ───────────────────────────────────────────────
     const ABILITIES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const
-    const tomeCap = tomeCapAtLevel(Math.max(1, build.totalLevel))
+    // V2 tome cap counts the CHARACTER level (heroic+epic+legendary) — a +8
+    // tome was being capped at +7 forever because heroic totalLevel is 20.
+    const tomeCap = tomeCapAtLevel(Math.max(1, build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)))
     for (const ab of ABILITIES) {
       const base = build.baseAbilities[ab]
       if (base) add(map, `ability.${ab}`, { value: base, type: 'Base', source: 'Point buy' })
@@ -1362,7 +1402,7 @@ function buildStatMapOnce(
     if (build.sentientGem.minorAugment) {
       allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
     }
-    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx)
+    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices)
 
     // ── Gear set bonuses ──────────────────────────────────────────────────
     // Pass the merged augment choices so augment-granted set bonuses (and
@@ -1373,7 +1413,7 @@ function buildStatMapOnce(
     accumulateFiligrees(map, build.filigreeSlots, build.artifactFiligreeSlots ?? [], allFiligrees, allFiligreeBonuses, ctx)
 
     // ── Self / party buffs ────────────────────────────────────────────────
-    accumulateSelfBuffs(map, build.activeBuffs, allSelfBuffs, ctx)
+    accumulateSelfBuffs(map, build.selfBuffs ?? [], allSelfBuffs, ctx)
 
     // ── Trained-spell self-effects (V2 parity) ────────────────────────────
     if (allSpells && allSpells.length > 0) {

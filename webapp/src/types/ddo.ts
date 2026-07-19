@@ -490,6 +490,10 @@ export interface CharacterBuild {
   gear: Record<string, string>
   /** augment key (slot:augmentType:index) → augment name */
   augmentChoices: Record<string, string>
+  /** ChooseLevel augments: augment key → SelectedLevelIndex (V2 ItemAugment). */
+  augmentLevelChoices?: Record<string, number>
+  /** V2 Life::SelfAndPartyBuffs — selected optional buffs (NOT stances). */
+  selfBuffs?: string[]
   /**
    * V2 `SlotUpgrade` resolutions (D2): key (slot:slotUpgradeType:index,
    * where index is the SlotUpgrade's position in the item's `SlotUpgrade`
@@ -682,6 +686,8 @@ export function emptyBuild(): CharacterBuild {
     skillRanksByLevel: {},
     gear: {},
     augmentChoices: {},
+    augmentLevelChoices: {},
+    selfBuffs: [],
     slotUpgradeChoices: {},
     pastLives: {},
     filigreeSlots: Array.from({ length: 6 }, () => ({ name: '', rare: false })),

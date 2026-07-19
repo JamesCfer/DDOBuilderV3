@@ -318,7 +318,11 @@ const skills: SectionDef = {
     const lines = ['[b]Skills[/b]:']
     entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([s, r]) => {
       const total = stats ? stats.total(`skill.${s}`) : 0
-      lines.push(`  ${s}: ${r} ranks (${sign(total)})`)
+      // V2 prints the effective rank total (cross-class spends count 0.5) —
+      // the stats engine's 'Ranks' row carries exactly that value.
+      const rankRow = stats?.resolve(`skill.${s}`).bonuses.find(b => b.type === 'Ranks')
+      const ranks = rankRow ? rankRow.value : r
+      lines.push(`  ${s}: ${ranks} ranks (${sign(total)})`)
     })
     return lines
   },

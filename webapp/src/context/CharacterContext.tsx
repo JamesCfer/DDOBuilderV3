@@ -142,6 +142,8 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     abilityTomes: raw.abilityTomes ?? {},
     skillTomes: raw.skillTomes ?? {},
     activeBuffs: raw.activeBuffs ?? [],
+    selfBuffs: raw.selfBuffs ?? [],
+    augmentLevelChoices: raw.augmentLevelChoices ?? {},
     completedQuests: raw.completedQuests ?? {},
     notes: raw.notes ?? '',
     sentientGem: migrateSentientGem(raw.sentientGem as unknown),
@@ -369,10 +371,13 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     case 'SET_SKILL_TOME':
       return { ...state, skillTomes: { ...state.skillTomes, [action.skill]: action.bonus } }
     case 'TOGGLE_BUFF': {
-      const active = state.activeBuffs.includes(action.buffName)
-        ? state.activeBuffs.filter(b => b !== action.buffName)
-        : [...state.activeBuffs, action.buffName]
-      return { ...state, activeBuffs: active }
+      // Self/party buffs are their own list (V2 Life::SelfAndPartyBuffs) —
+      // separate from active stances.
+      const cur = state.selfBuffs ?? []
+      const next = cur.includes(action.buffName)
+        ? cur.filter(b => b !== action.buffName)
+        : [...cur, action.buffName]
+      return { ...state, selfBuffs: next }
     }
     case 'TOGGLE_STANCE': {
       const isOn = state.activeBuffs.includes(action.stanceName)

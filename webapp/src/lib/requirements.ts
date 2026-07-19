@@ -109,7 +109,9 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
 
   switch (req.Type) {
     case 'Ability': {
-      const charLvl = Math.max(1, build.totalLevel || 1)
+      // Tome cap + level-up counting use the CHARACTER level (heroic+epic+
+      // legendary) — a +8 tome's last point applies at epic levels.
+      const charLvl = Math.max(1, (build.totalLevel || 1) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0))
       const tomeRaw = (build.abilityTomes ?? {})[item as Ability] ?? 0
       const tome = Math.min(tomeRaw, tomeCapAtLevel(charLvl))
       const racial = ctx.race ? Number((ctx.race as unknown as Record<string, unknown>)[item] ?? 0) || 0 : 0
@@ -177,7 +179,7 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       // V2 Requirement.cpp:633-645: value(Item[0]) > value(Item[1]).
       const its = Array.isArray(req.Item) ? req.Item : req.Item ? [req.Item] : []
       if (its.length < 2) return false
-      const charLvl = Math.max(1, build.totalLevel || 1)
+      const charLvl = Math.max(1, (build.totalLevel || 1) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0))
       const score = (ab: string) => {
         const tomeRaw = (build.abilityTomes ?? {})[ab as Ability] ?? 0
         const tome = Math.min(tomeRaw, tomeCapAtLevel(charLvl))
