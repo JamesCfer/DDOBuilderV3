@@ -926,7 +926,7 @@
         </ActiveStances>
         <Destiny_SelectedTrees>
           <TreeName>Divine Crusader</TreeName>
-          <TreeName>Shadowdancer</TreeName>
+          <TreeName>Legendary Dreadnought</TreeName>
           <TreeName>Fury of the Wild</TreeName>
           <TreeName>Magus of the Eclipse</TreeName>
           <Tier5Tree>Divine Crusader</Tier5Tree>
@@ -936,7 +936,7 @@
           <TreeName>Swashbuckler</TreeName>
           <TreeName>Warchanter</TreeName>
           <TreeName>Vistani Knife Fighter</TreeName>
-          <TreeName>Frenzied Berserker</TreeName>
+          <TreeName>Vanguard</TreeName>
           <TreeName>Kensei</TreeName>
           <TreeName>Ravager (Barbarian)</TreeName>
           <Tier5Tree>Warchanter</Tier5Tree>
@@ -1168,6 +1168,14 @@
             <EnhancementName>Celerity</EnhancementName>
             <Ranks>1</Ranks>
           </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniCore4</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>VistaniKnifeTrainingIV</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
         </EnhancementSpendInTree>
         <EnhancementSpendInTree>
           <TreeName>Kensei</TreeName>
@@ -1180,10 +1188,6 @@
           <TrainedEnhancement>
             <EnhancementName>KenseiReedInTheWind</EnhancementName>
             <Ranks>3</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>KenseiExtraActionBoost</EnhancementName>
-            <Ranks>2</Ranks>
           </TrainedEnhancement>
         </EnhancementSpendInTree>
         <ReaperSpendInTree>
@@ -1382,47 +1386,6 @@
           </TrainedEnhancement>
         </DestinySpendInTree>
         <DestinySpendInTree>
-          <TreeName>Shadowdancer</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerCoverOfDarkness</EnhancementName>
-            <Ranks>3</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerStealthy</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerCore2</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerLithe</EnhancementName>
-            <Ranks>3</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerDanceInTheDark</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerCore3</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerShadowcaster</EnhancementName>
-            <Selection>Shadowstriker</Selection>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>U51ShadowdancerGrimPrecision</EnhancementName>
-            <Ranks>2</Ranks>
-          </TrainedEnhancement>
-        </DestinySpendInTree>
-        <DestinySpendInTree>
           <TreeName>Fury of the Wild</TreeName>
           <TreeVersion>1</TreeVersion>
           <TrainedEnhancement>
@@ -1471,9 +1434,50 @@
             <EnhancementName>U51FuryOfTheWildCore4</EnhancementName>
             <Ranks>1</Ranks>
           </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FuryOfTheWildWadeThroughStrikeThrough</EnhancementName>
+            <Selection>Wilder Weapons - Doublestrike</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </DestinySpendInTree>
+        <DestinySpendInTree>
+          <TreeName>Legendary Dreadnought</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtPushThroughTheLine</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtShrugOffPunishment</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtExtraActionBoosts</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtGhostTouch</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51LegendaryDreadnoughtStrikeTwice</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
         </DestinySpendInTree>
         <ActiveAttackChain/>
-        <ActiveGear>vbard</ActiveGear>
+        <ActiveGear>cc1</ActiveGear>
         <EquippedGear>
           <Name>Standard</Name>
           <Helmet>
@@ -3041,12 +3045,1575 @@ is channeled here.</Description>
           <ArtifactFiligree>
             <Name/>
           </ArtifactFiligree>
-          <SnapshotStrength>79</SnapshotStrength>
-          <SnapshotIntelligence>20</SnapshotIntelligence>
-          <SnapshotWisdom>22</SnapshotWisdom>
-          <SnapshotDexterity>27</SnapshotDexterity>
-          <SnapshotConstitution>65</SnapshotConstitution>
-          <SnapshotCharisma>29</SnapshotCharisma>
+          <SnapshotStrength>77</SnapshotStrength>
+          <SnapshotIntelligence>18</SnapshotIntelligence>
+          <SnapshotWisdom>20</SnapshotWisdom>
+          <SnapshotDexterity>25</SnapshotDexterity>
+          <SnapshotConstitution>63</SnapshotConstitution>
+          <SnapshotCharisma>27</SnapshotCharisma>
+        </EquippedGear>
+        <EquippedGear>
+          <Name>test</Name>
+          <Helmet>
+            <Name>Legendary Helm of the Warblade</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>When the Echo broke off from the Warblade, the force of its defiance manifested
+this helm, and shares its clarity of purpose.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Crown of Summer</Type>
+            </Buff>
+            <Buff>
+              <Type>Crown of Summer:</Type>
+            </Buff>
+            <Buff>
+              <Type>ActionBoostEnhancement</Type>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>5</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Fortification Bypass (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Helmet</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Helmet>
+          <Necklace>
+            <Name>Legendary Black Dynamo</Name>
+            <Icon>Necklace_1e</Icon>
+            <Description>This small obsidian device on a long chain hums softly.</Description>
+            <DropLocation>Zoo Creeper, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>11</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Constitution (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Quality Damage (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Dodge</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Necklace</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Necklace>
+          <Trinket>
+            <Name>Legendary Periapt of Strength</Name>
+            <Icon>Trinket_101</Icon>
+            <Description>A mark of strength, recognizing the bearer's might while also bolstering it
+to new heights.</Description>
+            <DropLocation>The Safehold, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>15</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>3</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>13</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Magical Resistance Rating (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Trinket</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Trinket>
+          <Cloak>
+            <Name>Legendary Cloak of the Warblade</Name>
+            <Icon>Cloak_5</Icon>
+            <Description>When the Echo broke off from the Warblade, the force of its defiance manifested
+this cloak, and shares its clarity of purpose.</Description>
+            <DropLocation>Ruins of Myth Drannor, Goranathanil 's chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>14</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>18</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>LesserDisplacement</Type>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>23</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Resistance</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Magical Resistance Rating Cap (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Cloak</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Cloak>
+          <Belt>
+            <Name>Legendary Buckle of Transformation</Name>
+            <Icon>Belt_14c</Icon>
+            <Description>When spun, this buckle releases its power into its bearer, granting them strength
+and power.</Description>
+            <DropLocation>Law and Order, End chest</DropLocation>
+            <MinLevel>32</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>14</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>Doublestrike</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deadly</Type>
+              <Value1>5</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>CannithCombatInfusion</Type>
+            </Buff>
+            <SetBonus>Legendary Forbidden Knowledge</SetBonus>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Defense</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Belt</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Belt>
+          <Goggles>
+            <Name>Legendary Goggles of the Berserker</Name>
+            <Icon>Goggles_19</Icon>
+            <Description>Red lenses adorn these goggles made for those already used to seeing red.</Description>
+            <DropLocation>Secrets of the Red Wizards, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Enhanced Bloodrage</Type>
+            </Buff>
+            <Buff>
+              <Type>RelentlessFury</Type>
+            </Buff>
+            <Buff>
+              <Type>Lifesealed</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Ghostly</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Melee Power (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Goggles</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Goggles>
+          <Gloves>
+            <Name>The Cruel Hands of Fate</Name>
+            <Icon>Gloves_7k</Icon>
+            <Description/>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Doublestrike (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Seeker (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+              <SelectedAugment>Miserable Rebellion (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Accessory)</Type>
+              <SelectedAugment>Woeful Quality Seeker (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Melee Power (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Gloves</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Gloves>
+          <Boots>
+            <Name>Legendary Greaves of Seasons' Warding</Name>
+            <Icon>Boots_11d</Icon>
+            <Description>Made to withstand the harshness of any season, these aged boots show no wear.</Description>
+            <DropLocation>Portal to Below, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Acid</Description1>
+              <Item>Acid</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Magical Protection (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Boots>
+          <Bracers>
+            <Name>Bracers of the Battlerager</Name>
+            <Icon>Bracers_5c</Icon>
+            <Description>Bearing the mark of the Eternal Brigade, these bracers offer unparalleled protection.</Description>
+            <DropLocation>Threats Old and New, Raid Warded chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>162</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>81</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>40</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Sealed in Undeath</Type>
+              <SelectedAugment>Insightful Strength +7</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Bracers</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Bracers>
+          <Armor>
+            <NoAutoUpdate/>
+            <Name>Light Armor of the Warblade's Reflection</Name>
+            <Icon>LightArmor_1e</Icon>
+            <Description>This armor took the power of the deathly ritual and turned it to the Warblade's
+purposes.</Description>
+            <DropLocation>Ritual Table, Turn in 
+Legendary Light Armor of the Warblade 
+120 Barrier Fragments 
+Sigil of the Warblade</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Requirements>
+              <Requirement>
+                <Type>NotConstruct</Type>
+              </Requirement>
+            </Requirements>
+            <Armor>Light</Armor>
+            <ArmorBonus>35</ArmorBonus>
+            <MaximumDexterityBonus>20</MaximumDexterityBonus>
+            <ArcaneSpellFailure>10</ArcaneSpellFailure>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Accuracy</Type>
+              <Value1>24</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deadly</Type>
+              <Value1>12</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Shadow Striker</Type>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>5</Value1>
+              <BonusType>Legendary</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Weapon Damage (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Armor</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Armor>
+          <MainHand>
+            <Name>Dagger of the Undying Age</Name>
+            <Icon>Dagger_1t</Icon>
+            <Description>The ritual's power has imbued this weapon with an immortal fire and unholy purpose.</Description>
+            <DropLocation>Ritual Table, Turn in 
+Legendary Dagger of the Golden Age 
+120 Barrier Fragments</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+              <Weapon2/>
+            </EquipmentSlot>
+            <Weapon>Dagger</Weapon>
+            <AttackModifier>Strength</AttackModifier>
+            <DamageModifier>Strength</DamageModifier>
+            <DRBypass>Magic</DRBypass>
+            <DRBypass>Pierce</DRBypass>
+            <WeaponDamage>6.1</WeaponDamage>
+            <BaseDice>
+              <Number>1</Number>
+              <Sides>4</Sides>
+              <Bonus>3</Bonus>
+            </BaseDice>
+            <CriticalMultiplier>2</CriticalMultiplier>
+            <CriticalThreatRange>2</CriticalThreatRange>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Dripping with Magma</Type>
+            </Buff>
+            <Buff>
+              <Type>3rd Degree Burns</Type>
+              <Value1>3</Value1>
+            </Buff>
+            <Buff>
+              <Type>Sovereign Vorpal</Type>
+              <BonusType>Enhancement</BonusType>
+              <Description1>All</Description1>
+              <Item>All</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Sealed in Fire</Type>
+              <SelectedAugment>Sealed in Fire</SelectedAugment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Orange</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Purple</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Weapon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <IsAcceptsSentience/>
+          </MainHand>
+          <Ring1>
+            <Name>Legendary Band of Faith and Fortress</Name>
+            <Icon>Ring_21a</Icon>
+            <Description>A golden ring, blessed by divine protection.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>9</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>156</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>FalseLife</Type>
+              <Value1>56</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>TemperanceOfBelief</Type>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Ring1>
+          <Ring2>
+            <Name>The Autumn Equinox</Name>
+            <Icon>Ring_21g</Icon>
+            <Description>Power evenly divided between the Sun and Moon, the power of Autumn at its fullest
+is channeled here.</Description>
+            <DropLocation>Voices of the Dead, end chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AlchemicalEarthAttunement</Type>
+            </Buff>
+            <Buff>
+              <Type>Bloody Thorns</Type>
+            </Buff>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Doublestrike</Type>
+              <Value1>8</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Doubleshot</Type>
+              <Value1>5</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Blue</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <MinorArtifact/>
+          </Ring2>
+          <NumFiligrees>10</NumFiligrees>
+          <Filigree>
+            <Name>Sanctified Fervor/Reverberation +2 Charisma</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Nystul's Mystical Defense/Electrocution +6 MRR</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Sucker Punch/One Against Many +2 Strength</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Divinity/Ultimate Fury +2 Strength</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Treachery: +50% Threat Reduction</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Sanctified Fervor: +2 Smite Evil Uses</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Sanctified Fervor: +3 Melee Power</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Nystul's Mystical Defense: +1 Constitution</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Nystul's Mystical Defense: +3 MRR</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Nystul's Mystical Defense: +5% Fire Absorption</Name>
+          </Filigree>
+          <ArtifactFiligree>
+            <Name>Sanctified Fervor/Reverberation +2 Charisma</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Nystul's Mystical Defense/Electrocution +6 MRR</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Sucker Punch/One Against Many +2 Strength</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Divinity/Ultimate Fury +2 Strength</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Sanctified Fervor: +2 Smite Evil Uses</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <SnapshotStrength>77</SnapshotStrength>
+          <SnapshotIntelligence>18</SnapshotIntelligence>
+          <SnapshotWisdom>20</SnapshotWisdom>
+          <SnapshotDexterity>25</SnapshotDexterity>
+          <SnapshotConstitution>63</SnapshotConstitution>
+          <SnapshotCharisma>27</SnapshotCharisma>
+        </EquippedGear>
+        <EquippedGear>
+          <Name>cc1</Name>
+          <Helmet>
+            <Name>Legendary Helm of the Warblade</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>When the Echo broke off from the Warblade, the force of its defiance manifested
+this helm, and shares its clarity of purpose.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Crown of Summer</Type>
+            </Buff>
+            <Buff>
+              <Type>Crown of Summer:</Type>
+            </Buff>
+            <Buff>
+              <Type>ActionBoostEnhancement</Type>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>5</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Fortification Bypass (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Helmet</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Helmet>
+          <Necklace>
+            <Name>Legendary Black Dynamo</Name>
+            <Icon>Necklace_1e</Icon>
+            <Description>This small obsidian device on a long chain hums softly.</Description>
+            <DropLocation>Zoo Creeper, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>11</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Constitution (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Quality Damage (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Dodge</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Necklace</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Necklace>
+          <Trinket>
+            <Name>Legendary Periapt of Strength</Name>
+            <Icon>Trinket_101</Icon>
+            <Description>A mark of strength, recognizing the bearer's might while also bolstering it
+to new heights.</Description>
+            <DropLocation>The Safehold, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>15</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>3</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>13</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Magical Resistance Rating (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Trinket</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Trinket>
+          <Cloak>
+            <Name>Legendary Cloak of the Warblade</Name>
+            <Icon>Cloak_5</Icon>
+            <Description>When the Echo broke off from the Warblade, the force of its defiance manifested
+this cloak, and shares its clarity of purpose.</Description>
+            <DropLocation>Ruins of Myth Drannor, Goranathanil 's chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>Seeker</Type>
+              <Value1>14</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>18</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>LesserDisplacement</Type>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>23</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Resistance</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Magical Resistance Rating Cap (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Cloak</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Cloak>
+          <Belt>
+            <Name>Legendary Buckle of Transformation</Name>
+            <Icon>Belt_14c</Icon>
+            <Description>When spun, this buckle releases its power into its bearer, granting them strength
+and power.</Description>
+            <DropLocation>Law and Order, End chest</DropLocation>
+            <MinLevel>32</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>14</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Strength</Description1>
+              <Item>Strength</Item>
+            </Buff>
+            <Buff>
+              <Type>Doublestrike</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deadly</Type>
+              <Value1>5</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>CannithCombatInfusion</Type>
+            </Buff>
+            <SetBonus>Legendary Forbidden Knowledge</SetBonus>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>Sapphire of Defense</SelectedAugment>
+              <SelectedLevelIndex>8</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Belt</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Belt>
+          <Goggles>
+            <Name>Legendary Goggles of the Berserker</Name>
+            <Icon>Goggles_19</Icon>
+            <Description>Red lenses adorn these goggles made for those already used to seeing red.</Description>
+            <DropLocation>Secrets of the Red Wizards, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Enhanced Bloodrage</Type>
+            </Buff>
+            <Buff>
+              <Type>RelentlessFury</Type>
+            </Buff>
+            <Buff>
+              <Type>Lifesealed</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Ghostly</Type>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Melee Power (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Goggles</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Goggles>
+          <Gloves>
+            <Name>The Cruel Hands of Fate</Name>
+            <Icon>Gloves_7k</Icon>
+            <Description/>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Doublestrike (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Seeker (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+              <SelectedAugment>Miserable Rebellion (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Accessory)</Type>
+              <SelectedAugment>Woeful Quality Seeker (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Melee Power (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Gloves</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Gloves>
+          <Boots>
+            <Name>Legendary Greaves of Seasons' Warding</Name>
+            <Icon>Boots_11d</Icon>
+            <Description>Made to withstand the harshness of any season, these aged boots show no wear.</Description>
+            <DropLocation>Portal to Below, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Acid</Description1>
+              <Item>Acid</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Magical Protection (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Boots>
+          <Bracers>
+            <Name>Bracers of the Battlerager</Name>
+            <Icon>Bracers_5c</Icon>
+            <Description>Bearing the mark of the Eternal Brigade, these bracers offer unparalleled protection.</Description>
+            <DropLocation>Threats Old and New, Raid Warded chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>162</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>81</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>40</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Sealed in Undeath</Type>
+              <SelectedAugment>Insightful Strength +7</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Bracers</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Bracers>
+          <Armor>
+            <NoAutoUpdate/>
+            <Name>Light Armor of the Warblade's Reflection</Name>
+            <Icon>LightArmor_1e</Icon>
+            <Description>This armor took the power of the deathly ritual and turned it to the Warblade's
+purposes.</Description>
+            <DropLocation>Ritual Table, Turn in 
+Legendary Light Armor of the Warblade 
+120 Barrier Fragments 
+Sigil of the Warblade</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Requirements>
+              <Requirement>
+                <Type>NotConstruct</Type>
+              </Requirement>
+            </Requirements>
+            <Armor>Light</Armor>
+            <ArmorBonus>35</ArmorBonus>
+            <MaximumDexterityBonus>20</MaximumDexterityBonus>
+            <ArcaneSpellFailure>10</ArcaneSpellFailure>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Accuracy</Type>
+              <Value1>24</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Deadly</Type>
+              <Value1>12</Value1>
+              <BonusType>Competence</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Shadow Striker</Type>
+            </Buff>
+            <Buff>
+              <Type>ArmorPiercing</Type>
+              <Value1>5</Value1>
+              <BonusType>Legendary</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Weapon Damage (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Armor</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Armor>
+          <MainHand>
+            <Name>Dagger of the Undying Age</Name>
+            <Icon>Dagger_1t</Icon>
+            <Description>The ritual's power has imbued this weapon with an immortal fire and unholy purpose.</Description>
+            <DropLocation>Ritual Table, Turn in 
+Legendary Dagger of the Golden Age 
+120 Barrier Fragments</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+              <Weapon2/>
+            </EquipmentSlot>
+            <Weapon>Dagger</Weapon>
+            <AttackModifier>Strength</AttackModifier>
+            <DamageModifier>Strength</DamageModifier>
+            <DRBypass>Magic</DRBypass>
+            <DRBypass>Pierce</DRBypass>
+            <WeaponDamage>6.1</WeaponDamage>
+            <BaseDice>
+              <Number>1</Number>
+              <Sides>4</Sides>
+              <Bonus>3</Bonus>
+            </BaseDice>
+            <CriticalMultiplier>2</CriticalMultiplier>
+            <CriticalThreatRange>2</CriticalThreatRange>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Dripping with Magma</Type>
+            </Buff>
+            <Buff>
+              <Type>3rd Degree Burns</Type>
+              <Value1>3</Value1>
+            </Buff>
+            <Buff>
+              <Type>Sovereign Vorpal</Type>
+              <BonusType>Enhancement</BonusType>
+              <Description1>All</Description1>
+              <Item>All</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Sealed in Fire</Type>
+              <SelectedAugment>Sealed in Fire</SelectedAugment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Orange</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Purple</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Weapon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <IsAcceptsSentience/>
+          </MainHand>
+          <Ring1>
+            <Name>Legendary Band of Faith and Fortress</Name>
+            <Icon>Ring_21a</Icon>
+            <Description>A golden ring, blessed by divine protection.</Description>
+            <DropLocation>Ruins of Myth Drannor, Yegora 's chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>9</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>156</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>FalseLife</Type>
+              <Value1>56</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>TemperanceOfBelief</Type>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Ring1>
+          <Ring2>
+            <Name>The Autumn Equinox</Name>
+            <Icon>Ring_21g</Icon>
+            <Description>Power evenly divided between the Sun and Moon, the power of Autumn at its fullest
+is channeled here.</Description>
+            <DropLocation>Voices of the Dead, end chest (rare)</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AlchemicalEarthAttunement</Type>
+            </Buff>
+            <Buff>
+              <Type>Bloody Thorns</Type>
+            </Buff>
+            <Buff>
+              <Type>Resistance</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Doublestrike</Type>
+              <Value1>8</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Doubleshot</Type>
+              <Value1>5</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+              <SelectedAugment>Topaz of Melee Power</SelectedAugment>
+              <SelectedLevelIndex>5</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Blue</Type>
+              <SelectedAugment>Legendary Bulwark</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <MinorArtifact/>
+          </Ring2>
+          <NumFiligrees>10</NumFiligrees>
+          <Filigree>
+            <Name>Sanctified Fervor/Reverberation +2 Charisma</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Divinity: +2 Smite Evil</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Sucker Punch/One Against Many +2 Strength</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Divinity/Ultimate Fury +2 Strength</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Treachery: +50% Threat Reduction</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Sanctified Fervor: +2 Smite Evil Uses</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Sanctified Fervor: +3 Melee Power</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Prowess: +1 Attack and Damage</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Prowess: +3 Melee Power</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Treachery: +3 Melee Power</Name>
+            <Rare/>
+          </Filigree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Sucker Punch/One Against Many +2 Strength</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Divinity/Ultimate Fury +2 Strength</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Sanctified Fervor: +2 Smite Evil Uses</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Sanctified Fervor: +3 Melee Power</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Prowess: +3 Melee Power</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <SnapshotStrength>77</SnapshotStrength>
+          <SnapshotIntelligence>18</SnapshotIntelligence>
+          <SnapshotWisdom>20</SnapshotWisdom>
+          <SnapshotDexterity>25</SnapshotDexterity>
+          <SnapshotConstitution>62</SnapshotConstitution>
+          <SnapshotCharisma>25</SnapshotCharisma>
         </EquippedGear>
         <FavorFeats/>
         <Notes/>

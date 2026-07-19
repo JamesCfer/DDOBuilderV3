@@ -532,6 +532,7 @@ function parseBuildNode(
 
   const reap = parseEnhancements(buildNode, 'ReaperSpendInTree')
   out.reaperChoices = reap.choices
+  out.reaperSelections = reap.selections
 
   // ── Destiny tree selection ───────────────────────────────────────────────
   const destinySel = arr(getRec(buildNode, 'Destiny_SelectedTrees')?.TreeName as string | string[] | undefined)
