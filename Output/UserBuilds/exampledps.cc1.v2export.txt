@@ -1,0 +1,77 @@
+[font=courier]
+Character name:
+Classes: 18 Bard, 1 Barbarian, 1 Fighter, E10, L4
+Race: Aasimar              Alignment: Chaotic Neutral
+
+     Start Tome Final      HP:       2797      Displacement:   50%
+Str:    17    8    77      Unc Rng:  -360      Incorp:         10%
+Dex:    13    8    25      PRR:       138      AC:              75
+Con:    15    8    62      MRR:       122      +Healing Amp:    30
+Int:     8    8    18      Dodge:   18/25      Fort:     338%
+Wis:    10    8    20      Fort:     338%      Repair Amp:      15
+Cha:    13    8    25      SR:          0      BAB:             25
+DR: 6/-
+
+Saves:
+[TABLE][TR][TD]Fortitude[/TD][TD][/TD][TD] 75[/TD][/TR]
+[TR][TD][/TD][TD]vs Poison[/TD][TD] 75[/TD][/TR]
+[TR][TD][/TD][TD]vs Disease     [/TD][TD] 75[/TD][/TR]
+[TR][TD]Will[/TD][TD][/TD][TD] 53[/TD][/TR]
+[TR][TD][/TD][TD]vs Enchantment[/TD][TD] 53[/TD][/TR]
+[TR][TD][/TD][TD]vs Illusion[/TD][TD] 53[/TD][/TR]
+[TR][TD][/TD][TD]vs Fear[/TD][TD] 59[/TD][/TR]
+[TR][TD][/TD][TD]vs Curse[/TD][TD] 53[/TD][/TR]
+[TR][TD]Reflex[/TD][TD][/TD][TD] 58[/TD][/TR]
+[TR][TD][/TD][TD]vs Traps[/TD][TD] 58[/TD][/TR]
+[TR][TD][/TD][TD]vs Spell[/TD][TD] 58[/TD][/TR]
+[TR][TD][/TD][TD]vs Magic[/TD][TD] 58[/TD][/TR]
+[/TABLE]
+Marked with a* is no fail on a 1 if required DC met
+
+[TABLE][TR][TD]Energy[/TD][TD]Resistance[/TD][TD]Absorbance[/TD][/TR]
+[TR][TD]Acid:[/TD][TD]5[/TD][TD]37%[/TD][/TR]
+[TR][TD]Chaos:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Cold:[/TD][TD]5[/TD][TD]37%[/TD][/TR]
+[TR][TD]Electric:[/TD][TD]5[/TD][TD]37%[/TD][/TR]
+[TR][TD]Evil:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Fire:[/TD][TD]0[/TD][TD]37%[/TD][/TR]
+[TR][TD]Force:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Good:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Lawful:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Light:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Negative:[/TD][TD]0[/TD][TD]37%[/TD][/TR]
+[TR][TD]Poison:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[TR][TD]Sonic:[/TD][TD]0[/TD][TD]0%[/TD][/TR]
+[/TABLE]
+
+[SIZE=3][TABLE]
+[TR][TD][COLOR=rgb(65, 168, 95)]Spell Power[/COLOR][/TD][TD][COLOR=rgb(65, 168, 95)]Base[/COLOR][/TD][TD][COLOR=rgb(65, 168, 95)]Critical Chance[/COLOR][/TD][TD][COLOR=rgb(65, 168, 95)]Critical Multiplier[/COLOR][/TD][/COLOR][/TR]
+[TR][TD]Acid           [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Light/Alignment[/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Chaos          [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Cold           [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Electric       [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Evil           [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Fire           [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Force/Untyped  [/TD][TD]150.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Negative       [/TD][TD]133.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Physical       [/TD][TD]150.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Poison         [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Positive       [/TD][TD]183.0[/TD][TD]6%[/TD][TD]15[/TD][/TR]
+[TR][TD]Repair         [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Rust           [/TD][TD]130.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Sonic          [/TD][TD]161.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[TR][TD]Untyped        [/TD][TD]150.0[/TD][TD]6%[/TD][TD]5[/TD][/TR]
+[/TABLE][/SIZE]
+
+Weapon Damage
+[HR][/HR]
+Melee Power:  306.0
+Doublestrike: 100%
+Strikethrough: 20%
+Off-Hand attack Chance: 20%
+Fortification Bypass: 71%
+Helpless Damage bonus: 68%
+Ranged Power: 181.0
+Doubleshot Chance: 50%
+[/font]
