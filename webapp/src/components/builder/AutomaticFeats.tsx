@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import { buildAutomaticFeatGroups } from '../../lib/automaticFeats'
+import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../../lib/automaticFeats'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
@@ -10,13 +10,16 @@ export default function AutomaticFeats() {
   const { build } = useCharacter()
   const bundle = useStaticBundle()
   const gearItems = useGearItems(build.gear)
-  const { allClasses, allRaces } = bundle
+  const { allClasses, allRaces, allFeats } = bundle
 
   const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
 
   const stats = useBuildStats(statsInput)
 
+  const race = allRaces.find(r => r.Name === build.race)
   const groups = buildAutomaticFeatGroups(build, allClasses, allRaces)
+  const autoAcquisitionGroup = automaticAcquisitionFeatGroup(build, allFeats, allClasses, race)
+  if (autoAcquisitionGroup) groups.push(autoAcquisitionGroup)
   const grantedFeats = stats.grantedFeatsList
   const hasSelection = build.race || build.classes.some(c => c.name && c.levels > 0)
 

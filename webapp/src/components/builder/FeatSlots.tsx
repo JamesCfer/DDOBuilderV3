@@ -7,7 +7,7 @@ import { useSettings } from '../../context/SettingsContext'
 import type { CharacterBuild, DDOClass, Feat, Race, Requirement } from '../../types/ddo'
 import { buildSlots } from '../../lib/levelTraining'
 import type { SlotEntry } from '../../lib/levelTraining'
-import { featOptionsForSlot } from '../../lib/featEligibility'
+import { featOptionsForSlot, isChosenFeatValid } from '../../lib/featEligibility'
 import type { FeatOption, OptionSettings } from '../../lib/featEligibility'
 import DdoIcon from '../DdoIcon'
 import styles from './FeatSlots.module.css'
@@ -186,8 +186,12 @@ export default function FeatSlots() {
             {slots.map(slot => {
               const chosen = build.featChoices[slot.key] ?? ''
               const chosenFeat = feats.find(f => f.Name === chosen)
+              // V2 parity: a trained feat whose requirements are no longer met
+              // stays on the build but renders red.
+              const invalid = chosen !== '' && feats.length > 0
+                && !isChosenFeatValid(slot, slots, chosen, feats, build, allClasses, currentRace, specialFeats)
               const hoverTitle = chosen
-                ? `${chosen}${chosenFeat?.Description ? '\n\n' + chosenFeat.Description : ''}`
+                ? `${chosen}${invalid ? '\n\n⚠ Requirements not met (V2 shows this in red)' : ''}${chosenFeat?.Description ? '\n\n' + chosenFeat.Description : ''}`
                 : 'Click to choose a feat'
               return (
                 <div key={slot.key} className={styles.slot}>
@@ -211,7 +215,7 @@ export default function FeatSlots() {
                           size={22}
                           className={styles.chosenIcon}
                         />
-                        <span className={styles.chosenName}>{chosen}</span>
+                        <span className={styles.chosenName} style={invalid ? { color: '#d64545' } : undefined}>{chosen}</span>
                       </>
                     ) : (
                       <span className={styles.emptySlotLabel}>Choose…</span>

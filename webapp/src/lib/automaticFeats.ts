@@ -3,8 +3,9 @@
 // and class data so the same logic can drive both the Builder panel and the
 // forum export section.
 
-import type { CharacterBuild, DDOClass, Race } from '../types/ddo'
+import type { CharacterBuild, DDOClass, Feat, Race } from '../types/ddo'
 import { characterLevelForClassLevel } from './levelProgression'
+import { meetsRequirements, type RequirementContext } from './requirements'
 
 export interface AutomaticFeatGroup {
   source: string
@@ -74,4 +75,49 @@ export function buildAutomaticFeatGroups(
 
   // Sort: race/completionist first (charLevel=0), then by character level ascending.
   return groups.sort((a, b) => (a.charLevel ?? 0) - (b.charLevel ?? 0))
+}
+
+// V2 Build::AutomaticFeats (Build.cpp:2510-2552): beyond race GrantedFeat and
+// class AutomaticFeats (both handled above), any Feat with Acquire="Automatic"
+// and an <AutomaticAcquisition> requirement block (Sunder/Trip/Defensive
+// Fighting at BAB 1, Attack/Sneak/Heroic Durability at level 1) is trained the
+// moment its requirement is met, and V2's forum export (AddAutomaticFeats)
+// lists them per level like any other automatic feat. `buildStats.ts` already
+// applies the ones with real stat effects (Heroic Durability, Improved Heroic
+// Durability) — this is the matching display-side enumeration, kept separate
+// from `buildAutomaticFeatGroups` so `featEligibility.ts`'s own
+// AutomaticAcquisition prerequisite-counting loop (which already covers this
+// same feat set) isn't double-counted.
+//
+// Completionist / Racial Completionist are excluded: their real V2 gating is
+// computed dynamically from past-life counts (see `buildAutomaticFeatGroups`
+// above) — the XML AutomaticAcquisition entry is a placeholder V2 overrides
+// at runtime (per Feats.xml's own "requirements are updated dynamically by
+// the C++ code" comment).
+export function automaticAcquisitionFeatGroup(
+  build: Pick<CharacterBuild, 'classes' | 'totalLevel' | 'epicLevels' | 'legendaryLevels' | 'featChoices'>,
+  allFeats: Feat[],
+  allClasses: DDOClass[],
+  race?: Race,
+): AutomaticFeatGroup | null {
+  const ctx: RequirementContext = { build: build as CharacterBuild, allClasses, race }
+  const names: string[] = []
+  for (const f of allFeats) {
+    if (f.Acquire !== 'Automatic') continue
+    if (f.Name === 'Completionist' || f.Name === 'Racial Completionist') continue
+    if (!f.AutomaticAcquisition) continue
+    if (meetsRequirements(f.AutomaticAcquisition, ctx)) names.push(f.Name)
+  }
+  // V2 Class::ImprovedHeroicDurabilityFeats (Class.cpp:383-404): every heroic
+  // class dynamically synthesizes "Improved Heroic Durability (<Class> <N>)"
+  // feats auto-acquired at class level 5, 10 and 15.
+  for (const bc of build.classes) {
+    if (!bc.name || bc.levels <= 0) continue
+    const cls = allClasses.find(c => c.Name === bc.name)
+    if (!cls || cls.NotHeroic) continue
+    for (let level = 5; level <= 15; level += 5) {
+      if (bc.levels >= level) names.push(`Improved Heroic Durability (${bc.name} ${level})`)
+    }
+  }
+  return names.length > 0 ? { source: 'Automatically Acquired', feats: names, charLevel: 0 } : null
 }
