@@ -15,7 +15,7 @@ export default function ForumExportPanel() {
 
   const bundle = useStaticBundle()
   const gearItems = useGearItems(build.gear)
-  const { allClasses, allRaces, allSelfBuffs } = bundle
+  const { allClasses, allRaces, allSelfBuffs, allFeats } = bundle
 
   // Panel-specific data not part of the shared bundle
   const [allStances, setAllStances] = useState<Stance[]>([])
@@ -35,10 +35,10 @@ export default function ForumExportPanel() {
   )
   const exportText = useMemo(
     () => emitForumExport(
-      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats },
+      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats },
       sections,
     ),
-    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats],
+    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats],
   )
 
   async function handleCopy() {

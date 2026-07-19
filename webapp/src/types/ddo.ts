@@ -143,6 +143,8 @@ export interface Feat {
   MaxTimesAcquire?: number
   Requirements?: Requirements
   Effect?: Effect | Effect[]
+  /** V2 Feat::AutomaticAssignment — Requirements gating automatic (non-trained) acquisition. */
+  AutomaticAcquisition?: Requirements
 }
 
 // ---------------------------------------------------------------------------

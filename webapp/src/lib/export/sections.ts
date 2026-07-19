@@ -8,7 +8,7 @@ import type {
   CharacterBuild, Ability, DDOClass, Race, Stance, OptionalBuff, Feat,
 } from '../../types/ddo'
 import type { BuildStats } from '../../hooks/useBuildStats'
-import { buildAutomaticFeatGroups } from '../automaticFeats'
+import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
 import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../gamedata'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
 import { buildSlots } from '../levelTraining'
@@ -35,6 +35,10 @@ export interface SectionContext {
   allSelfBuffs?: OptionalBuff[]
   /** Feats with Acquire === 'EpicPastLife'. */
   epicPastLifeFeats?: Feat[]
+  /** Full feat catalogue — required for the AutomaticAcquisition-derived
+   *  entries (Attack/Sneak/Sunder/Trip/Defensive Fighting/Heroic Durability)
+   *  in the automaticFeats section. */
+  allFeats?: Feat[]
 }
 
 export interface SectionDef {
@@ -370,9 +374,14 @@ const selfAndPartyBuffs: SectionDef = {
 const automaticFeats: SectionDef = {
   id: 'AutomaticFeats',
   label: 'Automatic feats',
-  emit: ({ build, allClasses, allRaces }) => {
+  emit: ({ build, allClasses, allRaces, allFeats }) => {
     if (!allClasses || !allRaces) return []
     const groups = buildAutomaticFeatGroups(build, allClasses, allRaces)
+    if (allFeats) {
+      const race = allRaces.find(r => r.Name === build.race)
+      const autoAcquisitionGroup = automaticAcquisitionFeatGroup(build, allFeats, allClasses, race)
+      if (autoAcquisitionGroup) groups.push(autoAcquisitionGroup)
+    }
     if (groups.length === 0) return []
     const out = ['[b]Automatic Feats[/b]:']
     for (const g of groups) out.push(`  ${g.source}: ${g.feats.join(', ')}`)
