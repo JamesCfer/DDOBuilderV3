@@ -130,6 +130,7 @@ the PR number, so this file doubles as a changelog.
 | 109 | **50-build user corpus: import/stats/picker all-green** — User-supplied zip of 50 real builds (`Output/UserBuilds/collection/`) swept end-to-end (326 initial failures → 0 modulo documented V2-parity exceptions). Fixes: **(1) MaxTimesAcquire in the picker** (V2 `Build.cpp:1584`: `trainedCount < MaxTimesAcquire`) — Toughness (`MaxTimesAcquire 99`) and other multi-acquire feats were excluded after one training (293 cases). **(2) Alter Dark Gift retrains** — V2 re-offers the slot at later levels; any-level Alter Dark Gift trainings now map to the single V3 slot (latest wins). **(3) AutomaticAcquisition feats in prerequisite sets** — Sunder/Trip/Defensive Fighting (BAB-1 auto-grants) now count via generic `<AutomaticAcquisition>` evaluation, unlocking Improved Sunder etc. **(4) `BaseClass`/`BaseClassMinLevel` bound by the levelClasses array length** — saves with unassigned early levels (Paladin 6 first reached at char level 10) failed class-level checks bounded by the non-blank count. Documented non-bugs: Warlocks.DDOBuild has V2-side save corruption (item text inside TrainedFeat `<Type>`); Mobile Spellcasting / Past Life: Arcane Initiate trained without prereqs are V2 invalid-but-kept (red) feats — V3 keeps them locked, same behavior; "Purity of Heart" + "Dreadful Dimlight (Legendary)" are missing from this repo's DataFiles (user's V2 install ships newer game data — refresh `Output/DataFiles` to close). Corpus committed + `parityUserCollection.test.ts` guards it in CI. | this PR |
 | 110 | **Corpus leftovers: corrupted-save salvage + V2 red invalid-feat marker** — (a) **Corrupted-save salvage**: V2's save bug appends unrelated string data to `<Class>`/`<Type>` elements ("Pact AbilityThe blue shine…", `<Class>EpicShieldEnchantment</Class>`). Importer now salvages by known-prefix match: `salvageFeatType()` strips trailing garbage when a known feat-slot type is a strict prefix; `mapClassName()` recovers Epic/Legendary pseudo-class names. Warlocks.DDOBuild: 10 orphaned feats → 6 (the rest have fully-replaced Type/empty fields — unrecoverable for V2 too). (b) **V2 red invalid-feat display**: trained feats whose requirements are not met (V2 keeps them, renders red — Mobile Spellcasting without Combat Casting) now render red in FeatSlots with a tooltip, via new `isChosenFeatValid()`. (c) **Data-gap confirmation**: `syncUpstreamV2.ts check` shows the repo is in sync with upstream Maetrim/DDOBuilderV2 HEAD — "Purity of Heart" and "Dreadful Dimlight (Legendary)" are newer than upstream's git tree; closing them requires the user's V2 install's DataFiles folder. | this PR |
 | 111 | **AutomaticAcquisition feats surfaced in the Automatic Feats display** — V2 `Build::AutomaticFeats` (`Build.cpp:2510-2552`) grants Sunder/Trip/Defensive Fighting (BAB 1), Attack/Sneak/Heroic Durability (level 1), and per-class "Improved Heroic Durability (\<Class\> 5/10/15)" (`Class::ImprovedHeroicDurabilityFeats`, `Class.cpp:383-404`) purely through each feat's own `<AutomaticAcquisition>` requirement block — no class `AutomaticFeats` list or race `GrantedFeat` entry names them. `buildStats.ts` already applies their stat effects (Done #51), and `featEligibility.ts` already counts them toward prerequisites (Done #109 item 3), but the display side — `buildAutomaticFeatGroups` (shared by the Automatic Feats panel and the forum export's AutomaticFeats section) — never enumerated them, so V2's own forum export (`AddAutomaticFeats`, `ForumExportDlg.cpp:691-729`, which lists every `LevelTraining::AutomaticFeats()` entry) showed feats V3 silently hid. New `automaticAcquisitionFeatGroup()` in `lib/automaticFeats.ts` evaluates every `Acquire="Automatic"` feat's `AutomaticAcquisition` requirements against the current build (kept separate from `buildAutomaticFeatGroups` so `featEligibility.ts`'s own separate AutomaticAcquisition counting loop isn't double-counted) and synthesizes the per-milestone Improved Heroic Durability names; wired into `AutomaticFeats.tsx` and `sections.ts`'s `automaticFeats` section (new optional `SectionContext.allFeats`, threaded through `ForumExportPanel.tsx`) as an "Automatically Acquired" group. Completionist/Racial Completionist stay excluded (their real V2 gating is the past-life-count logic already in `buildAutomaticFeatGroups`, not the XML placeholder). Also verified the export's Dodge line already renders V2's `dodge/cap` form ("18/25") as of X7 (#95) — that half of the "Display gaps" note was stale. 5 regression tests in `parityAutoAcquisitionDisplay.test.ts`. | this PR |
+| 112 | **v2calc oracle complete + automatic referee (the loop-ender)** — Finished the `v2calc/` port: it now loads ALL V2 data (items ~8.5k, enhancement trees, spells, augments, set bonuses, filigrees, bonus types, stances, weapon groups, item buffs) through DDOBuilder's own XmlLib readers and runs V2's real `BreakdownItem` observer graph headless, so gear/enhancement/spell/set/filigree effects apply through V2's actual C++ (YingsMonk HP 1306→4125; exampledps matches the user's forum export exactly on HP/MeleePower/RangedPower/dodge/abilities). `MultiFileObjectLoader` is Windows-only → portable per-file reader in `shim/MultiFileLoaderLinux.cpp`. New `webapp/scripts/oracleDiff.ts` runs the oracle vs V3 across every build and prints per-stat mismatches — **manual gap-reporting is no longer needed**. First fix from it: **base 25% Dodge Cap** (Feats.xml Attack "Base Dodge Cap" `DodgeCapBonus 25`, V2 `BreakdownItemDodge` "25% plus effects") was missing → every no-armor build's dodge clamped ~23 low (YingsMonk 21→46 vs oracle 44). | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -286,16 +287,29 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 - ✅ **G-AB closed (#107/#108)**: all six abilities, Dodge, Max Ki,
   unconscious range V2-exact (tome cap, augment LevelValue, Primal Scream
   stacks, self-buff split, reaper selector picks, Attack-feat −10 base).
-- ❌ **Open residues (4 stats vs the current-save export): AC −4, HP −78,
-  PRR −4, MRR −8.** Leads: V3's MRR ledger shows "Sapphire of Defense +36
-  [Enhancement]" feeding MRR — verify the augment really has a second MRR
-  effect (DualValues) or whether V3 mis-applies the PRR value to both;
-  Kensei "Reed In The Wind" resolves 0 (check its AType/rank scaling);
-  AC's Shield of Faith deflection resolves 0 (Cleric 0 levels — V2 may
-  value it differently); Ironskin Chant PRR routes to `song.prr`, not
-  `prr` — check whether V2 folds song effects when the song stance is off.
-  Use `scripts/v2ExportDiff.ts` after each attempt; the drift guards in
-  `parityGoldenPass106.test.ts` prevent backsliding.
+### Oracle-derived mechanical bug list (2026-07, `scripts/oracleDiff.ts` vs v2calc across ~90 builds)
+
+The v2calc oracle is now the source of truth. Ranked by builds affected
+(V2 oracle value is correct; the number is how many builds mismatch):
+
+- ❌ **hitpoints (51)** — largely cascades from the ability gaps + a few
+  direct percent/flat HP sources.
+- ❌ **saves: Reflex 40 / Fort 37 / Will 34** — partly ability-mod cascade.
+- ❌ **dodge (35)** — base-25 cap fixed (#111); residual is the armor-MDB
+  secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
+  second min() after the dodge cap on non-cloth monks.
+- ❌ **abilities: STR 27 / CON 24 / WIS 24 / DEX 23 / INT 22 / CHA 22** —
+  ROOT CAUSE for much of HP+saves. Confirmed on YingsMonk: the monk
+  elemental-form STR penalty applies 4× (Ocean Stance + Adept/Master/
+  Grandmaster of Forms each −2) where V2 nets −2 (STR 20 vs oracle 26).
+  Trace the monk form/stance tier stacking — only the active stance's
+  effect should apply, not every tier feat's copy.
+- ❌ **prr 29 / mrr 27 / mrrCap 5 / fortification 29 / rangedPower 15 /
+  meleePower 10.** meleePower/rangedPower now within ~1-17 (Maetrim 324 vs
+  307) — likely a per-reaper or form source.
+
+Workflow: `make -C v2calc` once, then `cd webapp && npx tsx scripts/oracleDiff.ts`
+prints the live list; fix, re-run, repeat. `oracleDiff.ts <file>` targets one build.
 
 Fifth review pass (2026-07). A full switch/case diff of `Effect.h`/`Effect.cpp`
 against `effectParser.ts` again found **no missing Type/AType cases**
