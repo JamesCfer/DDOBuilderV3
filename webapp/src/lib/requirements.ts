@@ -160,7 +160,11 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
     }
     case 'BaseClass': {
       // V2 Requirement.cpp:719-731: BaseClassLevels >= Value (or > 0 if no Value).
-      const lvls = classLevelsAtLevel(build, item, build.totalLevel || 20, allClasses, true)
+      // Bound the per-level walk by the levelClasses array length, not the
+      // count of non-blank levels — saves can leave early levels unassigned
+      // (e.g. Paladin 6 first reached at character level 10).
+      const bound = Math.max(build.totalLevel || 0, getLevelClasses(build).length) || 20
+      const lvls = classLevelsAtLevel(build, item, bound, allClasses, true)
       return req.Value !== undefined ? lvls >= value : lvls > 0
     }
     case 'ClassAtLevel': {
@@ -195,8 +199,10 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       const bc = build.classes.find(c => c.name === item)
       return (bc?.levels ?? 0) >= value
     }
-    case 'BaseClassMinLevel':
-      return classLevelsAtLevel(build, item, build.totalLevel || 20, allClasses, true) >= value
+    case 'BaseClassMinLevel': {
+      const bound = Math.max(build.totalLevel || 0, getLevelClasses(build).length) || 20
+      return classLevelsAtLevel(build, item, bound, allClasses, true) >= value
+    }
     case 'Level':
     case 'SpecificLevel':
       // V2 Requirement.cpp EvaluateLevel: compares against the CHARACTER level
