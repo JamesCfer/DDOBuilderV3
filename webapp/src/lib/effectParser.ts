@@ -207,6 +207,9 @@ export interface ParsedBonus {
   // V2 <ApplyAsItemEffect/> flag: the effect joins m_itemEffects, whose bonus
   // types obey gear-style "Highest Only" stacking (BreakdownItem.cpp:623-698).
   asItemEffect?: boolean
+  // V2 stack-merge identity (see RawBonus.stackGroup in bonus.ts).
+  stackGroup?: string
+  stackAmounts?: number[]
 }
 
 /**
@@ -554,18 +557,15 @@ export function parseEffect(
   // elements to an array, so effect.Type may be string[] rather than string.
   // Expand by re-calling with each individual type.
   if (Array.isArray(effect.Type)) {
-    // V2 applies one effect copy per <Type> element and merges identical
-    // copies by stacking (m_stacks). Data uses DUPLICATE Type entries as a
-    // stack multiplier — e.g. Fury of the Wild "Primal Scream" declares
-    // <Type>AbilityBonus</Type> twice with AType=Stacks Amount="0 2 4":
-    // two merged stacks → Amount[1] = +2. Fan out per UNIQUE type with
-    // rank × duplicate-count so Stacks/Simple amounts match V2's stacking.
-    const typeCounts = new Map<string, number>()
-    for (const t of effect.Type as unknown as string[]) {
-      typeCounts.set(t, (typeCounts.get(t) ?? 0) + 1)
-    }
-    return [...typeCounts.entries()].flatMap(([t, n]) =>
-      parseEffect({ ...effect, Type: t }, Math.max(1, rank) * n, source, classLevels, treeTotalAP, ctx),
+    // V2 applies one effect copy per <Type> element. DUPLICATE Type entries
+    // are how the data expresses stack count — e.g. Fury of the Wild "Primal
+    // Scream" declares <Type>AbilityBonus</Type> twice with AType=Stacks
+    // Amount="0 2 4" → two merged stacks → Amount[1] = +2. Emit ONE copy per
+    // Type element (NOT collapsed): AType=Stacks copies then share a stackGroup
+    // and the buildStats stack-merge post-pass counts them → Amount[count-1];
+    // non-Stacks copies (Simple, etc.) simply sum, matching V2's per-copy add.
+    return (effect.Type as unknown as string[]).flatMap(t =>
+      parseEffect({ ...effect, Type: t }, rank, source, classLevels, treeTotalAP, ctx),
     )
   }
 
@@ -692,11 +692,29 @@ export function parseEffect(
   const bonusType = effect.Bonus ?? 'Enhancement'
   const items = toStringArray(effect.Item)
 
+  // V2 stack-merge (BreakdownItem::AddEffect + Amount_Stacks): identical
+  // AType=Stacks effects merge into one whose value is Amount[count-1], not the
+  // sum. Build the identity key from the fields Effect::operator== compares
+  // (DisplayName, Type, Bonus, Item, Amount); only multi-element Amount tables
+  // can differ by stack count, so single-value tables are left alone.
+  // V2 merges by Effect::operator==, which compares DisplayName. The tiered
+  // stance/stack pattern the merge exists for (monk forms, Primal Scream)
+  // ALWAYS carries a DisplayName; anonymous effects that merely share
+  // Type/Bonus/Item/Amount (many gear/set/reaper flat bonuses) must NOT be
+  // collapsed — they sum. Require a non-empty DisplayName + multi-element table.
+  const stacksAType = (effect.AType ?? 'Stacks') === 'Stacks'
+  const displayName = typeof effect.DisplayName === 'string' ? effect.DisplayName.trim() : ''
+  const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
+  const stackGroupBase = (displayName !== '' && stackAmounts && stackAmounts.length > 1)
+    ? `${displayName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
+    : undefined
   function make(statKey: string, bt = bonusType): ParsedBonus {
     return {
       statKey, value, bonusType: bt, source,
       percent: flagSet(effect.Percent),
       asItemEffect: flagSet(effect.ApplyAsItemEffect),
+      // statKey-scoped so Item=All fan-out to different stats doesn't merge.
+      ...(stackGroupBase ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts } : {}),
     }
   }
 
