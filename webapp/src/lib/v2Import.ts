@@ -89,8 +89,51 @@ function getRec(parent: AnyRec, key: string): AnyRec | undefined {
   return undefined
 }
 
+// Known pseudo-class prefixes for corrupted-save salvage (see
+// salvageFeatType below — V2 has a save bug that appends unrelated string
+// data to Class/Type elements, e.g. <Class>EpicShieldEnchantment</Class>).
+const PSEUDO_CLASS_PREFIXES = ['Epic', 'Legendary']
+
 function mapClassName(raw: string): string {
   if (!raw || raw === 'Unknown') return ''
+  for (const pc of PSEUDO_CLASS_PREFIXES) {
+    if (raw !== pc && raw.startsWith(pc) && !/^[a-z ]/.test(raw.slice(pc.length))) {
+      // "EpicShieldEnchantment" → "Epic" (corrupted save salvage); real class
+      // names never start with Epic/Legendary followed by more CamelCase.
+      return pc
+    }
+  }
+  return raw
+}
+
+// Every feat-slot Type V2 writes (universal + class-specific + race slots).
+// Used to salvage corrupted saves where V2 appended unrelated string data to
+// the <Type> element ("Pact AbilityThe blue shine of this shield…"): if the
+// raw value is not a known type but a known type is a strict prefix of it,
+// strip to the prefix. Longest match wins.
+const KNOWN_FEAT_SLOT_TYPES = [
+  'Standard', 'Heroic', 'Epic Feat', 'Epic Destiny Feat', 'Legendary Feat',
+  'Alter Dark Gift', 'Dark Gift Upgrade', 'Dark Gift',
+  'Aasimar Bond', 'Dragonborn Racial', 'Dilettante Feat', 'Human Bonus Feat',
+  'Purple Dragon Knight Bonus Feat', 'Animalistic Aspect', 'Kin Form',
+  'Alchemist Bonus Feat', 'Artificer Bonus Feat', 'Battle Feat', 'Beloved Of',
+  'Bonus Magical Feat', 'Child Of', 'Damage Reduction', 'Deity', 'Domain',
+  'Domain Feat', 'Dragon Arts', 'Energy Resistance', 'Favored Enemy',
+  'Fighter Bonus Feat', 'Follower Of', 'Heart Feat', 'Major Draconic Aura',
+  'Metamagic Feat', 'Metamagic', 'Minor Draconic Aura', 'Monk Bonus',
+  'Monk Philosophy', 'Pact Ability', 'Pact Save Bonus', 'Pact Spell',
+  'Special Ability', 'Superior Draconic Aura', 'True Patron', 'Warlock Pact',
+  'Wild Shape',
+].sort((a, b) => b.length - a.length)
+
+function salvageFeatType(raw: string): string {
+  if (!raw) return raw
+  for (const t of KNOWN_FEAT_SLOT_TYPES) {
+    if (raw === t) return raw
+  }
+  for (const t of KNOWN_FEAT_SLOT_TYPES) {
+    if (raw.startsWith(t)) return t
+  }
   return raw
 }
 
@@ -137,7 +180,7 @@ function parseLevelTraining(lt: AnyRec | undefined): LevelTrainingV2 {
     className: mapClassName(asStr(lt.Class)),
     feats: arr(lt.TrainedFeat as AnyRec | AnyRec[] | undefined).map(f => ({
       name: asStr((f as AnyRec).FeatName),
-      type: asStr((f as AnyRec).Type),
+      type: salvageFeatType(asStr((f as AnyRec).Type)),
       level: asNum((f as AnyRec).LevelTrainedAt),
     })),
     skills: arr(lt.TrainedSkill as AnyRec | AnyRec[] | undefined).map(s => asStr((s as AnyRec).Skill)),

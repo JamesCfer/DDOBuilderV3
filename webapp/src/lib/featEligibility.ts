@@ -106,6 +106,29 @@ export function prereqFeatCounts(
   return counts
 }
 
+/**
+ * V2 marks trained feats whose requirements are no longer met in RED (it
+ * keeps them on the build — e.g. Mobile Spellcasting without Combat Casting).
+ * Returns false when the chosen feat fails its Requirements at this slot.
+ */
+export function isChosenFeatValid(
+  slot: SlotEntry,
+  slots: SlotEntry[],
+  featName: string,
+  feats: Feat[],
+  build: CharacterBuild,
+  allClasses: DDOClass[],
+  race?: Race,
+  specialFeats: string[] = [],
+): boolean {
+  const feat = feats.find(f => f.Name === featName)
+  if (!feat) return true // unknown feat (newer game data) — no basis to flag
+  const snap = buildSnapshotForSlot(slot, slots, build)
+  const featCounts = prereqFeatCounts(snap, slot.level, allClasses, race, specialFeats, feats)
+  const reqCtx = { build: snap, allClasses, race, feats: new Set(Object.keys(featCounts)), featCounts }
+  return meetsRequirements(feat.Requirements, reqCtx)
+}
+
 // ---------------------------------------------------------------------------
 // Option filtering
 // ---------------------------------------------------------------------------
