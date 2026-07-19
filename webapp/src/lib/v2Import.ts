@@ -324,7 +324,11 @@ function buildFeatSlotKey(
   // Build.cpp:1091: "you have to be level 4 to go into the Lamordia zone
   // where this feat can be acquired"), independent of race or class. Not
   // backed by any race/class FeatSlot XML data.
-  if (featType === 'Alter Dark Gift' && charLvl === 4) {
+  // V2 lets the Dark Gift be re-picked at ANY later level (the slot reappears
+  // per Build::TrainableFeatTypeAtLevel); V3 models a single slot, so map
+  // every Alter Dark Gift training to it — the latest pick wins, matching
+  // V2's effective state.
+  if (featType === 'Alter Dark Gift') {
     return 'alterDarkGift-4'
   }
 

@@ -1,0 +1,3081 @@
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>8</StrTome>
+    <DexTome>8</DexTome>
+    <ConTome>8</ConTome>
+    <IntTome>8</IntTome>
+    <WisTome>8</WisTome>
+    <ChaTome>8</ChaTome>
+    <SpecialFeats>
+      <TrainedFeat>
+        <FeatName>Inherent Fate Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Magical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Melee Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Physical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Racial Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Ranged Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Spell Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Universal Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Tome of Destiny</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Fate Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Magical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Melee Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Physical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Racial Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Ranged Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Spell Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Universal Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Tome of Destiny</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Fate Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Magical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Melee Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Physical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Racial Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Ranged Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Spell Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Universal Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Tome of Destiny</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Magical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Melee Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Physical Resistance</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Ranged Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Spell Power</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Inherent Universal Action Point</FeatName>
+        <Type>Special</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Shadowdancer</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Fatesinger</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Primal Avatar</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Unyielding Sentinel</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Shiradi Champion</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Magus of the Eclipse</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Machrotechnic</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Legendary Dreadnought</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Grandmaster of Flowers</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Fury of the Wild</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Exalted Angel</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Draconic Incarnation</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+      <TrainedFeat>
+        <FeatName>Divine Crusader</FeatName>
+        <Type>EpicDestinyTree</Type>
+        <LevelTrainedAt>0</LevelTrainedAt>
+      </TrainedFeat>
+    </SpecialFeats>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name>Wiz DC caster</Name>
+      <Race>Dhampir Dark Bargainer</Race>
+      <Alignment>True Neutral</Alignment>
+      <SpecialFeats>
+        <TrainedFeat>
+          <FeatName>Past Life: Aasimar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dhampir</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dragonborn</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Drow</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Duergar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dwarf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Gnome</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Orc</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Halfling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Human</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Shifter</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tabaxi</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tiefling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Warforged</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Aasimar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dhampir</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dragonborn</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Drow</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Duergar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dwarf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Gnome</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Orc</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Halfling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Human</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Shifter</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tabaxi</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tiefling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Warforged</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Aasimar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dhampir</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dragonborn</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Drow</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Duergar</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dwarf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Gnome</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Elf</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Half-Orc</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Halfling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Human</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Shifter</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tabaxi</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Tiefling</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Warforged</FeatName>
+          <Type>RacialPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Alchemist</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Artificer</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Barbarian</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Bard</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Bard - Stormsinger</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Cleric</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Cleric - Dark Apostate</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Druid</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Druid - Blight Caster</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Favored Soul</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Fighter</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Fighter - Dragon Lord</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Monk</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Monk - Dragon Disciple</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Paladin</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Paladin - Sacred Fist</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Ranger</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Ranger - Dark Hunter</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Rogue</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Rogue - Arcane Trickster</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Sorcerer</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Sorcerer - Wild Mage</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Warlock</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Warlock - Acolyte of the Skin</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Wizard</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Wizard</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Wizard</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Favored Soul</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Favored Soul</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Cleric</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Cleric</FeatName>
+          <Type>HeroicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Ancient Knowledge</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Arcane Alacrity</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Eclipse Power</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Enchant Weapon</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Energy Criticals</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Trap Damage Absorption</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Ancient Knowledge</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Arcane Alacrity</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Eclipse Power</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Enchant Weapon</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Arcane Sphere: Energy Criticals</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Divine Sphere: Ancient Blessings</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Divine Sphere: Brace</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Divine Sphere: Power Over Life and Death</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Ancient Tactics</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Doublestrike</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Fortification</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Skill Mastery</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Martial Sphere: Trap Damage Absorption</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Primal Sphere: Ancient Power</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Primal Sphere: Colors of the Queen</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Primal Sphere: Doubleshot</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Primal Sphere: Fast Healing</FeatName>
+          <Type>EpicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Vistani Knife Fighter Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Horizon Walker Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Inquisitive Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Harper Agent Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Feydark Illusionist Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Falconry Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin Chaosmancer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin Chaosmancer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Eladrin Chaosmancer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Deep Gnome</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Deep Gnome</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Deep Gnome</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dark Bargainer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dark Bargainer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Past Life: Dark Bargainer</FeatName>
+          <Type>IconicPastLife</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+      </SpecialFeats>
+      <Build version="1">
+        <Level>34</Level>
+        <Class1>Wizard</Class1>
+        <Class2>Unknown</Class2>
+        <Class3>Unknown</Class3>
+        <AbilitySpend>
+          <Champion/>
+          <AvailableSpend>36</AvailableSpend>
+          <StrSpend>0</StrSpend>
+          <DexSpend>0</DexSpend>
+          <ConSpend>0</ConSpend>
+          <IntSpend>10</IntSpend>
+          <WisSpend>0</WisSpend>
+          <ChaSpend>0</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>24</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Webtouched Wretch</FeatName>
+            <Type>Dark Gift</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Quicken Spell</FeatName>
+            <Type>Metamagic Feat</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Extend Spell</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>0</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>7</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>8</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Past Life: Arcane Initiate</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>2</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>8</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Touch of Death </FeatName>
+            <Type>Alter Dark Gift</Type>
+            <LevelTrainedAt>3</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>8</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Focus: Necromancy</FeatName>
+            <Type>Metamagic Feat</Type>
+            <LevelTrainedAt>4</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>8</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Greater Spell Focus: Necromancy</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>5</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>9</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>9</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>9</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Focus: Conjuration</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>8</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>9</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Focus: Illusion</FeatName>
+            <Type>Metamagic Feat</Type>
+            <LevelTrainedAt>9</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>10</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>10</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Greater Spell Focus: Illusion</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>11</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>10</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>10</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>11</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Heighten Spell</FeatName>
+            <Type>Metamagic Feat</Type>
+            <LevelTrainedAt>14</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Insightful Reflexes</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>14</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>11</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>11</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>11</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Greater Spell Focus: Conjuration</FeatName>
+            <Type>Standard</Type>
+            <LevelTrainedAt>17</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>12</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Wizard</Class>
+          <SkillPointsAvailable>12</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Maximize Spell</FeatName>
+            <Type>Metamagic Feat</Type>
+            <LevelTrainedAt>19</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Epic Spell Focus: Necromancy</FeatName>
+            <Type>Epic Feat</Type>
+            <LevelTrainedAt>20</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Channel Power</FeatName>
+            <Type>Epic Destiny Feat</Type>
+            <LevelTrainedAt>21</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Embolden Spell</FeatName>
+            <Type>Epic Feat</Type>
+            <LevelTrainedAt>23</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Toughness</FeatName>
+            <Type>Epic Destiny Feat</Type>
+            <LevelTrainedAt>24</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Great Intelligence</FeatName>
+            <Type>Epic Feat</Type>
+            <LevelTrainedAt>26</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Toughness</FeatName>
+            <Type>Epic Destiny Feat</Type>
+            <LevelTrainedAt>27</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Great Intelligence</FeatName>
+            <Type>Epic Feat</Type>
+            <LevelTrainedAt>29</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Scion of the Feywild</FeatName>
+            <Type>Legendary Feat</Type>
+            <LevelTrainedAt>29</LevelTrainedAt>
+          </TrainedFeat>
+          <TrainedFeat>
+            <FeatName>Enhanced Touch of Death</FeatName>
+            <Type>Dark Gift Upgrade</Type>
+            <LevelTrainedAt>29</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Specialty: Illusion</FeatName>
+            <Type>Epic Destiny Feat</Type>
+            <LevelTrainedAt>30</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Epic Spell Focus: Illusion</FeatName>
+            <Type>Epic Feat</Type>
+            <LevelTrainedAt>32</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+          <TrainedFeat>
+            <FeatName>Spell Specialty: Necromancy</FeatName>
+            <Type>Epic Destiny Feat</Type>
+            <LevelTrainedAt>33</LevelTrainedAt>
+          </TrainedFeat>
+        </LevelTraining>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>2</Level>
+          <SpellName>Knock</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>2</Level>
+          <SpellName>Lesser Death Aura</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>4</Level>
+          <SpellName>Death Aura</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>4</Level>
+          <SpellName>Dimension Door</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>4</Level>
+          <SpellName>Negative Energy Burst</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>4</Level>
+          <SpellName>Phantasmal Killer</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>5</Level>
+          <SpellName>Eladar's Electric Surge</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>5</Level>
+          <SpellName>Niac's Biting Cold</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>6</Level>
+          <SpellName>Circle of Death</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>6</Level>
+          <SpellName>Tenser's Transformation</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>6</Level>
+          <SpellName>Undeath to Death</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>7</Level>
+          <SpellName>Banishment</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>7</Level>
+          <SpellName>Finger of Death</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>7</Level>
+          <SpellName>Prismatic Spray</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>8</Level>
+          <SpellName>Greater Shout</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>8</Level>
+          <SpellName>Otto's Irresistible Dance</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>8</Level>
+          <SpellName>Trap the Soul</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>9</Level>
+          <SpellName>Hold Monster, Mass</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>9</Level>
+          <SpellName>Power Word: Kill</SpellName>
+        </TrainedSpell>
+        <TrainedSpell>
+          <Class>Wizard</Class>
+          <Level>9</Level>
+          <SpellName>Wail of the Banshee</SpellName>
+        </TrainedSpell>
+        <ActiveStances>
+          <Stances>Cloth Armor</Stances>
+          <Stances>Single Weapon Fighting</Stances>
+          <Stances>True Neutral</Stances>
+          <Stances>Club</Stances>
+          <Stances>Dhampir Dark Bargainer</Stances>
+          <Stances>Dhampir Dark Bargainer </Stances>
+          <Stances>Embolden Spell</Stances>
+          <Stances>Heighten Spell</Stances>
+          <Stances>Maximize Spell</Stances>
+          <Stances>Enlarge Spell</Stances>
+          <Stances>Extend Spell</Stances>
+          <Stances>Embrace Death</Stances>
+          <Stances>Know the Angles</Stances>
+          <Stances>Quicken Spell</Stances>
+          <Stances>Orb</Stances>
+          <Stances>Mantle of Sound and Fury</Stances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>Shadowdancer</TreeName>
+          <TreeName>Fatesinger</TreeName>
+          <TreeName>Primal Avatar</TreeName>
+          <TreeName>Magus of the Eclipse</TreeName>
+          <Tier5Tree>Shadowdancer</Tier5Tree>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Dhampir Dark Bargainer</TreeName>
+          <TreeName>Archmage</TreeName>
+          <TreeName>Eldritch Knight (Wiz)</TreeName>
+          <TreeName>Pale Master</TreeName>
+          <TreeName>Falconry</TreeName>
+          <TreeName>Harper Agent</TreeName>
+          <TreeName>Feydark Illusionist</TreeName>
+          <Tier5Tree>Archmage</Tier5Tree>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>Dire Thaumaturge</TreeName>
+          <TreeName>Dread Adversary</TreeName>
+          <TreeName>Grim Barricade</TreeName>
+        </Reaper_SelectedTrees>
+        <EnhancementSpendInTree>
+          <TreeName>Dhampir Dark Bargainer</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCore2</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCore4</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCore5</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerDrinkInLife</EnhancementName>
+            <Selection>Drink in Death</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerDreadMist</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerEmbraceDeath</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerCloakOfUndeath</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerLifeblood</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerDeathlyBite</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerFearsomeCountenance</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerFormOfTheLordVampire</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DarkBargainerDarkAscendantBite</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Archmage</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore1</EnhancementName>
+            <Selection>Illusion I: Invisibility</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMTraditionalistCaster</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMEnergyOfTheScholar</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSubtleSpellcasting</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSpellCriticalElementalAndForceI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore2</EnhancementName>
+            <Selection>Illusion II: Blur</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMEfficientMetamagicI</EnhancementName>
+            <Selection>Efficient Quicken</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMEfficientMetamagicLeft</EnhancementName>
+            <Selection>Efficient Maximize</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore3</EnhancementName>
+            <Selection>Illusion III: Displacement</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSpellPenetration</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMIntelligenceI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMArcaneBolt</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMEfficientHeighten</EnhancementName>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSchoolMastery</EnhancementName>
+            <Selection>Primary Spell Focus: Illusion</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore4</EnhancementName>
+            <Selection>Illusion IV: Phantasmal Killer</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMIntelligenceII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore5</EnhancementName>
+            <Selection>Illusion V: Shadow Walk</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSchoolMasteryII</EnhancementName>
+            <Selection>Primary Spell Focus: Illusion</Selection>
+            <Ranks>1</Ranks>
+            <IsTier5/>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMSecondarySchoolMastery</EnhancementName>
+            <Selection>Secondary Spell Focus: Necromancy</Selection>
+            <Ranks>1</Ranks>
+            <IsTier5/>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>AMCore6</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Pale Master</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>PMCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleNegativeEnergyConduit</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PMSpellCriticalNegativeEnergyI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleDeathlessVigor</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PMCore2</EnhancementName>
+            <Selection>Shroud of the Vampire</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleCloakOfNight</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleSpellCriticalNegativeEnergyII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PMCore3</EnhancementName>
+            <Selection>+2 Necromancy DC</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleNegativeEnergyAdept</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleAbilityScoreI</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleSpellCriticalNegativeEnergyIII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PMCore4</EnhancementName>
+            <Selection>+2 Enchantment DC</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>PaleAbilityScoreII</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <EnhancementSpendInTree>
+          <TreeName>Harper Agent</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>StrategicCombatI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperEnchantment</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore2</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperKnowTheAngles</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperVersatileAdeptI</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperAbilityScoreI</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperVersatileAdeptII</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>HarperHighlySkilled</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </EnhancementSpendInTree>
+        <ReaperSpendInTree>
+          <TreeName>Dire Thaumaturge</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireArcanaI</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireFocusI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DirePower</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireAbilityI</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireDeepMagicI</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireDeepMagicII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireAbilityII</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireFocusII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireArcanaII</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireDeepMagicIII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireAbilityIII</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore3</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireFocusIII</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireArcanaIII</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireArcanaIV</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore4</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DirePotency</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireEfficiency</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireDeepMagicIV</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireDeepMagicV</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireAbilityV</EnhancementName>
+            <Selection>+1 Intelligence</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore5</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCharge</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireFocusV</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireArcanaV</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>DireCore6</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </ReaperSpendInTree>
+        <DestinySpendInTree>
+          <TreeName>Shadowdancer</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerWellOfDarkness</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerCoverOfDarkness</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerStealthy</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerTechnician</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerLithe</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerSleightOfHand</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerShadowcaster</EnhancementName>
+            <Selection>Shadowcaster</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerGrimPrecision</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerSpellFocus</EnhancementName>
+            <Selection>Necromancy</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerCore4</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerWeird</EnhancementName>
+            <Selection>Weird</Selection>
+            <Ranks>1</Ranks>
+            <IsTier5/>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51ShadowdancerGreaterShadowdancerSpellFocus</EnhancementName>
+            <Ranks>3</Ranks>
+            <IsTier5/>
+          </TrainedEnhancement>
+        </DestinySpendInTree>
+        <DestinySpendInTree>
+          <TreeName>Fatesinger</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerCore1</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerMusicOfTheSpiderQueen</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerTuneOfTheWeave</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerCore2</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerPianissimo</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerMantleOfSoundAndFury</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerTheMagicOfMusic</EnhancementName>
+            <Selection>Illusion</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerTheSonataToServe</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerMasquerade</EnhancementName>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerResonanceOfFate</EnhancementName>
+            <Selection>Arcane Resonance</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerMetamagicsAttunement</EnhancementName>
+            <Selection>Enlarge</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerCore4</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51FatesingerShoutItout</EnhancementName>
+            <Selection>Greatest Shout</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+        </DestinySpendInTree>
+        <DestinySpendInTree>
+          <TreeName>Primal Avatar</TreeName>
+          <TreeVersion>1</TreeVersion>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarCore1</EnhancementName>
+            <Selection>Thorn</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarRejuvenationCocoon</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarNaturesFriend</EnhancementName>
+            <Selection>Bat of Echoes</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarSpiritBoon</EnhancementName>
+            <Selection>Mind</Selection>
+            <Ranks>2</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarCore2</EnhancementName>
+            <Selection>Heart</Selection>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarFlowersInTheThorns</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarCore3</EnhancementName>
+            <Ranks>1</Ranks>
+          </TrainedEnhancement>
+          <TrainedEnhancement>
+            <EnhancementName>U51PrimalAvatarMagicOfTheOldWorld</EnhancementName>
+            <Selection>Conjuration</Selection>
+            <Ranks>3</Ranks>
+          </TrainedEnhancement>
+        </DestinySpendInTree>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <NoAutoUpdate/>
+            <UserSetsLevel/>
+            <Name>Cannith Crafted Helmet</Name>
+            <Icon>Helmet_13</Icon>
+            <Description>This is a Cannith crafted helmet.</Description>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <ItemAugment>
+              <Type>Cannith Helmet Prefix</Type>
+              <SelectedAugment>Intelligence</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Helmet Suffix</Type>
+              <SelectedAugment>Parrying</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Helmet Extra</Type>
+              <SelectedAugment>Insightful Intelligence</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 1</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 2</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Helmet</Type>
+              <SelectedAugment>+2 Reaper Ability Scores</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+          </Helmet>
+          <Necklace>
+            <Name>The Harrowing Remains</Name>
+            <Icon>Necklace_30a</Icon>
+            <Description/>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Memory of Shattered Life</Type>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Constitution (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Quality Constitution (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+              <SelectedAugment>Miserable Rebellion (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Blue</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Necklace</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <MinorArtifact/>
+          </Necklace>
+          <Trinket>
+            <Name>Legendary Heartshard</Name>
+            <Icon>Trinket_107</Icon>
+            <Description>This crystalline fragment pulses in your hands.</Description>
+            <DropLocation>Snowfall and Sunlight, end chest (rare)</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Legendary Conditioning</Type>
+              <Value1>15</Value1>
+              <BonusType>Legendary</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic Negative Spell Critical Damage (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Quality Intelligence (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+              <SelectedAugment>Miserable Stunning (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+              <SelectedAugment>+2 Festive Intelligence</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Trinket</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Trinket>
+          <Cloak>
+            <Name>Legendary Gravekeeper's Mystic Cloak</Name>
+            <Icon>Cloak_5</Icon>
+            <Description>Even the mystic and powerful eventually find themselves in the grave.</Description>
+            <DropLocation>Beneath the City Streets, Dead Man's Wrath 's chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>18</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Intelligence (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Cloak</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Cloak>
+          <Belt>
+            <Name>Legendary Baron Aubrecker's Monogrammed Belt</Name>
+            <Icon>Belt_14c</Icon>
+            <Description>The monogramming on this belt looks elegant until you look at it closely, where
+the rough edges betray it.</Description>
+            <DropLocation>The Proper Authorities, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>6</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Enchantment</Description1>
+              <Item>Enchantment</Item>
+            </Buff>
+            <Buff>
+              <Type>SpellSave</Type>
+              <Value1>12</Value1>
+              <BonusType>Resistance</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Quality Combat Mastery (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Belt</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Belt>
+          <Goggles>
+            <NoAutoUpdate/>
+            <UserSetsLevel/>
+            <Name>Cannith Crafted Goggles</Name>
+            <Icon>Goggles_1</Icon>
+            <Description>This is a Cannith crafted set of goggles.</Description>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <ItemAugment>
+              <Type>Cannith Goggles Prefix</Type>
+              <SelectedAugment>Necromancy Focus</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Goggles Suffix</Type>
+              <SelectedAugment>Insightful Necromancy Focus</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Goggles Extra</Type>
+              <SelectedAugment>Insightful Intelligence</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 1</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 2</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Goggles</Type>
+            </ItemAugment>
+          </Goggles>
+          <Gloves>
+            <Name>Legendary Darstil's Gloves</Name>
+            <Icon>Gloves_7k</Icon>
+            <Description>The gloves of Darstil Vurusk, Grand Arcanist of the Night Brigade, intricately
+sewn to allow the free flow of spellcasting.</Description>
+            <DropLocation>The Wizard's Labyrinth, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>3</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Potency</Type>
+              <Value1>26</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellLore</Type>
+              <Value1>13</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellPenetration</Type>
+              <Value1>9</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Gloves</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Gloves>
+          <Boots>
+            <Name>Legendary Greaves of Seasons' Warding</Name>
+            <Icon>Boots_11d</Icon>
+            <Description>Made to withstand the harshness of any season, these aged boots show no wear.</Description>
+            <DropLocation>Portal to Below, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Acid</Description1>
+              <Item>Acid</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Intelligence (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+              <SelectedAugment>Curse of Major Intelligence</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+          </Boots>
+          <Bracers>
+            <Name>Legendary Auspicious Bracers</Name>
+            <Icon>Bracers_5</Icon>
+            <Description>Charms of good fortune have been worked into the surface of these bracers. Do
+they work? Time will tell.</Description>
+            <DropLocation>Ends and Means, optional chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SchoolFocusNumber</Type>
+              <Value1>6</Value1>
+              <BonusType>Equipment</BonusType>
+              <Description1>Illusion</Description1>
+              <Item>Illusion</Item>
+            </Buff>
+            <Buff>
+              <Type>SkillBonus</Type>
+              <Value1>22</Value1>
+              <BonusType>Competence</BonusType>
+              <Description1>Spellcraft</Description1>
+              <Item>Spellcraft</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+              <SelectedAugment>Melancholic False Life (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+              <SelectedAugment>Dolorous Negative Amplification (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+              <SelectedAugment>Lunar Gem of Spell Difficulty (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Bracers</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Bracers>
+          <Armor>
+            <Name>Legendary Downcast Robe</Name>
+            <Icon>Cloth_1e</Icon>
+            <Description>Experimental socketry is integrated well into this garment, allowing it to push
+past its normal limits.</Description>
+            <DropLocation>A Miner Sacrifice, end chest (rare)</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Requirements>
+              <RequiresNoneOf>
+                <Requirement>
+                  <Type>Race</Type>
+                  <Item>Bladeforged</Item>
+                  <Value>1</Value>
+                </Requirement>
+                <Requirement>
+                  <Type>Race</Type>
+                  <Item>Warforged</Item>
+                  <Value>1</Value>
+                </Requirement>
+              </RequiresNoneOf>
+            </Requirements>
+            <Armor>Cloth</Armor>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellLore</Type>
+              <Value1>3</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Armor)</Type>
+              <SelectedAugment>Melancholic Booster (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Armor)</Type>
+              <SelectedAugment>Dolorous Invigorator (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+              <SelectedAugment>Miserable Spell Penetration (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Accessory)</Type>
+              <SelectedAugment>Woeful Sacred DCs (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+              <SelectedAugment>Solar Gem of Spell DCs (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Armor</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Armor>
+          <MainHand>
+            <Name>The Slayer of the Living</Name>
+            <Icon>Club_2g</Icon>
+            <Description>Small slots in this weapon could easily fit small augmentation devices.</Description>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Weapon1/>
+              <Weapon2/>
+            </EquipmentSlot>
+            <Weapon>Club</Weapon>
+            <AttackModifier>Strength</AttackModifier>
+            <DamageModifier>Strength</DamageModifier>
+            <DRBypass>Bludgeon</DRBypass>
+            <DRBypass>Magic</DRBypass>
+            <WeaponDamage>6</WeaponDamage>
+            <BaseDice>
+              <Number>1</Number>
+              <Sides>6</Sides>
+              <Bonus>3</Bonus>
+            </BaseDice>
+            <CriticalMultiplier>2</CriticalMultiplier>
+            <CriticalThreatRange>1</CriticalThreatRange>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SpellcastingImplement</Type>
+              <Value1>34</Value1>
+              <BonusType>Implement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WeaponEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Weapon Enchantment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Potency</Type>
+              <Value1>116</Value1>
+              <BonusType>Equipment</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Revel in Blood (Magic)</Type>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Weapon)</Type>
+              <SelectedAugment>Melancholic Shadows (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Weapon)</Type>
+              <SelectedAugment>Dolorous Arcana: Negative (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Weapon)</Type>
+              <SelectedAugment>Miserable Dimlight (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Weapon)</Type>
+              <SelectedAugment>Woeful Exceptional Spell Focus Mastery (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Orange</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Purple</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Weapon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+            <IsAcceptsSentience/>
+          </MainHand>
+          <OffHand>
+            <NoAutoUpdate/>
+            <Name>Legendary Alchemical Orb</Name>
+            <Icon>Orb_12</Icon>
+            <Description>Crafted of exquisite and delicate materials, an orb of this calibre is a true
+masterpiece of creation.</Description>
+            <DropLocation>Legendary Master Artificer, Either End chest</DropLocation>
+            <MinLevel>29</MinLevel>
+            <EquipmentSlot>
+              <Weapon2/>
+            </EquipmentSlot>
+            <Weapon>Orb</Weapon>
+            <AttackModifier>Intelligence</AttackModifier>
+            <DamageModifier>Charisma</DamageModifier>
+            <WeaponDamage>1</WeaponDamage>
+            <BaseDice>
+              <Number>1</Number>
+              <Sides>4</Sides>
+            </BaseDice>
+            <CriticalMultiplier>2</CriticalMultiplier>
+            <CriticalThreatRange>2</CriticalThreatRange>
+            <ShieldBonus>0</ShieldBonus>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>OrbBonus</Type>
+              <Value1>15</Value1>
+              <BonusType>Orb</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Legendary Alchemical Material</Type>
+              <SelectedAugment>Adamantine</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Red</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical Tier 1</Type>
+              <SelectedAugment>Cold I: Fire Shield (Cold) + Ice Shards Guard</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical Tier 2</Type>
+              <SelectedAugment>Earth II: Alchemical Intelligence</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical T3</Type>
+              <SelectedAugment>Earth III: Conjuration Focus</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Weapon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </OffHand>
+          <Ring1>
+            <NoAutoUpdate/>
+            <UserSetsLevel/>
+            <Name>Cannith Crafted Ring</Name>
+            <Icon>Ring_41</Icon>
+            <Description>This is a Cannith crafted ring.</Description>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <ItemAugment>
+              <Type>Cannith Ring Prefix</Type>
+              <SelectedAugment>Spell Resistance</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Ring Suffix</Type>
+              <SelectedAugment>Sheltering</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Ring Extra</Type>
+              <SelectedAugment>Insightful Magical Sheltering</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 1</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 2</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+              <SelectedAugment>Curse of the Necromancer</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+          </Ring1>
+          <Ring2>
+            <NoAutoUpdate/>
+            <UserSetsLevel/>
+            <Name>Cannith Crafted Ring</Name>
+            <Icon>Ring_41</Icon>
+            <Description>This is a Cannith crafted ring.</Description>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <ItemAugment>
+              <Type>Cannith Ring Prefix</Type>
+              <SelectedAugment>Spell Lore: Negative/Poison</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Ring Suffix</Type>
+              <SelectedAugment>Nullification</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Cannith Ring Extra</Type>
+              <SelectedAugment>Insightful Physical Sheltering</SelectedAugment>
+              <SelectedLevelIndex>33</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 1</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Add Augment 2</Type>
+              <Augment>
+                <Name>Adds a Colorless augment slot</Name>
+                <Description>Adds a Colorless augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Colorless</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Red augment slot</Name>
+                <Description>Adds a Red augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Red</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Blue augment slot</Name>
+                <Description>Adds a Blue augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Blue</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Yellow augment slot</Name>
+                <Description>Adds a Yellow augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Yellow</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Purple augment slot</Name>
+                <Description>Adds a Purple augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Purple</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Orange augment slot</Name>
+                <Description>Adds a Orange augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Orange</GrantAugment>
+              </Augment>
+              <Augment>
+                <Name>Adds a Green augment slot</Name>
+                <Description>Adds a Green augment slot to this item</Description>
+                <MinLevel>5</MinLevel>
+                <GrantAugment>Green</GrantAugment>
+              </Augment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+              <SelectedAugment>Curse of the Illusionist</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+          </Ring2>
+          <NumFiligrees>10</NumFiligrees>
+          <Filigree>
+            <Name>Lunar Magic/Serpent +2 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Zarigan's Arcane Enlightenment/Voltaic Experiment +2 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Eye of the Beholder/The Inevitable Grave +2 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Eye of the Beholder: +1 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Lunar Magic: +1 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>The Inevitable Grave: +1 Intelligence</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>The Inevitable Grave: +20 Negative Healing Amplification</Name>
+            <Rare/>
+          </Filigree>
+          <Filigree>
+            <Name>Otto's Irrevocable Power: -10% Arcane Spell Failure</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Otto's Irrevocable Power: +1 Constitution</Name>
+          </Filigree>
+          <Filigree>
+            <Name>Otto's Irrevocable Power: +1 Intelligence</Name>
+          </Filigree>
+          <ArtifactFiligree>
+            <Name>Lunar Magic/Serpent +2 Intelligence</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Zarigan's Arcane Enlightenment/Voltaic Experiment +2 Intelligence</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Eye of the Beholder/The Inevitable Grave +2 Intelligence</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Eye of the Beholder: +1 Intelligence</Name>
+            <Rare/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name>Otto's Irrevocable Power: +1 Intelligence</Name>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <SnapshotStrength>31</SnapshotStrength>
+          <SnapshotIntelligence>125</SnapshotIntelligence>
+          <SnapshotWisdom>32</SnapshotWisdom>
+          <SnapshotDexterity>34</SnapshotDexterity>
+          <SnapshotConstitution>51</SnapshotConstitution>
+          <SnapshotCharisma>34</SnapshotCharisma>
+        </EquippedGear>
+        <FavorFeats/>
+        <Notes/>
+        <Level4>Intelligence</Level4>
+        <Level8>Intelligence</Level8>
+        <Level12>Intelligence</Level12>
+        <Level16>Intelligence</Level16>
+        <Level20>Intelligence</Level20>
+        <Level24>Intelligence</Level24>
+        <Level28>Intelligence</Level28>
+        <Level32>Intelligence</Level32>
+        <Level36>Intelligence</Level36>
+        <Level40>Intelligence</Level40>
+      </Build>
+    </Life>
+    <GuildLevel>200</GuildLevel>
+    <ApplyGuildBuffs>1</ApplyGuildBuffs>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>

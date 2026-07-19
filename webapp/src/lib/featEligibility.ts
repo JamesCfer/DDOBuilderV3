@@ -71,12 +71,26 @@ export function prereqFeatCounts(
   allClasses: DDOClass[],
   race: Race | undefined,
   specialFeats: string[] = [],
+  allFeats?: Feat[],
 ): Record<string, number> {
   const counts: Record<string, number> = {}
   const add = (name: string, n = 1) => {
     if (name) counts[name] = (counts[name] ?? 0) + n
   }
   for (const v of Object.values(snap.featChoices)) if (v) add(v)
+  // AutomaticAcquisition feats (V2 Build::UpdateFeats evaluates each feat's
+  // <AutomaticAcquisition> requirements per level): Sunder/Trip/Defensive
+  // Fighting (BAB 1), Attack/Sneak/Heroic Durability (level 1), etc. count
+  // toward prerequisites — e.g. Improved Sunder requires the automatic Sunder.
+  if (allFeats) {
+    const ctx = { build: snap, allClasses, race }
+    for (const f of allFeats) {
+      if (f.Acquire !== 'Automatic') continue
+      const aa = (f as Feat & { AutomaticAcquisition?: unknown }).AutomaticAcquisition
+      if (aa === undefined) continue
+      if (meetsRequirements(aa as never, ctx)) add(f.Name)
+    }
+  }
   // Automatic class/race feats granted at or before this character level.
   for (const g of buildAutomaticFeatGroups(snap, allClasses, race ? [race] : [])) {
     if ((g.charLevel ?? 0) <= slotLevel) g.feats.forEach(f => add(f))
@@ -125,21 +139,23 @@ export function featOptionsForSlot(
   // V2 Build::CurrentFeats(level): trained + automatic + special feats all
   // count toward prerequisites (e.g. Stunning Fist requires the automatic
   // Monk feat "Flurry of Blows"; epic feats require "Past Life: X" ×N).
-  const featCounts = prereqFeatCounts(snap, slot.level, allClasses, race, opt.specialFeats)
+  const featCounts = prereqFeatCounts(snap, slot.level, allClasses, race, opt.specialFeats, feats)
   const featSet = new Set(Object.keys(featCounts))
   const reqCtx = { build: snap, allClasses, race, feats: featSet, featCounts }
 
-  // Exclude already-chosen feats in other slots (use FULL build for exclusion
-  // so feats taken later are still blocked from being double-taken)
-  const chosenElsewhere = new Set(
-    Object.entries(build.featChoices)
-      .filter(([k, v]) => k !== slot.key && v)
-      .map(([, v]) => v)
-  )
+  // Exclude feats already trained to their MaxTimesAcquire limit in other
+  // slots (V2 Build.cpp:1584: bCanTrain = trainedCount < MaxTimesAcquire,
+  // default 1). Toughness (MaxTimesAcquire 99) and other multi-acquire feats
+  // stay offered no matter how many slots already hold them.
+  const chosenCounts = new Map<string, number>()
+  for (const [k, v] of Object.entries(build.featChoices)) {
+    if (k === slot.key || !v) continue
+    chosenCounts.set(v, (chosenCounts.get(v) ?? 0) + 1)
+  }
 
   return feats
     .filter(f => {
-      if (chosenElsewhere.has(f.Name)) return false
+      if ((chosenCounts.get(f.Name) ?? 0) >= (f.MaxTimesAcquire ?? 1)) return false
       if (f.Acquire && f.Acquire !== 'Train') return false
 
       // V2 Build::TrainableFeats:1455-1459 — ignore-listed feats are hidden

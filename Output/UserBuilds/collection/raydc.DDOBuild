@@ -1,0 +1,903 @@
+<DDOBuilderCharacterData>
+  <Character version="1">
+    <StrTome>0</StrTome>
+    <DexTome>0</DexTome>
+    <ConTome>0</ConTome>
+    <IntTome>0</IntTome>
+    <WisTome>0</WisTome>
+    <ChaTome>0</ChaTome>
+    <SpecialFeats/>
+    <SkillTomes>
+      <Balance>0</Balance>
+      <Bluff>0</Bluff>
+      <Concentration>0</Concentration>
+      <Diplomacy>0</Diplomacy>
+      <DisableDevice>0</DisableDevice>
+      <Haggle>0</Haggle>
+      <Heal>0</Heal>
+      <Hide>0</Hide>
+      <Intimidate>0</Intimidate>
+      <Jump>0</Jump>
+      <Listen>0</Listen>
+      <MoveSilently>0</MoveSilently>
+      <OpenLock>0</OpenLock>
+      <Perform>0</Perform>
+      <Repair>0</Repair>
+      <Search>0</Search>
+      <SpellCraft>0</SpellCraft>
+      <Spot>0</Spot>
+      <Swim>0</Swim>
+      <Tumble>0</Tumble>
+      <UMD>0</UMD>
+    </SkillTomes>
+    <Life version="1">
+      <Name/>
+      <Race>Human</Race>
+      <Alignment>Lawful Good</Alignment>
+      <SpecialFeats/>
+      <Build version="1">
+        <Level>34</Level>
+        <Class1>Unknown</Class1>
+        <Class2>Unknown</Class2>
+        <Class3>Unknown</Class3>
+        <AbilitySpend>
+          <AvailableSpend>28</AvailableSpend>
+          <StrSpend>0</StrSpend>
+          <DexSpend>0</DexSpend>
+          <ConSpend>0</ConSpend>
+          <IntSpend>0</IntSpend>
+          <WisSpend>0</WisSpend>
+          <ChaSpend>0</ChaSpend>
+        </AbilitySpend>
+        <LevelTraining>
+          <SkillPointsAvailable>8</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <SkillPointsAvailable>2</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Epic</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <LevelTraining>
+          <Class>Legendary</Class>
+          <SkillPointsAvailable>0</SkillPointsAvailable>
+          <SkillPointsSpent>0</SkillPointsSpent>
+        </LevelTraining>
+        <ActiveStances>
+          <Stances>Cloth Armor</Stances>
+          <Stances>Centered</Stances>
+          <Stances>Good</Stances>
+          <Stances>Lawful</Stances>
+          <Stances>Empty</Stances>
+          <Stances>Human</Stances>
+        </ActiveStances>
+        <Destiny_SelectedTrees>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Destiny_SelectedTrees>
+        <Enhancement_SelectedTrees>
+          <TreeName>Human</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+          <TreeName>No selection</TreeName>
+        </Enhancement_SelectedTrees>
+        <Reaper_SelectedTrees>
+          <TreeName>Dire Thaumaturge</TreeName>
+          <TreeName>Dread Adversary</TreeName>
+          <TreeName>Grim Barricade</TreeName>
+        </Reaper_SelectedTrees>
+        <ActiveAttackChain/>
+        <ActiveGear>Standard</ActiveGear>
+        <EquippedGear>
+          <Name>Standard</Name>
+          <Helmet>
+            <Name>Legendary Lamordian Cowl</Name>
+            <Icon>Helmet_2</Icon>
+            <Description>A hood to keep those moving about the streets at night warm.</Description>
+            <DropLocation>The Wish, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Helmet/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Charisma</Description1>
+              <Item>Charisma</Item>
+            </Buff>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>18</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Helmet</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Helmet>
+          <Necklace>
+            <Name>The Dying Hope</Name>
+            <Icon>Necklace_5</Icon>
+            <Description/>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Necklace/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Accessory)</Type>
+              <SelectedAugment>Woeful Enhanced Ghostly (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Blue</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Necklace</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Necklace>
+          <Trinket>
+            <Name>Legendary Heartshard</Name>
+            <Icon>Trinket_107</Icon>
+            <Description>This crystalline fragment pulses in your hands.</Description>
+            <DropLocation>Snowfall and Sunlight, end chest (rare)</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Trinket/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Legendary Conditioning</Type>
+              <Value1>15</Value1>
+              <BonusType>Legendary</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Trinket</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Trinket>
+          <Cloak>
+            <Name>Legendary Gravekeeper's Mystic Cloak</Name>
+            <Icon>Cloak_5</Icon>
+            <Description>Even the mystic and powerful eventually find themselves in the grave.</Description>
+            <DropLocation>Beneath the City Streets, Dead Man's Wrath 's chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Cloak/>
+            </EquipmentSlot>
+            <Material>Cloth</Material>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>2</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>18</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Cloak</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Cloak>
+          <Belt>
+            <Name>Legendary Waistwrap of Wild Wisdom</Name>
+            <Icon>Belt_14c</Icon>
+            <Description>A light cloth waistwrap for those headed out into the woods.</Description>
+            <DropLocation>Death Hosts This Banquet, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Belt/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Wisdom</Description1>
+              <Item>Wisdom</Item>
+            </Buff>
+            <Buff>
+              <Type>WillSave</Type>
+              <Value1>3</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Profane Well Rounded</Type>
+              <Value1>3</Value1>
+              <BonusType>Profane</BonusType>
+            </Buff>
+            <Buff>
+              <Type>HealingAmplification</Type>
+              <Value1>15</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Belt</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Belt>
+          <Goggles>
+            <Name>Legendary Doctor Gustav's Warped Lenses</Name>
+            <Description>A set of black glasses that alter the vision. It makes a certain kind of sense,
+but certainly not the standard kind.</Description>
+            <DropLocation>Body and Mind, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Goggles/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>SpellFocusNumber</Type>
+              <Value1>2</Value1>
+              <BonusType>Profane</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellPenetration</Type>
+              <Value1>3</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>WizardryNumber</Type>
+              <Value1>310</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Dodge</Type>
+              <Value1>7</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Goggles</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Goggles>
+          <Gloves>
+            <Name>Legendary Gloves of the Resilient</Name>
+            <Icon>Gloves_7k</Icon>
+            <Description>Light enough to not impede movement, but somehow sturdy enough to stop a blade,
+these gloves have seen their share of conflict.</Description>
+            <DropLocation>The Safehold, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Gloves/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>AbilityBonus</Type>
+              <Value1>6</Value1>
+              <BonusType>Insightful</BonusType>
+              <Description1>Constitution</Description1>
+              <Item>Constitution</Item>
+            </Buff>
+            <Buff>
+              <Type>FortitudeSave</Type>
+              <Value1>3</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Speed</Type>
+              <Value1>30</Value1>
+              <Value2>15</Value2>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>PhysicalSheltering</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Gloves</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Gloves>
+          <Boots>
+            <Name>Legendary Greaves of Seasons' Warding</Name>
+            <Icon>Boots_11d</Icon>
+            <Description>Made to withstand the harshness of any season, these aged boots show no wear.</Description>
+            <DropLocation>Portal to Below, end chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Boots/>
+            </EquipmentSlot>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Fire</Description1>
+              <Item>Fire</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Cold</Description1>
+              <Item>Cold</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Electric</Description1>
+              <Item>Electric</Item>
+            </Buff>
+            <Buff>
+              <Type>Absorption</Type>
+              <Value1>37</Value1>
+              <BonusType>Enhancement</BonusType>
+              <Description1>Acid</Description1>
+              <Item>Acid</Item>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Boot</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Boots>
+          <Bracers>
+            <Name>Bracers of the Battlerager</Name>
+            <Icon>Bracers_5c</Icon>
+            <Description>Bearing the mark of the Eternal Brigade, these bracers offer unparalleled protection.</Description>
+            <DropLocation>Threats Old and New, Raid Warded chest</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Bracers/>
+            </EquipmentSlot>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>162</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>81</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <Buff>
+              <Type>Fortification</Type>
+              <Value1>40</Value1>
+              <BonusType>Quality</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Sealed in Undeath</Type>
+              <SelectedAugment>Sealed in Undeath</SelectedAugment>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Yellow</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Moon</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Bracers</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Bracers>
+          <Armor>
+            <Name>Light Armor of the Artblade's Reflection</Name>
+            <Icon>LightArmor_1e</Icon>
+            <Description>This armor took the power of the deathly ritual and turned it to the Artblade's
+purposes.</Description>
+            <DropLocation>Ritual Table, Turn in 
+Legendary Light Armor of the Artblade 
+120 Barrier Fragments 
+Sigil of the Artblade</DropLocation>
+            <MinLevel>33</MinLevel>
+            <EquipmentSlot>
+              <Armor/>
+            </EquipmentSlot>
+            <Requirements>
+              <Requirement>
+                <Type>NotConstruct</Type>
+              </Requirement>
+            </Requirements>
+            <Armor>Light</Armor>
+            <ArmorBonus>35</ArmorBonus>
+            <MaximumDexterityBonus>20</MaximumDexterityBonus>
+            <ArcaneSpellFailure>10</ArcaneSpellFailure>
+            <Material>Leather</Material>
+            <Buff>
+              <Type>ArmorEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Armor Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>MagicalSheltering</Type>
+              <Value1>39</Value1>
+              <BonusType>Enhancement</BonusType>
+            </Buff>
+            <Buff>
+              <Type>UniversalSpellPower</Type>
+              <Value1>15</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>UniversalSpellLore</Type>
+              <Value1>5</Value1>
+              <BonusType>Exceptional</BonusType>
+            </Buff>
+            <Buff>
+              <Type>SpellFocusMastery</Type>
+              <Value1>3</Value1>
+              <BonusType>Insightful</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Colorless</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Sun</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Armor</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Armor>
+          <OffHand>
+            <NoAutoUpdate/>
+            <Name>Legendary Alchemical Large Shield</Name>
+            <Icon>Shield_4h</Icon>
+            <Description>This gorgeous shield features a striking blue gemstone in the center of wrought-gold
+filigree.</Description>
+            <DropLocation>Legendary Lord of Blades, Either End chest</DropLocation>
+            <MinLevel>29</MinLevel>
+            <EquipmentSlot>
+              <Weapon2/>
+            </EquipmentSlot>
+            <Weapon>Large Shield</Weapon>
+            <AttackModifier>Strength</AttackModifier>
+            <DamageModifier>Strength</DamageModifier>
+            <DRBypass>Bludgeon</DRBypass>
+            <DRBypass>Magic</DRBypass>
+            <WeaponDamage>4.8</WeaponDamage>
+            <BaseDice>
+              <Number>1</Number>
+              <Sides>10</Sides>
+              <Bonus>8</Bonus>
+            </BaseDice>
+            <CriticalMultiplier>2</CriticalMultiplier>
+            <CriticalThreatRange>1</CriticalThreatRange>
+            <MaximumDexterityBonus>0</MaximumDexterityBonus>
+            <ArmorCheckPenalty>-1</ArmorCheckPenalty>
+            <ArcaneSpellFailure>15</ArcaneSpellFailure>
+            <ShieldBonus>20</ShieldBonus>
+            <DamageReduction>20</DamageReduction>
+            <Material>Steel</Material>
+            <Buff>
+              <Type>ShieldEnchantment</Type>
+              <Value1>15</Value1>
+              <BonusType>Shield Enhancement</BonusType>
+            </Buff>
+            <ItemAugment>
+              <Type>Legendary Alchemical Material</Type>
+              <SelectedAugment>Crystal</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Red</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical Tier 1</Type>
+              <SelectedAugment>Cold I: Fire Shield (Cold) + Ice Shards Guard</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical Tier 2</Type>
+              <SelectedAugment>Cold II: Alchemical Charisma</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Legendary Alchemical T3</Type>
+              <SelectedAugment>Cold III: Spell Penetration</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Purple</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Shield</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </OffHand>
+          <Ring2>
+            <Name>The Time Taken</Name>
+            <Icon>Ring_16f</Icon>
+            <Description/>
+            <DropLocation>Relentless, end chest</DropLocation>
+            <MinLevel>34</MinLevel>
+            <EquipmentSlot>
+              <Ring/>
+            </EquipmentSlot>
+            <Material>Gem (material)</Material>
+            <ItemAugment>
+              <Type>Melancholic Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Dolorous Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Miserable Slot (Accessory)</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Woeful Slot (Accessory)</Type>
+              <SelectedAugment>Woeful Sacred DCs (Legendary)</SelectedAugment>
+              <SelectedLevelIndex>0</SelectedLevelIndex>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Green</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Blue</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Mythic</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Reaper Ring</Type>
+            </ItemAugment>
+            <ItemAugment>
+              <Type>Deck Curse</Type>
+            </ItemAugment>
+          </Ring2>
+          <NumFiligrees>0</NumFiligrees>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <ArtifactFiligree>
+            <Name/>
+          </ArtifactFiligree>
+          <SnapshotStrength>19</SnapshotStrength>
+          <SnapshotIntelligence>11</SnapshotIntelligence>
+          <SnapshotWisdom>17</SnapshotWisdom>
+          <SnapshotDexterity>11</SnapshotDexterity>
+          <SnapshotConstitution>17</SnapshotConstitution>
+          <SnapshotCharisma>20</SnapshotCharisma>
+        </EquippedGear>
+        <FavorFeats/>
+        <Notes/>
+        <Level4>Strength</Level4>
+        <Level8>Strength</Level8>
+        <Level12>Strength</Level12>
+        <Level16>Strength</Level16>
+        <Level20>Strength</Level20>
+        <Level24>Strength</Level24>
+        <Level28>Strength</Level28>
+        <Level32>Strength</Level32>
+        <Level36>Strength</Level36>
+        <Level40>Strength</Level40>
+      </Build>
+    </Life>
+    <ActiveLifeIndex>0</ActiveLifeIndex>
+    <ActiveBuildIndex>0</ActiveBuildIndex>
+  </Character>
+</DDOBuilderCharacterData>
