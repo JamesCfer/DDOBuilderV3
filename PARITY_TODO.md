@@ -234,13 +234,34 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   MP/RP/SP; implement bonus requires Divine Crusader "Strike with Poise"
   rank 3, not trained on the golden build).
 - 🟡 **G-MRR — MRR Cap ✅ exact** (Nystul 5pc via the NumFiligrees import
-  fix); **PRR still −24, MRR −28**. Open lead: "Legendary Bulwark" augment
-  (slotted ×3, carries only a `<SetBonus>` ref + `<SuppressSetBonus/>`) —
-  check augment-borne set-bonus stacking and set-bonus suppression.
-- 🟡 **G-HP — HP −52** (was −208; Nystul 4pc +100 HP + CON knock-on closed
-  most of it). Note the Legendary Bulwark 3pc is +10% Legendary HP — if V3
-  is missing it the remaining gap must be re-measured after the set-bonus
-  lead above.
+  fix); **PRR still −24, MRR −28**. The "Legendary Bulwark" lead is now
+  RULED OUT — instrumented `accumulateSetBonuses` end-to-end: the 3× augment
+  counts, the set fires, and its +10% Legendary HP is inside the combined
+  hp percent row ("30% of 2172"). PRR suspects worth a trace: Sapphire of
+  Defense +36 resolution, and V2-active stances (Power Attack/Enhanced
+  Bloodrage) the V3 session may not have on.
+- 🟡 **G-HP — HP −52**, cause UNKNOWN (Bulwark ruled out, see above). Needs
+  a row-by-row diff against a V2 per-source HP breakdown export.
+- ❌ **2026-07-19 user cc1-gearset export diff** (fresh V2 vs V3 forum
+  exports, different save than the repo fixture — V2's file has 4 gear
+  sets, repo fixture only 2, so not directly reproducible here): Will +11
+  OVER (biggest single unexplained), Fort +1/Reflex +2 over, Fortification
+  Bypass 84 vs 71 (+13 OVER — check Armor-Piercing bonus-type stacking:
+  Enhancement 23% + Legendary Armor-Piercing 5% + Insightful 11% + augment),
+  Unconscious Range −350 vs −360 (−10; possibly the inactive Enhanced
+  Bloodrage toggle), Dodge 21 vs V2 "18/25" (V3 +3 over AND the export
+  never renders the V2 `dodge/cap` form). Much of the MP/PRR/MRR delta in
+  that session is stance-state: V2 had Power Attack / Enhanced Bloodrage /
+  Mantle of Fury / Fallen Bond active; V3's export lists them inactive —
+  verify V3 restores ActiveStances from import into the live session.
+- ❌ **Display gaps vs V2 export (same comparison)**: (1) the Automatic
+  Feats panel/export omits AutomaticAcquisition-granted feats (Attack,
+  Sneak, Heroic Durability, Defensive Fighting, Sunder, Trip, Improved
+  Heroic Durability (Class 5/10/15)) and the Epic/Legendary per-level rows
+  (Epic Power/Skills/Saves/Knowledge…) — the stats engine counts them
+  (#106) but `buildAutomaticFeatGroups` doesn't list them; (2) the forum
+  export Skills section prints raw spend counts ("Balance: 33 ranks") where
+  V2 prints half-rank totals ("32.0").
 - ✅ **G-SKILL — skills V2-exact except the ±1 ability-mod cluster** (#106):
   Epic Skills ×10 (uniform +10), per-level cross-class half-ranks
   (Balance/Perform), Merfolk's Blessing at caster level 25 (Swim 73 exact).
