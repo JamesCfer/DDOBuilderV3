@@ -160,7 +160,14 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/BreakdownItemDestinyAps.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemSpellSchool.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemCasterLevel.cpp \
-    $(ROOT)/DDOBuilder/BreakdownItemSchoolCasterLevel.cpp
+    $(ROOT)/DDOBuilder/BreakdownItemSchoolCasterLevel.cpp \
+    $(ROOT)/DDOBuilder/BonusTypesFile.cpp \
+    $(ROOT)/DDOBuilder/SpellsFile.cpp \
+    $(ROOT)/DDOBuilder/SetBonusFile.cpp \
+    $(ROOT)/DDOBuilder/StancesFile.cpp \
+    $(ROOT)/DDOBuilder/WeaponGroupFile.cpp \
+    $(ROOT)/DDOBuilder/BuffFile.cpp \
+    $(ROOT)/DDOBuilder/OptionalBuffFile.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \
@@ -168,6 +175,7 @@ SHIM_SRC := \
     $(V2CALC_DIR)/shim/VectorConversionLinux.cpp \
     $(V2CALC_DIR)/shim/DocStub.cpp \
     $(V2CALC_DIR)/shim/GlobalDataLinux.cpp \
+    $(V2CALC_DIR)/shim/MultiFileLoaderLinux.cpp \
     $(V2CALC_DIR)/shim/UIStub.cpp \
     $(V2CALC_DIR)/shim/UIPaneStub.cpp \
     $(V2CALC_DIR)/shim/BreakdownHostLinux.cpp
