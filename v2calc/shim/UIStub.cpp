@@ -86,34 +86,15 @@ size_t TrainedCount(const std::list<TrainedFeat>& currentFeats, const std::strin
 }
 
 // ---------------------------------------------------------------------------
-// data-driven lookups - not-found singletons (effect path only, unvalidated)
-// ---------------------------------------------------------------------------
-const Item& FindItem(const std::string&)                    { static Item x; return x; }
-const Buff& FindBuff(const std::string&)                    { static Buff x; return x; }
-const Quest& FindQuest(const std::string&)                  { static Quest x; return x; }
-const Challenge& FindChallenge(const std::string&)          { static Challenge x; return x; }
-const OptionalBuff& FindOptionalBuff(const std::string&)    { static OptionalBuff x; return x; }
-const SetBonus& FindSetBonus(const std::string&)            { static SetBonus x; return x; }
-const Augment& FindAugmentByName(const std::string&, const Item*) { static Augment x; return x; }
-const Filigree& FindFiligreeByName(const std::string&)      { static Filigree x; return x; }
-const EnhancementTree& GetEnhancementTree(const std::string&) { static EnhancementTree x; return x; }
-const EnhancementTreeItem* FindEnhancement(const std::string&) { return nullptr; }
-const EnhancementTreeItem* FindEnhancement(const std::string&, const std::string&) { return nullptr; }
-const EnhancementTreeItem* FindEnhancement(const std::string&, std::string*) { return nullptr; }
-Spell FindSpellByName(const std::string&, bool)             { return Spell(); }
-void AddSpecialSlots(InventorySlotType, Item&)              {}
-void AddAugment(std::vector<ItemAugment>*, const std::string&, bool) {}
-bool CanEquipTo2ndWeapon(Build*, const Item&)               { return false; }
+// The data-driven lookups (FindItem/FindBuff/FindQuest/FindChallenge/
+// FindOptionalBuff/FindSetBonus/FindAugmentByName/FindFiligreeByName/
+// GetEnhancementTree/FindEnhancement (all overloads)/FindSpellByName/FindBonus/
+// AddSpecialSlots/AddAugment/CanEquipTo2ndWeapon) and the GuildBuffs()/
+// WeaponGroups() accessors are now REAL: shim/GlobalDataLinux.cpp loads the
+// backing data files and provides the verbatim GlobalSupportFunctions.cpp
+// implementations. They were removed from here so every symbol has exactly one
+// definition.
 // FindBreakdown is provided by shim/BreakdownHostLinux.cpp (headless registry).
-
-const std::list<GuildBuff>&  GuildBuffs()  { static std::list<GuildBuff> x;  return x; }
-const std::list<WeaponGroup>& WeaponGroups() { static std::list<WeaponGroup> x; return x; }
-
-// FindBonus: BreakdownItem::RemoveNonStacking consults the bonus-type registry
-// (which bonus types stack). The bonus type data file is not yet loaded, so
-// return a not-found bonus (its default StacksCap allows stacking) - this only
-// affects same-named non-stacking bonus dedup, not base/feat totals.
-const Bonus& FindBonus(const std::string&)                  { static Bonus x; return x; }
 
 // MfcControls::CTreeListCtrl tree population - never called on the compute path
 // (BreakdownItem::Populate null-guards m_pTreeList, which is null headless).

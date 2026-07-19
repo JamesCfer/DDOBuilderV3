@@ -1630,14 +1630,17 @@ function buildStatMapOnce(
 
     // V2 "Attack" feat (universal, no stance gating) grants base combat values
     // that V3 otherwise lacked a default for: +50% damage vs helpless foes,
-    // +20% strikethrough, and +20% off-hand attack chance. (The Attack feat's
-    // other base effects — base AC 10, dodge cap 25, shield PRR, damage
-    // multipliers — are modeled elsewhere as hardcoded defaults, so only
-    // these three are added here.)
+    // +20% strikethrough, +20% off-hand attack chance, −10 unconscious range,
+    // and the base 25% Dodge Cap (Feats.xml Attack "Base Dodge Cap"
+    // DodgeCapBonus 25 — V2 BreakdownItemDodge caps dodge at "25% plus any
+    // effects that increase it", so without this the dodge cap was ~23 too low
+    // and every no-armor build's dodge was clamped far below V2). Base AC 10,
+    // shield PRR, and damage multipliers remain modeled as hardcoded defaults.
     add(map, 'helpless', { value: 50, type: 'Base', source: 'Attack (base helpless damage)' })
     add(map, 'melee.strikethrough', { value: 20, type: 'Base', source: 'Attack (base strikethrough)' })
     add(map, 'offhand.attack', { value: 20, type: 'Base', source: 'Attack (base off-hand attack chance)' })
     add(map, 'unconsciousRange', { value: -10, type: 'Base', source: 'Attack (standard death at -10)' })
+    add(map, 'dodgeCap', { value: 25, type: 'Base', source: 'Attack (base dodge cap 25%)' })
 
     // V2 BreakdownItemMaximumKi.cpp:31-58 — Maximum Ki = base 40 + WIS mod × 5
     // (plus any KiMaximum effects, parsed into ki.max). V2 adds the base + WIS
