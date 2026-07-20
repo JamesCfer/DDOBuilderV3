@@ -24,16 +24,23 @@ const FIX = join(__dirname, '..', '..', '..', 'Output', 'Example Builds', 'Maetr
 const have = existsSync(DATA) && existsSync(FIX)
 
 describe.skipIf(!have)('enhancement AP budget (V2 TT_allEnhancement)', () => {
-  it('imports Special feats and balances Maetrim at exactly 103 AP', () => {
+  it('imports Special feats and balances Maetrim at exactly 104 AP', () => {
     // Upstream 2.0.0.81 updated this example build: a 4th Inherent Universal
-    // Action Point redemption (+1 UAP → 103 total) and Duergar past lives.
+    // Action Point redemption (+1 UAP) and Duergar past lives (Tier 3: "+1
+    // Racial Tree Action point", Races/Duergar.race.xml:99-104). "Past Life:
+    // Duergar" is recorded at Life scope in this fixture (<Life>
+    // <SpecialFeats>), not Character scope — v2Import.ts only read the
+    // Character-level node until this pass wired in the Life-level merge
+    // (V2 Life::AllSpecialFeats(), Life.cpp:709-713), so Duergar's RAP was
+    // dropped and the budget under-counted by 1 (was 103).
     const { build } = importV2Build(readFileSync(FIX, 'utf-8'))
     expect(build.pastLives['Inherent Racial Action Point']).toBe(3)
     expect(build.pastLives['Inherent Universal Action Point']).toBe(4)
+    expect(build.pastLives['Duergar']).toBe(3)
     const feats = loadFeats(DATA)
     const bonus = computeBonusActionPoints(build, feats)
-    expect(bonus.racial + bonus.universal).toBe(23)
-    expect(enhancementAPBudget(build, feats)).toBe(103) // 80 + 23 — V2-legal spend
+    expect(bonus.racial + bonus.universal).toBe(24)
+    expect(enhancementAPBudget(build, feats)).toBe(104) // 80 + 24 — V2-legal spend
     expect(build.enhancementPinned).toContain('Shintao')
     expect(build.enhancementPinned).toContain('Falconry')
   })

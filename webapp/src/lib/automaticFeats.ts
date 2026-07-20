@@ -63,12 +63,30 @@ export function buildAutomaticFeatGroups(
     }
   }
 
-  const heroicClassNames = allClasses.filter(c => !c.NotHeroic).map(c => c.Name)
-  if (heroicClassNames.length > 0 && heroicClassNames.every(cn => (build.pastLives[cn] ?? 0) >= 3)) {
-    groups.push({ source: 'Completionist', feats: ['Completionist'], charLevel: 0 })
+  // V2 DDOBuilder.cpp:494-550 (dynamic Completionist requirement, rebuilt at
+  // data-load time): grouped by base class so archetypes (BaseClass set,
+  // e.g. Stormsinger→Bard) satisfy their group via EITHER the base class's
+  // own "Past Life: <Class>" OR any archetype's "Past Life: <Base> -
+  // <Archetype>", each needing only >=1 (not >=3 — that threshold is for
+  // races only). The "Unknown" placeholder class (Class_Unknown) is excluded,
+  // matching `cit.GetBaseClass() != Class_Unknown`.
+  const heroicClasses = allClasses.filter(c => !c.NotHeroic && c.Name !== 'Unknown')
+  if (heroicClasses.length > 0) {
+    const classGroups = new Map<string, string[]>()
+    for (const c of heroicClasses) {
+      const base = c.BaseClass || c.Name
+      const key = c.BaseClass ? `${c.BaseClass} - ${c.Name}` : c.Name
+      if (!classGroups.has(base)) classGroups.set(base, [])
+      classGroups.get(base)!.push(key)
+    }
+    const complete = Array.from(classGroups.values())
+      .every(keys => keys.some(k => (build.pastLives[k] ?? 0) >= 1))
+    if (complete) groups.push({ source: 'Completionist', feats: ['Completionist'], charLevel: 0 })
   }
 
-  const heroicRaceNames = allRaces.filter(r => !r.NotHeroic && !r.IsIconic).map(r => r.Name)
+  // V2 DDOBuilder.cpp:555-577: every non-iconic race that supports past
+  // lives (`!HasNoPastLife()`) needs "Past Life: <Race>" >=3.
+  const heroicRaceNames = allRaces.filter(r => !r.NotHeroic && !r.IsIconic && !r.NoPastLife).map(r => r.Name)
   if (heroicRaceNames.length > 0 && heroicRaceNames.every(rn => (build.pastLives[rn] ?? 0) >= 3)) {
     groups.push({ source: 'Racial Completionist', feats: ['Racial Completionist'], charLevel: 0 })
   }
