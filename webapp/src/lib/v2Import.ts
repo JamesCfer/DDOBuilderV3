@@ -640,25 +640,32 @@ function parseBuildNode(
   // pull the party-buff effects on top of the stance-gated ones.
   out.selfBuffs = arr(life.SelfAndPartyBuffs as string | string[] | undefined).map(asStr).filter(Boolean)
 
-  // ── Past lives (Character.SpecialFeats with Type=*PastLife) ─────────────
-  // Character-level FeatsListObject holds past lives plus character-wide
-  // special feats (e.g. Falconry / Vistani universal-tree access can also
-  // appear here). Past lives fold into `pastLives`.
-  const charSpecial = parseFeatsListObject(getRec(character, 'SpecialFeats'))
+  // ── Past lives (Character.SpecialFeats + Life.SpecialFeats, Type=*PastLife) ──
+  // V2 Life::AllSpecialFeats() (Life.cpp:709-713) sums the Life's own
+  // SpecialFeats with the Character-level ones — Build::SpecialFeats() reads
+  // that combined list. V3 was only reading the Character-level node, so any
+  // past life recorded at Life scope (observed on real exports: e.g. a
+  // "Past Life: Duergar" racial past life, or an archetype past life like
+  // "Past Life: Rogue - Arcane Trickster") was silently dropped, which in
+  // turn could make Racial/Class Completionist eligibility (every heroic
+  // race/class at the required past-life count) falsely fail and its +2
+  // AbilityBonus/+2 SkillBonus never apply.
   out.pastLifeTypes = {}
-  for (const [k, n] of Object.entries(charSpecial.pastLives)) {
-    out.pastLives[k] = (out.pastLives[k] ?? 0) + n
-  }
-  for (const [k, t] of Object.entries(charSpecial.pastLifeTypes)) {
-    out.pastLifeTypes[k] = t
-  }
-  // Non-past-life Special feats trained N times (Inherent Racial/Universal
-  // Action Point, Inherent Fate Point, Inherent Melee Power, …) are
-  // effect-bearing and feed the AP budget / stats exactly like past lives —
-  // fold them into pastLives by count (previously parsed but dropped).
-  for (const name of charSpecial.feats) {
-    out.pastLives[name] = (out.pastLives[name] ?? 0) + 1
-    out.pastLifeTypes[name] = 'Special'
+  for (const special of [parseFeatsListObject(getRec(character, 'SpecialFeats')), parseFeatsListObject(getRec(life, 'SpecialFeats'))]) {
+    for (const [k, n] of Object.entries(special.pastLives)) {
+      out.pastLives[k] = (out.pastLives[k] ?? 0) + n
+    }
+    for (const [k, t] of Object.entries(special.pastLifeTypes)) {
+      out.pastLifeTypes[k] = t
+    }
+    // Non-past-life Special feats trained N times (Inherent Racial/Universal
+    // Action Point, Inherent Fate Point, Inherent Melee Power, …) are
+    // effect-bearing and feed the AP budget / stats exactly like past lives —
+    // fold them into pastLives by count (previously parsed but dropped).
+    for (const name of special.feats) {
+      out.pastLives[name] = (out.pastLives[name] ?? 0) + 1
+      out.pastLifeTypes[name] = 'Special'
+    }
   }
 
   // ── Spells (per class / spell-level) — F3 ─────────────────────────────────

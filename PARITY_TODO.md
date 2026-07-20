@@ -132,6 +132,7 @@ the PR number, so this file doubles as a changelog.
 | 111 | **AutomaticAcquisition feats surfaced in the Automatic Feats display** — V2 `Build::AutomaticFeats` (`Build.cpp:2510-2552`) grants Sunder/Trip/Defensive Fighting (BAB 1), Attack/Sneak/Heroic Durability (level 1), and per-class "Improved Heroic Durability (\<Class\> 5/10/15)" (`Class::ImprovedHeroicDurabilityFeats`, `Class.cpp:383-404`) purely through each feat's own `<AutomaticAcquisition>` requirement block — no class `AutomaticFeats` list or race `GrantedFeat` entry names them. `buildStats.ts` already applies their stat effects (Done #51), and `featEligibility.ts` already counts them toward prerequisites (Done #109 item 3), but the display side — `buildAutomaticFeatGroups` (shared by the Automatic Feats panel and the forum export's AutomaticFeats section) — never enumerated them, so V2's own forum export (`AddAutomaticFeats`, `ForumExportDlg.cpp:691-729`, which lists every `LevelTraining::AutomaticFeats()` entry) showed feats V3 silently hid. New `automaticAcquisitionFeatGroup()` in `lib/automaticFeats.ts` evaluates every `Acquire="Automatic"` feat's `AutomaticAcquisition` requirements against the current build (kept separate from `buildAutomaticFeatGroups` so `featEligibility.ts`'s own separate AutomaticAcquisition counting loop isn't double-counted) and synthesizes the per-milestone Improved Heroic Durability names; wired into `AutomaticFeats.tsx` and `sections.ts`'s `automaticFeats` section (new optional `SectionContext.allFeats`, threaded through `ForumExportPanel.tsx`) as an "Automatically Acquired" group. Completionist/Racial Completionist stay excluded (their real V2 gating is the past-life-count logic already in `buildAutomaticFeatGroups`, not the XML placeholder). Also verified the export's Dodge line already renders V2's `dodge/cap` form ("18/25") as of X7 (#95) — that half of the "Display gaps" note was stale. 5 regression tests in `parityAutoAcquisitionDisplay.test.ts`. | this PR |
 | 112 | **v2calc oracle complete + automatic referee (the loop-ender)** — Finished the `v2calc/` port: it now loads ALL V2 data (items ~8.5k, enhancement trees, spells, augments, set bonuses, filigrees, bonus types, stances, weapon groups, item buffs) through DDOBuilder's own XmlLib readers and runs V2's real `BreakdownItem` observer graph headless, so gear/enhancement/spell/set/filigree effects apply through V2's actual C++ (YingsMonk HP 1306→4125; exampledps matches the user's forum export exactly on HP/MeleePower/RangedPower/dodge/abilities). `MultiFileObjectLoader` is Windows-only → portable per-file reader in `shim/MultiFileLoaderLinux.cpp`. New `webapp/scripts/oracleDiff.ts` runs the oracle vs V3 across every build and prints per-stat mismatches — **manual gap-reporting is no longer needed**. First fix from it: **base 25% Dodge Cap** (Feats.xml Attack "Base Dodge Cap" `DodgeCapBonus 25`, V2 `BreakdownItemDodge` "25% plus effects") was missing → every no-armor build's dodge clamped ~23 low (YingsMonk 21→46 vs oracle 44). | this PR |
 | 113 | **V2 stack-merge for `AType=Stacks` effects (monk-forms ability root cause)** — V2 `BreakdownItem::AddEffect` merges byte-identical `AType=Stacks` effects (`Effect::operator==`) into ONE whose value is `Amount[stackCount-1]`, never the sum (`Effect.cpp` `Amount_Stacks`). V3 summed them: the monk elemental-form STR penalty ("Ocean Stance: Strength Penalty" from Ocean Stance + Adept/Master/Grandmaster of Forms, all `Amount="-2 -2 -2 -2"`) applied 4× = −8 instead of −2; the tier positive bonuses (`Amount="2 2 3 4"` for WIS/dodge/saves/Ki) read `Amount[0]` instead of the tier count. Root cause of the ability gaps that cascade into HP/saves across the monk-heavy corpus. Effects now carry a `stackGroup` identity (DisplayName+Type+Bonus+Item+Amount; non-empty DisplayName + multi-element table required so anonymous gear/set flat bonuses still sum) + `stackAmounts`; a merge pass collapses each group to `Amount[count-1]` **before Phase 2 reads ability totals** (so merged abilities feed saves/HP/skills same-pass). Unifies the pass-107 duplicate-`<Type>` mechanism (Primal Scream) through the same path. Oracle: YingsMonk STR 20→26 exact, Maetrim STR 46→52 (−8→−2). No exampledps regression (4/56). | this PR |
+| 114 | **Completionist / Racial Completionist +2 never applied** — three compounding bugs found by re-diffing the golden Maetrim build against `v2calc`'s per-effect `IsActive()` dump: **(1)** `v2Import.ts` only read past lives from `<Character><SpecialFeats>`; V2's `Life::AllSpecialFeats()` (`Life.cpp:709-713`) sums the Life's own `<SpecialFeats>` too, and real saves record some past lives (e.g. "Past Life: Duergar" ×3) at Life scope only — now merged. **(2)** `buildAutomaticFeatGroups`'s class Completionist check required every heroic *class name* (including archetypes as independent entries, e.g. "Stormsinger") at ≥3 past lives, which was unsatisfiable — V2's real dynamic requirement (`DDOBuilder.cpp:494-550`) groups archetypes under their `BaseClass` via a `RequiresOneOf` (base class's own past life OR any archetype's, `"<Base> - <Archetype>"`) at ≥1, and excludes the `Unknown` placeholder class. **(3)** Racial Completionist's race list never excluded `NoPastLife` races (Wood Elf) — `dataLoaders.ts`'s `loadRaces` never normalised the `<NoPastLife/>` presence-only XML flag (same bug class already fixed for class `<NotHeroic/>`), so `!r.NoPastLife` was always true and Wood Elf stayed a permanently-unsatisfiable requirement. Together these zeroed the +2 AbilityBonus/+2 SkillBonus for every fully-past-lifed build. Also fixes the Maetrim AP budget (was under-counting by 1 — Duergar's Tier-3 past life grants +1 Racial AP, `Races/Duergar.race.xml`; `parityPassEnhancementTrees.test.ts` updated 103→104). Surfaced a new, separate, previously-masked bug — logged below as a fresh ❌ (Guild Buff wrongly granting `AbilityBonus`). 8 regression tests in `parityCompletionist.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -293,19 +294,60 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch):
 
-- ❌ **hitpoints (51)** — largely cascades from the ability gaps + a few
+- ❌ **hitpoints (50)** — largely cascades from the ability gaps + a few
   direct percent/flat HP sources.
-- ❌ **saves: Reflex 40 / Fort 37 / Will 34** — partly ability-mod cascade.
+- ❌ **saves: Reflex 37 / Fort 30 / Will 28** — partly ability-mod cascade.
 - ❌ **dodge (35)** — base-25 cap fixed (#111); residual is the armor-MDB
   secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
   second min() after the dodge cap on non-cloth monks.
-- ❌ **abilities: STR 27 / CON 24 / WIS 24 / DEX 23 / INT 22 / CHA 22** —
-  ROOT CAUSE for much of HP+saves. Confirmed on YingsMonk: the monk
-  elemental-form STR penalty applies 4× (Ocean Stance + Adept/Master/
-  Grandmaster of Forms each −2) where V2 nets −2 (STR 20 vs oracle 26).
-  Trace the monk form/stance tier stacking — only the active stance's
-  effect should apply, not every tier feat's copy.
-- ❌ **prr 29 / mrr 27 / mrrCap 5 / fortification 29 / rangedPower 15 /
+- ✅ **abilities: Completionist / Racial Completionist +2 never applied
+  (114)** — the monk elemental-form stance-stacking sub-cause noted here was
+  already fixed by #113 (`Amount_Stacks` merge); re-diffing the golden
+  Maetrim build against the real `v2calc` oracle (per-effect `IsActive()`
+  dump) surfaced the actual remaining root cause: `v2Import.ts` only read
+  past lives from `<Character><SpecialFeats>`, dropping any past life V2
+  records at `<Life><SpecialFeats>` scope instead (V2 sums both —
+  `Life::AllSpecialFeats()`, `Life.cpp:709-713`); real saves can and do split
+  past lives across both nodes (Maetrim's "Past Life: Duergar" ×3 and "Past
+  Life: Rogue - Arcane Trickster" ×3 are Life-scoped only). That alone made
+  `pastLives['Duergar']` come back `undefined`, which blocked Racial
+  Completionist's "every race at 3" check. Two more independent bugs in
+  `buildAutomaticFeatGroups`'s Completionist gating (`DDOBuilder.cpp:494-577`,
+  the *dynamic* per-feat Requirements V2 rebuilds at data-load time, not the
+  `Feats.xml` placeholder): (a) class Completionist must group archetypes
+  under their base class via a `RequiresOneOf` (base class's own past life OR
+  any archetype's) at threshold ≥1 — not ≥3, and not each archetype counted
+  as an independent "class" (which was unsatisfiable, since archetype past
+  lives are recorded as `"<Base> - <Archetype>"`, never a bare archetype
+  name); (b) Racial Completionist must skip `NoPastLife` races (Wood Elf) —
+  `dataLoaders.ts`'s `loadRaces` never normalised the `<NoPastLife/>`
+  presence-only XML flag (same class of bug already fixed for `<NotHeroic/>`
+  on classes), so `!r.NoPastLife` was always true and Wood Elf stayed a
+  permanently-unsatisfiable requirement. Together these zeroed out
+  Completionist/Racial Completionist's +2 AbilityBonus/+2 SkillBonus for
+  every fully-past-lifed build in the corpus. Oracle: Maetrim/YingsMonk STR
+  now V2-exact once the newly-surfaced Guild Buff bug below is also fixed
+  (see next item — it was previously *masking* this one via error
+  cancellation on several builds, which is why fixing this alone moved net
+  oracle mismatch counts up, not down, on those specific builds).
+- ❌ **NEW — Guild Buff effects wrongly apply an `AbilityBonus`** (surfaced by
+  fixing the item above): V3's `accumulateGuildBuffs`
+  (`webapp/src/lib/buildStats.ts:824+`) adds a +2 line to *every* ability for
+  builds with a guild buff selected (e.g. "Floating Rock Garden", "Old
+  Sully's Grog Cellar", "Paradoxical Puzzle Box"), but the real `v2calc`
+  oracle's per-effect `BreakdownItemAbility` dump shows **zero** guild-buff
+  entries for any ability on Maetrim or YingsMonk (both have
+  `ApplyGuildBuffs=1` and a real `GuildLevel`) — V2 never counts these guild
+  buffs toward AbilityBonus at all. Trace whether V3's `GuildBuffs.xml`
+  parsing mis-tags a different effect type as `AbilityBonus`, or applies the
+  buff past its `Level` gate. Previously invisible on ~15 corpus builds
+  because it happened to *cancel out* the missing Completionist +2 (this
+  item); now that Completionist is fixed, it is a clean, isolated +2-per-
+  ability overshoot — should be a fast, well-defined follow-up.
+- ❌ **dodge (25)** — base-25 cap fixed (#111); residual is the armor-MDB
+  secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
+  second min() after the dodge cap on non-cloth monks.
+- ❌ **prr 22 / mrr 19 / mrrCap 4 / fortification 28 / rangedPower 15 /
   meleePower 10.** meleePower/rangedPower now within ~1-17 (Maetrim 324 vs
   307) — likely a per-reaper or form source.
 

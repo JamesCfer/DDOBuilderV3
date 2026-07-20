@@ -63,7 +63,15 @@ export function loadRaces(dataDir: string): Race[] {
       // <IsIconic> XML tag — a race is iconic iff it declares an <IconicClass>.
       // Derive it here so consumers (past-life gating, race pickers, exporter)
       // can test r.IsIconic the way V2 does.
-      return races.map(r => ({ ...r, IsIconic: r.IconicClass != null && r.IconicClass !== '' }))
+      // <NoPastLife /> is a presence-only flag (Race.h DL_FLAG), same as
+      // <NotHeroic /> on classes below — the XML parser delivers it as ""
+      // which is falsy, so `!r.NoPastLife` never actually excluded Wood Elf
+      // (the only race that carries it) from Racial Completionist gating.
+      return races.map(r => ({
+        ...r,
+        IsIconic: r.IconicClass != null && r.IconicClass !== '',
+        NoPastLife: 'NoPastLife' in (r as object) ? true : undefined,
+      }))
     } catch { return [] }
   })
 }
