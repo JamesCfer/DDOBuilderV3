@@ -129,12 +129,59 @@ maybeDescribe('v2Import — Life-level SpecialFeats past lives (Maetrim fixture)
     // Each ability's resolved bonus list must carry both +2 sources (V2
     // BreakdownItemAbility.cpp real breakdown: both are trained + active for
     // this fully-past-lifed build). Checked as line items rather than the
-    // total, since the total also carries an unrelated, separate, pre-existing
-    // gap (Guild Buff ability bonuses) tracked elsewhere in PARITY_TODO.md.
+    // total, since the total also carries the fixture's Guild Buff bonuses
+    // (see the dedicated test below).
     for (const ab of ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']) {
       const bonuses = stats.resolve(`ability.${ab}`).bonuses
       expect(bonuses.some(b => b.source === 'Automatic: Completionist' && b.value === 2)).toBe(true)
       expect(bonuses.some(b => b.source === 'Automatic: Racial Completionist' && b.value === 2)).toBe(true)
+    }
+  })
+
+  it('applies all three level-gated Guild Buff AbilityBonus effects (GuildLevel=200 unlocks all of them) — V2-exact, not an overshoot', () => {
+    // PARITY_TODO.md previously logged this as a suspected V3 bug ("Guild Buff
+    // effects wrongly apply an AbilityBonus") based on the v2calc oracle
+    // showing zero guild-buff entries for Maetrim/YingsMonk. That was a false
+    // lead: the oracle's data loader (v2calc/shim/GlobalDataLinux.cpp) never
+    // called GuildBuffsFile to populate g_guildBuffs, so Build::ApplyGuildBuffs
+    // iterated an empty list and every guild buff effect was silently absent
+    // from the oracle's output — not because real V2 skips them. Once the
+    // oracle's loader was fixed to match CDDOBuilderApp::LoadGuildBuffs
+    // (DDOBuilder.cpp:1229-1238), it reports the same +2-per-ability total V3
+    // already computed (confirmed via `oracleDiff.ts`: ability.* mismatches on
+    // this fixture dropped from -2 on every ability to exact matches). Guild
+    // Level 200 clears the Level 15/16/17 gates on all three ability-granting
+    // guild buffs at once, so every ability gets one +2 "Guild Buff: ..." line
+    // (GuildBuffs.xml has no mechanism to model "only one building built").
+    const cat = loadAllCatalogues(DATA_DIR)
+    initBonusTypes(cat.allBonusTypes)
+    const gearItems: Record<string, Item> = {}
+    for (const [slot, name] of Object.entries(build.gear ?? {})) {
+      if (!name) continue
+      const item = cat.allItems.find(i => i.Name === name)
+      if (item) gearItems[slot] = item
+    }
+    const stats = computeBuildStats({
+      allClasses: cat.allClasses, allRaces: cat.allRaces, allFeats: cat.allFeats,
+      allTrees: cat.allTrees, allSelfBuffs: cat.allSelfBuffs, allAugments: cat.allAugments,
+      allSetBonuses: cat.allSetBonuses, allFiligreeBonuses: cat.allFiligreeBonuses,
+      allFiligrees: cat.allFiligrees, allWeaponGroups: cat.allWeaponGroups,
+      allSpells: cat.allSpells, allGuildBuffs: cat.allGuildBuffs,
+      allItemBuffs: cat.allItemBuffs, gearItems,
+    }, build)
+    expect(build.guildLevel).toBe(200)
+    expect(build.applyGuildBuffs).toBe(true)
+    const expectedSource: Record<string, string> = {
+      Strength: 'Guild Buff: Floating Rock Garden',
+      Wisdom: 'Guild Buff: Floating Rock Garden',
+      Dexterity: 'Guild Buff: Paradoxical Puzzle Box',
+      Intelligence: 'Guild Buff: Paradoxical Puzzle Box',
+      Constitution: "Guild Buff: Old Sully's Grog Cellar",
+      Charisma: "Guild Buff: Old Sully's Grog Cellar",
+    }
+    for (const [ab, source] of Object.entries(expectedSource)) {
+      const bonuses = stats.resolve(`ability.${ab}`).bonuses
+      expect(bonuses.some(b => b.source === source && b.value === 2)).toBe(true)
     }
   })
 })
