@@ -167,7 +167,8 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/StancesFile.cpp \
     $(ROOT)/DDOBuilder/WeaponGroupFile.cpp \
     $(ROOT)/DDOBuilder/BuffFile.cpp \
-    $(ROOT)/DDOBuilder/OptionalBuffFile.cpp
+    $(ROOT)/DDOBuilder/OptionalBuffFile.cpp \
+    $(ROOT)/DDOBuilder/GuildBuffsFile.cpp
 
 SHIM_SRC := \
     $(V2CALC_DIR)/shim/SaxReaderLinux.cpp \

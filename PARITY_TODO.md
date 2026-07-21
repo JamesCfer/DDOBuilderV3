@@ -133,6 +133,7 @@ the PR number, so this file doubles as a changelog.
 | 112 | **v2calc oracle complete + automatic referee (the loop-ender)** — Finished the `v2calc/` port: it now loads ALL V2 data (items ~8.5k, enhancement trees, spells, augments, set bonuses, filigrees, bonus types, stances, weapon groups, item buffs) through DDOBuilder's own XmlLib readers and runs V2's real `BreakdownItem` observer graph headless, so gear/enhancement/spell/set/filigree effects apply through V2's actual C++ (YingsMonk HP 1306→4125; exampledps matches the user's forum export exactly on HP/MeleePower/RangedPower/dodge/abilities). `MultiFileObjectLoader` is Windows-only → portable per-file reader in `shim/MultiFileLoaderLinux.cpp`. New `webapp/scripts/oracleDiff.ts` runs the oracle vs V3 across every build and prints per-stat mismatches — **manual gap-reporting is no longer needed**. First fix from it: **base 25% Dodge Cap** (Feats.xml Attack "Base Dodge Cap" `DodgeCapBonus 25`, V2 `BreakdownItemDodge` "25% plus effects") was missing → every no-armor build's dodge clamped ~23 low (YingsMonk 21→46 vs oracle 44). | this PR |
 | 113 | **V2 stack-merge for `AType=Stacks` effects (monk-forms ability root cause)** — V2 `BreakdownItem::AddEffect` merges byte-identical `AType=Stacks` effects (`Effect::operator==`) into ONE whose value is `Amount[stackCount-1]`, never the sum (`Effect.cpp` `Amount_Stacks`). V3 summed them: the monk elemental-form STR penalty ("Ocean Stance: Strength Penalty" from Ocean Stance + Adept/Master/Grandmaster of Forms, all `Amount="-2 -2 -2 -2"`) applied 4× = −8 instead of −2; the tier positive bonuses (`Amount="2 2 3 4"` for WIS/dodge/saves/Ki) read `Amount[0]` instead of the tier count. Root cause of the ability gaps that cascade into HP/saves across the monk-heavy corpus. Effects now carry a `stackGroup` identity (DisplayName+Type+Bonus+Item+Amount; non-empty DisplayName + multi-element table required so anonymous gear/set flat bonuses still sum) + `stackAmounts`; a merge pass collapses each group to `Amount[count-1]` **before Phase 2 reads ability totals** (so merged abilities feed saves/HP/skills same-pass). Unifies the pass-107 duplicate-`<Type>` mechanism (Primal Scream) through the same path. Oracle: YingsMonk STR 20→26 exact, Maetrim STR 46→52 (−8→−2). No exampledps regression (4/56). | this PR |
 | 114 | **Completionist / Racial Completionist +2 never applied** — three compounding bugs found by re-diffing the golden Maetrim build against `v2calc`'s per-effect `IsActive()` dump: **(1)** `v2Import.ts` only read past lives from `<Character><SpecialFeats>`; V2's `Life::AllSpecialFeats()` (`Life.cpp:709-713`) sums the Life's own `<SpecialFeats>` too, and real saves record some past lives (e.g. "Past Life: Duergar" ×3) at Life scope only — now merged. **(2)** `buildAutomaticFeatGroups`'s class Completionist check required every heroic *class name* (including archetypes as independent entries, e.g. "Stormsinger") at ≥3 past lives, which was unsatisfiable — V2's real dynamic requirement (`DDOBuilder.cpp:494-550`) groups archetypes under their `BaseClass` via a `RequiresOneOf` (base class's own past life OR any archetype's, `"<Base> - <Archetype>"`) at ≥1, and excludes the `Unknown` placeholder class. **(3)** Racial Completionist's race list never excluded `NoPastLife` races (Wood Elf) — `dataLoaders.ts`'s `loadRaces` never normalised the `<NoPastLife/>` presence-only XML flag (same bug class already fixed for class `<NotHeroic/>`), so `!r.NoPastLife` was always true and Wood Elf stayed a permanently-unsatisfiable requirement. Together these zeroed the +2 AbilityBonus/+2 SkillBonus for every fully-past-lifed build. Also fixes the Maetrim AP budget (was under-counting by 1 — Duergar's Tier-3 past life grants +1 Racial AP, `Races/Duergar.race.xml`; `parityPassEnhancementTrees.test.ts` updated 103→104). Surfaced a new, separate, previously-masked bug — logged below as a fresh ❌ (Guild Buff wrongly granting `AbilityBonus`). 8 regression tests in `parityCompletionist.test.ts`. | this PR |
+| 115 | **`v2calc` oracle gap: `GuildBuffs.xml` never loaded — retracts the "Guild Buff wrongly applies `AbilityBonus`" lead from #114** — `v2calc/shim/GlobalDataLinux.cpp`'s `V2CalcLoadGameData` never called `GuildBuffsFile`, so `g_guildBuffs` stayed permanently empty and `Build::ApplyGuildBuffs` (real V2 code, correctly invoked via `BuildNowActive`) iterated zero buffs — every guild-buff effect was silently absent from the oracle's JSON, which is why the oracle appeared to show "V2 never applies Guild Buff AbilityBonus" for Maetrim/YingsMonk (GuildLevel 200, ApplyGuildBuffs 1). Confirmed by instrumenting `Build::ApplyGuildBuffs`/`NotifyItemEffect` with temporary probes (reverted): `totalGuildBuffs=0` at runtime. Fixed by adding `GuildBuffsFile` (mirrors `CDDOBuilderApp::LoadGuildBuffs`, `DDOBuilder.cpp:1229-1238`) to the loader and the Makefile's source list. V3's `accumulateGuildBuffs` (`buildStats.ts:824+`) was already correct — GuildLevel=200 legitimately unlocks all three ability-granting guild buildings (Floating Rock Garden, Paradoxical Puzzle Box, Old Sully's Grog Cellar) simultaneously, since V2 has no "only one building selected" mechanic. `oracleDiff.ts` re-run: `ability.STR/CON/DEX/INT/WIS/CHA` mismatches across the 39-build corpus dropped from 22-24 builds each to 0-4. New regression test in `parityCompletionist.test.ts` pins the three per-ability Guild Buff bonus lines directly so this can't silently regress. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -326,24 +327,33 @@ The v2calc oracle is now the source of truth. Ranked by builds affected
   permanently-unsatisfiable requirement. Together these zeroed out
   Completionist/Racial Completionist's +2 AbilityBonus/+2 SkillBonus for
   every fully-past-lifed build in the corpus. Oracle: Maetrim/YingsMonk STR
-  now V2-exact once the newly-surfaced Guild Buff bug below is also fixed
-  (see next item — it was previously *masking* this one via error
-  cancellation on several builds, which is why fixing this alone moved net
-  oracle mismatch counts up, not down, on those specific builds).
-- ❌ **NEW — Guild Buff effects wrongly apply an `AbilityBonus`** (surfaced by
-  fixing the item above): V3's `accumulateGuildBuffs`
-  (`webapp/src/lib/buildStats.ts:824+`) adds a +2 line to *every* ability for
-  builds with a guild buff selected (e.g. "Floating Rock Garden", "Old
-  Sully's Grog Cellar", "Paradoxical Puzzle Box"), but the real `v2calc`
-  oracle's per-effect `BreakdownItemAbility` dump shows **zero** guild-buff
-  entries for any ability on Maetrim or YingsMonk (both have
-  `ApplyGuildBuffs=1` and a real `GuildLevel`) — V2 never counts these guild
-  buffs toward AbilityBonus at all. Trace whether V3's `GuildBuffs.xml`
-  parsing mis-tags a different effect type as `AbilityBonus`, or applies the
-  buff past its `Level` gate. Previously invisible on ~15 corpus builds
-  because it happened to *cancel out* the missing Completionist +2 (this
-  item); now that Completionist is fixed, it is a clean, isolated +2-per-
-  ability overshoot — should be a fast, well-defined follow-up.
+  now V2-exact once the oracle's own Guild Buff data-loading gap was also
+  fixed (see next item — that oracle gap was previously *masking* this one
+  via error cancellation on several builds, which is why fixing this alone
+  moved net oracle mismatch counts up, not down, on those specific builds).
+- ✅ **RETRACTED — "Guild Buff effects wrongly apply an `AbilityBonus`"
+  (115)**: this was a false lead, not a V3 bug. The previous entry concluded
+  V3's `accumulateGuildBuffs` (`webapp/src/lib/buildStats.ts:824+`) over-
+  applies a +2 to every ability because the `v2calc` oracle's per-effect dump
+  showed **zero** guild-buff entries for Maetrim/YingsMonk. Root cause traced
+  to the *oracle*, not V3: `v2calc/shim/GlobalDataLinux.cpp`'s
+  `V2CalcLoadGameData` never called `GuildBuffsFile` to populate
+  `g_guildBuffs` (it was left as a deliberately-empty stub — see the old
+  comment "Not populated by v2calc... kept as empty backing stores"), so
+  `Build::ApplyGuildBuffs` iterated an empty list and every real V2 guild-buff
+  effect was silently absent from the oracle's JSON — the oracle was wrong,
+  not V2 itself. Fixed `v2calc` to load `GuildBuffs.xml` via `GuildBuffsFile`
+  (mirrors `CDDOBuilderApp::LoadGuildBuffs`, `DDOBuilder.cpp:1229-1238`) and
+  added it to the Makefile's source list. Re-running `oracleDiff.ts` after the
+  fix: `ability.STR/CON/DEX/INT/WIS/CHA` mismatches across the corpus dropped
+  from 22-24 builds each to 0-4 (residual unrelated to guild buffs). Maetrim's
+  GuildLevel=200 legitimately unlocks all three ability-granting guild
+  buildings (Floating Rock Garden Str/Wis L15, Paradoxical Puzzle Box Dex/Int
+  L16, Old Sully's Grog Cellar Con/Cha L17) simultaneously — V2 has no
+  "only one building selected" mechanic, so +2 to every ability from three
+  independent Guild-bonus-type sources is the correct, V2-exact total. New
+  regression test in `parityCompletionist.test.ts` asserts the three
+  per-ability Guild Buff bonus lines directly.
 - ❌ **dodge (25)** — base-25 cap fixed (#111); residual is the armor-MDB
   secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
   second min() after the dodge cap on non-cloth monks.

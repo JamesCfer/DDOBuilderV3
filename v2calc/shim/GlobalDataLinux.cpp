@@ -60,6 +60,7 @@
 #include "WeaponGroupFile.h"
 #include "BuffFile.h"
 #include "OptionalBuffFile.h"
+#include "GuildBuffsFile.h"
 
 #include <sstream>
 #include <vector>
@@ -104,10 +105,10 @@ namespace
     std::list<Spell>                g_itemClickies;
     std::list<OptionalBuff>         g_optionalBuffs;
     std::list<Item>                 g_items;
+    std::list<GuildBuff>            g_guildBuffs;
     // Not populated by v2calc (no gear/enhancement/spell/set/augment/filigree
     // effect depends on them for the builds we validate); kept as empty backing
     // stores so the Find*/accessor calls that reference them still resolve.
-    std::list<GuildBuff>            g_guildBuffs;
     std::list<Quest>                g_quests;
     std::list<Challenge>            g_challenges;
 
@@ -390,6 +391,12 @@ void V2CalcLoadGameData(const std::string& dataFilesDir)
         OptionalBuffFile file(dataFilesDir + "/SelfAndPartyBuffs.xml");
         file.Read();
         g_optionalBuffs = file.OptionalBuffs();
+    }
+    // Guild buffs (CDDOBuilderApp::LoadGuildBuffs parity)
+    {
+        GuildBuffsFile file(dataFilesDir + "/GuildBuffs.xml");
+        file.Read();
+        g_guildBuffs = file.GuildBuffs();
     }
     // Items last (largest collection: thousands of *.item files)
     V2CalcLoadItemsDir(dataFilesDir + "/Items", g_items);
