@@ -406,10 +406,14 @@ function accumulateRace(map: StatMap, race: Race): void {
 }
 
 /**
- * V2 parity: Class HP is `c.HitPoints() * classLevels` for heroic classes; Epic
- * and Legendary classes contribute half their hit die per level
- * (BreakdownItemHitpoints.cpp:74-83). The CON-mod component is applied
- * separately at total-character-level scope (see accumulateClasses below).
+ * V2 parity: Class HP is `c.HitPoints() * classLevels` for every class,
+ * Epic and Legendary included (BreakdownItemHitpoints.cpp:68-73 —
+ * `classBonus` always uses the full, un-halved amount). The `/2` at
+ * BreakdownItemHitpoints.cpp:74-83 only scales the *separate*
+ * `classHitpoints` accumulator that feeds the Combat Style percentage bonus
+ * (see the `nonEpicHD` computation below, in buildStatMap) — it never halves
+ * the class's own HP effect. The CON-mod component is applied separately at
+ * total-character-level scope (see accumulateClasses below).
  */
 function accumulateClass(
   map: StatMap,
@@ -418,7 +422,6 @@ function accumulateClass(
   intMod: number,
 ): void {
   const label = `${cls.Name} (${levels} lv)`
-  const isEpicTier = cls.Name === 'Epic' || cls.Name === 'Legendary'
 
   add(map, 'bab', { value: classBAB(cls, levels), type: 'Stacking', source: label })
   add(map, 'save.Fort',   { value: saveBase(cls.Fortitude, levels), type: 'Base', source: label })
@@ -426,10 +429,8 @@ function accumulateClass(
   add(map, 'save.Will',   { value: saveBase(cls.Will,      levels), type: 'Base', source: label })
 
   const hd = cls.HitPoints ?? 6
-  const classHp = isEpicTier
-    ? Math.floor(hd * levels / 2)
-    : hd * levels
-  add(map, 'hp', { value: classHp, type: 'Base', source: `${label} (d${hd}${isEpicTier ? '/2' : ''})` })
+  const classHp = hd * levels
+  add(map, 'hp', { value: classHp, type: 'Base', source: `${label} (d${hd})` })
 
   const sp = spellPointsAtLevel(cls.SpellPointsPerLevel, levels)
   if (sp > 0) add(map, 'spellPoints', { value: sp, type: 'Base', source: label })
@@ -1647,9 +1648,14 @@ function buildStatMapOnce(
       }
     }
 
-    // HP: CON mod correction if gear changed CON
-    if (conModFull !== conMod && build.totalLevel > 0) {
-      const delta = (conModFull - conMod) * build.totalLevel
+    // HP: CON mod correction if gear changed CON. V2 BreakdownItemHitpoints.cpp:126-136
+    // scales the whole Constitution bonus by `pBuild->Level()` (heroic + epic +
+    // legendary) — the correction here must use the same total-character-level
+    // scope as the base contribution added in accumulateClasses, not just the
+    // heroic `build.totalLevel`, or epic/legendary builds under-count this delta.
+    const totalCharLevel = (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+    if (conModFull !== conMod && totalCharLevel > 0) {
+      const delta = (conModFull - conMod) * totalCharLevel
       if (delta !== 0) {
         add(map, 'hp', { value: delta, type: 'Ability mod', source: 'Constitution (gear/enhancement adjustment)' })
       }
@@ -2053,9 +2059,15 @@ function buildStatMapOnce(
       const styleCount = Math.max(0, Math.round(resolveBonus(map.get('styleFeats') ?? []).total))
       if (styleCount > 0) {
         // V2 parity: classHitpoints accumulator includes heroic *and* tier
-        // classes, with epic/legendary at half HD per :74-83.
+        // classes, with epic/legendary at half HD per :74-83. `ctxClassLevels`
+        // already carries Epic/Legendary pseudo-class levels (at full HD) for
+        // requirement gating elsewhere, so they must be skipped here — they
+        // are added back explicitly below, at the correct half weight. Without
+        // this exclusion Epic/Legendary HD was counted at 1.5× (once full via
+        // this loop, once halved below).
         let nonEpicHD = 0
         for (const [name, levels] of Object.entries(ctxClassLevels)) {
+          if (name === 'Epic' || name === 'Legendary') continue
           const cls = allClasses.find(c => c.Name === name)
           if (!cls) continue
           const hd = cls.HitPoints ?? 0
@@ -2080,21 +2092,27 @@ function buildStatMapOnce(
       }
     }
 
-    // V2 BreakdownItemHitpoints.cpp:168-194 — reaper-typed HP is summed,
-    // then capped by character level: 50/100/200/400/800 at level
-    // ≤5/≤10/≤15/≤20/≤25 (no cap above). Apply via a corrective bonus.
+    // V2 BreakdownItemHitpoints.cpp:168-194 — HitpointsReaper (APCount-scaled,
+    // accumulated in `hpReaperAP`) is summed, then capped by TOTAL character
+    // level (heroic + epic + legendary, `pBuild->Level() + 1`): 50/100/200/
+    // 400/800 at level ≤5/≤10/≤15/≤20/≤25 (no cap above level 25). Plain
+    // `Hitpoints`-typed effects tagged Bonus="Reaper" (already merged into
+    // `hp` directly, e.g. "Reaper's Defense I/II/IV"'s flat amounts) are
+    // NOT part of this cap — apply the capped APCount total as a corrective
+    // bonus alongside them.
     {
-      const hpBonuses = map.get('hp') ?? []
-      const reaperSum = hpBonuses.filter(b => b.type === 'Reaper').reduce((s, b) => s + b.value, 0)
+      const reaperSum = resolveBonus(map.get('hpReaperAP') ?? []).total
       if (reaperSum > 0) {
-        const cap = reaperHpCap(build.totalLevel)
-        if (reaperSum > cap) {
-          add(map, 'hp', {
-            value: cap - reaperSum,
-            type: 'Stacking',
-            source: `Reaper HP cap (level ${build.totalLevel} max ${cap})`,
-          })
-        }
+        const capLevel = totalCharLevel + 1
+        const cap = reaperHpCap(capLevel)
+        const capped = Math.min(reaperSum, cap)
+        add(map, 'hp', {
+          value: capped,
+          type: 'Reaper',
+          source: isFinite(cap) && reaperSum > cap
+            ? `Reaper Bonus (capped at level ${capLevel} max ${cap})`
+            : 'Reaper Bonus',
+        })
       }
     }
 
