@@ -133,7 +133,8 @@ the PR number, so this file doubles as a changelog.
 | 112 | **v2calc oracle complete + automatic referee (the loop-ender)** — Finished the `v2calc/` port: it now loads ALL V2 data (items ~8.5k, enhancement trees, spells, augments, set bonuses, filigrees, bonus types, stances, weapon groups, item buffs) through DDOBuilder's own XmlLib readers and runs V2's real `BreakdownItem` observer graph headless, so gear/enhancement/spell/set/filigree effects apply through V2's actual C++ (YingsMonk HP 1306→4125; exampledps matches the user's forum export exactly on HP/MeleePower/RangedPower/dodge/abilities). `MultiFileObjectLoader` is Windows-only → portable per-file reader in `shim/MultiFileLoaderLinux.cpp`. New `webapp/scripts/oracleDiff.ts` runs the oracle vs V3 across every build and prints per-stat mismatches — **manual gap-reporting is no longer needed**. First fix from it: **base 25% Dodge Cap** (Feats.xml Attack "Base Dodge Cap" `DodgeCapBonus 25`, V2 `BreakdownItemDodge` "25% plus effects") was missing → every no-armor build's dodge clamped ~23 low (YingsMonk 21→46 vs oracle 44). | this PR |
 | 113 | **V2 stack-merge for `AType=Stacks` effects (monk-forms ability root cause)** — V2 `BreakdownItem::AddEffect` merges byte-identical `AType=Stacks` effects (`Effect::operator==`) into ONE whose value is `Amount[stackCount-1]`, never the sum (`Effect.cpp` `Amount_Stacks`). V3 summed them: the monk elemental-form STR penalty ("Ocean Stance: Strength Penalty" from Ocean Stance + Adept/Master/Grandmaster of Forms, all `Amount="-2 -2 -2 -2"`) applied 4× = −8 instead of −2; the tier positive bonuses (`Amount="2 2 3 4"` for WIS/dodge/saves/Ki) read `Amount[0]` instead of the tier count. Root cause of the ability gaps that cascade into HP/saves across the monk-heavy corpus. Effects now carry a `stackGroup` identity (DisplayName+Type+Bonus+Item+Amount; non-empty DisplayName + multi-element table required so anonymous gear/set flat bonuses still sum) + `stackAmounts`; a merge pass collapses each group to `Amount[count-1]` **before Phase 2 reads ability totals** (so merged abilities feed saves/HP/skills same-pass). Unifies the pass-107 duplicate-`<Type>` mechanism (Primal Scream) through the same path. Oracle: YingsMonk STR 20→26 exact, Maetrim STR 46→52 (−8→−2). No exampledps regression (4/56). | this PR |
 | 114 | **Completionist / Racial Completionist +2 never applied** — three compounding bugs found by re-diffing the golden Maetrim build against `v2calc`'s per-effect `IsActive()` dump: **(1)** `v2Import.ts` only read past lives from `<Character><SpecialFeats>`; V2's `Life::AllSpecialFeats()` (`Life.cpp:709-713`) sums the Life's own `<SpecialFeats>` too, and real saves record some past lives (e.g. "Past Life: Duergar" ×3) at Life scope only — now merged. **(2)** `buildAutomaticFeatGroups`'s class Completionist check required every heroic *class name* (including archetypes as independent entries, e.g. "Stormsinger") at ≥3 past lives, which was unsatisfiable — V2's real dynamic requirement (`DDOBuilder.cpp:494-550`) groups archetypes under their `BaseClass` via a `RequiresOneOf` (base class's own past life OR any archetype's, `"<Base> - <Archetype>"`) at ≥1, and excludes the `Unknown` placeholder class. **(3)** Racial Completionist's race list never excluded `NoPastLife` races (Wood Elf) — `dataLoaders.ts`'s `loadRaces` never normalised the `<NoPastLife/>` presence-only XML flag (same bug class already fixed for class `<NotHeroic/>`), so `!r.NoPastLife` was always true and Wood Elf stayed a permanently-unsatisfiable requirement. Together these zeroed the +2 AbilityBonus/+2 SkillBonus for every fully-past-lifed build. Also fixes the Maetrim AP budget (was under-counting by 1 — Duergar's Tier-3 past life grants +1 Racial AP, `Races/Duergar.race.xml`; `parityPassEnhancementTrees.test.ts` updated 103→104). Surfaced a new, separate, previously-masked bug — logged below as a fresh ❌ (Guild Buff wrongly granting `AbilityBonus`). 8 regression tests in `parityCompletionist.test.ts`. | this PR |
-| 115 | **`v2calc` oracle gap: `GuildBuffs.xml` never loaded — retracts the "Guild Buff wrongly applies `AbilityBonus`" lead from #114** — `v2calc/shim/GlobalDataLinux.cpp`'s `V2CalcLoadGameData` never called `GuildBuffsFile`, so `g_guildBuffs` stayed permanently empty and `Build::ApplyGuildBuffs` (real V2 code, correctly invoked via `BuildNowActive`) iterated zero buffs — every guild-buff effect was silently absent from the oracle's JSON, which is why the oracle appeared to show "V2 never applies Guild Buff AbilityBonus" for Maetrim/YingsMonk (GuildLevel 200, ApplyGuildBuffs 1). Confirmed by instrumenting `Build::ApplyGuildBuffs`/`NotifyItemEffect` with temporary probes (reverted): `totalGuildBuffs=0` at runtime. Fixed by adding `GuildBuffsFile` (mirrors `CDDOBuilderApp::LoadGuildBuffs`, `DDOBuilder.cpp:1229-1238`) to the loader and the Makefile's source list. V3's `accumulateGuildBuffs` (`buildStats.ts:824+`) was already correct — GuildLevel=200 legitimately unlocks all three ability-granting guild buildings (Floating Rock Garden, Paradoxical Puzzle Box, Old Sully's Grog Cellar) simultaneously, since V2 has no "only one building selected" mechanic. `oracleDiff.ts` re-run: `ability.STR/CON/DEX/INT/WIS/CHA` mismatches across the 39-build corpus dropped from 22-24 builds each to 0-4. New regression test in `parityCompletionist.test.ts` pins the three per-ability Guild Buff bonus lines directly so this can't silently regress. | this PR |
+| 115 | **`v2calc` oracle gap: `GuildBuffs.xml` never loaded — retracts the "Guild Buff wrongly applies `AbilityBonus`" lead from #114** — `v2calc/shim/GlobalDataLinux.cpp`'s `V2CalcLoadGameData` never called `GuildBuffsFile`, so `g_guildBuffs` stayed permanently empty and `Build::ApplyGuildBuffs` (real V2 code, correctly invoked via `BuildNowActive`) iterated zero buffs — every guild-buff effect was silently absent from the oracle's JSON, which is why the oracle appeared to show "V2 never applies Guild Buff AbilityBonus" for Maetrim/YingsMonk (GuildLevel 200, ApplyGuildBuffs 1). Confirmed by instrumenting `Build::ApplyGuildBuffs`/`NotifyItemEffect` with temporary probes (reverted): `totalGuildBuffs=0` at runtime. Fixed by adding `GuildBuffsFile` (mirrors `CDDOBuilderApp::LoadGuildBuffs`, `DDOBuilder.cpp:1229-1238`) to the loader and the Makefile's source list. V3's `accumulateGuildBuffs` (`buildStats.ts:824+`) was already correct — GuildLevel=200 legitimately unlocks all three ability-granting guild buildings (Floating Rock Garden, Paradoxical Puzzle Box, Old Sully's Grog Cellar) simultaneously, since V2 has no "only one building selected" mechanic. `oracleDiff.ts` re-run: `ability.STR/CON/DEX/INT/WIS/CHA` mismatches across the 39-build corpus dropped from 22-24 builds each to 0-4. New regression test in `parityCompletionist.test.ts` pins the three per-ability Guild Buff bonus lines directly so this can't silently regress. | #156 |
+| 116 | **Four Epic/Legendary hitpoints bugs — the `hitpoints (50)` oracle bucket's biggest root causes** — found by diffing the `v2calc` oracle's per-effect `AllActiveEffects()` dump (temporary debug hooks, reverted) against V3's `stats.resolve('hp')` for YingsMonk.DDOBuild (oracle 4198) and exampledps.DDOBuild (real V2 export 2797). (1) `accumulateClass` halved Epic/Legendary class HP itself; V2 `BreakdownItemHitpoints.cpp:68-83` only halves the *separate* `classHitpoints` accumulator that feeds the Combat Style % bonus, never the class's own HP effect — now full weight, matching V2. (2) The Combat Style `nonEpicHD` loop then double-counted Epic/Legendary (once full via the per-class loop, once again halved) — now skips them in the loop since they're added back explicitly at half weight. (3) The CON-mod HP delta correction (for gear/enhancement CON invisible to the early quick-resolve pass) scaled by heroic `build.totalLevel` instead of heroic+epic+legendary, unlike the base CON HP formula it corrects. (4) `HitpointsReaper` (APCount, V2's separately level-capped `Breakdown_ReaperHitpoints`) was merged into the same bucket as flat, always-uncapped `Hitpoints`-typed Reaper effects (`effectParser.ts` now routes it to a dedicated `hpReaperAP` key), and the cap threshold used heroic level instead of V2's `pBuild->Level() + 1`. YingsMonk oracle diff: 2851→3935 (was 32% low, now 6% low). `oracleDiff.ts` full-corpus re-run: `hitpoints` mismatches 49→38 builds (52→47 builds with any mismatch, of 53). A separate, still-open percent-HP/missing-effect residue remains (now tracked as G-HP in "Golden-build residue" — overshoots exampledps by +195, was -78 before this fix). 5 regression tests in `parityPassEpicLegendaryHP.test.ts` (synthetic builds, oracle-independent). | #157 |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -249,8 +250,47 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   hp percent row ("30% of 2172"). PRR suspects worth a trace: Sapphire of
   Defense +36 resolution, and V2-active stances (Power Attack/Enhanced
   Bloodrage) the V3 session may not have on.
-- 🟡 **G-HP — HP −52**, cause UNKNOWN (Bulwark ruled out, see above). Needs
-  a row-by-row diff against a V2 per-source HP breakdown export.
+- 🟡 **G-HP — four real bugs fixed (this PR), residue now +195 (was −52/−78) —
+  root-caused via a `v2calc`-oracle per-effect `AllActiveEffects()` dump**
+  (temporary debug hooks added to `DDOBuilder/BreakdownItem.h`/
+  `v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix).
+  (1) **Epic/Legendary class HP was wrongly halved**
+  (`accumulateClass`/`buildStats.ts`): V2 `BreakdownItemHitpoints.cpp:68-83`
+  only halves Epic/Legendary HD in the *separate* `classHitpoints`
+  accumulator that feeds the Combat Style % bonus — the class's own HP
+  effect (`AddOtherEffect("<Class> N Levels", ...)`) is ALWAYS the full,
+  un-halved amount. V3 halved the HP effect itself (YingsMonk: Epic 10
+  levels 50→100, Legendary 4 levels 20→40). (2) **Combat Style HD
+  double-counted Epic/Legendary**: the `nonEpicHD` loop iterated
+  `ctxClassLevels` (which already carries Epic/Legendary at full HD)
+  *and* separately re-added them at half HD — 1.5× instead of 0.5×
+  weight (exampledps: 376 vs V2's 236). Fixed by skipping Epic/Legendary
+  in the loop. (3) **CON-mod HP delta mis-scoped**: the correction for
+  gear/enhancement CON bonuses invisible to the early "quick resolve"
+  pass scaled by heroic `build.totalLevel` instead of heroic+epic+
+  legendary, unlike the *base* CON HP formula it corrects (which already
+  used the full total) — under-counted CON HP on any epic/legendary
+  build where CON changes after the quick pass. (4) **`HitpointsReaper`
+  (APCount, V2's separate level-capped `Breakdown_ReaperHitpoints`) was
+  merged into the same `hp`-Reaper bucket as flat, always-uncapped
+  `Hitpoints`-typed Reaper effects** (V2 "Reaper's Defense I/II/IV"), so
+  V3's cap over-applied to both, AND the cap threshold used heroic level
+  instead of V2's `pBuild->Level() + 1` (total character level). Now
+  routed to a dedicated `hpReaperAP` key, capped separately at the
+  correct level. YingsMonk oracle HP 4198: V3 went 2851→4077 (was 32%
+  low, now 3% low). exampledps (real V2 export, HP 2797): V3 went
+  from −78 under to +195 over — closing these four bugs overshot on
+  this build, meaning the true remaining residue is a
+  *different*, still-undiagnosed source (likely a percent-HP total or a
+  missing effect — V2's `AllActiveEffects()` dump for this build lists
+  raw entries summing to 2346, i.e. V2 itself applies ~451 of
+  additional percent-scaled HP that isn't enumerated as a separate
+  effect line; V3's equivalent percent line came to 690, a genuine
+  mismatch worth its own trace. Also spotted but NOT yet fixed:
+  V2's dump has "Warchanter: Howl of the North" (Competence +20) and
+  "Legendary Bulwark" (Legendary +10) that V3 never applies at all).
+  5 new regression tests in `parityPassEpicLegendaryHP.test.ts` (synthetic
+  builds, oracle-independent) cover bugs 1-4 directly.
 - ❌ **2026-07-19 user cc1-gearset export diff** (fresh V2 vs V3 forum
   exports, different save than the repo fixture — V2's file has 4 gear
   sets, repo fixture only 2, so not directly reproducible here): Will +11
@@ -295,8 +335,11 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch):
 
-- ❌ **hitpoints (50)** — largely cascades from the ability gaps + a few
-  direct percent/flat HP sources.
+- ❌ **hitpoints (49→38, #116)** — four root causes fixed (epic/legendary HP
+  halving, Combat Style double-count, CON-delta scope, Reaper AP-cap scope/
+  separation — see Done table #116); residual is the still-open percent-HP/
+  missing-effect gap tracked as G-HP in "Golden-build residue" above, plus
+  whatever remains of the ability-mod cascade.
 - ❌ **saves: Reflex 37 / Fort 30 / Will 28** — partly ability-mod cascade.
 - ❌ **dodge (35)** — base-25 cap fixed (#111); residual is the armor-MDB
   secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a

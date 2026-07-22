@@ -1082,8 +1082,15 @@ export function parseEffect(
     // -----------------------------------------------------------------------
     // Hitpoint variants
     // -----------------------------------------------------------------------
+    // V2 BreakdownItemHitpoints.cpp:168-194: `HitpointsReaper` (typically
+    // AType=APCount, scaling with AP spent in a reaper tree) feeds a SEPARATE
+    // breakdown (Breakdown_ReaperHitpoints) that gets level-capped before it
+    // is folded into HP — unlike plain `Hitpoints`-typed effects tagged
+    // Bonus="Reaper" (e.g. "Reaper's Defense I/II/IV"'s flat +10/+20/+100),
+    // which apply directly and uncapped. Keep them in separate stat keys so
+    // the cap in buildStatMap only ever touches the APCount-scaled ones.
     case 'HitpointsReaper':
-      return [make('hp', 'Reaper')]
+      return [make('hpReaperAP', 'Reaper')]
 
     // V2 BreakdownItemHitpoints.cpp:139-152 — style feats are a *count*; HP
     // bonus is then derived as 0.25 × min(4, count) × non-epic class HD.
@@ -2026,8 +2033,10 @@ export function parseItemBuff(
     // -----------------------------------------------------------------------
     // HP variants
     // -----------------------------------------------------------------------
+    // See the parseEffect note above — HitpointsReaper feeds a separate,
+    // level-capped accumulator (`hpReaperAP`), not the flat `hp` Reaper bucket.
     case 'HitpointsReaper':
-      return [make('hp', 'Reaper')]
+      return [make('hpReaperAP', 'Reaper')]
 
     // V2 BreakdownItemHitpoints.cpp:139-152 — counter (see parseEffect note)
     case 'HitpointsStyleBonus':

@@ -81,13 +81,20 @@ maybeDescribe('V2 round-trip with real XML catalogues — Yings Monk', () => {
     expect(wis).toBeLessThanOrEqual(120)
   })
 
-  it('HP is in the expected Monk end-game band (500+)', () => {
-    // Band widened after the InternalName choice-key fix: destiny/reaper HP
-    // nodes and percent-HP enhancements now apply, putting an end-game monk
-    // in the high-2000s (V2 shows ~2800 for comparable builds).
+  it('HP is in the expected Monk end-game band (v2calc oracle: 4198)', () => {
+    // Band tightened around the real `v2calc` oracle value for this exact
+    // fixture (4198 — see v2calc/build/v2calc "Output/Example Builds/
+    // YingsMonk.DDOBuild" Output/DataFiles) after fixing three HP bugs:
+    // epic/legendary class HP was wrongly halved (only the *separate*
+    // Combat Style accumulator halves them, not the class HP effect itself
+    // — BreakdownItemHitpoints.cpp:68-83), the CON-mod gear/enhancement
+    // delta correction scaled by heroic totalLevel instead of total
+    // character level, and HitpointsReaper (APCount, level-capped) was
+    // merged into the same bucket as flat Reaper-tagged Hitpoints effects
+    // (uncapped), so the cap over-applied to both.
     const hp = stats.total('hp')
-    expect(hp).toBeGreaterThanOrEqual(500)
-    expect(hp).toBeLessThanOrEqual(3500)
+    expect(hp).toBeGreaterThanOrEqual(3900)
+    expect(hp).toBeLessThanOrEqual(4200)
   })
 
   it('AC is at least 30 (Aasimar Monk with WIS bonus + items)', () => {
