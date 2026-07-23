@@ -213,12 +213,17 @@ describe('item-specific augment options (V2 ItemAugment::GetSelectedAugment pari
 describe('filigree rare-effect gating (V2 Filigree::RareEffects parity)', () => {
   // A filigree whose normal effect is +2 Fire spell power and whose RARE effect
   // adds a further +3. V2 Filigree.cpp:56-80 + Effect_Rare DL_FLAG: the rare
-  // effect applies only when the slot is marked rare.
+  // effect applies only when the slot is marked rare. Real filigree data pairs
+  // a rare bonus targeting the SAME stat as its normal effect with bonus type
+  // "Stacking" (e.g. Celerity.Filigree.xml) precisely because filigree effects
+  // now join the gear "Highest Only" pool (V2 NotifyItemEffect parity) — a
+  // Highest-Only-typed pair on the same stat would collide and only the
+  // larger would count, which is not what these paired filigrees intend.
   const filigree: Filigree = {
     Name: 'Test Filigree',
     Effect: [
-      { Type: 'SpellPower', Bonus: 'Artifact', AType: 'Simple', Amount: 2, Item: 'Fire' },
-      { Type: 'SpellPower', Bonus: 'Artifact', AType: 'Simple', Amount: 3, Item: 'Fire', Rare: true },
+      { Type: 'SpellPower', Bonus: 'Stacking', AType: 'Simple', Amount: 2, Item: 'Fire' },
+      { Type: 'SpellPower', Bonus: 'Stacking', AType: 'Simple', Amount: 3, Item: 'Fire', Rare: true },
     ],
   } as unknown as Filigree
 

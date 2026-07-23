@@ -742,7 +742,9 @@ function accumulateSetBonuses(
       if (count < buff.EquippedCount) continue
       const source = `${bonusName} set (${buff.EquippedCount}pc)`
       for (const eff of toArray(buff.Effect)) {
-        addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx))
+        // V2 Build::ApplySetBonus (Build.cpp:5267-5276) calls NotifyItemEffect,
+        // joining m_itemEffects (the gear "Highest Only" pool).
+        addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
       }
     }
   }
@@ -764,7 +766,9 @@ function accumulateFiligreeSlots(
     const source = `${sourcePrefix}: ${fil.Name}`
     for (const eff of toArray(fil.Effect)) {
       if (eff.Rare && !slot.rare) continue  // rare effects only apply when slot is marked rare
-      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx))
+      // V2 Build::ApplyFiligree (Build.cpp:5225-5251) calls NotifyItemEffect,
+      // joining m_itemEffects (the gear "Highest Only" pool).
+      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
     }
     // The XML loader's isArray list includes 'SetBonus', so catalogue-loaded
     // filigrees carry ['Deadly Rain'] rather than 'Deadly Rain'. Normalise so
@@ -795,7 +799,9 @@ function accumulateFiligrees(
       if (count < buff.EquippedCount) continue
       const source = `${bonusName} filigree set (${buff.EquippedCount}pc)`
       for (const eff of toArray(buff.Effect)) {
-        addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx))
+        // V2 Build::ApplyFiligree's ApplySetBonus call (Build.cpp:5262) also
+        // routes through NotifyItemEffect — same gear pool as above.
+        addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
       }
     }
   }
@@ -816,7 +822,9 @@ function accumulateSelfBuffs(
     if (!buff) continue
     const source = `Buff: ${buff.Name}`
     for (const eff of toArray(buff.Effect)) {
-      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx))
+      // V2 Build::NotifyOptionalBuff (Build.cpp:6065-6074) calls
+      // NotifyItemEffect, joining m_itemEffects (the gear "Highest Only" pool).
+      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
     }
   }
 }
@@ -838,7 +846,9 @@ function accumulateGuildBuffs(
     if (reqLevel > guildLevel) continue
     const effects = (gb as { Effect?: Effect | Effect[] }).Effect
     for (const eff of toArray(effects)) {
-      addParsed(map, parseEffect(eff, 1, `Guild Buff: ${gb.Name}`, 0, 0, ctx))
+      // V2 Build::ApplyGuildBuffs (Build.cpp:5967-6062) calls NotifyItemEffect,
+      // joining m_itemEffects (the gear "Highest Only" pool).
+      addParsed(map, parseEffect(eff, 1, `Guild Buff: ${gb.Name}`, 0, 0, ctx), true)
     }
   }
 }
