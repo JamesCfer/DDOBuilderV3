@@ -838,7 +838,8 @@ function accumulateGuildBuffs(
   guildLevel: number,
   applyGuildBuffs: boolean,
   allGuildBuffs: GuildBuff[] | undefined,
-  ctx?: EffectContext,
+  ctx: EffectContext | undefined,
+  totalCharLevel: number,
 ): void {
   if (!applyGuildBuffs || !allGuildBuffs) return
   for (const gb of allGuildBuffs) {
@@ -847,8 +848,12 @@ function accumulateGuildBuffs(
     const effects = (gb as { Effect?: Effect | Effect[] }).Effect
     for (const eff of toArray(effects)) {
       // V2 Build::ApplyGuildBuffs (Build.cpp:5967-6062) calls NotifyItemEffect,
-      // joining m_itemEffects (the gear "Highest Only" pool).
-      addParsed(map, parseEffect(eff, 1, `Guild Buff: ${gb.Name}`, 0, 0, ctx), true)
+      // joining m_itemEffects (the gear "Highest Only" pool). Pass the total
+      // character level (heroic + epic + legendary) as the classLevels arg —
+      // AType="TotalLevel" effects (e.g. "Game Hunter") index their Amount
+      // table by it (V2 Effect.cpp:1205-1219, Amount_TotalLevel uses
+      // `m_pBuild->Level()`), not by a fixed rank-1 lookup.
+      addParsed(map, parseEffect(eff, 1, `Guild Buff: ${gb.Name}`, totalCharLevel, 0, ctx), true)
     }
   }
 }
@@ -1439,7 +1444,8 @@ function buildStatMapOnce(
     }
 
     // ── Guild buffs (V2 parity) ───────────────────────────────────────────
-    accumulateGuildBuffs(map, build.guildLevel, build.applyGuildBuffs, allGuildBuffs, ctx)
+    accumulateGuildBuffs(map, build.guildLevel, build.applyGuildBuffs, allGuildBuffs, ctx,
+      (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0))
 
     // ── Skill tomes ───────────────────────────────────────────────────────
     for (const [skill, bonus] of Object.entries(build.skillTomes ?? {})) {
