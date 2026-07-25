@@ -73,6 +73,7 @@ const eldritchBlastFocusedFeat: Feat = {
 
 const eldritchBlastDamageFeat: Feat = {
   Name: 'Warlock: Eldritch Blast Damage',
+  MaxTimesAcquire: 5,  // real Warlock.class.xml value; V2 default is 1
   Effect: {
     Type: 'EldritchBlastD8',
     Bonus: 'Feat',
@@ -83,6 +84,7 @@ const eldritchBlastDamageFeat: Feat = {
 
 const pactDamageFeat: Feat = {
   Name: 'Pact Damage',
+  MaxTimesAcquire: 10,  // real Warlock.class.xml value; V2 default is 1
   Effect: {
     Type: 'EldritchBlastD6',
     Bonus: 'Feat',

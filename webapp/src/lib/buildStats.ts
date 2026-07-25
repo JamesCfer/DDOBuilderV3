@@ -1300,6 +1300,13 @@ function buildStatMapOnce(
     // here because the feat itself is an idempotent grant (rank=1); the
     // important V2 behavior is that the feat fires only when its class
     // level has been reached, which `bc.levels` already encodes.
+    // V2 Build::AutomaticFeats (Build.cpp:2493-2564) keeps a RUNNING count of
+    // grants across ALL classes/levels and stops at Feat::MaxTimesAcquire —
+    // whose default is 1 (Feat.h:65). A feat listed by two classes'
+    // AutomaticFeats (e.g. "Flurry of Blows" via Sacred Fist AND Dragon
+    // Disciple) is granted once, not once per class; multi-grant feats
+    // (Epic Power ×10, Eldritch Blast Damage ×5) carry explicit values.
+    const grantedAutoFeatTotals = new Map<string, number>()
     for (const bc of classesWithEpicPseudo(build)) {
       const cls = allClasses.find(c => c.Name === bc.name)
       if (!cls) continue
@@ -1324,8 +1331,12 @@ function buildStatMapOnce(
       for (const [featName, rawCount] of autoFeatCounts) {
         const feat = allFeats.find(f => f.Name === featName)
         if (!feat) continue
-        // V2 stops granting once MaxTimesAcquire is reached.
-        const count = Math.min(rawCount, feat.MaxTimesAcquire ?? rawCount)
+        // V2 stops granting once MaxTimesAcquire (default 1) is reached,
+        // counting across every class that grants the feat.
+        const already = grantedAutoFeatTotals.get(featName) ?? 0
+        const count = Math.min(rawCount, Math.max(0, (feat.MaxTimesAcquire ?? 1) - already))
+        if (count <= 0) continue
+        grantedAutoFeatTotals.set(featName, already + count)
         accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, charLevelTotal, ctx)
       }
     }
