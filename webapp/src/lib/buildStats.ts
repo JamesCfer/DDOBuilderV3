@@ -1523,27 +1523,27 @@ function buildStatMapOnce(
       add(map, `skill.${skill}`, { value: bonus, type: 'Tome', source: `${skill} tome` })
     }
 
-    // ── GrantFeat effects: apply the granted feats' stat effects ─────────
-    // V2 Build::ApplyFeatEffects / RevokeFeatEffects: when any source
-    // (enhancement, item, augment) grants a feat via Effect_GrantFeat, V2
-    // looks up the feat and applies all of its effects to the build. V3
-    // previously returned [] for GrantFeat effects; parseEffect now emits
-    // grantedFeat.<FeatName> markers, and this post-pass picks them up.
-    // Skip feats already in ctxFeats (player-trained, race-granted, class
-    // auto feats) to match V2's RequiresNoneOf-based double-count prevention.
-    {
-      const grantedFeatNames = new Set<string>()
-      for (const [key] of map.entries()) {
-        if (key.startsWith('grantedFeat.')) {
-          grantedFeatNames.add(key.slice('grantedFeat.'.length))
-        }
-      }
-      for (const featName of grantedFeatNames) {
-        if (ctxFeats.has(featName)) continue
-        const feat = allFeats.find(f => f.Name === featName)
-        if (feat) accumulateFeat(map, feat, 1, `Granted: ${featName}`, charLevelTotal, ctx)
-      }
-    }
+    // ── GrantFeat effects: V2 does NOT apply the granted feat's own stat
+    // effects ────────────────────────────────────────────────────────────
+    // V2 Build::ApplyEnhancementEffects (and the item/augment equivalents)
+    // notifies GrantFeat effects only to the breakdowns registered for
+    // Effect_GrantFeat — verified in the compiled source, that is
+    // CGrantedFeatsPane (tracks the name for the Granted Feats panel and
+    // Feat-type Requirement/prerequisite checks) and a narrow
+    // BreakdownItemPRR re-derive trigger. No breakdown calls
+    // Build::ApplyFeatEffects for a GrantFeat-sourced feat — that only
+    // happens for feats reached through TrainFeat/AutomaticFeats/favor-feat
+    // paths. A prior pass (#59) assumed GrantFeat re-applies the granted
+    // feat's Effect list and fed it through accumulateFeat here; that
+    // over-applied stance-gated feats whose Requirements happen to be met
+    // (e.g. Fury of the Wild "I'm Always Angry" grants the Barbarian "Rage"
+    // feat, whose AbilityBonus/SaveBonus/ACBonus effects are gated on
+    // `Requirement Stance=Rage` — on any build with the Rage stance toggled,
+    // V3 added a phantom +4 STR/+4 CON/+2 Will-morale/-2 AC that V2 never
+    // applies). `grantedFeat.<FeatName>` markers are still emitted (see
+    // effectParser.ts) and still populate `grantedFeatsList` below, matching
+    // V2's GrantedFeatsPane display and feat-prerequisite parity — they are
+    // simply never fed back through accumulateFeat.
 
     // ── Armor stance derivation ──────────────────────────────────────────
     // V2 derives the armor stance from the equipped armor's <Armor> field.
