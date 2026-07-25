@@ -48,6 +48,7 @@ export interface EffectContext {
   // Optional fields used by AType resolution and weapon-class requirements.
   // Older callers that don't populate these get conservative fallbacks.
   featCounts?: Record<string, number>       // feat → number of times trained
+  enhancementSelections?: Record<string, string> // tree item → chosen selector option
   setBonusCounts?: Record<string, number>   // set bonus name → equipped tier count
   sliderValues?: Record<string, number>     // slider name → current value
   weaponClassMain?: Set<string>             // main-hand weapon class memberships
@@ -103,6 +104,12 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
     case 'FeatAnySource':
       return its.some(i => ctx.feats.has(i))
     case 'Enhancement':
+      // V2 Requirement.cpp:839-855 EvaluateEnhancement: with two Items it is
+      // build.IsTrained(Item[0], Item[1]) — the tree item must be trained AND
+      // Item[1] must be the chosen selector option, not "either is trained".
+      if (its.length >= 2 && ctx.enhancementSelections) {
+        return ctx.enhancements.has(its[0]) && ctx.enhancementSelections[its[0]] === its[1]
+      }
       return its.some(i => ctx.enhancements.has(i))
     case 'Ability':
       return its.some(i => (ctx.abilityTotals[i] ?? 0) >= v)
@@ -503,7 +510,10 @@ function resolveValue(
     }
 
     case 'SliderValue': {
-      const sliderName = firstItem(effect)
+      // The slider name lives in StackSource (like SliderValueLookup); Item
+      // holds the effect's TARGET (e.g. "Reflex" on Slippery Magic's
+      // SaveBonus), so falling back to it is only for StackSource-less data.
+      const sliderName = effect.StackSource ?? firstItem(effect)
       if (!sliderName) return 0
       const base = getAmountAtRank(effect.Amount, 1)
       const value = ctx?.sliderValues?.[sliderName] ?? 0
