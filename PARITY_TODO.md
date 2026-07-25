@@ -251,13 +251,17 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   MP/RP/SP; implement bonus requires Divine Crusader "Strike with Poise"
   rank 3, not trained on the golden build).
 - 🟡 **G-MRR — MRR Cap ✅ exact** (Nystul 5pc via the NumFiligrees import
-  fix); **PRR still −24, MRR −28**. The "Legendary Bulwark" lead is now
-  RULED OUT — instrumented `accumulateSetBonuses` end-to-end: the 3× augment
-  counts, the set fires, and its +10% Legendary HP is inside the combined
-  hp percent row ("30% of 2172"). PRR suspects worth a trace: Sapphire of
-  Defense +36 resolution, and V2-active stances (Power Attack/Enhanced
-  Bloodrage) the V3 session may not have on.
-- 🟡 **G-HP — four real bugs fixed (this PR), residue now +195 (was −52/−78) —
+  fix); PRR/MRR narrowed −24/−28 → **−4/−8** by the ChooseLevel augment
+  fix (#107 table) and passes 121-123; residual bounds guarded in
+  `parityGoldenPass106.test.ts` (`gaps: { ac: -4, mrr: -8, prr: -4 }`),
+  round-2 prr/mrr diagnosis in flight. The old "Legendary Bulwark" lead is
+  RULED OUT (instrumented `accumulateSetBonuses` end-to-end: the set fires
+  correctly inside the combined hp percent row).
+- ✅ **G-HP — CLOSED in pass 120 (#162)**: the +195/+213 exampledps residue
+  was favor feats + TotalLevel×rank + the Reaper stance gate; `hp` is now
+  exact-checked in `parityGoldenPass106.test.ts` (out of `KNOWN_OPEN`).
+  Historical detail of the four #157 bugs kept below.
+- 🟡 **(historical) G-HP — four real bugs fixed (#157), residue was +195 —
   root-caused via a `v2calc`-oracle per-effect `AllActiveEffects()` dump**
   (temporary debug hooks added to `DDOBuilder/BreakdownItem.h`/
   `v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix).
@@ -343,13 +347,26 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 ### Oracle-derived mechanical bug list (2026-07, `scripts/oracleDiff.ts` vs v2calc across ~90 builds)
 
 The v2calc oracle is now the source of truth. Ranked by builds affected
-(V2 oracle value is correct; the number is how many builds mismatch):
+(V2 oracle value is correct; the number is how many builds mismatch).
 
-- ❌ **hitpoints (49→38, #116)** — four root causes fixed (epic/legendary HP
-  halving, Combat Style double-count, CON-delta scope, Reaper AP-cap scope/
-  separation — see Done table #116); residual is the still-open percent-HP/
-  missing-effect gap tracked as G-HP in "Golden-build residue" above, plus
-  whatever remains of the ability-mod cascade.
+**Current scoreboard after passes 119-123 (2026-07-25, 53-build corpus,
+31 builds with any mismatch, down from 46):** hitpoints 19 (all V3-under,
+small — FatePoint global-stack lead, round-2 diagnosis in flight), prr 14 /
+mrr 12 (mixed signs — healer cluster under, small equal overs; round-2 in
+flight), rangedPower 3, ability.STR 3, meleePower / ability.CON /
+saveFortitude / saveWill / dodge 1 each (round-2 in flight). CLOSED buckets:
+mrrCap, fortification, saveReflex, ability.DEX. Historical per-bucket notes
+below are kept for the evidence trail; where a note conflicts with this
+scoreboard, the scoreboard wins.
+
+- 🟡 **hitpoints (49→38 #116, →31 #161, →21 #162, →19 #163)** — passes
+  116/119/120/121 closed epic/legendary halving, Combat-Style double-count,
+  CON-delta scope, Reaper AP-cap scope, feat TotalLevel indexing, favor
+  feats, the Reaper stance gate, and GoF selector own-effects. The old
+  "percent-HP residue" theory is RETIRED — pass 120's reconciliation proved
+  the percent engine exact; the exampledps golden HP residue is 0 and
+  exact-checked. Remaining 19 builds are all small V3-unders; primary lead
+  is the FatePoint global stack-count (−24 HP on monk builds).
 - 🟡 **saves: Reflex 37→18 / Fort 30→8 / Will 6 (#159)** — root cause #1 fixed:
   `accumulateGuildBuffs` hardcoded the `classLevels` param passed to
   `parseEffect` to `0`, so every Guild Buff effect with `AType="TotalLevel"`
@@ -365,15 +382,16 @@ The v2calc oracle is now the source of truth. Ranked by builds affected
   most of the `fortification` bucket (28→1). Fixed by threading
   `build.totalLevel + epicLevels + legendaryLevels` through as the
   `classLevels` arg. 2 regression tests in `parityGuildBuffTotalLevel.test.ts`.
-  Residual (still ❌, not touched by this pass): the remaining Reflex/Fort/
-  Will mismatches are a separate, smaller-magnitude ability-mod-cascade or
-  per-build gear/reaper source, still open.
-- ❌ **dodge (35)** — base-25 cap fixed (#111); residual is the armor-MDB
-  secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
-  second min() after the dodge cap on non-cloth monks.
-- ❌ **dodge (35)** — base-25 cap fixed (#111); residual is the armor-MDB
-  secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
-  second min() after the dodge cap on non-cloth monks.
+  Residual: closed by passes 119 (feat TotalLevel + selector requirements +
+  SliderValue), 122 (oracle slider default) and 123 (stale trained spells) —
+  Reflex 0 / Fort 1 / Will 1 as of #165.
+- ✅ **dodge (35→16 by #122's diagnosis, →1 after #164)** — the long-standing
+  "armor-MDB secondary cap" hypothesis was STALE/WRONG (the cap never bound
+  on the reconciled builds; `v2Formulas.ts` already applied it correctly).
+  Real causes: dead `DodgeBonusTowerShield` type double-counting Mobility
+  (+2 on 5 builds) and the ORACLE's headless slider defaulting to 1 stack
+  instead of 0 ("Slippery Magic" +5 phantom on 6 builds) — both fixed in
+  pass 122 (#164).
 - ✅ **abilities: Completionist / Racial Completionist +2 never applied
   (114)** — the monk elemental-form stance-stacking sub-cause noted here was
   already fixed by #113 (`Amount_Stacks` merge); re-diffing the golden
@@ -427,12 +445,12 @@ The v2calc oracle is now the source of truth. Ranked by builds affected
   independent Guild-bonus-type sources is the correct, V2-exact total. New
   regression test in `parityCompletionist.test.ts` asserts the three
   per-ability Guild Buff bonus lines directly.
-- ❌ **dodge (25)** — base-25 cap fixed (#111); residual is the armor-MDB
-  secondary cap (YingsMonk 46 vs 44) — verify V3 applies `maxDexBonus` as a
-  second min() after the dodge cap on non-cloth monks.
-- ❌ **prr 22 / mrr 19 / mrrCap 4 / fortification 28 / rangedPower 15 /
-  meleePower 10.** meleePower/rangedPower now within ~1-17 (Maetrim 324 vs
-  307) — likely a per-reaper or form source.
+- 🟡 **prr 22→14 / mrr 19→12 (rounds 121-122); mrrCap 4→0 and
+  fortification 28→0 CLOSED (#163); rangedPower 15→3 / meleePower 10→1
+  (#163/#164/#165).** Selector own-effects + tracked armor stances (#163),
+  auto-feat dedup + oracle slider (#164), trained-spell carry-over +
+  truncation (#165). Remaining prr/mrr have mixed signs (healer-cluster
+  unders, small equal overs) — round-2 diagnosis in flight.
 
 Workflow: `make -C v2calc` once, then `cd webapp && npx tsx scripts/oracleDiff.ts`
 prints the live list; fix, re-run, repeat. `oracleDiff.ts <file>` targets one build.
