@@ -885,6 +885,12 @@ function accumulateTrainedSpells(
 ): void {
   if (!trainedSpells) return
   for (const [className, byLevel] of Object.entries(trainedSpells)) {
+    // V2 Build::ApplySpellEffects (Build.cpp:2373-2385) — "we need to ignore
+    // this spell if it is a carry over from a class change": stale trained
+    // spells from a class the build no longer has levels in must not apply
+    // (e.g. a Wizard-life "Tenser's Transformation" +4 STR/DEX/CON firing on
+    // a 0-Wizard build). Conservative version of V2's spell-slot gate.
+    if (ctx && (ctx.classLevels[className] ?? 0) <= 0) continue
     for (const names of Object.values(byLevel)) {
       for (const spellName of names) {
         const spell = allSpells.find(s => s.Name === spellName)
