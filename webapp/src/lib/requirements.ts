@@ -215,11 +215,23 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
     case 'Enhancement': {
       // Allow either trained (rank > 0) or trained-with-min-rank.
       const minRank = value
+      let trained = false
       for (const choices of Object.values(build.enhancementChoices ?? {})) {
         const rank = choices[item] ?? 0
-        if (rank > 0 && (minRank === 0 || rank >= minRank)) return true
+        if (rank > 0 && (minRank === 0 || rank >= minRank)) { trained = true; break }
       }
-      return false
+      if (!trained) return false
+      // V2 Requirement.cpp:839-855 EvaluateEnhancement: a second Item names
+      // the required selector option — IsTrained(Item[0], Item[1]) is an AND,
+      // not "either is trained".
+      const its = Array.isArray(req.Item) ? req.Item : req.Item ? [req.Item] : []
+      if (its.length >= 2) {
+        for (const sels of Object.values(build.enhancementSelections ?? {})) {
+          if (sels[item] === its[1]) return true
+        }
+        return false
+      }
+      return true
     }
     case 'Stance':
       // V2 parity: Requirement.cpp:1062 EvaluateStance — build.IsStanceActive().

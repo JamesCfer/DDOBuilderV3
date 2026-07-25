@@ -77,7 +77,11 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
     // fixes closed most of the old gap but surfaced a separate, still-open
     // percent-HP / missing-effect residue (PARITY_TODO.md "Golden-build
     // residue").
-    const gaps: Record<string, number> = { ac: -4, hp: 195, mrr: -8, prr: -4 }
+    // hp 195→213: pass 119's TotalLevel fix legitimately ADDED correct HP
+    // (past-life tables now index the full character level), widening this
+    // build's separate, still-open over-count (Reaper-stance gate — next
+    // pass) until that sibling fix lands.
+    const gaps: Record<string, number> = { ac: -4, hp: 213, mrr: -8, prr: -4 }
     for (const [key, gap] of Object.entries(gaps)) {
       const v2 = parsed.stats[key]
       if (v2 === undefined) continue

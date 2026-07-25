@@ -1073,6 +1073,19 @@ function buildStatMapOnce(
         if (rank > 0) ctxEnhancements.add(name)
       }
     }
+    // Selector picks per trained item (V2 Requirement.cpp:839-855 needs the
+    // chosen option to evaluate two-Item Enhancement requirements strictly).
+    const ctxEnhancementSelections: Record<string, string> = {}
+    for (const sels of Object.values(build.enhancementSelections ?? {})) {
+      for (const [name, sel] of Object.entries(sels)) if (sel) ctxEnhancementSelections[name] = sel
+    }
+    for (const [treeName, sels] of Object.entries(build.destinySelections ?? {})) {
+      if (!selectedDestinySet.has(treeName)) continue
+      for (const [name, sel] of Object.entries(sels)) if (sel) ctxEnhancementSelections[name] = sel
+    }
+    for (const sels of Object.values(build.reaperSelections ?? {})) {
+      for (const [name, sel] of Object.entries(sels)) if (sel) ctxEnhancementSelections[name] = sel
+    }
     // Choice keys may be InternalNames (V2 imports, current TreeGrid) or
     // display Names (legacy saves); requirement <Item> refs use InternalName.
     // Add each trained item's OTHER name so both namespaces resolve.
@@ -1082,6 +1095,11 @@ function buildStatMapOnce(
         if (!internal) continue
         if (ctxEnhancements.has(internal)) ctxEnhancements.add(item.Name)
         else if (ctxEnhancements.has(item.Name)) ctxEnhancements.add(internal)
+        const sel = ctxEnhancementSelections[internal] ?? ctxEnhancementSelections[item.Name]
+        if (sel !== undefined) {
+          ctxEnhancementSelections[internal] = sel
+          ctxEnhancementSelections[item.Name] = sel
+        }
       }
     }
     // Pass 1: inherent-only ability totals (base + race + levelup). The
@@ -1204,6 +1222,7 @@ function buildStatMapOnce(
       totalLevel: build.totalLevel,
       feats: ctxFeats,
       enhancements: ctxEnhancements,
+      enhancementSelections: ctxEnhancementSelections,
       abilityTotals: ctxAbilityTotals,
       stances: ctxStances,
       bab: ctxBAB,
@@ -1236,13 +1255,19 @@ function buildStatMapOnce(
       if (lvlUps) add(map, `ability.${ab}`, { value: lvlUps, type: 'Level Up', source: 'Level-up bonuses' })
     }
 
+    // V2 Effect.cpp Amount_TotalLevel indexes by m_pBuild->Level() — the FULL
+    // character level (heroic + epic + legendary), same as the guild-buff fix.
+    // Feed this to every accumulateFeat so feat-sourced AType=TotalLevel
+    // tables (e.g. Echoing Soul's 40-entry SaveBonus) read the right row.
+    const charLevelTotal = (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+
     // ── Race ─────────────────────────────────────────────────────────────
     const race = allRaces.find(r => r.Name === build.race)
     if (race) {
       accumulateRace(map, race)
       for (const featName of toArray(race.GrantedFeat)) {
         const feat = allFeats.find(f => f.Name === featName)
-        if (feat) accumulateFeat(map, feat, 1, `${build.race}: ${featName}`, build.totalLevel, ctx)
+        if (feat) accumulateFeat(map, feat, 1, `${build.race}: ${featName}`, charLevelTotal, ctx)
       }
     }
 
@@ -1287,7 +1312,7 @@ function buildStatMapOnce(
         if (!feat) continue
         // V2 stops granting once MaxTimesAcquire is reached.
         const count = Math.min(rawCount, feat.MaxTimesAcquire ?? rawCount)
-        accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, build.totalLevel, ctx)
+        accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, charLevelTotal, ctx)
       }
     }
 
@@ -1295,7 +1320,7 @@ function buildStatMapOnce(
     for (const [slotKey, featName] of Object.entries(build.featChoices)) {
       if (!featName) continue
       const feat = allFeats.find(f => f.Name === featName)
-      if (feat) accumulateFeat(map, feat, 1, `Feat: ${featName} (${slotKey})`, build.totalLevel, ctx)
+      if (feat) accumulateFeat(map, feat, 1, `Feat: ${featName} (${slotKey})`, charLevelTotal, ctx)
     }
 
     // ── Past lives ────────────────────────────────────────────────────────
@@ -1303,7 +1328,7 @@ function buildStatMapOnce(
       if (!count) continue
       const feat = allFeats.find(f =>
         f.Name === source || f.Name === `Past Life: ${source}` || f.Name === `Racial Past Life: ${source}`)
-      if (feat) accumulateFeat(map, feat, count, `Past life: ${source} ×${count}`, build.totalLevel, ctx)
+      if (feat) accumulateFeat(map, feat, count, `Past life: ${source} ×${count}`, charLevelTotal, ctx)
     }
 
     // ── Life-level Special feats (V2 Life::AllSpecialFeats) ────────────────
@@ -1317,7 +1342,7 @@ function buildStatMapOnce(
       }
       for (const [name, count] of specialCounts) {
         const feat = allFeats.find(f => f.Name === name)
-        if (feat) accumulateFeat(map, feat, count, `Special: ${name}${count > 1 ? ` ×${count}` : ''}`, build.totalLevel, ctx)
+        if (feat) accumulateFeat(map, feat, count, `Special: ${name}${count > 1 ? ` ×${count}` : ''}`, charLevelTotal, ctx)
       }
     }
 
@@ -1348,7 +1373,7 @@ function buildStatMapOnce(
         if (alreadyApplied.has(fn)) continue
         if (fn === 'Heroic Durability' && build.totalLevel < 1) continue
         const feat = allFeats.find(f => f.Name === fn)
-        if (feat) accumulateFeat(map, feat, 1, `Automatic: ${fn}`, build.totalLevel, ctx)
+        if (feat) accumulateFeat(map, feat, 1, `Automatic: ${fn}`, charLevelTotal, ctx)
       }
 
       // V2 Class::ImprovedHeroicDurabilityFeats (Class.cpp:375-399): every heroic
@@ -1369,7 +1394,7 @@ function buildStatMapOnce(
             if (bc.levels >= level) milestones++
           }
           if (milestones > 0) {
-            accumulateFeat(map, ihdBase, milestones, `Improved Heroic Durability (${bc.name})`, build.totalLevel, ctx)
+            accumulateFeat(map, ihdBase, milestones, `Improved Heroic Durability (${bc.name})`, charLevelTotal, ctx)
           }
         }
       }
@@ -1471,7 +1496,7 @@ function buildStatMapOnce(
       for (const featName of grantedFeatNames) {
         if (ctxFeats.has(featName)) continue
         const feat = allFeats.find(f => f.Name === featName)
-        if (feat) accumulateFeat(map, feat, 1, `Granted: ${featName}`, build.totalLevel, ctx)
+        if (feat) accumulateFeat(map, feat, 1, `Granted: ${featName}`, charLevelTotal, ctx)
       }
     }
 
@@ -1511,6 +1536,16 @@ function buildStatMapOnce(
       }
       const rebuilt = passthrough
       for (const g of groups.values()) {
+        // A single-source ranked effect already resolved its own rank via
+        // getAmountAtRank (V2 reaches the same row by replaying one AddEffect
+        // per trained rank — BreakdownItem.cpp:818-836). Only genuine
+        // cross-source duplicates (monk forms ×4, Primal Scream stacks) get
+        // the count-based Amount[] override; collapsing a singleton would
+        // discard the rank-correct value for Amount[0].
+        if (g.length === 1) {
+          rebuilt.push({ ...g[0], stackGroup: undefined, stackAmounts: undefined })
+          continue
+        }
         const amounts = g[0].stackAmounts!
         const idx = Math.min(g.length - 1, amounts.length - 1)
         rebuilt.push({ ...g[0], value: amounts[idx], stackGroup: undefined, stackAmounts: undefined, source: `${g[0].source} (×${g.length} stacks → Amount[${idx}])` })
