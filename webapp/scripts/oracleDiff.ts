@@ -111,7 +111,12 @@ for (const f of files) {
   }
 
   let hasDiff = false
-  for (const [stat, v2, v3] of rows) {
+  for (const [stat, v2, v3raw] of rows) {
+    // The oracle prints V2's running double cast to (int) — v2calc main.cpp
+    // `(int)v` — exactly like V2's UI. Compare V3's double the same way so
+    // fractional contributions (e.g. Rapid Shot's 1.5 × BAB) don't produce
+    // phantom sub-integer mismatches.
+    const v3 = Math.trunc(v3raw)
     if (Math.abs(v2 - v3) > tol) {
       hasDiff = true
       perStatMismatch[stat] = (perStatMismatch[stat] ?? 0) + 1
