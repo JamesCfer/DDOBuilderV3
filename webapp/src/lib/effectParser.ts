@@ -426,9 +426,11 @@ function resolveValue(
     }
 
     case 'TotalLevel': {
-      // V2: m_Amount[totalLevel-1] * m_stacks (40-entry array indexed by char level)
+      // V2: m_Amount[totalLevel-1] * m_stacks (40-entry array indexed by char
+      // level). m_stacks counts repeat acquisitions (Past Life ×3, Toughness
+      // retrains) — V2 merges/sums them, so the table value multiplies by rank.
       const idx = Math.max(1, classLevels)
-      return getAmountAtRank(effect.Amount, idx)
+      return getAmountAtRank(effect.Amount, idx) * Math.max(1, rank)
     }
 
     case 'APCount': {

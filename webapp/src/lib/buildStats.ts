@@ -1331,6 +1331,20 @@ function buildStatMapOnce(
       if (feat) accumulateFeat(map, feat, count, `Past life: ${source} ×${count}`, charLevelTotal, ctx)
     }
 
+    // ── Favor Reward feats (V2 Build::SpecialFeats merges FavorFeats) ─────
+    // Build.cpp:1603-1609: favor-reward feats ("House Deneith Favor Rewards"
+    // +5 HP, Draconic Vitality, …) join the applied-feat list like any other
+    // special feat. V3 parsed build.favorFeats for eligibility/AP only and
+    // never applied their effects.
+    if (build.favorFeats && build.favorFeats.length > 0) {
+      const favorCounts = new Map<string, number>()
+      for (const name of build.favorFeats) favorCounts.set(name, (favorCounts.get(name) ?? 0) + 1)
+      for (const [name, count] of favorCounts) {
+        const feat = allFeats.find(f => f.Name === name)
+        if (feat) accumulateFeat(map, feat, count, `Favor: ${name}${count > 1 ? ` ×${count}` : ''}`, charLevelTotal, ctx)
+      }
+    }
+
     // ── Life-level Special feats (V2 Life::AllSpecialFeats) ────────────────
     // Chrism reincarnation-cache feats and similar Type="Special" acquisitions
     // were imported into Life.specialFeats but never applied to any stat —
@@ -2151,9 +2165,12 @@ function buildStatMapOnce(
     // `hp` directly, e.g. "Reaper's Defense I/II/IV"'s flat amounts) are
     // NOT part of this cap — apply the capped APCount total as a corrective
     // bonus alongside them.
+    // V2 gates the whole block on the "Reaper" stance being toggled on
+    // (Requirements.AddRequirement(Requirement_Stance, "Reaper"), :190-192) —
+    // reaper HP only counts while the character is in Reaper mode.
     {
       const reaperSum = resolveBonus(map.get('hpReaperAP') ?? []).total
-      if (reaperSum > 0) {
+      if (reaperSum > 0 && ctxStances.has('Reaper')) {
         const capLevel = totalCharLevel + 1
         const cap = reaperHpCap(capLevel)
         const capped = Math.min(reaperSum, cap)
