@@ -266,9 +266,10 @@ export function buildRuntimeGroupAdds(
         const opt = options.find(o => o.Name === selectedOption)
         if (opt) {
           extractFromEffects(toArray(opt.Effect as Effect | Effect[] | undefined))
-          continue
         }
       }
+      // V2 EnhancementTreeItem::GetEffects: own <Effect> list always applies
+      // alongside the selected option's effects (never replaced by them).
       extractFromEffects(toArray(item.Effect))
     }
   }
@@ -527,10 +528,13 @@ function accumulateEnhancementTree(
         for (const eff of toArray(opt.Effect as Effect | Effect[] | undefined)) {
           addParsed(map, parseEffect(eff, rank, `${source} (${selectedOption})`, classLevels, treeAP, ctx))
         }
-        continue
       }
     }
 
+    // V2 EnhancementTreeItem::GetEffects (EnhancementTreeItem.cpp:486-522):
+    // the item's own <Effect> list ALWAYS applies, in ADDITION to the chosen
+    // selector option's effects — "even if it had a sub-selection it may
+    // still have effects that always apply regardless of the sub-selection".
     for (const eff of toArray(item.Effect)) {
       addParsed(map, parseEffect(eff, rank, source, classLevels, treeAP, ctx))
     }
@@ -583,10 +587,20 @@ function accumulateGear(
  * V2 armor stance detection: returns the active armor stance from the equipped
  * armor item (Cloth/Light/Medium/Heavy) plus shield-type stances.
  */
-function deriveArmorStances(gearItems: Record<string, Item>): Set<string> {
+function deriveArmorStances(gearItems: Record<string, Item>, activeBuffs?: string[]): Set<string> {
   const stances = new Set<string>()
+  // V2 Build::IsStanceActive reads the build's TRACKED stance state
+  // (serialized <ActiveStances>), not a live re-derivation from gear — the
+  // two can legitimately diverge (e.g. heavy armor equipped without the
+  // proficiency feat leaves the stance at "Cloth Armor"). An explicit armor
+  // stance recorded on the build wins; gear derivation is the fallback for
+  // builds authored fresh in V3 with no recorded stance.
+  const ARMOR_STANCES = ['Cloth Armor', 'Light Armor', 'Medium Armor', 'Heavy Armor']
+  const explicit = activeBuffs?.find(s => ARMOR_STANCES.includes(s))
   const armor = gearItems['Armor'] ?? gearItems['Body']
-  if (armor) {
+  if (explicit) {
+    stances.add(explicit)
+  } else if (armor) {
     const t = armor.Armor
     if (t === 'Cloth' || t == null) stances.add('Cloth Armor')
     else if (t === 'Light')  stances.add('Light Armor')
@@ -1116,7 +1130,7 @@ function buildStatMapOnce(
         ctxAbilityTotals[ab] = base + racial + lv
       }
     }
-    const ctxStances = deriveArmorStances(gearItems)
+    const ctxStances = deriveArmorStances(gearItems, build.activeBuffs)
     // V2 parity: Build::IsStanceActive checks both armor-derived stances AND
     // player-toggled stances.  Merge activeBuffs so that effects gated on e.g.
     // "Mountain Stance", "Favored Weapon", "Power Attack", "Rage", etc. fire
@@ -1518,7 +1532,7 @@ function buildStatMapOnce(
     // V2 derives the armor stance from the equipped armor's <Armor> field.
     // Used for: PRR derivation (BAB×multiplier), MRR cap (Cloth=50, Light=100),
     // dodge cap (Cloth = no MDB cap), AC stacking-armor%, etc.
-    const armorStances = deriveArmorStances(gearItems)
+    const armorStances = deriveArmorStances(gearItems, build.activeBuffs)
 
     // V2 BreakdownItemMRRCap: Cloth Armor → 50, Light Armor → 100, Medium/Heavy → none.
     if (armorStances.has('Cloth Armor')) {
