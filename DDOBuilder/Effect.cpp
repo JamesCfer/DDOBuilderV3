@@ -1438,8 +1438,13 @@ double Effect::TotalAmount(bool allowTruncate) const
             {
                 size_t stacks = m_stacks;
 #if defined(V2CALC_LINUX)
-                // Headless (v2calc): no main window / stances pane; slider stacks
-                // fall back to the effect's own m_stacks (see BreakdownHostLinux).
+                // Headless (v2calc): no main window / stances pane. A slider's
+                // real default position is 0 (SliderItem::m_position(0),
+                // StancesPane.h:24) — an untouched slider contributes nothing.
+                // Falling back to m_stacks (default 1) made the oracle report
+                // every trained Slider/SliderValue effect as 1 stack, wrongly
+                // flagging V3 (which correctly computes 0) as mismatching.
+                stacks = 0;
                 const CStancesPane* pStancesPane = NULL;
 #else
                 CWnd* pWnd = AfxGetMainWnd();

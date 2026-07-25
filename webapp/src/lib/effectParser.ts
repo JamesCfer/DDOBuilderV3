@@ -1065,7 +1065,14 @@ export function parseEffect(
     // it as an additional cap when a tower shield is equipped
     // (BreakdownItemAC.cpp:71-82, BreakdownItemDodge.cpp:55-63).
     case 'DodgeBonusTowerShield':
-      return [make('dodge', 'Dodge')]
+      // Dead effect type in V2: Effect_DodgeBonusTowerShield exists in the
+      // schema (Effect.h) but NO breakdown registers it — BreakdownItemDodge
+      // registers only Effect_DodgeBonus, and the tower-shield dodge cap is
+      // fed exclusively by Effect_MaxDexBonusTowerShield → mdbShields.
+      // Routing it into 'dodge' double-counted Mobility's combined
+      // DodgeBonusTowerShield/MaxDexBonusTowerShield effect block (+2 dodge
+      // on every Mobility build).
+      return []
 
     case 'MaxDexBonusTowerShield':
       return [make('mdbShields')]
