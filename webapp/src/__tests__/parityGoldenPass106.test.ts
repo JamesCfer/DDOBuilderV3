@@ -23,7 +23,9 @@ const EXPORT = join(__dirname, '..', '..', '..', 'Output', 'UserBuilds', 'exampl
 const have = existsSync(DATA) && existsSync(FIXTURE) && existsSync(EXPORT)
 
 // Residues still under investigation — see PARITY_TODO.md "Golden-build residue".
-const KNOWN_OPEN = new Set(['ac', 'hp', 'mrr', 'prr'])
+// hp left this set in pass 120 (favor feats + TotalLevel×rank + Reaper stance
+// gate closed the whole gap) — it is now exact-checked like everything else.
+const KNOWN_OPEN = new Set(['ac', 'mrr', 'prr'])
 
 describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   const cat = loadAllCatalogues(DATA)
@@ -70,18 +72,9 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
 
   it('documented open residues stay within their known bounds (catch regressions)', () => {
     // If any of these drift FURTHER from V2 than the recorded gap, a
-    // regression slipped in; if they close, move them out of KNOWN_OPEN.
-    // `hp`'s sign flipped from -78 to +195 after fixing the epic/legendary
-    // HP-halving, CON-delta-scope, Combat-Style double-count, and
-    // Reaper-AP-cap bugs (see parityPassEpicLegendaryHP.test.ts) — those
-    // fixes closed most of the old gap but surfaced a separate, still-open
-    // percent-HP / missing-effect residue (PARITY_TODO.md "Golden-build
-    // residue").
-    // hp 195→213: pass 119's TotalLevel fix legitimately ADDED correct HP
-    // (past-life tables now index the full character level), widening this
-    // build's separate, still-open over-count (Reaper-stance gate — next
-    // pass) until that sibling fix lands.
-    const gaps: Record<string, number> = { ac: -4, hp: 213, mrr: -8, prr: -4 }
+    // regression slipped in; if they close, move them out of KNOWN_OPEN
+    // (hp closed in pass 120 and left this list).
+    const gaps: Record<string, number> = { ac: -4, mrr: -8, prr: -4 }
     for (const [key, gap] of Object.entries(gaps)) {
       const v2 = parsed.stats[key]
       if (v2 === undefined) continue
