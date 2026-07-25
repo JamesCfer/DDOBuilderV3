@@ -22,6 +22,7 @@ import ReaperPanel from './components/reaper/ReaperPanel'
 import GearPanel from './components/items/GearPanel'
 import ClickiesPanel from './components/items/ClickiesPanel'
 import BreakdownsPanel from './components/breakdowns/BreakdownsPanel'
+import FavoritesDock from './components/breakdowns/FavoritesDock'
 import CombatPanel from './components/combat/CombatPanel'
 import BuildCompare from './components/layout/BuildCompare'
 import PastLivesPanel from './components/pastlives/PastLivesPanel'
@@ -222,8 +223,11 @@ function AppInner() {
         account={<AccountButton onGoToAccount={goToAccount} />}
         livesBar={<LifeBuildBar />}
       >
-        <div className={WIDE_TABS.has(tab) ? styles.wide : styles.narrow}>
-          {renderTab()}
+        <div className={styles.contentRow}>
+          <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
+            {renderTab()}
+          </div>
+          <FavoritesDock />
         </div>
       </Layout>
     </>

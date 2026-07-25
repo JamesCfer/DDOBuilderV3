@@ -1,0 +1,94 @@
+/* FavoritesDock — sticky right-hand rail for starred breakdown stats. */
+
+.dock {
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+  width: 250px;
+  flex-shrink: 0;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.dockHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(212,152,42,0.08);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(2px);
+}
+
+.dockTitle {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-gold);
+}
+
+.collapseBtn {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.collapseBtn:hover {
+  color: var(--color-gold);
+}
+
+.dockBody {
+  padding: 4px 0 6px;
+}
+
+.dockHint {
+  font-size: 9px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  padding: 6px 8px 2px;
+}
+
+/* Collapsed state — slim reopen tab that stays put on the right. */
+.collapsedBtn {
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-panel);
+  color: var(--color-gold);
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px 9px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.collapsedBtn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-gold-dark);
+}
+
+/* On narrow viewports the rail would crush the main content — hide it;
+   the Breakdowns panel's own ★ Favorites section still covers this case. */
+@media (max-width: 1100px) {
+  .dock,
+  .collapsedBtn {
+    display: none;
+  }
+}
