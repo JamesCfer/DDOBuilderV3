@@ -1,3 +1,16 @@
+/* Content row — tab content on the left, FavoritesDock rail on the right */
+
+.contentRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.tabArea {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Page content widths */
 
 .narrow {
