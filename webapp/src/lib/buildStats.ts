@@ -1531,16 +1531,27 @@ function buildStatMapOnce(
       add(map, `skill.${skill}`, { value: bonus, type: 'Tome', source: `${skill} tome` })
     }
 
-    // ── GrantFeat effects: DISPLAY-ONLY in V2, effects NOT applied ───────
-    // Corrects pass #59: V2's runtime never applies an Effect_GrantFeat'd
-    // feat's own effects. Build::UpdateFeats's sync call is commented out
-    // in V2 (`//KeepGrantedFeatsUpToDate();`, Build.cpp:2448) and the only
-    // Effect_GrantFeat consumers are the display-only GrantedFeatsPane and
-    // a PRR repopulation trigger — so granted feats appear in the list but
-    // contribute no stats. Oracle-verified: applying them made V3 OVER on
-    // real builds (Fury "I'm Always Angry"→Rage +4 STR/CON, KotC→Shot on
-    // the Run +6 RangedPower). The grantedFeat.* markers stay (they feed
-    // grantedFeatsList for the panel, matching V2's pane).
+    // ── GrantFeat effects: V2 does NOT apply the granted feat's own stat
+    // effects ────────────────────────────────────────────────────────────
+    // V2 Build::ApplyEnhancementEffects (and the item/augment equivalents)
+    // notifies GrantFeat effects only to the breakdowns registered for
+    // Effect_GrantFeat — verified in the compiled source, that is
+    // CGrantedFeatsPane (tracks the name for the Granted Feats panel and
+    // Feat-type Requirement/prerequisite checks) and a narrow
+    // BreakdownItemPRR re-derive trigger. No breakdown calls
+    // Build::ApplyFeatEffects for a GrantFeat-sourced feat — that only
+    // happens for feats reached through TrainFeat/AutomaticFeats/favor-feat
+    // paths. A prior pass (#59) assumed GrantFeat re-applies the granted
+    // feat's Effect list and fed it through accumulateFeat here; that
+    // over-applied stance-gated feats whose Requirements happen to be met
+    // (e.g. Fury of the Wild "I'm Always Angry" grants the Barbarian "Rage"
+    // feat, whose AbilityBonus/SaveBonus/ACBonus effects are gated on
+    // `Requirement Stance=Rage` — on any build with the Rage stance toggled,
+    // V3 added a phantom +4 STR/+4 CON/+2 Will-morale/-2 AC that V2 never
+    // applies). `grantedFeat.<FeatName>` markers are still emitted (see
+    // effectParser.ts) and still populate `grantedFeatsList` below, matching
+    // V2's GrantedFeatsPane display and feat-prerequisite parity — they are
+    // simply never fed back through accumulateFeat.
 
     // ── Armor stance derivation ──────────────────────────────────────────
     // V2 derives the armor stance from the equipped armor's <Armor> field.
