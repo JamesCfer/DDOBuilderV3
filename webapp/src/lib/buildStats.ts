@@ -134,7 +134,7 @@ function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGe
     // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
     // (BreakdownItem.cpp:623-698, :205-221).
     const asGear = fromGear || pb.asItemEffect === true
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts })
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank })
   }
 }
 
@@ -1589,19 +1589,18 @@ function buildStatMapOnce(
       }
       const rebuilt = passthrough
       for (const g of groups.values()) {
-        // A single-source ranked effect already resolved its own rank via
-        // getAmountAtRank (V2 reaches the same row by replaying one AddEffect
-        // per trained rank — BreakdownItem.cpp:818-836). Only genuine
-        // cross-source duplicates (monk forms ×4, Primal Scream stacks) get
-        // the count-based Amount[] override; collapsing a singleton would
-        // discard the rank-correct value for Amount[0].
-        if (g.length === 1) {
-          rebuilt.push({ ...g[0], stackGroup: undefined, stackAmounts: undefined })
-          continue
-        }
+        // V2 Effect.cpp Amount_Stacks: m_stacks is a RUNNING TOTAL of
+        // AddEffect applications across every source sharing the effect
+        // signature (operator== ignores Rank) — one application per trained
+        // rank per source. So the merged index is the SUM of each
+        // contributor's own rank, not the contributor count: 18 "Epic Past
+        // Life" feats × rank 3 → Amount[53], not Amount[17]. A singleton
+        // degenerates to Amount[rank-1], exactly the value getAmountAtRank
+        // already resolved (the old pass-119 special case, now subsumed).
+        const totalStacks = g.reduce((s, b) => s + Math.max(1, b.stackRank ?? 1), 0)
         const amounts = g[0].stackAmounts!
-        const idx = Math.min(g.length - 1, amounts.length - 1)
-        rebuilt.push({ ...g[0], value: amounts[idx], stackGroup: undefined, stackAmounts: undefined, source: `${g[0].source} (×${g.length} stacks → Amount[${idx}])` })
+        const idx = Math.min(totalStacks - 1, amounts.length - 1)
+        rebuilt.push({ ...g[0], value: amounts[idx], stackGroup: undefined, stackAmounts: undefined, stackRank: undefined, source: g.length > 1 ? `${g[0].source} (×${totalStacks} stacks → Amount[${idx}])` : g[0].source })
       }
       map.set(key, rebuilt)
     }

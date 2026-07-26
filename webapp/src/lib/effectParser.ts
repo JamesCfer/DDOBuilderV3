@@ -217,6 +217,7 @@ export interface ParsedBonus {
   // V2 stack-merge identity (see RawBonus.stackGroup in bonus.ts).
   stackGroup?: string
   stackAmounts?: number[]
+  stackRank?: number
 }
 
 /**
@@ -726,7 +727,9 @@ export function parseEffect(
       percent: flagSet(effect.Percent),
       asItemEffect: flagSet(effect.ApplyAsItemEffect),
       // statKey-scoped so Item=All fan-out to different stats doesn't merge.
-      ...(stackGroupBase ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts } : {}),
+      ...(stackGroupBase
+        ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts, stackRank: Math.max(1, rank) }
+        : {}),
     }
   }
 

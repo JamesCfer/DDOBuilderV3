@@ -35,6 +35,11 @@ export interface RawBonus {
   // Ocean Stance + Adept/Master/Grandmaster of Forms = one -2, not -8.
   stackGroup?: string
   stackAmounts?: number[]
+  // Number of AddEffect "applications" this single bonus represents (its own
+  // trained rank) — the cross-source stack-merge sums these instead of
+  // counting contributors (V2 Effect.cpp Amount_Stacks: m_stacks is a running
+  // total across every source sharing the effect signature).
+  stackRank?: number
 }
 
 export interface ResolvedBonus extends RawBonus {
