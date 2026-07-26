@@ -1150,14 +1150,8 @@ function buildStatMapOnce(
     // Gnome, …) only fire once that race stance is active. Mirror that here so
     // those race-form effects fire without the player toggling anything.
     if (build.race) ctxStances.add(build.race)
-    // V2 parity: Monk and Sacred Fist are "Centered" when wearing cloth/no armor.
-    // Centered gates all Monk Ki effects (KiMaximum, KiHit, KiPassive, KiCritical).
-    {
-      const monkLevels = (ctxClassLevels['Monk'] ?? 0) + (ctxClassLevels['Sacred Fist'] ?? 0)
-      if (monkLevels > 0 && ctxStances.has('Cloth Armor')) {
-        ctxStances.add('Centered')
-      }
-    }
+    // (Centered derivation moved below — it needs the wielded weapon's
+    // group membership, computed after gear scanning.)
     // Approximate BAB from class progressions (heroic + tier classes). Avoids cycles.
     // V2 parity: each class contributes classBAB(levels) where levels is its
     // total in the per-level array; epic/legendary tiers add their tables.
@@ -1220,6 +1214,20 @@ function buildStatMapOnce(
         ctxStances.add('Two Weapon Fighting')
       } else if (mainWeaponType && !hasShield) {
         ctxStances.add('Single Weapon Fighting')
+      }
+    }
+    // V2 parity: Monk and Sacred Fist are "Centered" when unarmored AND
+    // unarmed or wielding a monk weapon — WeaponGroupings.xml's "Centered"
+    // group (Empty/Kama/Shuriken/Handwraps/Quarterstaff/Unarmed). The old
+    // derivation ignored the weapon, wrongly centering e.g. a Heavy
+    // Crossbow monk (speed leveling.DDOBuild dodge +4 via Flurry of Blows).
+    // Centered gates all Monk Ki effects (KiMaximum, KiHit, KiPassive,
+    // KiCritical) and the WIS-to-AC family.
+    {
+      const monkLevels = (ctxClassLevels['Monk'] ?? 0) + (ctxClassLevels['Sacred Fist'] ?? 0)
+      const weaponOk = !mainWeaponType || ctxWeaponClassMain.has('Centered')
+      if (monkLevels > 0 && ctxStances.has('Cloth Armor') && weaponOk) {
+        ctxStances.add('Centered')
       }
     }
     const ctxSliderValues: Record<string, number> = {
@@ -1523,27 +1531,16 @@ function buildStatMapOnce(
       add(map, `skill.${skill}`, { value: bonus, type: 'Tome', source: `${skill} tome` })
     }
 
-    // ── GrantFeat effects: apply the granted feats' stat effects ─────────
-    // V2 Build::ApplyFeatEffects / RevokeFeatEffects: when any source
-    // (enhancement, item, augment) grants a feat via Effect_GrantFeat, V2
-    // looks up the feat and applies all of its effects to the build. V3
-    // previously returned [] for GrantFeat effects; parseEffect now emits
-    // grantedFeat.<FeatName> markers, and this post-pass picks them up.
-    // Skip feats already in ctxFeats (player-trained, race-granted, class
-    // auto feats) to match V2's RequiresNoneOf-based double-count prevention.
-    {
-      const grantedFeatNames = new Set<string>()
-      for (const [key] of map.entries()) {
-        if (key.startsWith('grantedFeat.')) {
-          grantedFeatNames.add(key.slice('grantedFeat.'.length))
-        }
-      }
-      for (const featName of grantedFeatNames) {
-        if (ctxFeats.has(featName)) continue
-        const feat = allFeats.find(f => f.Name === featName)
-        if (feat) accumulateFeat(map, feat, 1, `Granted: ${featName}`, charLevelTotal, ctx)
-      }
-    }
+    // ── GrantFeat effects: DISPLAY-ONLY in V2, effects NOT applied ───────
+    // Corrects pass #59: V2's runtime never applies an Effect_GrantFeat'd
+    // feat's own effects. Build::UpdateFeats's sync call is commented out
+    // in V2 (`//KeepGrantedFeatsUpToDate();`, Build.cpp:2448) and the only
+    // Effect_GrantFeat consumers are the display-only GrantedFeatsPane and
+    // a PRR repopulation trigger — so granted feats appear in the list but
+    // contribute no stats. Oracle-verified: applying them made V3 OVER on
+    // real builds (Fury "I'm Always Angry"→Rage +4 STR/CON, KotC→Shot on
+    // the Run +6 RangedPower). The grantedFeat.* markers stay (they feed
+    // grantedFeatsList for the panel, matching V2's pane).
 
     // ── Armor stance derivation ──────────────────────────────────────────
     // V2 derives the armor stance from the equipped armor's <Armor> field.

@@ -122,15 +122,17 @@ function bardBuild(rank: number) {
 // ---------------------------------------------------------------------------
 
 describe('GrantFeat rank gating — Magical Studies / Magical Training', () => {
-  it('rank 3: spellPoints includes +80 from Magical Training feat', () => {
+  it('rank 3: Magical Training is LISTED as granted but its effects do NOT apply (V2 display-only)', () => {
+    // Pass 122+ correction: V2's runtime never applies a granted feat's own
+    // effects (Build.cpp:2448 `//KeepGrantedFeatsUpToDate();` — the
+    // GrantedFeatsPane is display-only). Enhancement SpellPoints at rank 3
+    // = 100 stands alone; the +80 Feat SP must NOT be added.
     const stats = computeBuildStats(
       emptyInput([magicalTrainingFeat], [spellsingerTree]),
       bardBuild(3),
     )
-    // Enhancement SpellPoints at rank 3 = 100.
-    // GrantFeat at rank >= 3 → Magical Training +80 Feat bonus.
-    // Total = 180.
-    expect(stats.total('spellPoints')).toBe(180)
+    expect(stats.total('spellPoints')).toBe(100)
+    expect(stats.grantedFeatsList).toContain('Magical Training')
   })
 
   it('rank 2: spellPoints does NOT include Magical Training (rank < 3)', () => {
@@ -152,12 +154,12 @@ describe('GrantFeat rank gating — Magical Studies / Magical Training', () => {
     expect(stats.total('spellPoints')).toBe(30)
   })
 
-  it('rank 3: spell crit also gains 5% from Magical Training', () => {
+  it('rank 3: no spell crit from Magical Training either (effects not applied)', () => {
     const stats = computeBuildStats(
       emptyInput([magicalTrainingFeat], [spellsingerTree]),
       bardBuild(3),
     )
-    expect(stats.total('spCrit.Universal')).toBe(5)
+    expect(stats.total('spCrit.Universal')).toBe(0)
   })
 
   it('rank 2: no spell crit from Magical Training', () => {
@@ -179,16 +181,15 @@ describe('GrantFeat deduplication — trained feat not double-counted', () => {
       emptyInput([magicalTrainingFeat], [spellsingerTree]),
       build,
     )
-    // Trained feat gives 80 SP.
-    // GrantFeat should be skipped (feat already in ctxFeats).
-    // Enhancement SpellPoints at rank 3 = 100.
-    // Total = 100 + 80 (trained) = 180, same as grant-only case, but NOT 260.
+    // Trained feat gives 80 SP (that's a real trained feat, always applies).
+    // The GrantFeat marker must not add another 80.
+    // Enhancement SpellPoints at rank 3 = 100. Total = 180, NOT 260.
     expect(stats.total('spellPoints')).toBe(180)
   })
 })
 
 describe('GrantFeat from item buff (ItemBuff.Type = "GrantFeat")', () => {
-  it('item that grants a feat applies the feat\'s stat effects', () => {
+  it('item-granted feat is listed but its stat effects do NOT apply (V2 display-only)', () => {
     const augmentSummoningFeat: Feat = {
       Name: 'Augment Summoning',
       Effect: [
@@ -227,6 +228,7 @@ describe('GrantFeat from item buff (ItemBuff.Type = "GrantFeat")', () => {
       build,
     )
 
-    expect(stats.total('spellPoints')).toBe(10)
+    expect(stats.total('spellPoints')).toBe(0)
+    expect(stats.grantedFeatsList).toContain('Augment Summoning')
   })
 })
