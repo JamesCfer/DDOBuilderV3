@@ -20,6 +20,7 @@ const mk = (Type: string, extra: Partial<Effect> = {}): Effect => ({
   Type,
   Amount: 1,
   Bonus: 'Enhancement',
+  AType: 'Stacks',
   ...extra,
 }) as Effect
 

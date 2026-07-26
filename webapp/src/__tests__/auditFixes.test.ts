@@ -10,7 +10,7 @@ const ctx: EffectContext = {
   stances: new Set(), bab: 20, weaponTypes: new Set(),
 }
 const mk = (Type: string, extra: Partial<Effect> = {}): Effect => ({
-  Type, Amount: 1, Bonus: 'Enhancement', ...extra,
+  Type, Amount: 1, Bonus: 'Enhancement', AType: 'Stacks', ...extra,
 }) as Effect
 
 describe('Audit-fix surfaced effect cases', () => {

@@ -53,7 +53,7 @@ function build(overrides: Partial<ReturnType<typeof makeEmptyBuild>> = {}) {
 describe('BAB override boosts BAB to character level (max 25)', () => {
   const overrideFeat = {
     Name: 'Tenser-like', Acquire: 'Train',
-    Effect: { Type: 'OverrideBAB', Bonus: 'Stacking', Amount: '1' },
+    Effect: { Type: 'OverrideBAB', Bonus: 'Stacking', Amount: '1', AType: 'Stacks' },
   } as unknown as Feat
 
   const fiveWizard = ['Wizard', 'Wizard', 'Wizard', 'Wizard', 'Wizard']

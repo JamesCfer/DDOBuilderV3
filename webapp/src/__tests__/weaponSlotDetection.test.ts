@@ -108,6 +108,8 @@ describe('canonical "Main Hand" / "Off Hand" slot names', () => {
       buildWithFeats(['Shield Gated']),
     )
     expect(withoutShield.total('prr')).toBe(0)
-    expect(withShield.total('prr')).toBe(7)
+    // 7 (shield-gated effect) + 15 (Attack feat "Equipped Tower Shield
+    // PRR/MRR Bonus" base, pass 127) = 22.
+    expect(withShield.total('prr')).toBe(22)
   })
 })

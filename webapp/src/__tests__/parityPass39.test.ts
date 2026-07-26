@@ -84,7 +84,7 @@ describe('N1 — armor enchantment + percentage AC (BreakdownItemAC.cpp)', () =>
   // +50% armor AC bonus from a feat (Effect_ArmorACBonus).
   const armorPctFeat = {
     Name: 'Armored Mastery', Acquire: 'Train',
-    Effect: { Type: 'ArmorACBonus', Bonus: 'Stacking', Amount: '50' },
+    Effect: { Type: 'ArmorACBonus', Bonus: 'Stacking', Amount: '50', AType: 'Stacks' },
   } as unknown as Feat
 
   it('folds armor enchantment into AC (was silently dropped)', () => {
@@ -122,7 +122,7 @@ describe('N1 — armor enchantment + percentage AC (BreakdownItemAC.cpp)', () =>
     } as unknown as Item
     const shieldPctFeat = {
       Name: 'Shield Mastery', Acquire: 'Train',
-      Effect: { Type: 'ACBonusShield', Bonus: 'Stacking', Amount: '30' },
+      Effect: { Type: 'ACBonusShield', Bonus: 'Stacking', Amount: '30', AType: 'Stacks' },
     } as unknown as Feat
     const stats = computeBuildStats(
       {
@@ -221,7 +221,7 @@ describe('N2 — to-hit penalties (BreakdownItemWeaponAttackBonus.cpp)', () => {
 describe('N4 — Sorcerer/FvS SP multiplier scope (BreakdownItemSpellPoints)', () => {
   const spFeat = {
     Name: 'Bonus SP', Acquire: 'Train',
-    Effect: { Type: 'SpellPoints', Bonus: 'Stacking', Amount: '100' },
+    Effect: { Type: 'SpellPoints', Bonus: 'Stacking', Amount: '100', AType: 'Stacks' },
   } as unknown as Feat
   const spItem = {
     Name: 'SP Trinket',
