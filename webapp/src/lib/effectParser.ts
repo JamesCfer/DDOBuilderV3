@@ -381,7 +381,11 @@ function resolveValue(
   treeTotalAP: number,
   ctx?: EffectContext,
 ): number | null {
-  const atype = effect.AType ?? 'Stacks'
+  // V2 Effect.h: a missing <AType> deserializes to Amount_Unknown, and
+  // TotalAmount()'s switch has no matching case and no default — the effect
+  // silently contributes 0 (e.g. Shadowstrike.Filigree.xml's Rare PRR effect
+  // omits AType; V2 neuters it, so V3 must too — NOT default it to Stacks).
+  const atype = effect.AType ?? 'Unknown'
 
   switch (atype) {
     // ---------------------------------------------------------------------

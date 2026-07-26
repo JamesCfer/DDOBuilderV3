@@ -24,7 +24,7 @@ const ctx: EffectContext = {
 
 describe('N7 — Weapon_CriticalRange routes to melee.crit.range', () => {
   it('parseEffect: Weapon_CriticalRange emits melee.crit.range', () => {
-    const eff = { Type: 'Weapon_CriticalRange', Amount: 1, Bonus: 'Competence' } as Effect
+    const eff = { Type: 'Weapon_CriticalRange', Amount: 1, Bonus: 'Competence', AType: 'Stacks' } as Effect
     const out = parseEffect(eff, 1, 'Test', 0, 0, ctx)
     expect(out).toHaveLength(1)
     expect(out[0].statKey).toBe('melee.crit.range')
@@ -32,15 +32,15 @@ describe('N7 — Weapon_CriticalRange routes to melee.crit.range', () => {
   })
 
   it('parseItemBuff: Weapon_CriticalRange emits melee.crit.range', () => {
-    const buff = { Type: 'Weapon_CriticalRange', Amount: 1 } as ItemBuff
+    const buff = { Type: 'Weapon_CriticalRange', Amount: 1, AType: 'Stacks' } as ItemBuff
     const out = parseItemBuff(buff, 'Test Item')
     expect(out).toHaveLength(1)
     expect(out[0].statKey).toBe('melee.crit.range')
   })
 
   it('stacks additively with the class-gated sibling in the same total', () => {
-    const universal = { Type: 'Weapon_CriticalRange', Amount: 1, Bonus: 'Competence' } as Effect
-    const gated = { Type: 'WeaponCriticalRangeClass', Amount: 1, Bonus: 'Feat', Item: ['Melee'] } as unknown as Effect
+    const universal = { Type: 'Weapon_CriticalRange', Amount: 1, Bonus: 'Competence', AType: 'Stacks' } as Effect
+    const gated = { Type: 'WeaponCriticalRangeClass', Amount: 1, Bonus: 'Feat', Item: ['Melee'], AType: 'Stacks' } as unknown as Effect
     const gatedCtx: EffectContext = { ...ctx, weaponClassMain: new Set(['Melee']) }
     const outUniversal = parseEffect(universal, 1, 'Test', 0, 0, ctx)
     const outGated = parseEffect(gated, 1, 'Test', 0, 0, gatedCtx)

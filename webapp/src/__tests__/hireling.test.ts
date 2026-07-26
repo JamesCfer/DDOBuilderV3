@@ -17,7 +17,7 @@ const ctx: EffectContext = {
 }
 
 const mk = (Type: string, extra: Partial<Effect> = {}): Effect => ({
-  Type, Amount: 1, Bonus: 'Enhancement', ...extra,
+  Type, Amount: 1, Bonus: 'Enhancement', AType: 'Stacks', ...extra,
 }) as Effect
 
 describe('Hireling effect parsing (Stream 4)', () => {

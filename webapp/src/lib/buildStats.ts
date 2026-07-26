@@ -33,6 +33,7 @@ import {
   divineGraceCap, halfElfLesserDivineGraceCap,
 } from './v2Formulas'
 import { getLevelClasses, tomeCapAtLevel } from './levelProgression'
+import { buildFeatCountMap } from './treeAvailability'
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -1063,15 +1064,29 @@ function buildStatMapOnce(
     const ctxFeats = new Set<string>()
     for (const f of Object.values(build.featChoices)) if (f) ctxFeats.add(f)
     if (ctxRace) for (const f of toArray(ctxRace.GrantedFeat)) ctxFeats.add(f)
+    // Raw automatic-feat grant tally (per class-level occurrence) — feeds
+    // both ctxFeats and, capped at MaxTimesAcquire below, ctxFeatCounts.
+    const autoGrantTally = new Map<string, number>()
     for (const bc of classesWithEpicPseudo(build)) {
       const cls = allClasses.find(c => c.Name === bc.name)
       for (const af of toArray(cls?.AutomaticFeats)) {
         const lvl = af.Level ?? 0
         if (lvl > bc.levels) continue
         const names = af.Feats
-        if (typeof names === 'string') ctxFeats.add(names)
-        else if (Array.isArray(names)) for (const n of names) ctxFeats.add(n)
+        if (typeof names === 'string') { ctxFeats.add(names); autoGrantTally.set(names, (autoGrantTally.get(names) ?? 0) + 1) }
+        else if (Array.isArray(names)) for (const n of names) { ctxFeats.add(n); autoGrantTally.set(n, (autoGrantTally.get(n) ?? 0) + 1) }
       }
+    }
+    // V2 AType=FeatCount reads TrainedCount(feat) — every trained instance
+    // from ANY source. Trained/past-life/favor/special come from
+    // buildFeatCountMap; class AutomaticFeats grants (Religious/Wilderness/
+    // Arcane Lore — Bard grants Religious Lore ×9, etc.) are added here,
+    // capped at the feat's MaxTimesAcquire like Build::AutomaticFeats does.
+    const ctxFeatCounts = buildFeatCountMap(build, input.specialFeats ?? [])
+    for (const [name, raw] of autoGrantTally) {
+      const feat = allFeats.find(f => f.Name === name)
+      const cap = feat?.MaxTimesAcquire ?? 1
+      ctxFeatCounts[name] = (ctxFeatCounts[name] ?? 0) + Math.min(raw, cap)
     }
     const ctxEnhancements = new Set<string>()
     for (const choices of Object.values(build.enhancementChoices)) {
@@ -1203,14 +1218,23 @@ function buildStatMapOnce(
     if (mainWeaponType) ctxStances.add(mainWeaponType)
     if (offWeaponType) ctxStances.add(offWeaponType)
     {
-      const hasShield = ['Tower Shield', 'Heavy Shield', 'Light Shield', 'Buckler']
+      // Real item data tags shields as <Weapon>Buckler/Small Shield/Large
+      // Shield/Tower Shield</Weapon> (never <Armor>), so they arrive via
+      // offWeaponType — the old 'Heavy/Light Shield' names never matched
+      // anything and Large/Small shields were invisible to shield detection.
+      const hasShield = ['Tower Shield', 'Large Shield', 'Small Shield', 'Buckler', 'Heavy Shield', 'Light Shield']
         .some(s => ctxStances.has(s))
       if (hasShield) ctxStances.add('Shield')
       const twoHandedMain = ctxWeaponClassMain.has('Two Handed')
       const hasOffhandWeapon = offWeaponType !== ''
       if (twoHandedMain) {
         ctxStances.add('Two Handed Fighting')
-      } else if (hasOffhandWeapon) {
+      } else if (hasOffhandWeapon && !hasShield) {
+        // A shield in the off-hand (even a <Weapon>-tagged bashing buckler)
+        // is Sword-and-Board, not dual-wielding — V2 never activates the
+        // Two Weapon Fighting stance for it (James Dodge v8: Kukri +
+        // Legendary Alchemical Buckler wrongly fired Tempest "Shield of
+        // Whirling Steel"'s TWF-gated +2 PRR/MRR).
         ctxStances.add('Two Weapon Fighting')
       } else if (mainWeaponType && !hasShield) {
         ctxStances.add('Single Weapon Fighting')
@@ -1249,6 +1273,12 @@ function buildStatMapOnce(
       baseClassLevels: ctxBaseClassLevels,
       totalLevel: build.totalLevel,
       feats: ctxFeats,
+      // V2 AType=FeatCount reads the TRAINED count of the named feat
+      // (repeatable feats like Religious/Wilderness Lore) — this field was
+      // declared but never populated, collapsing every FeatCount table to
+      // its 0-or-1 row (Mighty Crusade, Temperance of Belief/Spirit,
+      // Druidic Stoneshape).
+      featCounts: ctxFeatCounts,
       enhancements: ctxEnhancements,
       enhancementSelections: ctxEnhancementSelections,
       abilityTotals: ctxAbilityTotals,
@@ -1780,6 +1810,19 @@ function buildStatMapOnce(
     add(map, 'offhand.attack', { value: 20, type: 'Base', source: 'Attack (base off-hand attack chance)' })
     add(map, 'unconsciousRange', { value: -10, type: 'Base', source: 'Attack (standard death at -10)' })
     add(map, 'dodgeCap', { value: 25, type: 'Base', source: 'Attack (base dodge cap 25%)' })
+    // Attack feat "Equipped {Buckler|Small|Large|Tower} Shield PRR/MRR Bonus"
+    // (Feats.xml, Bonus="Shield", stance-gated): 0/5/10/15 to BOTH PRR and MRR
+    // while that shield type is wielded. Was the one Attack base never modeled.
+    {
+      const shieldPRR = ctxStances.has('Tower Shield') ? 15
+        : ctxStances.has('Large Shield') || ctxStances.has('Heavy Shield') ? 10
+        : ctxStances.has('Small Shield') || ctxStances.has('Light Shield') ? 5
+        : 0
+      if (shieldPRR > 0) {
+        add(map, 'prr', { value: shieldPRR, type: 'Shield', source: 'Attack (equipped shield PRR/MRR bonus)' })
+        add(map, 'mrr', { value: shieldPRR, type: 'Shield', source: 'Attack (equipped shield PRR/MRR bonus)' })
+      }
+    }
 
     // V2 BreakdownItemMaximumKi.cpp:31-58 — Maximum Ki = base 40 + WIS mod × 5
     // (plus any KiMaximum effects, parsed into ki.max). V2 adds the base + WIS

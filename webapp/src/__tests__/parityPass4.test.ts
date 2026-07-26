@@ -31,7 +31,7 @@ const ctx: EffectContext = {
   stances: new Set(), bab: 20, weaponTypes: new Set(),
 }
 const mk = (Type: string, extra: Partial<Effect> = {}): Effect =>
-  ({ Type, Amount: 1, Bonus: 'Enhancement', ...extra }) as Effect
+  ({ Type, Amount: 1, Bonus: 'Enhancement', AType: 'Stacks', ...extra }) as Effect
 
 describe('Parity pass 4 — effect routing', () => {
   it('HitpointsStyleBonus routes to styleFeats counter (BreakdownItemHitpoints.cpp:139)', () => {
