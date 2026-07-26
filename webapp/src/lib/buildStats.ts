@@ -1480,6 +1480,28 @@ function buildStatMapOnce(
             accumulateFeat(map, ihdBase, milestones, `Improved Heroic Durability (${bc.name})`, charLevelTotal, ctx)
           }
         }
+
+        // V2 Build::ClassAtLevel falls back to "Unknown" for any heroic row
+        // with no assigned class (Build.cpp:1226-1236), and Classes/Unknown.
+        // class.xml carries no <NotHeroic/> flag, so Class::
+        // ImprovedHeroicDurabilityFeats() synthesizes "Improved Heroic
+        // Durability (Unknown 5/10/15)" the same as any real heroic class —
+        // gated on Requirement_ClassAtLevel("Unknown", N), which counts
+        // classless heroic rows. A build with unclassed heroic levels (TR
+        // artifacts, or a genuinely classless build) still reaches these
+        // milestones in V2; V3's build.classes drops blank-named entries
+        // entirely (buildStats.ts import), so this was silently missed.
+        const unknownCls = allClasses.find(c => c.Name === 'Unknown')
+        if (unknownCls && !unknownCls.NotHeroic) {
+          const unknownLevels = (build.levelClasses ?? []).filter(c => !c).length
+          let milestones = 0
+          for (let level = 5; level <= 15; level += 5) {
+            if (unknownLevels >= level) milestones++
+          }
+          if (milestones > 0) {
+            accumulateFeat(map, ihdBase, milestones, 'Improved Heroic Durability (Unknown)', charLevelTotal, ctx)
+          }
+        }
       }
     }
 

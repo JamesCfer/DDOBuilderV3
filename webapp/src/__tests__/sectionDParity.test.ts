@@ -128,6 +128,40 @@ describe('Improved Heroic Durability synthesis (Class.cpp:375-399)', () => {
     }
     expect(hp(build, [epic], [ihdBaseFeat])).toBe(0)
   })
+
+  // V2 Build::ClassAtLevel falls back to "Unknown" for a heroic row with no
+  // assigned class (Build.cpp:1226-1236); Classes/Unknown.class.xml carries
+  // no <NotHeroic/> flag, so Class::ImprovedHeroicDurabilityFeats() still
+  // synthesizes "Improved Heroic Durability (Unknown 5/10/15)" gated on
+  // Requirement_ClassAtLevel("Unknown", N). A build with classless heroic
+  // levels (raydc.DDOBuild: 20 blank heroic rows, real V2 oracle HP 330)
+  // reaches these milestones in V2 even though build.classes never records
+  // an entry for the blank name (buildStats.ts's `!bc.name` skip is correct
+  // for the *named*-class loop but must not swallow the Unknown case).
+  it('applies to classless ("Unknown") heroic levels the same as a named class', () => {
+    const unknown: DDOClass = { Name: 'Unknown', HitPoints: 0 } as DDOClass
+    const build = {
+      ...makeEmptyBuild(),
+      classes: [{ name: '', levels: 0 }, { name: '', levels: 0 }, { name: '', levels: 0 }],
+      levelClasses: Array.from({ length: 20 }, () => ''),
+      totalLevel: 20,
+    }
+    // 20 classless heroic levels → all three milestones (5, 10, 15) → +15.
+    expect(hp(build, [unknown], [ihdBaseFeat])).toBe(15)
+  })
+
+  it('does not apply the Unknown milestone when heroic levels are all classed', () => {
+    const fighter = heroicClass('Fighter')
+    const unknown: DDOClass = { Name: 'Unknown', HitPoints: 0 } as DDOClass
+    const build = {
+      ...makeEmptyBuild(),
+      classes: [{ name: 'Fighter', levels: 20 }, { name: '', levels: 0 }, { name: '', levels: 0 }],
+      levelClasses: Array.from({ length: 20 }, () => 'Fighter'),
+      totalLevel: 20,
+    }
+    const total = hp(build, [fighter, unknown], [ihdBaseFeat])
+    expect(total).toBe(15) // Fighter's own three milestones only, no Unknown double-count.
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -146,6 +146,7 @@ the PR number, so this file doubles as a changelog.
 | 125 | **Straggler pass (round-2 agent): char level from `<Level>`, Centered weapon gate — ability.STR and dodge buckets CLOSED** (the pass's third cause — GrantFeat display-only — landed independently as #167/entry 124 with the same conclusion) — **(B) Character level from the Build's explicit `<Level>` field**: V2 `Build::Level()` (`Build.h:378`) is independent of per-level Class assignment — blank/"Unknown" heroic rows still count. V3 derived `totalLevel` by counting classed rows: raydc (all 20 heroic rows classless, `<Level>34</Level>`) computed char level 14, dropping 5 of 8 STR level-ups (−5 exact) plus HP/tome/TotalLevel-table knock-ons; Virtues-1 (4 blank rows) dropped its Level-32 pick (−1 exact). Importer now trusts `<Level>` when present (`totalLevel = max(derived, min(20, Level − epic − leg))`). **(C) "Centered" requires unarmed or a monk weapon**: WeaponGroupings.xml's "Centered" group (Empty/Kama/Shuriken/Handwraps/Quarterstaff/Unarmed); V3 centered every cloth-armor Monk/Sacred Fist regardless of weapon (speed leveling's Heavy-Crossbow monk got Flurry's +4 dodge). Derivation moved after weapon-class computation and gated on `ctxWeaponClassMain.has('Centered')`. `oracleDiff.ts` after #167 + this: **ability.STR →0, dodge →0** (with #167's CON/Fort/Will closures: five buckets closed this round), hitpoints 18, prr 10, mrr 8, rangedPower 2; builds with any mismatch 26. Open leads recorded: Max imbue rangedPower −10 (Archer's Focus slider — possibly a real persisted slider position the oracle can't see), Maetrim MP/RP −2/−2. 4 regression tests in `parityPass124Stragglers.test.ts`. | #168 |
 | 126 | **Cross-feat `AType=Stacks` merge sums RANKS, not sources — hitpoints 18→2** — V2 `Effect::operator==` (`Effect.cpp:959-985`) ignores `Rank`, and `BreakdownItem::AddEffect` bumps `m_stacks` once per training APPLICATION, so `m_stacks` is the running SUM of every sharing source's trained rank; `Amount_Stacks` indexes `Amount[m_stacks−1]`. V3's post-pass merge used the COUNT of contributing sources: the 18 distinct "Epic Past Life" feats (identical `FatePoint` `AType=Stacks` 54-row effect) × rank 3 = 54 applications should index `Amount[53]` = 18 fate points, but V3 indexed `Amount[17]` = 6 — −12 fate points → −24 HP direct (2 HP/FP) plus percent-HP compounding. Full Maetrim reconciliation: +24 direct + 11 (45% of the raised base) = the exact −35 gap, zero residual; same shape verified on 10 more builds. Fix: `RawBonus.stackRank` records each contributor's own rank at parse time; the merge sums `stackRank` for the table index (subsumes pass 119's singleton special case — a singleton degenerates to `Amount[rank−1]`, the value `getAmountAtRank` already resolved). `oracleDiff.ts`: **hitpoints 18→2**; builds with any mismatch 26→14. Remaining HP: "Two weaon Simi" −173 (zero past lives — separate large cause, undiagnosed) and raydc −18 (missing heroic base-HP line + negative CON×34 row — separate importer/ability issue, undiagnosed). 3 regression tests in `parityPass126StackRank.test.ts`. | #169 |
 | 127 | **PRR/MRR pass (round-2 agent, line-item diff vs V2's real AllActiveEffects dump): four causes — prr and mrr buckets CLOSED, corpus down to 3 builds / 4 cells** — **(A) Attack feat per-shield-size PRR/MRR never modeled**: Feats.xml "Equipped {Buckler\|Small\|Large\|Tower} Shield PRR/MRR Bonus" (0/5/10/15, `Bonus="Shield"`, stance-gated) — the one Attack base the hardcoded-defaults comment always said was missing; added keyed on the shield stance. Uncovered a broader naming bug on the way: real items tag shields as `<Weapon>Small/Large/Tower Shield</Weapon>` (never `<Armor>`), so V3's shield detection lists ('Heavy/Light Shield') matched NOTHING — Large/Small shields were invisible to the `Shield` stance and shield gating. **(B) `EffectContext.featCounts` declared but never populated**: every `AType=FeatCount` effect (Divine Crusader "Mighty Crusade", item buffs "Temperance of Belief/Spirit", "Druidic Stoneshape") collapsed to its 0-or-1 row. Now wired: trained/past-life/favor/special via `buildFeatCountMap` PLUS class-`AutomaticFeats` grants (Bard grants "Religious Lore" ×9 through its level table — the healer-cluster source), capped at `MaxTimesAcquire`. **(C) `<Weapon>`-tagged off-hand shields (bashing bucklers) wrongly auto-activated "Two Weapon Fighting"**: V2 treats Sword-and-Board as not dual-wielding — James Dodge v8's Kukri + Legendary Alchemical Buckler fired Tempest "Shield of Whirling Steel"'s TWF-gated +2 PRR/MRR. **(D) Missing `<AType>` must contribute 0**: V2 deserializes it to `Amount_Unknown` and `TotalAmount()`'s switch has no case for it — a silent no-op; V3 defaulted to `Stacks` (Shadowstrike Rare filigree's authoring oversight → +4 phantom PRR on Magic missile healer). Maps to the existing 'Unknown' non-numeric path; test-fixture `mk` helpers updated to carry the explicit `AType` real data always has. `oracleDiff.ts`: **prr 10→0, mrr 8→0 (closed)**; "Two weaon Simi" HP −173 also closed (FeatCount-driven); builds with any mismatch 14→**3** (4 stat cells): Maetrim MP/RP −2/−2 (Mythic Power Boost `EnterValue` slot-tier scaling — augment class unmodeled, V2 slot-tier lookup table not yet located), Max imbue rangedPower −10 (suspected feat-level `AType=BAB` staging vs `ctxBAB`, unconfirmed), raydc hitpoints −18 (missing heroic base-HP line + negative CON row, importer-side, undiagnosed). 7 regression tests in `parityPass127PRR.test.ts`. | this PR |
+| 128 | **raydc hitpoints −18 CLOSED — "Unknown" pseudo-class never synthesizes Improved Heroic Durability** — `Class::ImprovedHeroicDurabilityFeats()` (`Class.cpp:384-408`) runs for every class without `<NotHeroic/>`, and `Classes/Unknown.class.xml` has no such flag; `Build::ClassAtLevel` (`Build.cpp:1226-1236`) falls back to class name `"Unknown"` for any heroic `<LevelTraining>` row with no `<Class>` element, so its `Requirement_ClassAtLevel("Unknown", 5/10/15)` gates are satisfiable exactly like a real class. `raydc.DDOBuild` (a genuinely classless level-34 build: all 20 heroic rows blank, `<Level>34</Level>`) has 20 "Unknown"-classed heroic levels ≥ all three milestones, so V2 grants +5 HP ×3 = +15 raw HP that then compounds through the combined-HP percent pass (`Math.trunc(287 × 1.15) = 330`, the oracle's exact value). V3's synthesis loop (`buildStats.ts`, added in Section D) iterates `build.classes`, which the importer (`v2Import.ts:519-522`) explicitly excludes blank-named heroic rows from (`if (!c) continue`) — correct for the *named*-class loop, but it meant classless levels never got their own milestone check at all. Fix: a second pass counts blank entries directly in `build.levelClasses` (independent of `build.classes`) and applies the same 5/10/15 milestone logic when `Classes/Unknown.class.xml` isn't `NotHeroic`. `oracleDiff.ts`: **hitpoints 1→0 (closed)**; corpus 3 builds/4 cells → 2 builds/3 cells (remaining: Maetrim MP/RP −2/−2, Max imbue rangedPower −10, both pre-existing and unrelated). 3 regression tests in `sectionDParity.test.ts`. | #171 |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -353,15 +354,14 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch).
 
-**Current scoreboard after passes 119-124 (2026-07-25, 53-build corpus,
-28 builds with any mismatch, down from 46):** hitpoints 19 (all V3-under,
-small — FatePoint global-stack lead, round-2 diagnosis in flight), prr 10 /
-mrr 8 (mixed signs — healer cluster under, small equal overs; round-2 in
-flight), rangedPower 2, ability.STR 2, meleePower / dodge 1 each (round-2 in
-flight). CLOSED buckets: mrrCap, fortification, saveReflex, ability.DEX,
-ability.CON, saveFortitude, saveWill. Historical per-bucket notes below are
-kept for the evidence trail; where a note conflicts with this scoreboard,
-the scoreboard wins.
+**Current scoreboard after passes 119-128 (2026-07-26, 53-build corpus,
+2 builds with any mismatch, down from 46):** rangedPower 2 (Maetrim MP/RP
+augment slot-tier scaling, Max imbue feat-level `AType=BAB` staging —
+undiagnosed), meleePower 1 (Maetrim, same augment lead). CLOSED buckets:
+mrrCap, fortification, saveReflex, ability.DEX, ability.CON, saveFortitude,
+saveWill, hitpoints, prr, mrr, dodge, ability.STR. Historical per-bucket
+notes below are kept for the evidence trail; where a note conflicts with
+this scoreboard, the scoreboard wins.
 
 - ✅ **GrantFeat never re-applies the granted feat's own stat effects (#124)
   — ability.CON / saveFortitude / saveWill CLOSED, prr 14→10, mrr 12→8,
@@ -392,14 +392,16 @@ the scoreboard wins.
   `parityPass124GrantFeat.test.ts`; `parityPass59.test.ts` corrected to
   match the verified V2 behavior.
 
-- 🟡 **hitpoints (49→38 #116, →31 #161, →21 #162, →19 #163)** — passes
-  116/119/120/121 closed epic/legendary halving, Combat-Style double-count,
-  CON-delta scope, Reaper AP-cap scope, feat TotalLevel indexing, favor
-  feats, the Reaper stance gate, and GoF selector own-effects. The old
-  "percent-HP residue" theory is RETIRED — pass 120's reconciliation proved
-  the percent engine exact; the exampledps golden HP residue is 0 and
-  exact-checked. Remaining 19 builds are all small V3-unders; primary lead
-  is the FatePoint global stack-count (−24 HP on monk builds).
+- ✅ **hitpoints — CLOSED (49→38 #116, →31 #161, →21 #162, →19 #163, →2 #169,
+  →0 #171)** — passes 116/119/120/121 closed epic/legendary halving,
+  Combat-Style double-count, CON-delta scope, Reaper AP-cap scope, feat
+  TotalLevel indexing, favor feats, the Reaper stance gate, and GoF selector
+  own-effects; #169 closed the cross-feat `AType=Stacks` FatePoint
+  global-stack merge; #171 closed the last builder (raydc, a classless
+  build) — the "Unknown" pseudo-class never synthesized Improved Heroic
+  Durability's 5/10/15 milestones. The old "percent-HP residue" theory is
+  RETIRED — pass 120's reconciliation proved the percent engine exact; the
+  exampledps golden HP residue is 0 and exact-checked.
 - 🟡 **saves: Reflex 37→18 / Fort 30→8 / Will 6 (#159)** — root cause #1 fixed:
   `accumulateGuildBuffs` hardcoded the `classLevels` param passed to
   `parseEffect` to `0`, so every Guild Buff effect with `AType="TotalLevel"`
