@@ -1150,14 +1150,8 @@ function buildStatMapOnce(
     // Gnome, …) only fire once that race stance is active. Mirror that here so
     // those race-form effects fire without the player toggling anything.
     if (build.race) ctxStances.add(build.race)
-    // V2 parity: Monk and Sacred Fist are "Centered" when wearing cloth/no armor.
-    // Centered gates all Monk Ki effects (KiMaximum, KiHit, KiPassive, KiCritical).
-    {
-      const monkLevels = (ctxClassLevels['Monk'] ?? 0) + (ctxClassLevels['Sacred Fist'] ?? 0)
-      if (monkLevels > 0 && ctxStances.has('Cloth Armor')) {
-        ctxStances.add('Centered')
-      }
-    }
+    // (Centered derivation moved below — it needs the wielded weapon's
+    // group membership, computed after gear scanning.)
     // Approximate BAB from class progressions (heroic + tier classes). Avoids cycles.
     // V2 parity: each class contributes classBAB(levels) where levels is its
     // total in the per-level array; epic/legendary tiers add their tables.
@@ -1220,6 +1214,20 @@ function buildStatMapOnce(
         ctxStances.add('Two Weapon Fighting')
       } else if (mainWeaponType && !hasShield) {
         ctxStances.add('Single Weapon Fighting')
+      }
+    }
+    // V2 parity: Monk and Sacred Fist are "Centered" when unarmored AND
+    // unarmed or wielding a monk weapon — WeaponGroupings.xml's "Centered"
+    // group (Empty/Kama/Shuriken/Handwraps/Quarterstaff/Unarmed). The old
+    // derivation ignored the weapon, wrongly centering e.g. a Heavy
+    // Crossbow monk (speed leveling.DDOBuild dodge +4 via Flurry of Blows).
+    // Centered gates all Monk Ki effects (KiMaximum, KiHit, KiPassive,
+    // KiCritical) and the WIS-to-AC family.
+    {
+      const monkLevels = (ctxClassLevels['Monk'] ?? 0) + (ctxClassLevels['Sacred Fist'] ?? 0)
+      const weaponOk = !mainWeaponType || ctxWeaponClassMain.has('Centered')
+      if (monkLevels > 0 && ctxStances.has('Cloth Armor') && weaponOk) {
+        ctxStances.add('Centered')
       }
     }
     const ctxSliderValues: Record<string, number> = {

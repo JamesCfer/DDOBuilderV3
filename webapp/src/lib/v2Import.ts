@@ -500,6 +500,19 @@ function parseBuildNode(
   out.epicLevels = epicSlice.filter(c => c === 'Epic').length
   out.legendaryLevels = legendarySlice.filter(c => c === 'Legendary').length
 
+  // V2 Build::Level() is the literal <Level> field (Build.h:378) and is
+  // completely independent of per-level Class assignment — heroic rows with
+  // a blank/"Unknown" <Class> (TR/respec artifacts) still count toward the
+  // character level. Deriving totalLevel purely from classed rows undercounts
+  // it (raydc: all 20 heroic rows classless, <Level>34</Level> → V3 thought
+  // char level 14 and dropped 5 of 8 STR level-ups; Virtues-1: 4 blank rows
+  // → the Level-32 pick was dropped). Trust the explicit field when present.
+  const explicitLevel = asNum(buildNode.Level)
+  if (explicitLevel > 0) {
+    const heroicFromLevel = Math.min(20, explicitLevel - out.epicLevels - out.legendaryLevels)
+    out.totalLevel = Math.max(out.totalLevel, heroicFromLevel)
+  }
+
   // Aggregate triple from heroic per-level (V2 first-seen ordering)
   const counts: Record<string, number> = {}
   const seen: string[] = []
