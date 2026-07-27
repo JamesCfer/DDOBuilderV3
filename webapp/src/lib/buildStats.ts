@@ -1011,6 +1011,7 @@ function buildStatMapOnce(
   abilityTotalsOverride?: Record<string, number>,
   skillTotalsOverride?: Record<string, number>,
   casterLevelsOverride?: Record<string, number>,
+  resolvedBabOverride?: number,
 ): StatMap {
   const map: StatMap = new Map()
 
@@ -1170,20 +1171,23 @@ function buildStatMapOnce(
     // Approximate BAB from class progressions (heroic + tier classes). Avoids cycles.
     // V2 parity: each class contributes classBAB(levels) where levels is its
     // total in the per-level array; epic/legendary tiers add their tables.
+    // ctxClassLevels already carries 'Epic'/'Legendary' entries (set above from
+    // build.epicLevels/legendaryLevels), so this single loop covers them —
+    // adding them again here double-counted Epic/Legendary BAB for any
+    // AType=BAB effect (e.g. Rapid Shot / Multitude of Missiles' "N x BAB"
+    // Ranged Power).
     let ctxBAB = 0
     for (const [name, levels] of Object.entries(ctxClassLevels)) {
       const cls = allClasses.find(c => c.Name === name)
       if (cls) ctxBAB += classBAB(cls, levels)
     }
-    if ((build.epicLevels ?? 0) > 0) {
-      const epicCls = allClasses.find(c => c.Name === 'Epic')
-      if (epicCls) ctxBAB += classBAB(epicCls, build.epicLevels)
-    }
-    if ((build.legendaryLevels ?? 0) > 0) {
-      const legCls = allClasses.find(c => c.Name === 'Legendary')
-      if (legCls) ctxBAB += classBAB(legCls, build.legendaryLevels)
-    }
-    ctxBAB = Math.min(MAX_BAB, ctxBAB)
+    // V2 Effect::TotalAmount's Amount_BAB case (Effect.cpp:1121-1145) reads the
+    // LIVE, fully-resolved Breakdown_BAB.Total() — which already folds in any
+    // active OverrideBAB boost (e.g. Tenser's Transformation) — not just the
+    // raw per-class sum. Feed back the previous iteration's fully-resolved
+    // `bab` stat once available (fixed-point, mirrors the ability-total
+    // wrapper in buildStatMap); iteration 1 falls back to the class-table sum.
+    ctxBAB = Math.min(MAX_BAB, resolvedBabOverride ?? ctxBAB)
     const ctxWeaponTypes = new Set<string>()
     let mainWeaponType = ''
     let offWeaponType = ''
@@ -2461,22 +2465,27 @@ export function buildStatMap(input: BuildStatsInput, build: CharacterBuild): Sta
     }
     return out
   }
+  const babOf = (m: StatMap): number => resolveBonus(m.get('bab') ?? []).total
   let map = buildStatMapOnce(input, build)
   let totals = totalsOf(map)
   let skills = skillsOf(map)
   let casters = casterOf(map)
+  let bab = babOf(map)
   for (let i = 0; i < 3; i++) {
-    const next = buildStatMapOnce(input, build, totals, skills, casters)
+    const next = buildStatMapOnce(input, build, totals, skills, casters, bab)
     const nextTotals = totalsOf(next)
     const nextSkills = skillsOf(next)
     const nextCasters = casterOf(next)
+    const nextBab = babOf(next)
     const stable = ABILITIES.every(ab => nextTotals[ab] === totals[ab])
       && Object.keys({ ...skills, ...nextSkills }).every(k => nextSkills[k] === skills[k])
       && Object.keys({ ...casters, ...nextCasters }).every(k => nextCasters[k] === casters[k])
+      && nextBab === bab
     map = next
     totals = nextTotals
     skills = nextSkills
     casters = nextCasters
+    bab = nextBab
     if (stable) break
   }
   return map
