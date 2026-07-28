@@ -187,7 +187,48 @@ function parseLevelTraining(lt: AnyRec | undefined): LevelTrainingV2 {
   }
 }
 
-function parseEnhancements(buildNode: AnyRec, tag: string): {
+/**
+ * V2 parity — SpendInTree::EndElement's tree-version gate (SpendInTree.cpp:82-130).
+ * On load V2 compares each spend's <TreeVersion> with the CURRENT catalogue
+ * tree's <Version> (a missing tree counts as version 0). On mismatch the GUI
+ * asks "open with the old tree?"; headless (v2calc oracle) the answer is
+ * always No, and the spend's enhancements are revoked wholesale
+ * (`m_Enhancements.clear()`). Two V2 name subtleties:
+ *  - legacy tree names carry a LEADING SPACE (" Ninja Spy V1") that V2 never
+ *    trims, so a spend naming a trimmed legacy tree ("Ninja Spy V1") never
+ *    resolves in V2 and is revoked;
+ *  - a real V2-authored legacy spend has the spaced name in the file, which
+ *    resolves to the legacy tree whose Version matches → kept.
+ * V3's XML parsers trim text, so the caller passes the set of tree names
+ * that were spaced in the RAW xml to keep that distinction.
+ */
+export interface V2TreeVersionPolicy {
+  allTrees: { Name?: string; Version?: number; Legacy?: boolean }[]
+  spacedTreeNames: Set<string>
+}
+
+function spendVersionMatchesV2(
+  treeName: string,
+  spendVersion: number,
+  policy: V2TreeVersionPolicy,
+): boolean {
+  const tree = policy.allTrees.find(t => t.Name === treeName)
+  let v2Version = 0
+  if (tree) {
+    // A Legacy tree resolves in V2 only under its spaced name.
+    if (!tree.Legacy || policy.spacedTreeNames.has(treeName)) {
+      v2Version = tree.Version ?? 0
+    }
+  }
+  return spendVersion === v2Version
+}
+
+function parseEnhancements(
+  buildNode: AnyRec,
+  tag: string,
+  versionPolicy?: V2TreeVersionPolicy,
+  warnings?: string[],
+): {
   choices: Record<string, Record<string, number>>
   selections: Record<string, Record<string, string>>
   pinned: string[]
@@ -205,6 +246,13 @@ function parseEnhancements(buildNode: AnyRec, tag: string): {
     const tr = t as AnyRec
     const treeName = asStr(tr.TreeName)
     if (!treeName || treeName === 'No selection') continue
+    if (versionPolicy
+        && !spendVersionMatchesV2(treeName, asNum(tr.TreeVersion), versionPolicy)) {
+      // V2 (headless) revokes every enhancement in an out-of-version tree.
+      warnings?.push(
+        `All enhancements in tree "${treeName}" were revoked as the tree has since been superseded`)
+      continue
+    }
     const tChoices: Record<string, number> = {}
     const tSelections: Record<string, string> = {}
     for (const e of arr(tr.TrainedEnhancement as AnyRec | AnyRec[] | undefined)) {
@@ -462,6 +510,8 @@ function parseBuildNode(
   buildNode: AnyRec,
   life: AnyRec,
   character: AnyRec,
+  versionPolicy?: V2TreeVersionPolicy,
+  warnings?: string[],
 ): CharacterBuild {
   const out = emptyBuild()
 
@@ -581,7 +631,7 @@ function parseBuildNode(
   }
 
   // ── Enhancements (heroic + epic destiny + reaper) ────────────────────────
-  const enh = parseEnhancements(buildNode, 'EnhancementSpendInTree')
+  const enh = parseEnhancements(buildNode, 'EnhancementSpendInTree', versionPolicy, warnings)
   out.enhancementChoices = enh.choices
   out.enhancementSelections = enh.selections
   out.enhancementPinned = enh.pinned
@@ -595,11 +645,11 @@ function parseBuildNode(
     }
   }
 
-  const dest = parseEnhancements(buildNode, 'DestinySpendInTree')
+  const dest = parseEnhancements(buildNode, 'DestinySpendInTree', versionPolicy, warnings)
   out.destinyChoices = dest.choices
   out.destinySelections = dest.selections
 
-  const reap = parseEnhancements(buildNode, 'ReaperSpendInTree')
+  const reap = parseEnhancements(buildNode, 'ReaperSpendInTree', versionPolicy, warnings)
   out.reaperChoices = reap.choices
   out.reaperSelections = reap.selections
 
@@ -819,12 +869,28 @@ export function importGearSetXml(xml: string): {
  * V2 ActiveLifeIndex / ActiveBuildIndex selection. The exporter
  * (exportV2Document) emits all of them.
  */
-export function importV2Document(xml: string): {
+export function importV2Document(xml: string, opts?: {
+  /** Enhancement/destiny/reaper tree catalogue: enables the V2 tree-version
+   *  gate (spends in out-of-version trees are revoked, matching V2's load). */
+  allTrees?: { Name?: string; Version?: number; Legacy?: boolean }[]
+}): {
   document: CharacterDocument
   warnings: string[]
 } {
   const warnings: string[] = []
   const { character, lives, activeLifeIdx, activeBuildIdx } = parseRoot(xml)
+
+  // V2 never trims tree names, and legacy trees are distinguished by a
+  // leading space (" Ninja Spy V1"); our XML parser trims, so recover which
+  // spend TreeNames were spaced from the raw text (see spendVersionMatchesV2).
+  let versionPolicy: V2TreeVersionPolicy | undefined
+  if (opts?.allTrees) {
+    const spacedTreeNames = new Set<string>()
+    for (const m of xml.matchAll(/<TreeName>(\s[^<]*)<\/TreeName>/g)) {
+      spacedTreeNames.add(m[1].trim())
+    }
+    versionPolicy = { allTrees: opts.allTrees, spacedTreeNames }
+  }
 
   const docLives: Life[] = []
   let activeLifeId = ''
@@ -838,7 +904,7 @@ export function importV2Document(xml: string): {
     const lifeSpecial = parseFeatsListObject(getRec(lifeNode, 'SpecialFeats'))
     const builds: CharacterBuild[] = []
     for (let bi = 0; bi < buildNodes.length; bi++) {
-      const build = parseBuildNode(buildNodes[bi], lifeNode, character)
+      const build = parseBuildNode(buildNodes[bi], lifeNode, character, versionPolicy, warnings)
       builds.push(build)
       // The active build is the one at (ActiveLifeIndex, ActiveBuildIndex).
       if (li === activeLifeIdx && bi === activeBuildIdx) {
@@ -911,8 +977,10 @@ export function importV2Document(xml: string): {
  * Import the active life's active build (back-compat). Also returns the full
  * multi-life document (F1) so newer callers can access every life/build.
  */
-export function importV2Build(xml: string): ImportResult {
-  const { document, warnings } = importV2Document(xml)
+export function importV2Build(xml: string, opts?: {
+  allTrees?: { Name?: string; Version?: number; Legacy?: boolean }[]
+}): ImportResult {
+  const { document, warnings } = importV2Document(xml, opts)
   const life = document.lives.find(l => l.id === document.activeLifeId) ?? document.lives[0]
   const build = life?.builds.find(b => b.id === document.activeBuildId)
     ?? life?.builds[0]

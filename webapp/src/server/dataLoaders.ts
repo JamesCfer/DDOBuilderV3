@@ -28,17 +28,26 @@ export const xmlParser = new XMLParser({
   parseAttributeValue: true,
   parseTagValue: true,
   trimValues: true,
-  isArray: (name) => [
-    'Race', 'Class', 'Feat', 'Effect', 'Requirement', 'RequiresOneOf',
-    'RequiresNoneOf', 'Group', 'Item', 'EnhancementTree', 'EnhancementTreeItem',
-    'EnhancementSelection', 'Selector', 'FeatSlot', 'AutomaticFeats',
-    'ClassSkill', 'Alignment', 'Augment', 'Buff', 'ItemAugment',
-    'SlotUpgrade', 'UpgradeType',
-    'SetBonus', 'Gem', 'Stance', 'Spell', 'Patron', 'Quest', 'GuildBuff',
-    'GrantedFeat', 'ClassFeat', 'RacialFeat', 'WeaponGroup', 'Weapon',
-    'OptionalBuff', 'Filigree', 'SpellDC', 'SpellDamage', 'ClassSpell',
-    'ModAbility',
-  ].includes(name),
+  isArray: (name, jpath) => {
+    // <Weapon> is a LIST only inside WeaponGroupings.xml's <WeaponGroup>
+    // (the group's member weapon types). On an Item it is the single weapon
+    // type ("Buckler", "Kukri", …) — parsing it as an array made every
+    // `item.Weapon === '<type>'` comparison silently false (shield stance
+    // detection, weaponInfoFromItem's weaponType), which persisted
+    // <ActiveStances> entries then masked.
+    if (name === 'Weapon') return jpath.includes('WeaponGroup')
+    return [
+      'Race', 'Class', 'Feat', 'Effect', 'Requirement', 'RequiresOneOf',
+      'RequiresNoneOf', 'Group', 'Item', 'EnhancementTree', 'EnhancementTreeItem',
+      'EnhancementSelection', 'Selector', 'FeatSlot', 'AutomaticFeats',
+      'ClassSkill', 'Alignment', 'Augment', 'Buff', 'ItemAugment',
+      'SlotUpgrade', 'UpgradeType',
+      'SetBonus', 'Gem', 'Stance', 'Spell', 'Patron', 'Quest', 'GuildBuff',
+      'GrantedFeat', 'ClassFeat', 'RacialFeat', 'WeaponGroup',
+      'OptionalBuff', 'Filigree', 'SpellDC', 'SpellDamage', 'ClassSpell',
+      'ModAbility',
+    ].includes(name)
+  },
 })
 
 function readXml(filePath: string): unknown {

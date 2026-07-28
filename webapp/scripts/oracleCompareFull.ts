@@ -1,13 +1,16 @@
-// Full-breakdown parity: v2calc (real V2 math) vs V3, across every
-// Output/FuzzBuilds/*.DDOBuild.
+// SUPERSEDED — use scripts/oracleDiff.ts instead.
 //
-// IMPORTANT SCOPE: v2calc currently applies base + feat + race + class effects
-// only — enhancement/item/spell/set loaders are still stubs, so those effects
-// no-op. To compare like-for-like, we STRIP gear, enhancements, destiny,
-// reaper, filigrees and toggled buffs from the V3 build too. This validates the
-// CORE breakdown formulas (hit dice + CON → HP, class + ability → saves, BAB,
-// ability totals with feat effects). Gear/enhancement-inclusive comparison
-// waits on the v2calc data-file loaders.
+// This harness predates the v2calc data-file loaders (#153): back then the
+// oracle applied base+feat+race+class only, so BOTH sides were stripped to
+// "naked" builds before comparing. The loaders are real now — the oracle
+// applies enhancements/gear/spells/sets — and oracleDiff.ts compares the two
+// engines at FULL fidelity across Example Builds + UserBuilds/collection +
+// FuzzBuilds by default. Kept only for core-formula bisection (a naked-build
+// diff can localise a bug to the base math when a full-fidelity diff is noisy).
+//
+// Historical scope note (still what this script does): strips gear,
+// enhancements, destiny, reaper, filigrees and toggled buffs from both sides
+// and compares the CORE breakdown formulas only.
 //
 //   cd webapp && npx tsx scripts/oracleCompareFull.ts [--verbose]
 //

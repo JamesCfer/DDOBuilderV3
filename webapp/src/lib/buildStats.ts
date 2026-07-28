@@ -499,8 +499,10 @@ function accumulateClasses(
 
 function accumulateFeat(map: StatMap, feat: Feat, rank: number, source: string, totalLevel = 0, ctx?: EffectContext): void {
   for (const eff of toArray(feat.Effect)) {
-    // For AType=TotalLevel / ClassLevel etc. effects in feats, pass totalLevel as the level arg
-    addParsed(map, parseEffect(eff, rank, source, totalLevel, 0, ctx))
+    // For AType=TotalLevel / ClassLevel etc. effects in feats, pass totalLevel as the level arg.
+    // feat.Name is V2's load-time DisplayName stamp (Feat.cpp:96-104) — the
+    // stack-merge identity for anonymous effects.
+    addParsed(map, parseEffect(eff, rank, source, totalLevel, 0, ctx, feat.Name))
   }
 }
 
@@ -527,7 +529,8 @@ function accumulateEnhancementTree(
       const opt = options.find(o => o.Name === selectedOption)
       if (opt) {
         for (const eff of toArray(opt.Effect as Effect | Effect[] | undefined)) {
-          addParsed(map, parseEffect(eff, rank, `${source} (${selectedOption})`, classLevels, treeAP, ctx))
+          // V2 stamps selector effects with Name(selection) = "item: selection"
+          addParsed(map, parseEffect(eff, rank, `${source} (${selectedOption})`, classLevels, treeAP, ctx, `${item.Name}: ${selectedOption}`))
         }
       }
     }
@@ -537,7 +540,9 @@ function accumulateEnhancementTree(
     // selector option's effects — "even if it had a sub-selection it may
     // still have effects that always apply regardless of the sub-selection".
     for (const eff of toArray(item.Effect)) {
-      addParsed(map, parseEffect(eff, rank, source, classLevels, treeAP, ctx))
+      // V2 stamps own-effects with the item's display Name (identical across
+      // tree copies, e.g. Shifter + Razorclaw "Shifter: Self Reliant" merge)
+      addParsed(map, parseEffect(eff, rank, source, classLevels, treeAP, ctx, item.Name))
     }
   }
 }
@@ -588,37 +593,53 @@ function accumulateGear(
  * V2 armor stance detection: returns the active armor stance from the equipped
  * armor item (Cloth/Light/Medium/Heavy) plus shield-type stances.
  */
-function deriveArmorStances(gearItems: Record<string, Item>, activeBuffs?: string[]): Set<string> {
+/** The auto-controlled stances deriveArmorStances computes — persisted
+ *  <ActiveStances> entries for these are stale input V2 itself discards. */
+const AUTO_ARMOR_SHIELD_STANCES = new Set([
+  'Cloth Armor', 'Light Armor', 'Medium Armor', 'Heavy Armor',
+  'Shield', 'Buckler', 'Small Shield', 'Large Shield', 'Tower Shield',
+  'Orb', 'Rune Arm',
+])
+
+function deriveArmorStances(gearItems: Record<string, Item>, feats?: Set<string>): Set<string> {
   const stances = new Set<string>()
-  // V2 Build::IsStanceActive reads the build's TRACKED stance state
-  // (serialized <ActiveStances>), not a live re-derivation from gear — the
-  // two can legitimately diverge (e.g. heavy armor equipped without the
-  // proficiency feat leaves the stance at "Cloth Armor"). An explicit armor
-  // stance recorded on the build wins; gear derivation is the fallback for
-  // builds authored fresh in V3 with no recorded stance.
-  const ARMOR_STANCES = ['Cloth Armor', 'Light Armor', 'Medium Armor', 'Heavy Armor']
-  const explicit = activeBuffs?.find(s => ARMOR_STANCES.includes(s))
+  // V2's armor stances are AUTO-CONTROLLED (Stances.xml Group=Auto,
+  // <AutoControlled/>): CStancesPane re-evaluates them from the equipped
+  // armor + body feats on load and on every gear/feat change
+  // (CStanceButton::Evaluate), so a persisted <ActiveStances> armor entry
+  // that contradicts the gear NEVER survives in the real app (verified
+  // against the v2calc oracle — "Odd tank.DDOBuild" persists "Cloth Armor"
+  // while wearing heavy armor; V2 recomputes to "Heavy Armor" at load).
+  // Mirror Stances.xml exactly (independent requirements, not else-if):
+  //   Cloth  = armor slot Cloth/Empty/Docent AND no Mithral/Adamantine Body
+  //   Light  = Light armor OR Mithral Body
+  //   Medium = Medium armor
+  //   Heavy  = Heavy armor OR Adamantine Body
+  // (Requirement::EvaluateItemInSlot: "Empty" matches only a truly empty
+  // slot; an item without an <Armor> field matches NO armor type at all.)
   const armor = gearItems['Armor'] ?? gearItems['Body']
-  if (explicit) {
-    stances.add(explicit)
-  } else if (armor) {
-    const t = armor.Armor
-    if (t === 'Cloth' || t == null) stances.add('Cloth Armor')
-    else if (t === 'Light')  stances.add('Light Armor')
-    else if (t === 'Medium') stances.add('Medium Armor')
-    else if (t === 'Heavy')  stances.add('Heavy Armor')
-    // Docent (warforged): treat per item.Material? Default to Cloth Armor.
-  } else {
+  const t = armor?.Armor
+  const mithral = feats?.has('Mithral Body') ?? false
+  const adamantine = feats?.has('Adamantine Body') ?? false
+  if ((armor == null || t === 'Cloth' || t === 'Docent') && !mithral && !adamantine) {
     stances.add('Cloth Armor')
   }
-  // Shield stance from off-hand ('Off Hand' is the canonical app slot name)
+  if (t === 'Light' || mithral) stances.add('Light Armor')
+  if (t === 'Medium') stances.add('Medium Armor')
+  if (t === 'Heavy' || adamantine) stances.add('Heavy Armor')
+  // Shield / off-hand stances ('Off Hand' is the canonical app slot name).
+  // Real item data tags shields as <Weapon>Buckler/Small Shield/Large Shield/
+  // Tower Shield</Weapon> (never <Armor>) — V2's auto stances (Stances.xml)
+  // are keyed off exactly that: per-type stances plus the umbrella "Shield",
+  // and "Orb"/"Rune Arm" for the other off-hand item classes.
   const shield = gearItems['Off Hand'] ?? gearItems['OffHand'] ?? gearItems['Shield']
   if (shield) {
-    const t = shield.Armor
-    if (t === 'Tower Shield' || t === 'TowerShield') stances.add('Tower Shield')
-    else if (t === 'Heavy Shield' || t === 'HeavyShield') stances.add('Heavy Shield')
-    else if (t === 'Light Shield' || t === 'LightShield') stances.add('Light Shield')
-    else if (t === 'Buckler') stances.add('Buckler')
+    const w = shield.Weapon
+    if (w === 'Buckler' || w === 'Small Shield' || w === 'Large Shield' || w === 'Tower Shield') {
+      stances.add(w)
+      stances.add('Shield')
+    } else if (w === 'Orb') stances.add('Orb')
+    else if (w === 'Rune Arm') stances.add('Rune Arm')
   }
   return stances
 }
@@ -677,7 +698,12 @@ function accumulateAugments(
     if (!augName) continue
     const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
-    const source = `Augment: ${aug.Name}`
+    // V2 Build::ApplyAugment names augment effects
+    // "<host item> : <augment slot type> : <augment name>" (Build.cpp:4933-36)
+    // — the HOST keeps two copies of the same augment in different items
+    // DISTINCT (they then compete Highest-Only instead of stack-merging).
+    // Mirror that by scoping the source to the host slot.
+    const source = `Augment: ${aug.Name} (${key.split(':')[0]})`
     const augAny = aug as Augment & { ChooseLevel?: unknown, DualValues?: unknown, LevelValue2?: unknown, EnterValue?: unknown }
     const hasChooseLevel = augAny.ChooseLevel !== undefined
     const hasEnterValue = augAny.EnterValue !== undefined
@@ -1163,12 +1189,17 @@ function buildStatMapOnce(
         ctxAbilityTotals[ab] = base + racial + lv
       }
     }
-    const ctxStances = deriveArmorStances(gearItems, build.activeBuffs)
+    const ctxStances = deriveArmorStances(gearItems, ctxFeats)
     // V2 parity: Build::IsStanceActive checks both armor-derived stances AND
     // player-toggled stances.  Merge activeBuffs so that effects gated on e.g.
     // "Mountain Stance", "Favored Weapon", "Power Attack", "Rage", etc. fire
     // correctly when the player has toggled them on in the Stances panel.
-    for (const s of build.activeBuffs) ctxStances.add(s)
+    // Armor/shield stances are AUTO-CONTROLLED in V2 (re-derived from gear on
+    // every load/change) — a stale persisted entry must not survive the
+    // re-derivation, so skip them here (deriveArmorStances is authoritative).
+    for (const s of build.activeBuffs) {
+      if (!AUTO_ARMOR_SHIELD_STANCES.has(s)) ctxStances.add(s)
+    }
     // V2 parity: StancesPane.cpp:329-354 adds an Auto-controlled stance named
     // after every race, gated on Requirement_Race; CStanceButton::Evaluate
     // auto-activates it when the build's race matches. Effects gated on
@@ -1240,18 +1271,32 @@ function buildStatMapOnce(
       const hasShield = ['Tower Shield', 'Large Shield', 'Small Shield', 'Buckler', 'Heavy Shield', 'Light Shield']
         .some(s => ctxStances.has(s))
       if (hasShield) ctxStances.add('Shield')
-      const twoHandedMain = ctxWeaponClassMain.has('Two Handed')
-      const hasOffhandWeapon = offWeaponType !== ''
-      if (twoHandedMain) {
+      // Fighting-style stances mirror Stances.xml's ACTUAL auto-stance
+      // requirements (the old heuristic activated SWF for any single
+      // weapon, including ranged — a repeating crossbow is neither
+      // "Single Weapon" nor "Thrown" group, so V2 never SWFs it):
+      //   THF    = main in "Two Handed" group
+      //   Ranged = main in "All Ranged" group
+      //   TWF    = main AND offhand in "One Handed" group (no animal form)
+      //   SWF    = main in "Single Weapon" or "Thrown" group AND offhand
+      //            Empty/Buckler/Orb/Rune Arm (no animal form)
+      const inAnimalForm = ['Plague Wolf', 'Blight Wolf', 'Wolf', 'Bear', 'Winter Wolf',
+        'Dire Bear', 'Fire Elemental', 'Water Elemental'].some(s => ctxStances.has(s))
+      if (ctxWeaponClassMain.has('Two Handed')) {
         ctxStances.add('Two Handed Fighting')
-      } else if (hasOffhandWeapon && !hasShield) {
-        // A shield in the off-hand (even a <Weapon>-tagged bashing buckler)
-        // is Sword-and-Board, not dual-wielding — V2 never activates the
-        // Two Weapon Fighting stance for it (James Dodge v8: Kukri +
-        // Legendary Alchemical Buckler wrongly fired Tempest "Shield of
-        // Whirling Steel"'s TWF-gated +2 PRR/MRR).
+      }
+      if (ctxWeaponClassMain.has('All Ranged')) {
+        ctxStances.add('Ranged Combat')
+      }
+      if (!inAnimalForm
+          && ctxWeaponClassMain.has('One Handed')
+          && ctxWeaponClassOff.has('One Handed')) {
         ctxStances.add('Two Weapon Fighting')
-      } else if (mainWeaponType && !hasShield) {
+      }
+      if (!inAnimalForm
+          && (ctxWeaponClassMain.has('Single Weapon') || ctxWeaponClassMain.has('Thrown'))
+          && (offWeaponType === '' || offWeaponType === 'Buckler'
+              || offWeaponType === 'Orb' || offWeaponType === 'Rune Arm')) {
         ctxStances.add('Single Weapon Fighting')
       }
     }
@@ -1624,7 +1669,7 @@ function buildStatMapOnce(
     // V2 derives the armor stance from the equipped armor's <Armor> field.
     // Used for: PRR derivation (BAB×multiplier), MRR cap (Cloth=50, Light=100),
     // dodge cap (Cloth = no MDB cap), AC stacking-armor%, etc.
-    const armorStances = deriveArmorStances(gearItems, build.activeBuffs)
+    const armorStances = deriveArmorStances(gearItems, ctxFeats)
 
     // V2 BreakdownItemMRRCap: Cloth Armor → 50, Light Armor → 100, Medium/Heavy → none.
     if (armorStances.has('Cloth Armor')) {
@@ -1648,8 +1693,12 @@ function buildStatMapOnce(
       const passthrough: RawBonus[] = []
       for (const b of bonuses) {
         if (b.stackGroup && b.stackAmounts && b.stackAmounts.length > 1) {
-          const g = groups.get(b.stackGroup) ?? []
-          g.push(b); groups.set(b.stackGroup, g)
+          // V2 keeps separate effect lists per source pool (m_effects vs
+          // m_itemEffects) — a gear copy never merges with a feat/
+          // enhancement copy of the same effect, so scope the merge by pool.
+          const poolKey = `${b.stackGroup}|${b.fromGear ? 'gear' : 'char'}`
+          const g = groups.get(poolKey) ?? []
+          g.push(b); groups.set(poolKey, g)
         } else {
           passthrough.push(b)
         }

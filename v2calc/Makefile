@@ -179,7 +179,8 @@ SHIM_SRC := \
     $(V2CALC_DIR)/shim/MultiFileLoaderLinux.cpp \
     $(V2CALC_DIR)/shim/UIStub.cpp \
     $(V2CALC_DIR)/shim/UIPaneStub.cpp \
-    $(V2CALC_DIR)/shim/BreakdownHostLinux.cpp
+    $(V2CALC_DIR)/shim/BreakdownHostLinux.cpp \
+    $(V2CALC_DIR)/shim/AutoStancesLinux.cpp
 
 MAIN_SRC := $(V2CALC_DIR)/src/main.cpp
 

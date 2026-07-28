@@ -23,16 +23,21 @@ describe('resolveBonus', () => {
     expect(r.bonuses.find(b => b.source === 'C')?.active).toBe(false)
   })
 
-  it('gear exclusive types pick the most negative independently of positives', () => {
+  it('gear exclusive types keep ONE winner by absolute value (V2 RemoveNonStacking)', () => {
+    // V2 BreakdownItem::RemoveNonStacking compares fabs(TotalAmount): every
+    // same-bonus-type gear effect except the largest-magnitude one is
+    // removed — a −3 penalty is a "lesser version" of a +5 bonus and is
+    // dropped, NOT applied alongside it (oracle-verified: Thaarak Fang's
+    // −2 Resistance WillSave vs Drow Sage's Cowl +7 → +7, fuzz-5050).
     const r = resolveBonus([
       mk(5, 'Enhancement', 'good'),
       mk(-1, 'Enhancement', 'small-bad'),
       mk(-3, 'Enhancement', 'big-bad'),
     ])
-    // 5 (best positive) + -3 (most negative) = 2
-    expect(r.total).toBe(2)
+    expect(r.total).toBe(5)
+    expect(r.bonuses.find(b => b.source === 'good')?.active).toBe(true)
     expect(r.bonuses.find(b => b.source === 'small-bad')?.active).toBe(false)
-    expect(r.bonuses.find(b => b.source === 'big-bad')?.active).toBe(true)
+    expect(r.bonuses.find(b => b.source === 'big-bad')?.active).toBe(false)
   })
 
   it('stacking types accumulate every contribution', () => {

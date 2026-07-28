@@ -11,9 +11,18 @@
 
 class Character;
 class Build;
+class Stance;
 
 namespace v2calc
 {
+    // Headless stance evaluation (AutoStancesLinux.cpp): replicates
+    // CStancesPane's auto/user stance state machine so Build::m_Stances is
+    // correct even for .DDOBuild files without persisted <ActiveStances>
+    // (e.g. fuzz builds). Called by ComputeBreakdowns around BuildNowActive.
+    void StancesOnBuildActive(Character* pCharacter, Build* pBuild);
+    void StanceGranted(Character* pCharacter, const Stance& stance);
+    void StancesSettle(Character* pCharacter, Build* pBuild);
+
     // Build every supported breakdown, wire the effect graph, and drive the
     // effect-application path on pBuild so the breakdowns receive real effects.
     // Must be called after the build is parsed and its class cache rebuilt.

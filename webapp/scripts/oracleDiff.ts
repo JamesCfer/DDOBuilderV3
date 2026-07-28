@@ -56,7 +56,14 @@ if (fileArgs.length) {
   files = fileArgs.map(f => path.resolve(f))
 } else {
   files = []
-  for (const d of [path.join(ROOT, 'Output', 'Example Builds'), path.join(ROOT, 'Output', 'UserBuilds', 'collection')]) {
+  // FuzzBuilds is part of the default referee sweep: its builds have no
+  // hand-curated goldens (the old fuzz-*.golden.json files were V3's own
+  // output — circular), so the oracle is their only source of truth.
+  for (const d of [
+    path.join(ROOT, 'Output', 'Example Builds'),
+    path.join(ROOT, 'Output', 'UserBuilds', 'collection'),
+    path.join(ROOT, 'Output', 'FuzzBuilds'),
+  ]) {
     if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith('.DDOBuild')) files.push(path.join(d, f))
   }
 }
@@ -65,7 +72,7 @@ const cat = loadAllCatalogues(DATA)
 initBonusTypes(cat.allBonusTypes)
 
 function v3Stats(buildPath: string) {
-  const { build, document } = importV2Build(readFileSync(buildPath, 'utf-8')) as never as { build: never, document?: never }
+  const { build, document } = importV2Build(readFileSync(buildPath, 'utf-8'), { allTrees: cat.allTrees }) as never as { build: never, document?: never }
   const gearItems: Record<string, Item> = {}
   for (const [slot, name] of Object.entries((build as { gear: Record<string, string> }).gear ?? {})) {
     if (!name) continue

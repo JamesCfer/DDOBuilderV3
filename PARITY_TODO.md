@@ -356,8 +356,30 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch).
 
-**Current scoreboard after passes 119-130 (2026-07-28, 53-build corpus,
-0 builds with any mismatch, down from 46):** every tracked stat is now
+**Current scoreboard after pass 131 (2026-07-28, UNIFIED 151-build corpus =
+53 curated + 98 fuzz, 3 builds with any mismatch):** `oracleDiff.ts` now
+sweeps `Output/FuzzBuilds` by default. The fuzz corpus went **79 → 0
+mismatching builds** in this pass; the old 98 `fuzz-*.golden.json` /
+`.v3stats.json` files were exposed as a CIRCULAR baseline (byte-identical
+copies of V3's own output, `capturedAt` always empty — V3 validated against
+V3) and are deleted; `randomBuildFuzzer.ts` no longer writes them. Two
+critical prerequisites were **oracle-side** fixes (both previously masked by
+`.DDOBuild` files that persist `<ActiveStances>`): the headless oracle never
+ran `CStancesPane`'s AUTO-stance evaluation (armor/shield/weapon-type/race/
+fighting-style/Greensteel stances — new `v2calc/shim/AutoStancesLinux.cpp`
+replicates `CStanceButton::Evaluate` + `UpdateStanceStates` +
+`UpdateGreensteelStances` verbatim), and the pane-derived stances in V3 had
+compensating bugs (see pass 131 below). Residual 3 builds:
+`Nerfer.DDOBuild` (7 stats, mixed signs), `Odd tank.DDOBuild` (3 saves −3,
+persisted stale "Cloth Armor" on heavy armor — V3 now agrees with the
+re-derivation but its save deltas remain), `New New Inquiz build Ranged
+DPS.DDOBuild` (hp +66: V2 ignores the off-hand's "Melancholic False Life"
+augment via a mechanism not yet identified — its stale "(Accessory)" slot
+type was DISPROVEN as the cause by direct oracle experiment; V2 CopyUserSet-
+Values keeps original augments wholesale, so the match-by-type theory is
+also out).
+
+Previous scoreboard (passes 119-130, 53-build corpus, 0 mismatching): every tracked stat is now
 V2-exact across the full corpus. CLOSED buckets: mrrCap, fortification,
 saveReflex, ability.DEX, ability.CON, saveFortitude, saveWill, hitpoints,
 prr, mrr, dodge, ability.STR, and (as of #172) the "Max imbue" AND "Nerfer"
@@ -368,6 +390,77 @@ last "Maetrim" rangedPower/meleePower mismatch (`EnterValue` augments like
 see pass 130 above). Historical per-bucket notes below are kept for the
 evidence trail; where a note conflicts with this scoreboard,
 the scoreboard wins.
+
+- ✅ **Pass 131 — fuzz-corpus alignment (fuzz 79→0, this PR).** Root causes,
+  each verified by direct oracle diff (all in V3 unless marked oracle):
+  - **(oracle) headless auto-stance evaluation** — new
+    `v2calc/shim/AutoStancesLinux.cpp` (see scoreboard note above). Fuzz
+    builds write an empty `<ActiveStances/>`, so the oracle computed
+    no armor/shield/weapon/race stances at all (mrrCap=0 everywhere, no
+    armor PRR, …). The pane logic is now replicated headless; V2-authored
+    files with persisted stances are unaffected (evaluation is idempotent).
+  - **Armor stances re-derive from gear, ALWAYS** (`deriveArmorStances`):
+    the old "recorded stance wins" rule was disproven — V2's armor stances
+    are `<AutoControlled/>` and recomputed on load ("Odd tank" persists
+    "Cloth Armor" while wearing heavy armor; V2 recomputes Heavy). Also:
+    Docent→Cloth, Mithral Body→Light, Adamantine Body→Heavy, and an
+    armor-slot item with NO `<Armor>` field yields NO armor stance
+    (`Requirement::EvaluateItemInSlot`: "Empty" matches only an empty slot).
+  - **Shield stances read `<Weapon>`** — real shield items are tagged
+    `<Weapon>Buckler/Small Shield/Large Shield/Tower Shield</Weapon>`,
+    never `<Armor>`; V2's stance names are per-type + umbrella "Shield" +
+    "Orb"/"Rune Arm". The old `.Armor`-based detection ('Heavy/Light
+    Shield' names) never matched anything.
+  - **`Item.Weapon` was parsed as an ARRAY** (`dataLoaders.ts` had 'Weapon'
+    in the global isArray list for WeaponGroupings' sake), so every
+    `item.Weapon === '…'` comparison was silently false — scoped the array
+    rule to WeaponGroup paths. This had disabled shield/weapon-type stance
+    derivation and `weaponInfoFromItem.weaponType` with real catalogue data;
+    persisted `<ActiveStances>` had been masking it on the curated corpus.
+  - **Fighting-style stances follow Stances.xml requirements** — THF = main
+    in "Two Handed" group; Ranged Combat = "All Ranged"; TWF = BOTH hands in
+    "One Handed" (no animal form); SWF = main in "Single Weapon"/"Thrown"
+    AND off-hand Empty/Buckler/Orb/Rune Arm. The old heuristic SWF'd any
+    single weapon (a repeating crossbow is neither group → V2 never SWFs).
+  - **Gear pool: ONE winner per bonus type by |value|**
+    (`RemoveNonStacking` compares `fabs`): a −2 Resistance penalty is a
+    "lesser version" of a +7 Resistance and is DROPPED, not applied
+    alongside (old rule kept best-positive AND most-negative).
+  - **Identical duplicate gear effects stack-merge** (`AddEffect`: one
+    entry × stacks, exempt from Highest-Only) — Epic Ring of the Buccaneer
+    carries GoodLuck +1 Luck twice → +2. Approximated by (source, value,
+    percent) within the per-type gear pool; augment sources now include the
+    host slot (V2 names them `<item> : <slot type> : <augment>`), so the
+    same augment in two items stays DISTINCT and competes instead.
+  - **Item buff bonus types honor the item's `<BonusType>`** — the Dodge
+    and FalseLife cases in `parseItemBuff`/`parseEffect` hardcoded
+    'Dodge'/'False Life', so dodge items stacked unconditionally
+    (fuzz-5034: 9+8→17, V2 keeps 9) and tiered FalseLife
+    (Enhancement/Insightful/Quality, Indomitable Wrappings 12+5+2=19)
+    collapsed into one pool. A buff with NO `<Value1>` now resolves through
+    the ItemBuffs.xml template (template's own Amount — Nightforge Docent's
+    bare `<FalseLife>` → +10) instead of parsing as 0.
+  - **Anonymous `AType=Stacks` effects merge by the owner's stamped name**:
+    V2 stamps every DisplayName-less effect with its owner at load
+    (`Feat::EndElement` → feat name; `EnhancementTreeItem::GetEffects` →
+    `Name(selection)`), and `Effect::operator==` compares that stamp. So
+    Shifter + Razorclaw Shifter "Shifter: Self Reliant" (same display name
+    in both trees) merge to `Amount[Σranks−1]`, while "Past Life: Elf" vs
+    "Past Life: Halfling" (identical anonymous tables) never merge.
+    `parseEffect` gained a `stampName` param; the merge is also scoped per
+    effect pool (gear vs character, V2 `m_effects` vs `m_itemEffects`).
+  - **V2's tree-version gate on import** (`SpendInTree::EndElement`): a
+    spend whose `<TreeVersion>` mismatches the catalogue tree's `<Version>`
+    is revoked wholesale (headless answer = "No"); legacy tree names carry
+    a LEADING SPACE in V2 that our trimming parsers lose, so
+    `importV2Build`/`importV2Document` accept an `allTrees` catalogue, spot
+    spaced names in the raw XML, and drop trimmed-name legacy spends the
+    way V2 does (fuzz-5009's "Ninja Spy" v1 spend → revoked; a real
+    V2-authored " Ninja Spy V1" spend survives).
+  Regression tests: `parityPass131.test.ts` (12 tests) + updated
+  `bonus.test.ts` / `parityPass121PRR` / `parityPass127PRR` /
+  `parityPass39` / `parityPass45` / `weaponSlotDetection` specs whose old
+  assertions encoded the disproven behaviors.
 
 - ✅ **GrantFeat never re-applies the granted feat's own stat effects (#124)
   — ability.CON / saveFortitude / saveWill CLOSED, prr 14→10, mrr 12→8,
@@ -550,6 +643,24 @@ occurrences confirmed), so no change is needed there.
 - ➖ **Gear optimizer / auto-equip** — phantom: V2 has no such feature.
 - ✅ **Settings** — done (#67/#69).
 - ✅ **Build version migration** — done (#66).
+
+### Pass-131 follow-ups
+- ❌ **UI import path doesn't pass `allTrees` to `importV2Build`** — the
+  tree-version gate (pass 131) fires for `oracleDiff.ts` and any caller that
+  supplies the catalogue, but `usePersistence.ts`'s file-import call runs
+  without it (catalogues aren't plumbed into that hook), so a UI-imported
+  build keeps out-of-version tree spends V2 would revoke. Wire the tree
+  catalogue through the import dialog.
+- ❌ **"New New Inquiz" hp +66** — V2 ignores the off-hand "Melancholic
+  False Life (Legendary)" augment via an unidentified mechanism (stale
+  "(Accessory)" slot type disproven by direct oracle experiment — renaming
+  to "(Weapon)" changes nothing; `CopyUserSetValues` keeps original
+  augments wholesale, so `GetLatestVersionOfItem` match-by-type is also
+  out). Needs a per-effect oracle dump to localise.
+- ❌ **Nerfer / Odd tank residuals** — the last 2 curated-corpus builds with
+  mismatches (7 stats / 3 saves). Both were "clean" pre-131 only because
+  the oracle and V3 shared the stale-persisted-stance blind spot; the
+  oracle is now more faithful, and these deltas are real V3 gaps.
 
 ### Data-file edge cases
 - ✅ **Item slot edge cases** — done (#71); trinket-via-augment not a V2 mechanic.
