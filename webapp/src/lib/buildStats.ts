@@ -671,27 +671,38 @@ function accumulateAugments(
   allAugments: Augment[],
   ctx?: EffectContext,
   augmentLevelChoices?: Record<string, number>,
+  augmentValueChoices?: Record<string, number>,
 ): void {
   for (const [key, augName] of Object.entries(augmentChoices)) {
     if (!augName) continue
     const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
     const source = `Augment: ${aug.Name}`
-    const augAny = aug as Augment & { ChooseLevel?: unknown, DualValues?: unknown, LevelValue2?: unknown }
+    const augAny = aug as Augment & { ChooseLevel?: unknown, DualValues?: unknown, LevelValue2?: unknown, EnterValue?: unknown }
     const hasChooseLevel = augAny.ChooseLevel !== undefined
+    const hasEnterValue = augAny.EnterValue !== undefined
     const levelValues = hasChooseLevel ? chooseLevelValues(augAny.LevelValue) : []
     const levelValues2 = hasChooseLevel ? chooseLevelValues(augAny.LevelValue2) : []
     const hostItem = gearItems[key.split(':')[0]]
     const fallbackIdx = Math.max(0, (hostItem?.MinLevel ?? 1) - 1)
     const levelIdx = augmentLevelChoices?.[key] ?? fallbackIdx
+    const enteredValue = augmentValueChoices?.[key]
     let effIndex = 0
     for (const rawEff of toArray(aug.Effect)) {
       let eff = rawEff
+      // V2 Build::ApplyAugment (Build.cpp:4948-4966): an EnterValue augment
+      // (e.g. "Mythic Power Boost" — the player enters their current Mythic
+      // Bonus rank) replaces EVERY effect's Amount with the single player-
+      // entered ItemAugment::Value. No shipped EnterValue augment also uses
+      // DualValues, so unlike ChooseLevel there is no per-effect table.
+      if (hasEnterValue && enteredValue !== undefined) {
+        eff = { ...eff, Amount: enteredValue }
+      }
       if (hasChooseLevel && levelValues.length > 0) {
         const table = (augAny.DualValues !== undefined && effIndex === 1 && levelValues2.length > 0)
           ? levelValues2 : levelValues
         const idx = Math.min(Math.max(0, levelIdx), table.length - 1)
-        eff = { ...rawEff, Amount: table[idx] }
+        eff = { ...eff, Amount: table[idx] }
       }
       effIndex++
       // V2 augment effects live in the item pool (m_itemEffects) — they obey
@@ -1559,7 +1570,7 @@ function buildStatMapOnce(
     if (build.sentientGem.minorAugment) {
       allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
     }
-    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices)
+    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices, build.augmentValueChoices)
 
     // ── Gear set bonuses ──────────────────────────────────────────────────
     // Pass the merged augment choices so augment-granted set bonuses (and
