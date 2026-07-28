@@ -437,6 +437,7 @@ function emitGearSet(
   itemCatalogue?: ItemCatalogue,
   sentient?: SentientInfo,
   augmentLevels?: Record<string, number>,
+  augmentValues?: Record<string, number>,
 ): void {
   xml.open('EquippedGear')
   xml.leaf('Name', setName)
@@ -488,6 +489,9 @@ function emitGearSet(
         xml.leaf('Type', a.type)
         xml.leaf('SelectedAugment', a.name)
         xml.leaf('SelectedLevelIndex', augmentLevels?.[a.key] ?? 0)
+        if (augmentValues?.[a.key] !== undefined) {
+          xml.leaf('Value', augmentValues[a.key])
+        }
       }
       xml.close('ItemAugment')
     }
@@ -675,7 +679,7 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
     }
   } else if (Object.keys(build.gear ?? {}).length > 0) {
     const name = build.activeGearSetName || 'Standard'
-    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices)
+    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices, build.augmentValueChoices)
   }
   // GearSetSnapshot — names the snapshot baseline set (F3).
   if (build.gearSetSnapshot) xml.leaf('GearSetSnapshot', build.gearSetSnapshot)

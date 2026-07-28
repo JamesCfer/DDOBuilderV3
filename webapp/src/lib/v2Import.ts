@@ -241,10 +241,12 @@ function parseGear(equippedGearNode: AnyRec): {
   gear: Record<string, string>
   augmentChoices: Record<string, string>
   augmentLevelChoices: Record<string, number>
+  augmentValueChoices: Record<string, number>
 } {
   const gear: Record<string, string> = {}
   const augmentChoices: Record<string, string> = {}
   const augmentLevelChoices: Record<string, number> = {}
+  const augmentValueChoices: Record<string, number> = {}
   for (const [v2Slot, v3Slot] of Object.entries(V2_TO_V3_SLOT)) {
     const item = getRec(equippedGearNode, v2Slot)
     if (!item) continue
@@ -269,9 +271,16 @@ function parseGear(equippedGearNode: AnyRec): {
       if (!isNaN(sli) && ar.SelectedLevelIndex !== undefined && ar.SelectedLevelIndex !== '') {
         augmentLevelChoices[augKey] = sli
       }
+      // V2 ItemAugment::Value — the player-entered amount for EnterValue
+      // augments (e.g. Mythic Power Boost's Mythic Bonus rank,
+      // Build.cpp:4948-4966 Build::ApplyAugment).
+      const val = Number(ar.Value)
+      if (!isNaN(val) && ar.Value !== undefined && ar.Value !== '') {
+        augmentValueChoices[augKey] = val
+      }
     }
   }
-  return { gear, augmentChoices, augmentLevelChoices }
+  return { gear, augmentChoices, augmentLevelChoices, augmentValueChoices }
 }
 
 function parseFiligreeSlots(parent: AnyRec, tag: 'Filigree' | 'ArtifactFiligree', count: number): FiligreeSlot[] {
@@ -613,6 +622,7 @@ function parseBuildNode(
     out.gear = g.gear
     out.augmentChoices = g.augmentChoices
     out.augmentLevelChoices = g.augmentLevelChoices
+    out.augmentValueChoices = g.augmentValueChoices
     out.activeGearSetName = activeGearName || asStr(activeGearSet.Name) || ''
     // Save every gear set as a named-set so the user can switch.
     out.namedGearSets = {}

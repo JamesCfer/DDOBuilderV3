@@ -145,6 +145,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     selfBuffs: raw.selfBuffs ?? [],
     reaperSelections: raw.reaperSelections ?? {},
     augmentLevelChoices: raw.augmentLevelChoices ?? {},
+    augmentValueChoices: raw.augmentValueChoices ?? {},
     completedQuests: raw.completedQuests ?? {},
     notes: raw.notes ?? '',
     sentientGem: migrateSentientGem(raw.sentientGem as unknown),

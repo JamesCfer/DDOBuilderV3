@@ -319,6 +319,13 @@ export interface Augment {
   ChooseLevel?: boolean | string
   /** V2 Augment::LevelValue — space-separated values, one per level. */
   LevelValue?: { '#text': string; size?: number } | string
+  /**
+   * V2 Augment::EnterValue (DL_FLAG, parses to ""): every effect's Amount is
+   * REPLACED by the player-entered `ItemAugment::Value` (e.g. "Mythic Power
+   * Boost" — the player enters their current Mythic Bonus rank). Distinct
+   * from ChooseLevel (Build.cpp:4948-4990 `Build::ApplyAugment`).
+   */
+  EnterValue?: boolean | string
 }
 
 // ---------------------------------------------------------------------------
@@ -494,6 +501,12 @@ export interface CharacterBuild {
   augmentChoices: Record<string, string>
   /** ChooseLevel augments: augment key → SelectedLevelIndex (V2 ItemAugment). */
   augmentLevelChoices?: Record<string, number>
+  /**
+   * EnterValue augments: augment key → the player-entered `ItemAugment::Value`
+   * (e.g. Mythic Power Boost's Mythic Bonus rank). V2 `Build::ApplyAugment`
+   * replaces every effect's Amount with this value.
+   */
+  augmentValueChoices?: Record<string, number>
   /** V2 Life::SelfAndPartyBuffs — selected optional buffs (NOT stances). */
   selfBuffs?: string[]
   /**
@@ -690,6 +703,7 @@ export function emptyBuild(): CharacterBuild {
     gear: {},
     augmentChoices: {},
     augmentLevelChoices: {},
+    augmentValueChoices: {},
     selfBuffs: [],
     slotUpgradeChoices: {},
     pastLives: {},
