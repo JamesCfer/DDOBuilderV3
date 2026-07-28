@@ -117,8 +117,9 @@ describe('N1 — armor enchantment + percentage AC (BreakdownItemAC.cpp)', () =>
   })
 
   it('shield % AC applies only with a shield equipped and uses printed shield AC', () => {
+    // real item data tags shields <Weapon>Tower Shield</Weapon>, never <Armor>
     const tower = {
-      Name: 'Test Tower', Armor: 'Tower Shield', ShieldBonus: 10, MaximumDexterityBonus: 99,
+      Name: 'Test Tower', Weapon: 'Tower Shield', ShieldBonus: 10, MaximumDexterityBonus: 99,
     } as unknown as Item
     const shieldPctFeat = {
       Name: 'Shield Mastery', Acquire: 'Train',

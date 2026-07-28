@@ -73,6 +73,7 @@ namespace
     std::map<BreakdownType, BreakdownItem*>               g_breakdowns;
     std::vector<BreakdownItem*>                           g_allItems;
     CBreakdownsPane                                       g_paneStub;
+    Character*                                            g_pActiveCharacter = nullptr;
 }
 
 void CBreakdownsPane::RegisterBuildCallbackEffect(EffectType type, EffectCallbackItem* pItem)
@@ -189,6 +190,16 @@ namespace
             { ForEach([&](EffectCallbackItem* c){ c->StanceActivated(b, n); }); }
             void UpdateStanceDeactivated(Build* b, const std::string& n) override
             { ForEach([&](EffectCallbackItem* c){ c->StanceDeactivated(b, n); }); }
+            void UpdateNewStance(Build*, const Stance& stance) override
+            {
+                // mirror CStancesPane::UpdateNewStance -> AddStance: granted
+                // stances get a headless "button" so their requirements are
+                // (re-)evaluated in the settle pass.
+                if (g_pActiveCharacter != nullptr)      // set by ComputeBreakdowns
+                {
+                    v2calc::StanceGranted(g_pActiveCharacter, stance);
+                }
+            }
             void UpdateBuildLevelChanged(Build* b) override
             { ForItems([&](BreakdownItem* c){ c->BuildLevelChanged(b); }); }
             void UpdateSliderChanged(Build* b, const std::string& n, int v) override
@@ -392,10 +403,23 @@ namespace v2calc
         pBuild->AttachObserver(&g_host);
         Life* pLife = pCharacter->ActiveLife();
         if (pLife != nullptr) pLife->AttachObserver(&g_host);
+        g_pActiveCharacter = pCharacter;
+
+        // Mirror CStancesPane::UpdateActiveBuildChanged: evaluate the auto
+        // stances (armor type, wielded weapon types, race, ...) BEFORE effect
+        // application, so files without persisted <ActiveStances> (fuzz
+        // builds) get the same active-stance set the real app derives on load.
+        StancesOnBuildActive(pCharacter, pBuild);
 
         // Drive the real effect-application path: applies feat/enhancement/
         // gear/spell/stance effects and notifies observers (our host).
         pBuild->BuildNowActive();
+
+        // Settle the stance states now that all effects (granted stances,
+        // set-bonus stacks for Greensteel dominance) are in place - mirrors
+        // the UpdateStanceStates/UpdateGreensteelStances passes the pane runs
+        // off BuildNowActive's notifications.
+        StancesSettle(pCharacter, pBuild);
 
         // Settle pass, replicating CBreakdownsPane::UpdateAllBreakdowns() which
         // the real UI runs from BreakdownItem::SetLockState(false) at the end of

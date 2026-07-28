@@ -567,6 +567,15 @@ export function parseEffect(
   classLevels = 0,
   treeTotalAP = 0,
   ctx?: EffectContext,
+  // V2 load-time stamping: an effect with no <DisplayName> gets the OWNING
+  // feat's name (Feat::EndElement, Feat.cpp:96-104) or enhancement item's
+  // display Name(selection) (EnhancementTreeItem::GetEffects) stamped on.
+  // That stamped name is the identity Effect::operator== compares, and thus
+  // the boundary of the AddEffect stack-merge — "Past Life: Elf" never
+  // merges with "Past Life: Halfling" (identical anonymous tables) while
+  // Shifter + Razorclaw Shifter "Shifter: Self Reliant" (same display name
+  // in both trees) DO merge. Callers pass the owner's stamped name here.
+  stampName = '',
 ): ParsedBonus[] {
   // V2 data uses multiple <Type> elements in a single <Effect> block to grant
   // two different bonus types from the same amount (e.g. ["PRR","MRR"],
@@ -582,7 +591,7 @@ export function parseEffect(
     // and the buildStats stack-merge post-pass counts them → Amount[count-1];
     // non-Stacks copies (Simple, etc.) simply sum, matching V2's per-copy add.
     return (effect.Type as unknown as string[]).flatMap(t =>
-      parseEffect({ ...effect, Type: t }, rank, source, classLevels, treeTotalAP, ctx),
+      parseEffect({ ...effect, Type: t }, rank, source, classLevels, treeTotalAP, ctx, stampName),
     )
   }
 
@@ -714,16 +723,18 @@ export function parseEffect(
   // sum. Build the identity key from the fields Effect::operator== compares
   // (DisplayName, Type, Bonus, Item, Amount); only multi-element Amount tables
   // can differ by stack count, so single-value tables are left alone.
-  // V2 merges by Effect::operator==, which compares DisplayName. The tiered
-  // stance/stack pattern the merge exists for (monk forms, Primal Scream)
-  // ALWAYS carries a DisplayName; anonymous effects that merely share
-  // Type/Bonus/Item/Amount (many gear/set/reaper flat bonuses) must NOT be
-  // collapsed — they sum. Require a non-empty DisplayName + multi-element table.
+  // V2 merges by Effect::operator==, which compares the DisplayName — and at
+  // LOAD TIME every anonymous effect was stamped with its owner's name (see
+  // the stampName parameter above), so the merge identity here is the
+  // effect's own DisplayName or, failing that, the owner's stamped name.
+  // Effects with neither (gear/spell/other paths that don't stamp) keep the
+  // old conservative behavior: no group, they sum.
   const stacksAType = (effect.AType ?? 'Stacks') === 'Stacks'
   const displayName = typeof effect.DisplayName === 'string' ? effect.DisplayName.trim() : ''
+  const identityName = displayName !== '' ? displayName : stampName
   const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
-  const stackGroupBase = (displayName !== '' && stackAmounts && stackAmounts.length > 1)
-    ? `${displayName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
+  const stackGroupBase = (identityName !== '' && stackAmounts && stackAmounts.length > 1)
+    ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
     : undefined
   function make(statKey: string, bt = bonusType): ParsedBonus {
     return {
@@ -1125,7 +1136,11 @@ export function parseEffect(
       return [make('styleFeats')]
 
     case 'FalseLife':
-      return [make('hp', 'False Life')]
+      // Use the effect's declared/stamped Bonus — an item's <BonusType>
+      // (e.g. Enhancement) is stamped onto template effects and competes
+      // Highest-Only with other Enhancement HP items in V2; hardcoding
+      // 'False Life' wrongly let them stack.
+      return [make('hp')]
 
     // -----------------------------------------------------------------------
     // Sneak attack: V2 splits Dice / Damage / Range / Attack and main-vs-ranged.
@@ -1697,6 +1712,13 @@ export function parseItemBuff(
   catalogue?: Map<string, ItemBuffTemplate>,
   ctx?: EffectContext,
 ): ParsedBonus[] {
+  // V2 always resolves through FindBuff(Type): a Buff with NO <Value1> keeps
+  // the TEMPLATE's own Amount (e.g. Nightforge Docent's bare <FalseLife>
+  // buff → ItemBuffs.xml FalseLife Amount=10). The direct switch below
+  // assumes Value1 and would zero such buffs, so template-resolve them.
+  if (buff.Value1 == null && catalogue?.has(buff.Type)) {
+    return parseItemBuffViaTemplate(buff, source, catalogue, ctx)
+  }
   const value = buff.Value1 ?? 0
   const items = toStringArray(buff.Item as string | string[] | undefined)
 
@@ -1803,7 +1825,13 @@ export function parseItemBuff(
 
     case 'DodgeBonus':
     case 'Dodge':
-      return [make('dodge', 'Dodge')]
+      // V2 ItemBuffs.xml's Dodge template declares Bonus="Not Set" — the
+      // item's own <BonusType> always stamps it (Buff::UpdatedEffects).
+      // Items commonly declare Enhancement (Highest-Only in the gear pool):
+      // two dodge items must NOT stack (e.g. Book-Cover Beltstrap 9 +
+      // Wildwood Gauntlets 8 → 9 in V2, not 17). Hardcoding 'Dodge' here
+      // made every dodge item stack unconditionally.
+      return [make('dodge')]
 
     case 'PRR':
       return [make('prr')]
@@ -2073,7 +2101,12 @@ export function parseItemBuff(
       return [make('mdbShields')]
 
     case 'FalseLife':
-      return [make('hp', 'False Life')]
+      // V2: the item's <BonusType> stamps the template's Bonus="False Life"
+      // (Buff::UpdatedEffects). Items tier FalseLife as Enhancement /
+      // Insightful / Quality — three DIFFERENT bonus types that all stack
+      // (Indomitable Wrappings 12+5+2 → 19 in V2). Hardcoding 'False Life'
+      // collapsed them into one Highest-Only pool.
+      return [make('hp', buff.BonusType ?? 'False Life')]
 
     // -----------------------------------------------------------------------
     // Sneak attack

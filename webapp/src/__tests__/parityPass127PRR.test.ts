@@ -153,6 +153,9 @@ describe('C — Sword-and-Board is not Two Weapon Fighting (V2 stance parity)', 
   function swordBoard(off: Item) {
     return computeBuildStats({
       ...emptyInput(), allClasses: [fighterC], allFeats: [twfGated],
+      // V2's TWF auto stance requires GroupMember "One Handed" on BOTH
+      // hands (Stances.xml), resolved through WeaponGroupings.xml.
+      allWeaponGroups: [{ Name: 'One Handed', Weapon: ['Kukri'] }],
       gearItems: { 'Main Hand': kukri, 'Off Hand': off },
     } as BuildStatsInput, {
       ...makeEmptyBuild(), totalLevel: 20,

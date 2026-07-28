@@ -96,8 +96,14 @@ const heavyArmor: Item = {
   Name: 'Test Heavy Plate', Armor: 'Heavy',
 } as unknown as Item
 
-describe('B — recorded ActiveStances armor stance wins over gear derivation (V2 Build::IsStanceActive)', () => {
-  it('heavy armor + recorded "Cloth Armor" stance → cloth MRR cap (50), no heavy-armor PRR', () => {
+describe('B — gear derivation wins over a stale recorded armor stance (V2 auto stances)', () => {
+  // The old assertion (recorded stance wins) was DISPROVEN against the
+  // v2calc oracle: armor stances are AUTO-CONTROLLED (Stances.xml
+  // <AutoControlled/>), and CStancesPane re-evaluates them from the
+  // equipped armor on load — a persisted "Cloth Armor" on a heavy-armor
+  // build never survives in the real app ("Odd tank.DDOBuild": V2 computes
+  // heavy-armor PRR 102 and no cloth 50-cap despite the stale entry).
+  it('heavy armor + stale recorded "Cloth Armor" stance → heavy armor wins (no cloth 50-cap)', () => {
     const build = {
       ...makeEmptyBuild(),
       totalLevel: 20,
@@ -106,8 +112,8 @@ describe('B — recorded ActiveStances armor stance wins over gear derivation (V
     const stats = computeBuildStats({
       ...emptyInput(), gearItems: { Armor: heavyArmor },
     } as BuildStatsInput, build)
-    expect(stats.total('mrrCap')).toBe(50)
-    expect(stats.resolve('prr').bonuses.some(b => b.source.includes('Heavy Armor'))).toBe(false)
+    expect(stats.total('mrrCap')).not.toBe(50)
+    expect(stats.resolve('mrrCap').bonuses.some(b => b.source === 'Cloth Armor')).toBe(false)
   })
 
   it('heavy armor with NO recorded stance still derives Heavy Armor from gear', () => {

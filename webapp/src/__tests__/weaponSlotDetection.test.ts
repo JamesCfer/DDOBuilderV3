@@ -35,9 +35,10 @@ const shortsword = {
   DamageModifier: 'Strength',
 } as unknown as Item
 
+// real item data tags shields <Weapon>Tower Shield</Weapon>, never <Armor>
 const towerShield = {
   Name: 'Test Tower Shield',
-  Armor: 'Tower Shield',
+  Weapon: 'Tower Shield',
 } as unknown as Item
 
 // +7 PRR gated on the gear-derived "Shield" stance (V2 StancesPane parity).

@@ -194,31 +194,51 @@ export function resolveBonus(bonuses: RawBonus[]): ResolvedStat {
       //   Non-gear contributions (feats / enhancements / race): always stack,
       //   matching V2's m_effects which bypass RemoveNonStacking entirely.
       // -----------------------------------------------------------------------
-      const gearBonuses = group.filter(b => b.fromGear)
+      const rawGearBonuses = group.filter(b => b.fromGear)
       const nonGearBonuses = group.filter(b => !b.fromGear)
 
-      // Within gear: only highest positive and lowest (most negative) are active
-      const gearPositives = gearBonuses.filter(b => b.value >= 0)
-      const gearNegatives = gearBonuses.filter(b => b.value < 0)
-
-      let bestPositive: RawBonus | undefined
-      for (const b of gearPositives) {
-        if (bestPositive === undefined || b.value > bestPositive.value) {
-          bestPositive = b
+      // V2 BreakdownItem::AddEffect merges IDENTICAL effects into ONE entry
+      // with a stack count, and Amount_Simple totals amount × stacks. The
+      // merge happens BEFORE RemoveNonStacking, so identical item effects
+      // are exempt from Highest-Only and multiply instead (Epic Ring of the
+      // Buccaneer carries GoodLuck +1 Luck twice → +2 in V2). V2 equality is
+      // content-based (Effect::operator==); approximated here by
+      // (source, value, percent) — duplicates within one item share all
+      // three, while different items' same-value effects usually differ by
+      // DisplayName in V2 and compete Highest-Only instead.
+      const gearBonuses: RawBonus[] = []
+      {
+        const seen = new Map<string, { merged: RawBonus; stacks: number; unit: number }>()
+        for (const b of rawGearBonuses) {
+          const key = `${b.source}|${b.value}|${b.percent === true}`
+          const prev = seen.get(key)
+          if (prev) {
+            prev.stacks++
+            prev.merged.value = prev.unit * prev.stacks
+            prev.merged.source = `${b.source} (×${prev.stacks} identical)`
+          } else {
+            const merged = { ...b }
+            seen.set(key, { merged, stacks: 1, unit: b.value })
+            gearBonuses.push(merged)
+          }
         }
       }
 
-      let bestNegative: RawBonus | undefined
-      for (const b of gearNegatives) {
-        if (bestNegative === undefined || b.value < bestNegative.value) {
-          bestNegative = b
+      // Within gear: ONE winner per bonus type, by ABSOLUTE value — V2
+      // RemoveNonStacking compares fabs(TotalAmount): a −2 Resistance
+      // penalty is a "lesser version" of a +7 Resistance and is dropped
+      // (Thaarak Fang −2 vs Drow Sage's Cowl +7 → +7, not +5). On equal
+      // magnitudes V2's pairwise sweep removes the earlier entry, so the
+      // LAST one listed survives (>=).
+      let winner: RawBonus | undefined
+      for (const b of gearBonuses) {
+        if (winner === undefined || Math.abs(b.value) >= Math.abs(winner.value)) {
+          winner = b
         }
       }
 
       for (const b of gearBonuses) {
-        const isActive =
-          (b.value >= 0 && b === bestPositive) ||
-          (b.value < 0 && b === bestNegative)
+        const isActive = b === winner
         resolved.push({ ...b, active: isActive })
         if (isActive) total += b.value
       }

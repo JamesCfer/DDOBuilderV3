@@ -25,6 +25,9 @@ const fighterClass = {
 const weaponGroups: WeaponGroupSpec[] = [
   { Name: 'Two Handed', Weapon: ['Greatsword'] },
   { Name: 'One Handed', Weapon: ['Longsword'] },
+  // V2's SWF auto stance requires GroupMember "Single Weapon" (Stances.xml)
+  // — a distinct group from "One Handed" in WeaponGroupings.xml.
+  { Name: 'Single Weapon', Weapon: ['Longsword'] },
 ]
 
 // PRR gated on a given stance — a clean sensor for "is this stance active?".

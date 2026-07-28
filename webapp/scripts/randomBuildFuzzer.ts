@@ -86,14 +86,14 @@ function generate() {
 
     const stats = statsFor(build)
     const buildFile = `fuzz-${seed}.DDOBuild`
-    const template = captureTemplate(stats.keys(), stats.total, buildFile)
 
     fs.writeFileSync(path.join(outDir, buildFile), exportV2Build(build, itemLookup))
-    fs.writeFileSync(path.join(outDir, `fuzz-${seed}.v3stats.json`), JSON.stringify(template, null, 2))
-    const goldenPath = path.join(outDir, `fuzz-${seed}.golden.json`)
-    if (!fs.existsSync(goldenPath)) {
-      fs.writeFileSync(goldenPath, JSON.stringify(template, null, 2))
-    }
+    // NOTE: this script used to also emit fuzz-<seed>.golden.json /
+    // .v3stats.json "golden templates" pre-filled with V3's OWN totals — a
+    // circular baseline (V3 validated against V3) that was never replaced
+    // with real V2 captures. The v2calc oracle (scripts/oracleDiff.ts, which
+    // scans Output/FuzzBuilds by default) now referees these builds with
+    // V2's actual compiled math, so the templates are gone for good.
     fs.writeFileSync(path.join(outDir, `fuzz-${seed}.log.txt`), log.join('\n') + '\n')
 
     console.log(`✓ seed ${seed}: ${build.name} — hp ${stats.total('hp')}, ac ${stats.total('ac')}, ` +
@@ -101,19 +101,21 @@ function generate() {
   }
 
   console.log(`\n${count - bad}/${count} builds written to ${outDir}`)
-  console.log('Next: open each .DDOBuild in V2 (Windows), copy its BreakdownsPane numbers into')
-  console.log('the matching fuzz-<seed>.golden.json, then run:')
-  console.log('  npx tsx scripts/randomBuildFuzzer.ts compare')
+  console.log('Next: referee them against V2\'s own compiled math with:')
+  console.log('  make -C v2calc && npx tsx scripts/oracleDiff.ts')
   if (bad > 0) process.exit(1)
 }
 
+// `compare` mode still accepts hand-captured fuzz-<seed>.golden.json files
+// (real V2 BreakdownsPane numbers) if any exist, but the standard referee for
+// fuzz builds is now scripts/oracleDiff.ts (see the note in generate()).
 function compare() {
   const dir = path.resolve(arg('dir', path.join(__dirname, '..', '..', 'Output', 'FuzzBuilds')))
   const goldens = fs.existsSync(dir)
     ? fs.readdirSync(dir).filter(f => /^fuzz-\d+\.golden\.json$/.test(f))
     : []
   if (goldens.length === 0) {
-    console.error(`No fuzz-*.golden.json files in ${dir} — run \`generate\` first.`)
+    console.error(`No fuzz-*.golden.json files in ${dir} — the oracle referee (scripts/oracleDiff.ts) supersedes them.`)
     process.exit(2)
   }
 
