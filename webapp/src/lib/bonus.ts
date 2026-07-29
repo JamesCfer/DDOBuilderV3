@@ -297,5 +297,7 @@ export function absorptionTotal(bonuses: ResolvedBonus[]): number {
   }
   let frac = 1
   for (const v of factors.values()) frac *= 1 - v / 100
-  return 100 - 100 * frac
+  // Round away float noise (0.75 × 0.8 → 0.6000000000000001) so an exact
+  // 40% doesn't truncate to 39 downstream.
+  return Math.round((100 - 100 * frac) * 1e9) / 1e9
 }

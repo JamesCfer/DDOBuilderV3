@@ -211,6 +211,7 @@ int main(int argc, char** argv)
         { Breakdown_KiCritical,           "kiCritical",         false },
         { Breakdown_SongCount,            "songCount",          false },
         { Breakdown_TumbleCharges,        "tumbleCharges",      false },
+        { Breakdown_ImplementInYourHands, "implementIYH",       false },
         { Breakdown_SpellPowerUniversal,  "spellPowerUniversal",false },
         { Breakdown_TurnUndeadLevel,      "turnUndeadLevel",    false },
     };
@@ -311,6 +312,11 @@ int main(int argc, char** argv)
     {
         printf("%s\"%s\": %d", (i ? ", " : " "),
                 spellPowers[i].key, (int)v2calc::Total(spellPowers[i].crit));
+        if (dumpKeys != nullptr && strstr(dumpKeys, "crit:") != nullptr
+                && strstr(dumpKeys, spellPowers[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(spellPowers[i].crit, spellPowers[i].key);
+        }
     }
     printf(" },\n");
 

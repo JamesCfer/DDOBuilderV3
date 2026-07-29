@@ -126,7 +126,7 @@ function v3Stats(buildPath: string) {
     allSpells: cat.allSpells, allGuildBuffs: cat.allGuildBuffs,
     allItemBuffs: cat.allItemBuffs, allStances: cat.allStances, specialFeats, gearItems,
   }, build)
-  return { stats, build: build as unknown as { epicLevels?: number, legendaryLevels?: number } }
+  return { stats, gearItems, build: build as unknown as { epicLevels?: number, legendaryLevels?: number } }
 }
 
 const perStatMismatch: Record<string, number> = {}
@@ -144,7 +144,8 @@ for (const f of files) {
   }
   let stats: ReturnType<typeof computeBuildStats>
   let buildForStats: { epicLevels?: number, legendaryLevels?: number }
-  try { ({ stats, build: buildForStats } = v3Stats(f)) } catch { continue }
+  let gearForStats: Record<string, Item> = {}
+  try { ({ stats, gearItems: gearForStats, build: buildForStats } = v3Stats(f)) } catch { continue }
   buildsCompared++
 
   const rows: Array<[string, number, number]> = []
@@ -170,8 +171,18 @@ for (const f of files) {
     const v2mdb = oracle.breakdowns.maxDexBonus
     // stats.armorMaxDex is the armor's PRINTED cap only; Effect_MaxDexBonus
     // contributions (armor mastery, Horizon Walker cores, …) pool under
-    // 'mdb' in both the armored and unarmored cases.
-    const v3mdb = (stats.armorMaxDex === null ? 999 : stats.armorMaxDex) + stats.total('mdb')
+    // 'mdb' in both the armored and unarmored cases. V2's "No limit" 999
+    // effect fires whenever the CLOTH ARMOR stance is on (robes/outfits,
+    // even with a printed 0) and no tower shield is equipped.
+    const armorItem = gearForStats['Armor'] as { Armor?: string } | undefined
+    const towerShield = Object.values(gearForStats)
+      .some(i => (i as { Weapon?: string }).Weapon === 'Tower Shield')
+    const featsChosen = new Set(Object.values(
+      (buildForStats as { featChoices?: Record<string, string> }).featChoices ?? {}))
+    const docentAsCloth = armorItem?.Armor === 'Docent'
+      && !featsChosen.has('Mithral Body') && !featsChosen.has('Adamantine Body')
+    const clothNoLimit = (!armorItem || armorItem.Armor === 'Cloth' || docentAsCloth) && !towerShield
+    const v3mdb = (clothNoLimit || stats.armorMaxDex === null ? 999 : stats.armorMaxDex) + stats.total('mdb')
     rows.push(['maxDexBonus', v2mdb, v3mdb])
   }
   // Spell school DCs. V2 BreakdownItemSpellSchool holds Item=All AND

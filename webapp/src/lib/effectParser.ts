@@ -72,6 +72,11 @@ export interface EffectContext {
   // (Item[0] tests the MAIN hand only; optional Item[1] the off-hand).
   weaponTypeMain?: string
   weaponTypeOffhand?: string
+  // Wild Mage / Arcane Trickster "Mixed Magics": every trained caster class's
+  // caster-level breakdown is raised to min(20, character level) before
+  // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
+  // cap when the enhancement is trained; ClassCasterLevel amounts read it.
+  mixedMagicsCapLevel?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +193,15 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       return ctx.materialBySlot[its[1]] === its[0]
     }
     case 'GroupMember':
+      // V2 Requirement.cpp:472 — GroupMember is EvaluateWeaponGroupMember on
+      // the MAIN hand: the equipped main-hand weapon belongs to the named
+      // runtime group ("Favored Weapon", "Centered", …). NOT a slot check.
+      if (!ctx.weaponClassMain) return true
+      return its.some(i => ctx.weaponClassMain!.has(i))
+    case 'GroupMember2':
+      // …and GroupMember2 the OFF hand (Requirement.cpp:473).
+      if (!ctx.weaponClassOffhand) return true
+      return its.some(i => ctx.weaponClassOffhand!.has(i))
     case 'ItemTypeInSlot': {
       // V2 Requirement::EvaluateItemInSlot (Requirement.cpp:958-990):
       // Item[0] = V2 slot name, Item[last] = weapon/armor type. Met when the
@@ -200,7 +214,6 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       if (have === undefined) return want === 'Empty'
       return want === have || want === 'All'
     }
-    case 'GroupMember2':
     case 'StartingWorld':
     case 'ItemSlot':
     case 'Exclusive':
@@ -362,6 +375,25 @@ const SP_ALL_TYPES = [
   'Rust', 'Sonic', 'Untyped',
 ]
 
+/**
+ * V2 spellPowerTypeMap contains ONLY "Light/Alignment" for the light type —
+ * a bare "Light" or "Alignment" Item maps to SpellPower_Unknown and the
+ * effect affects NO spell power/lore breakdown (the Woeful Light augments
+ * are dead in V2; oracle-verified on Magic missile healer). Returns null
+ * for such dead items.
+ */
+function spellPowerElement(raw: string): string | null {
+  switch (raw) {
+    case 'Light/Alignment':
+      return 'LightAlignment'
+    case 'Light':
+    case 'Alignment':
+      return null
+    default:
+      return raw
+  }
+}
+
 function normalizeSpellElement(raw: string): string {
   switch (raw) {
     case 'Alignment':
@@ -507,8 +539,15 @@ function resolveValue(
         // LEVEL breakdown (class levels + CasterLevel effects incl. "All"),
         // not the raw class level. Only classes with actual levels get the
         // bonus (a 0-level class's spells stay inert).
-        if (atype === 'ClassCasterLevel' && level > 0 && ctx.casterLevels) {
-          level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)
+        if (atype === 'ClassCasterLevel' && level > 0) {
+          // Mixed Magics raises the class-levels part to min(20, char level)
+          // BEFORE bonuses (oracle-verified: dragon breath's Bless at CL 27).
+          if (ctx.mixedMagicsCapLevel !== undefined && ctx.mixedMagicsCapLevel > level) {
+            level = ctx.mixedMagicsCapLevel
+          }
+          if (ctx.casterLevels) {
+            level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)
+          }
         }
       }
       return getAmountAtRank(effect.Amount, level + 1)
@@ -793,7 +832,10 @@ export function parseEffect(
   const value: number = resolved
 
   const bonusType = effect.Bonus ?? 'Enhancement'
-  const items = toStringArray(effect.Item)
+  // Dedupe: V2 notifies each breakdown ONCE per effect no matter how many of
+  // its <Item> entries match (a data bug lists Stun twice on Dolorous Combat
+  // Mastery — V2 counts +3 once, a naive per-item fan-out doubled it).
+  const items = [...new Set(toStringArray(effect.Item))]
 
   // V2 stack-merge (BreakdownItem::AddEffect + Amount_Stacks): identical
   // AType=Stacks effects merge into one whose value is Amount[count-1], not the
@@ -808,7 +850,17 @@ export function parseEffect(
   // old conservative behavior: no group, they sum.
   const stacksAType = (effect.AType ?? 'Stacks') === 'Stacks'
   const displayName = typeof effect.DisplayName === 'string' ? effect.DisplayName.trim() : ''
-  const identityName = displayName !== '' ? displayName : stampName
+  // V2 Effect::operator== compares the FULL effect — including StackSource.
+  // Two trained "Jump" spells from different classes share the DisplayName
+  // "Spell: Jump" but stay SEPARATE effects in V2 (dragon breath: the item
+  // pool keeps ONE via Highest-Only; they must not merge into a ×2 stack).
+  const identityBase = displayName !== '' ? displayName : stampName
+  // Anonymous effects (no DisplayName/stamp — e.g. trained-spell effects,
+  // whose merge identity is otherwise their source string) get the same
+  // StackSource disambiguation via the source.
+  const identityName = effect.StackSource
+    ? `${identityBase !== '' ? identityBase : source}·${effect.StackSource}`
+    : identityBase
   const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
   const stackGroupBase = (identityName !== '' && stackAmounts && stackAmounts.length > 1)
     ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
@@ -1054,10 +1106,9 @@ export function parseEffect(
       // Engine" +158 Electric). A separate sp.All pool would escape that
       // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.flatMap(item => {
-          const el = normalizeSpellElement(item)
-          return el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)]
-        })
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)])
       }
       return []
 
@@ -1068,10 +1119,9 @@ export function parseEffect(
     case 'SpellLore':
       // Same Item=All fan-out as SpellPower (see above).
       if (items.length > 0) {
-        return items.flatMap(item => {
-          const el = normalizeSpellElement(item)
-          return el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)]
-        })
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)])
       }
       return []
 
@@ -1826,7 +1876,7 @@ export function parseItemBuff(
     return parseItemBuffViaTemplate(buff, source, catalogue, ctx)
   }
   const value = buff.Value1 ?? 0
-  const items = toStringArray(buff.Item as string | string[] | undefined)
+  const items = [...new Set(toStringArray(buff.Item as string | string[] | undefined))]
 
   // Determine effective bonus type with override logic
   let bonusType: string
@@ -2089,10 +2139,9 @@ export function parseItemBuff(
       // Engine" +158 Electric). A separate sp.All pool would escape that
       // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.flatMap(item => {
-          const el = normalizeSpellElement(item)
-          return el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)]
-        })
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)])
       }
       return []
 
@@ -2267,15 +2316,16 @@ export function parseItemBuff(
     // Spell-related
     // -----------------------------------------------------------------------
     case 'SpellLore':
-    case 'SpellCritChance':
-      // Same Item=All fan-out as SpellPower (see above).
-      if (items.length > 0) {
-        return items.flatMap(item => {
-          const el = normalizeSpellElement(item)
-          return el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)]
-        })
-      }
-      return []
+    case 'SpellCritChance': {
+      // Same Item=All fan-out as SpellPower (see above). An item buff with
+      // NO <Item> resolves through the ItemBuffs.xml 'SpellLore' template,
+      // whose effect is Item=All (Darstil's Gloves "+13% Spell Lore",
+      // oracle-verified on wiz dc caster).
+      const loreItems = items.length > 0 ? items : ['All']
+      const loreEls = [...new Set(loreItems.map(spellPowerElement))].filter((e): e is string => e !== null)
+      return loreEls.flatMap(el =>
+        el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)])
+    }
 
     case 'UniversalSpellLore':
     case 'UniversalSpellCritChance':

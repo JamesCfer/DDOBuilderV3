@@ -584,7 +584,12 @@ function accumulateGear(
     // V2 armor check penalty: armor and shield clamped to ≤0, accumulated separately.
     if (item.ArmorCheckPenalty != null && item.ArmorCheckPenalty < 0) {
       const slotLower = slot.toLowerCase()
-      const isShield = slotLower.includes('shield') || (item.Armor === 'Shield' || item.Armor === 'TowerShield')
+      // Shields are WEAPON-typed items ("<Weapon>Large Shield</Weapon>") in
+      // an off-hand slot — uBER TANK's shield ACP was landing in the ARMOR
+      // pool, where Vanguard Armor Training wrongly cancelled it.
+      const isShield = slotLower.includes('shield')
+        || (item.Armor === 'Shield' || item.Armor === 'TowerShield')
+        || /Shield|Buckler/.test((item as { Weapon?: string }).Weapon ?? '')
       const key = isShield ? 'armorCheckPenaltyShield' : 'armorCheckPenalty'
       add(map, key, {
         value: item.ArmorCheckPenalty,
@@ -1570,6 +1575,11 @@ function buildStatMapOnce(
       itemTypeBySlot: ctxItemTypeBySlot,
       weaponTypeMain: mainWeaponType,
       weaponTypeOffhand: offWeaponType,
+      // Wild Mage / Arcane Trickster "Mixed Magics" (see EffectContext)
+      ...(['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
+        ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
+        ? { mixedMagicsCapLevel: Math.min(20, (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)) }
+        : {}),
       skillTotals: skillTotalsOverride,
       skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
