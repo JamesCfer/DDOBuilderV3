@@ -142,7 +142,7 @@ function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGe
     // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
     // (BreakdownItem.cpp:623-698, :205-221).
     const asGear = fromGear || pb.asItemEffect === true
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank })
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank, v2Name: pb.v2Name })
   }
 }
 
@@ -1383,7 +1383,13 @@ function buildStatMapOnce(
         'Ranged Combat', 'Centered',
         'Lawful', 'Chaotic', 'Good', 'Evil', 'Neutral', 'True',
       ])
-      for (const r of allRaces) if (r.Name) autoFamily.add(r.Name)
+      // Only the CURRENT race's auto stance is filtered (it is re-derived
+      // above). Other race names must NOT be blanket-filtered: V2's iconic
+      // past-life toggles are named "<Race> " with a TRAILING SPACE
+      // ("Aasimar Scourge " ≠ race "Aasimar Scourge") which our trimming
+      // parsers collapse — a blanket race filter ate YingsMonk's persisted
+      // "Aasimar Scourge" iconic stance (+6% doublestrike, oracle-verified).
+      if (build.race) autoFamily.add(build.race)
       for (const g of allWeaponGroups ?? []) {
         for (const w of toArray(g.Weapon)) autoFamily.add(w as string)
       }
@@ -1506,6 +1512,18 @@ function buildStatMapOnce(
       materialBySlot: ctxMaterialBySlot,
       skillTotals: skillTotalsOverride,
       casterLevels: casterLevelsOverride,
+    }
+    // V2 Build::SnapshotAbilityValue — Snapshot* StackSources read the
+    // persisted per-gear-set ability snapshot when GearSetSnapshot names an
+    // existing gear set (missing tags default 0); otherwise live totals.
+    if (build.gearSetSnapshot && build.namedGearSets
+        && build.gearSetSnapshot in build.namedGearSets) {
+      const snap = build.gearSetSnapshots?.[build.gearSetSnapshot] ?? {}
+      ctx.snapshotAbilities = {
+        Strength: 0, Dexterity: 0, Constitution: 0,
+        Intelligence: 0, Wisdom: 0, Charisma: 0,
+        ...snap,
+      }
     }
 
     // ── Ability base scores ───────────────────────────────────────────────
@@ -1672,6 +1690,21 @@ function buildStatMapOnce(
         if (fn === 'Heroic Durability' && build.totalLevel < 1) continue
         const feat = allFeats.find(f => f.Name === fn)
         if (feat) accumulateFeat(map, feat, 1, `Automatic: ${fn}`, charLevelTotal, ctx)
+      }
+
+      // V2's universal "Attack" feat (AutomaticAcquisition at level 1) carries
+      // the tumble-charge effects: base 2 charges + 1 @10 Tumble ranks + 1 @20
+      // ranks (cloth/light armor only) — oracle-verified on YingsMonk
+      // (tumbleCharges 5 vs V3's 1). Only the TumbleCharge effects are
+      // accumulated; the feat's other entries (unconscious range, helpless
+      // damage, off-hand chance) stay modeled as V3's built-in defaults.
+      const attackFeat = allFeats.find(f => f.Name === 'Attack')
+      if (attackFeat) {
+        for (const eff of toArray(attackFeat.Effect)) {
+          if (eff.Type === 'TumbleCharge') {
+            addParsed(map, parseEffect(eff, 1, 'Automatic: Attack', charLevelTotal, 0, ctx, 'Attack'))
+          }
+        }
       }
 
       // V2 Class::ImprovedHeroicDurabilityFeats (Class.cpp:375-399): every heroic

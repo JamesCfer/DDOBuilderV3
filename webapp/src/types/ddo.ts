@@ -198,6 +198,10 @@ export interface EnhancementTree {
 export interface ItemBuff {
   Type: string
   Value1?: number
+  /** V2 Buff::UpdatedEffects even/odd split: with BOTH values present,
+   *  template effect[0] gets Value1, effect[1] gets Value2 (e.g. Deception
+   *  "+12 to hit / +18 damage for sneak attacks"). */
+  Value2?: number
   BonusType?: string
   Description1?: string
   Item?: string

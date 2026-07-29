@@ -50,6 +50,19 @@
 #include "BreakdownItemSpellSchool.h"
 #include "BreakdownItemCasterLevel.h"
 #include "BreakdownItemSchoolCasterLevel.h"
+#include "BreakdownItemSkill.h"
+#include "BreakdownItemTactical.h"
+#include "BreakdownItemSpellPower.h"
+#include "BreakdownItemUniversalSpellPower.h"
+#include "BreakdownItemEnergyResistance.h"
+#include "BreakdownItemEnergyAbsorption.h"
+#include "BreakdownItemSpellPoints.h"
+#include "BreakdownItemMaximumKi.h"
+#include "BreakdownItemSneakAttackDice.h"
+#include "BreakdownItemOffhandDoublestrike.h"
+#include "BreakdownItemPactDice.h"
+#include "BreakdownItemTurnUndeadLevel.h"
+#include "BreakdownItemTurnUndeadHitDice.h"
 #include "SpellSchoolTypes.h"
 
 #include "BreakdownHost.h"
@@ -385,6 +398,228 @@ namespace
                         Effect_MaxCasterLevel, nullptr, nullptr));
             }
         }
+
+        // ------------------------------------------------------------------
+        // Full-analytics expansion: everything else CBreakdownsPane
+        // constructs that compiles headless (skills, tacticals, spell
+        // powers/crit, energy resistance/absorption, and the remaining
+        // BreakdownItemSimple registrations, transcribed mechanically from
+        // BreakdownsPane.cpp). Registration order only matters for ctor-time
+        // sibling lookups; CreateOtherEffects lookups resolve at
+        // BuildChangeComplete, by which time every breakdown exists.
+        // ------------------------------------------------------------------
+
+        // Skills (observe their keyed ability breakdown - the pane's
+        // StatFromSkill switch)
+        for (size_t si = Skill_Unknown + 1; si < Skill_Count; ++si)
+        {
+            AbilityType at = StatFromSkill(static_cast<SkillType>(si));
+            BreakdownType abt = Breakdown_Unknown;
+            switch (at)
+            {
+                case Ability_Strength:     abt = Breakdown_Strength; break;
+                case Ability_Dexterity:    abt = Breakdown_Dexterity; break;
+                case Ability_Constitution: abt = Breakdown_Constitution; break;
+                case Ability_Intelligence: abt = Breakdown_Intelligence; break;
+                case Ability_Wisdom:       abt = Breakdown_Wisdom; break;
+                case Ability_Charisma:     abt = Breakdown_Charisma; break;
+                default: break;
+            }
+            BreakdownItem* pAbility = (abt != Breakdown_Unknown) ? g_breakdowns[abt] : nullptr;
+            BreakdownType bt = static_cast<BreakdownType>(Breakdown_SkillBalance + si - Skill_Unknown - 1);
+            Reg(bt, new BreakdownItemSkill(&g_paneStub, static_cast<SkillType>(si), bt,
+                    nullptr, nullptr, pAbility));
+        }
+
+        // Remaining BreakdownItemSimple registrations (pane-transcribed).
+        // SimpleIfNew skips types already registered above.
+        struct SimpleReg { BreakdownType bt; EffectType et; const char* title; };
+        static const SimpleReg simples[] = {
+            { Breakdown_MovementSpeed, Effect_MovementSpeed, "Movement Speed" },
+            { Breakdown_ArmorCheckPenalty, Effect_ArmorCheckPenalty, "Armor Check penalty" },
+            { Breakdown_ArmorCheckPenaltyShield, Effect_ArmorCheckPenaltyShield, "Armor Check penalty (Shield)" },
+            { Breakdown_DodgeCapTowerShield, Effect_MaxDexBonusTowerShield, "Dodge Cap (Tower Shield)" },
+            { Breakdown_MissileDeflection, Effect_MissileDeflection, "Missile Deflection" },
+            { Breakdown_Incorporeality, Effect_Incorporeality, "Incorporeality" },
+            { Breakdown_Displacement, Effect_Displacement, "Displacement" },
+            { Breakdown_HelplessDamageReduction, Effect_HelplessDamageReduction, "Helpless Damage Reduction" },
+            { Breakdown_HealingAmplification, Effect_HealingAmplification, "Healing Amplification (Positive)" },
+            { Breakdown_NegativeHealingAmplification, Effect_NegativeHealingAmplification, "Healing Amplification (Negative)" },
+            { Breakdown_RepairAmplification, Effect_RepairAmplification, "Repair Amplification" },
+            { Breakdown_ThreatMelee, Effect_ThreatBonusMelee, "Melee Threat Generation" },
+            { Breakdown_ThreatRanged, Effect_ThreatBonusRanged, "Ranged Threat Generation" },
+            { Breakdown_ThreatSpell, Effect_ThreatBonusSpell, "Spell Threat Generation" },
+            { Breakdown_OffHandAttackBonus, Effect_OffHandAttackBonus, "Off Hand Attack Chance" },
+            { Breakdown_DoubleStrike, Effect_DoubleStrike, "Doublestrike" },
+            { Breakdown_ImbueDice, Effect_ImbueDice, "Bonus Imbue Dice" },
+            { Breakdown_SneakAttackDamage, Effect_SneakAttackDamage, "Sneak Attack Damage" },
+            { Breakdown_SneakAttackAttack, Effect_SneakAttackAttack, "Sneak Attack Attack" },
+            { Breakdown_SneakAttackRange, Effect_SneakAttackRange, "Sneak Attack Range" },
+            { Breakdown_DoubleShot, Effect_DoubleShot, "Doubleshot" },
+            { Breakdown_SecondaryShieldBash, Effect_SecondaryShieldBash, "Secondary Shield Bash" },
+            { Breakdown_DodgeBypass, Effect_DodgeBypass, "Dodge Bypass" },
+            { Breakdown_FortificationBypass, Effect_FortificationBypass, "Fortification Bypass" },
+            { Breakdown_MissileDeflectionBypass, Effect_MissileDeflectionBypass, "Missile Deflection Bypass" },
+            { Breakdown_Strikethrough, Effect_Strikethrough, "Strikethrough" },
+            { Breakdown_DamageAbilityMultiplier, Effect_DamageAbilityMultiplier, "Main Hand Ability Multiplier" },
+            { Breakdown_DamageAbilityMultiplierOffhand, Effect_DamageAbilityMultiplierOffhand, "Off Hand Ability Multiplier" },
+            { Breakdown_HelplessDamage, Effect_HelplessDamage, "Helpless Damage Bonus" },
+            { Breakdown_RuneArmChargeRate, Effect_RuneArmChargeRate, "Rune Arm Charge rate" },
+            { Breakdown_RuneArmStableCharge, Effect_RuneArmStableCharge, "Rune Arm Stable Charge" },
+            { Breakdown_Wildsurge, Effect_WildsurgeChance, "Wildsurge Chance" },
+            { Breakdown_ArcaneSpellfailure, Effect_ArcaneSpellFailure, "Arcane Spell Failure (Armor)" },
+            { Breakdown_ArcaneSpellfailureShields, Effect_ArcaneSpellFailureShields, "Arcane Spell Failure (Shields)" },
+            { Breakdown_SpellResistance, Effect_SpellResistance, "Spell Resistance" },
+            { Breakdown_SpellCostReduction, Effect_SpellPointCostPercent, "Spell Cost Reduction Percent" },
+            { Breakdown_SpellPenetration, Effect_SpellPenetrationBonus, "Spell Penetration" },
+            { Breakdown_ImplementInYourHands, Effect_ImplementInYourHands, "Implement in Your Hands" },
+            { Breakdown_SpellCriticalChanceUniversal, Effect_UniversalSpellLore, "Universal Spell Critical Chance" },
+            { Breakdown_SpellCriticalMultiplierUniversal, Effect_UniversalSpellCriticalDamage, "Universal Spell Critical Multiplier" },
+            { Breakdown_SongCount, Effect_SongCount, "Song Count" },
+            { Breakdown_SongACBonus, Effect_SongACBonus, "AC Bonus" },
+            { Breakdown_SongAttackBonus, Effect_SongAttackBonus, "Attack Bonus" },
+            { Breakdown_SongDamageBonus, Effect_SongDamageBonus, "Damage Bonus" },
+            { Breakdown_SongDoublestrike, Effect_SongDoublestrike, "Doublestrike Bonus" },
+            { Breakdown_SongDoubleshot, Effect_SongDoubleshot, "Doubleshot Bonus" },
+            { Breakdown_SongUniversalSpellPower, Effect_SongUniversalSpellPower, "Universal Spell Power Bonus" },
+            { Breakdown_SongSpellPenetration, Effect_SongSpellPenetration, "Spell Penetration Bonus" },
+            { Breakdown_SongCasterLevel, Effect_SongCasterLevel, "Caster Level Bonus" },
+            { Breakdown_SongSkillBonus, Effect_SongSkillBonus, "Skill Bonus" },
+            { Breakdown_SongPRR, Effect_SongPRR, "PRR Bonus" },
+            { Breakdown_SongMRR, Effect_SongMRR, "MRR Bonus" },
+            { Breakdown_SongHealingAmp, Effect_SongHealingAmp, "Healing Amp Bonus" },
+            { Breakdown_SongNegativeHealingAmp, Effect_SongNegativeHealingAmp, "Negative Healing Amp Bonus" },
+            { Breakdown_SongRepairAmp, Effect_SongRepairAmp, "Repair Amp Bonus" },
+            { Breakdown_KiPassive, Effect_KiPassive, "Ki Passive Regeneration" },
+            { Breakdown_KiHit, Effect_KiHit, "Ki on Hit" },
+            { Breakdown_KiCritical, Effect_KiCritical, "Ki on Critical Hit" },
+            { Breakdown_HirelingAbilityBonus, Effect_HirelingAbilityBonus, "Hireling Abilities" },
+            { Breakdown_HirelingHitpoints, Effect_HirelingHitpoints, "Hireling Hitpoints" },
+            { Breakdown_HirelingFortification, Effect_HirelingFortification, "Hireling Fortification" },
+            { Breakdown_HirelingPRR, Effect_HirelingPRR, "Hireling PRR" },
+            { Breakdown_HirelingMRR, Effect_HirelingMRR, "Hireling MRR" },
+            { Breakdown_HirelingDodge, Effect_HirelingDodge, "Hireling Dodge" },
+            { Breakdown_HirelingMeleePower, Effect_HirelingMeleePower, "Hireling Melee Power" },
+            { Breakdown_HirelingRangedPower, Effect_HirelingRangedPower, "Hireling Ranged Power" },
+            { Breakdown_HirelingSpellPower, Effect_HirelingSpellPower, "Hireling Spell Power" },
+            { Breakdown_HirelingConcealment, Effect_HirelingConcealment, "Hireling Concealment" },
+            { Breakdown_LayOnHands, Effect_ExtraLayOnHands, "Lay On Hands Charges" },
+            { Breakdown_LOHRegenerationRate, Effect_LOHRegenRate, "Regeneration Rate (Once every n Seconds)" },
+            { Breakdown_Rages, Effect_ExtraRage, "Rage Charges" },
+            { Breakdown_TumbleCharges, Effect_TumbleCharge, "Tumble Charges" },
+            { Breakdown_Accelerate, Effect_MetamagicCostAccelerate, "Accelerate Spell" },
+            { Breakdown_Eschewmaterials, Effect_MetamagicCostEschewMaterials, "Eschew Materials" },
+            { Breakdown_Embolden, Effect_MetamagicCostEmbolden, "Embolden Spell" },
+            { Breakdown_Empower, Effect_MetamagicCostEmpower, "Empower Spell" },
+            { Breakdown_EmpowerHealing, Effect_MetamagicCostEmpowerHealing, "Empower Healing Spell" },
+            { Breakdown_Enlarge, Effect_MetamagicCostEnlarge, "Enlarge Spell" },
+            { Breakdown_Extend, Effect_MetamagicCostExtend, "Extend Spell" },
+            { Breakdown_Heighten, Effect_MetamagicCostHeighten, "Heighten Spell" },
+            { Breakdown_Intensify, Effect_MetamagicCostIntensify, "Intensify Spell" },
+            { Breakdown_Maximize, Effect_MetamagicCostMaximize, "Maximize Spell" },
+            { Breakdown_Quicken, Effect_MetamagicCostQuicken, "Quicken Spell" },
+        };
+        for (auto&& s : simples)
+        {
+            if (g_breakdowns.find(s.bt) == g_breakdowns.end())
+            {
+                Simple(s.bt, s.et, s.title);
+            }
+        }
+
+        // Tactical DCs
+        struct TactReg { BreakdownType bt; TacticalType tt; };
+        static const TactReg tacticals[] = {
+            { Breakdown_TacticalAssassinate,    Tactical_Assassinate },
+            { Breakdown_TacticalStunning,       Tactical_Stun },
+            { Breakdown_TacticalSunder,         Tactical_Sunder },
+            { Breakdown_TacticalTrap,           Tactical_Trap },
+            { Breakdown_TacticalTrip,           Tactical_Trip },
+            { Breakdown_TacticalGeneral,        Tactical_General },
+            { Breakdown_TacticalStunningShield, Tactical_StunningShield },
+            { Breakdown_TacticalWands,          Tactical_Wands },
+            { Breakdown_TacticalFear,           Tactical_Fear },
+            { Breakdown_TacticalInnateAttack,   Tactical_InnateAttack },
+            { Breakdown_TacticalBreathWeapon,   Tactical_BreathWeapon },
+            { Breakdown_TacticalPoison,         Tactical_Poison },
+            { Breakdown_TacticalRuneArm,        Tactical_RuneArm },
+        };
+        for (auto&& t : tacticals)
+        {
+            Reg(t.bt, new BreakdownItemTactical(&g_paneStub, t.bt, t.tt, nullptr, nullptr));
+        }
+
+        // Universal spell power first (per-type spell powers read it), then
+        // the per-type spell powers / crit chances / crit multipliers.
+        Reg(Breakdown_SpellPowerUniversal, new BreakdownItemUniversalSpellPower(
+                &g_paneStub, Breakdown_SpellPowerUniversal, "Universal Spell power", nullptr, nullptr));
+        struct SpReg { BreakdownType sp; BreakdownType crit; BreakdownType mult; SpellPowerType t; const char* name; };
+        static const SpReg spellPowers[] = {
+            { Breakdown_SpellPowerAcid,           Breakdown_SpellCriticalChanceAcid,           Breakdown_SpellCriticalMultiplierAcid,           SpellPower_Acid,           "Acid" },
+            { Breakdown_SpellPowerLightAlignment, Breakdown_SpellCriticalChanceLightAlignment, Breakdown_SpellCriticalMultiplierLightAlignment, SpellPower_LightAlignment, "Light/Alignment" },
+            { Breakdown_SpellPowerChaos,          Breakdown_SpellCriticalChanceChaos,          Breakdown_SpellCriticalMultiplierChaos,          SpellPower_Chaos,          "Chaos" },
+            { Breakdown_SpellPowerCold,           Breakdown_SpellCriticalChanceCold,           Breakdown_SpellCriticalMultiplierCold,           SpellPower_Cold,           "Cold" },
+            { Breakdown_SpellPowerElectric,       Breakdown_SpellCriticalChanceElectric,       Breakdown_SpellCriticalMultiplierElectric,       SpellPower_Electric,       "Electric" },
+            { Breakdown_SpellPowerEvil,           Breakdown_SpellCriticalChanceEvil,           Breakdown_SpellCriticalMultiplierEvil,           SpellPower_Evil,           "Evil" },
+            { Breakdown_SpellPowerFire,           Breakdown_SpellCriticalChanceFire,           Breakdown_SpellCriticalMultiplierFire,           SpellPower_Fire,           "Fire" },
+            { Breakdown_SpellPowerForce,          Breakdown_SpellCriticalChanceForce,          Breakdown_SpellCriticalMultiplierForce,          SpellPower_Force,          "Force" },
+            { Breakdown_SpellPowerLawful,         Breakdown_SpellCriticalChanceLawful,         Breakdown_SpellCriticalMultiplierLawful,         SpellPower_Lawful,         "Lawful" },
+            { Breakdown_SpellPowerNegative,       Breakdown_SpellCriticalChanceNegative,       Breakdown_SpellCriticalMultiplierNegative,       SpellPower_Negative,       "Negative" },
+            { Breakdown_SpellPowerPhysical,       Breakdown_SpellCriticalChancePhysical,       Breakdown_SpellCriticalMultiplierPhysical,       SpellPower_Physical,       "Physical" },
+            { Breakdown_SpellPowerPoison,         Breakdown_SpellCriticalChancePoison,         Breakdown_SpellCriticalMultiplierPoison,         SpellPower_Poison,         "Poison" },
+            { Breakdown_SpellPowerPositive,       Breakdown_SpellCriticalChancePositive,       Breakdown_SpellCriticalMultiplierPositive,       SpellPower_Positive,       "Positive" },
+            { Breakdown_SpellPowerRepair,         Breakdown_SpellCriticalChanceRepair,         Breakdown_SpellCriticalMultiplierRepair,         SpellPower_Repair,         "Repair" },
+            { Breakdown_SpellPowerRust,           Breakdown_SpellCriticalChanceRust,           Breakdown_SpellCriticalMultiplierRust,           SpellPower_Rust,           "Rust" },
+            { Breakdown_SpellPowerSonic,          Breakdown_SpellCriticalChanceSonic,          Breakdown_SpellCriticalMultiplierSonic,          SpellPower_Sonic,          "Sonic" },
+            { Breakdown_SpellPowerUntyped,        Breakdown_SpellCriticalChanceUntyped,        Breakdown_SpellCriticalMultiplierUntyped,        SpellPower_Untyped,        "Untyped" },
+        };
+        for (auto&& s : spellPowers)
+        {
+            Reg(s.sp,   new BreakdownItemSpellPower(&g_paneStub, s.sp,   Effect_SpellPower,          s.t, s.name, nullptr, nullptr));
+            Reg(s.crit, new BreakdownItemSpellPower(&g_paneStub, s.crit, Effect_SpellLore,           s.t, s.name, nullptr, nullptr));
+            Reg(s.mult, new BreakdownItemSpellPower(&g_paneStub, s.mult, Effect_SpellCriticalDamage, s.t, s.name, nullptr, nullptr));
+        }
+
+        // Energy resistance + absorption (pane list; Positive/Repair/Rust
+        // are commented out in the pane too)
+        struct EnergyReg { BreakdownType res; BreakdownType abs; EnergyType t; const char* name; };
+        static const EnergyReg energies[] = {
+            { Breakdown_EnergyResistanceAcid,     Breakdown_EnergyAbsorptionAcid,     Energy_Acid,     "Acid" },
+            { Breakdown_EnergyResistanceChaos,    Breakdown_EnergyAbsorptionChaos,    Energy_Chaos,    "Chaos" },
+            { Breakdown_EnergyResistanceCold,     Breakdown_EnergyAbsorptionCold,     Energy_Cold,     "Cold" },
+            { Breakdown_EnergyResistanceElectric, Breakdown_EnergyAbsorptionElectric, Energy_Electric, "Electric" },
+            { Breakdown_EnergyResistanceEvil,     Breakdown_EnergyAbsorptionEvil,     Energy_Evil,     "Evil" },
+            { Breakdown_EnergyResistanceFire,     Breakdown_EnergyAbsorptionFire,     Energy_Fire,     "Fire" },
+            { Breakdown_EnergyResistanceForce,    Breakdown_EnergyAbsorptionForce,    Energy_Force,    "Force" },
+            { Breakdown_EnergyResistanceGood,     Breakdown_EnergyAbsorptionGood,     Energy_Good,     "Good" },
+            { Breakdown_EnergyResistanceLawful,   Breakdown_EnergyAbsorptionLawful,   Energy_Lawful,   "Lawful" },
+            { Breakdown_EnergyResistanceLight,    Breakdown_EnergyAbsorptionLight,    Energy_Light,    "Light" },
+            { Breakdown_EnergyResistanceNegative, Breakdown_EnergyAbsorptionNegative, Energy_Negative, "Negative" },
+            { Breakdown_EnergyResistancePoison,   Breakdown_EnergyAbsorptionPoison,   Energy_Poison,   "Poison" },
+            { Breakdown_EnergyResistanceSonic,    Breakdown_EnergyAbsorptionSonic,    Energy_Sonic,    "Sonic" },
+        };
+        for (auto&& e : energies)
+        {
+            Reg(e.res, new BreakdownItemEnergyResistance(&g_paneStub, e.res, Effect_EnergyResistance, e.t, e.name, nullptr, nullptr));
+            Reg(e.abs, new BreakdownItemEnergyAbsorption(&g_paneStub, e.abs, Effect_EnergyAbsorbance, e.t, e.name, nullptr, nullptr));
+        }
+
+        // The remaining specialised classes
+        Reg(Breakdown_Spellpoints, new BreakdownItemSpellPoints(
+                &g_paneStub, Breakdown_Spellpoints, Effect_SpellPoints, "Spell Points", nullptr, nullptr));
+        Reg(Breakdown_KiMaximum, new BreakdownItemMaximumKi(&g_paneStub, nullptr, nullptr));
+        Reg(Breakdown_SneakAttackDice, new BreakdownItemSneakAttackDice(
+                &g_paneStub, Breakdown_SneakAttackDice, Effect_SneakAttackDice, "Sneak Attack Dice", nullptr, nullptr));
+        Reg(Breakdown_DoublestrikeOffhand, new BreakdownItemOffhandDoublestrike(
+                &g_paneStub, Breakdown_DoublestrikeOffhand, "Offhand Doublestrike", nullptr, nullptr));
+        Reg(Breakdown_EldritchBlastD8, new BreakdownItemPactDice(
+                &g_paneStub, Breakdown_EldritchBlastD8, Effect_EldritchBlastD8, "Eldritch Blast (D8's)", nullptr, nullptr, 8));
+        Reg(Breakdown_EldritchBlastD6, new BreakdownItemPactDice(
+                &g_paneStub, Breakdown_EldritchBlastD6, Effect_EldritchBlastD6, "Eldritch Blast (D6's)", nullptr, nullptr, 6));
+        Reg(Breakdown_TurnUndeadLevel, new BreakdownItemTurnUndeadLevel(
+                &g_paneStub, Breakdown_TurnUndeadLevel, nullptr, nullptr));
+        Reg(Breakdown_TurnUndeadHitDice, new BreakdownItemTurnUndeadHitDice(
+                &g_paneStub, Breakdown_TurnUndeadHitDice, nullptr, nullptr));
     }
 }
 

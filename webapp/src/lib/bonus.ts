@@ -40,6 +40,11 @@ export interface RawBonus {
   // counting contributors (V2 Effect.cpp Amount_Stacks: m_stacks is a running
   // total across every source sharing the effect signature).
   stackRank?: number
+  // V2 Effect identity (DisplayName / owner's stamped name) — when present,
+  // the gear-pool identical-effect merge keys on this instead of `source`,
+  // matching Effect::operator== (cross-source merges like the four
+  // Shadowdancer cores' "Epic Spell DCs" +1s → one ×4 effect).
+  v2Name?: string
 }
 
 export interface ResolvedBonus extends RawBonus {
@@ -210,7 +215,7 @@ export function resolveBonus(bonuses: RawBonus[]): ResolvedStat {
       {
         const seen = new Map<string, { merged: RawBonus; stacks: number; unit: number }>()
         for (const b of rawGearBonuses) {
-          const key = `${b.source}|${b.value}|${b.percent === true}`
+          const key = `${b.v2Name ?? b.source}|${b.value}|${b.percent === true}`
           const prev = seen.get(key)
           if (prev) {
             prev.stacks++

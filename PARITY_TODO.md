@@ -356,11 +356,19 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch).
 
-**Current scoreboard after pass 132 (2026-07-29, UNIFIED 151-build corpus =
-53 curated + 98 fuzz): 0 builds with any mismatch — every tracked stat on
-every build in the corpus is V2-oracle-exact.** The pass-131 residuals
-(Nerfer / Odd tank / New New Inquiz) are closed; see the pass-132 entry
-below for the mechanisms.
+**Current scoreboard after pass 133 (2026-07-29, UNIFIED 151-build corpus =
+53 curated + 98 fuzz): 0 builds with any mismatch on the FULL analytics
+surface.** The compared surface now covers everything the BreakdownsPane
+exports: abilities, saves + sub-saves, all 21 skills, HP family, PRR/MRR,
+dodge (+cap), doublestrike/doubleshot, sneak attack (dice/attack/damage),
+tactical DCs, Ki (max/passive/hit/crit), spell points, per-class and
+per-school caster levels, spell pen, per-type spell POWERS and CRIT
+CHANCES (universal + Item=All + per-type composition), school DCs,
+per-type energy RESISTANCES and multiplicative ABSORPTIONS, movement
+speed, healing/repair/negative amps, threat, fate points, destiny APs,
+tumble charges, and ~50 more scalars. Not yet emitted headless (documented
+oracle gaps, not V3 gaps): AC total, weapon to-hit/damage lines, buff
+Durations, Immunities.
 
 Pass-131 scoreboard (2026-07-28, same corpus, 3 residuals): `oracleDiff.ts` now
 sweeps `Output/FuzzBuilds` by default. The fuzz corpus went **79 → 0
@@ -396,7 +404,44 @@ see pass 130 above). Historical per-bucket notes below are kept for the
 evidence trail; where a note conflicts with this scoreboard,
 the scoreboard wins.
 
-- ✅ **Pass 132 — residuals closed: 151/151 builds oracle-exact (this PR).**
+- ✅ **Pass 133 — full-analytics widening: the oracle now emits (and the
+  referee compares) the entire BreakdownsPane surface (this PR).**
+  Oracle side: `BreakdownHostLinux.cpp` registers ~150 additional breakdowns
+  (21 `BreakdownItemSkill` wired to their ability breakdowns, 13
+  `BreakdownItemTactical`, universal + 17×3 `BreakdownItemSpellPower`
+  (power/lore/crit-multiplier), 13×2 energy resistance/absorption,
+  SpellPoints/MaximumKi/SneakAttackDice/OffhandDoublestrike/PactDice/
+  TurnUndead, and a ~90-entry simple-breakdown table); `main.cpp` emits new
+  JSON objects `skills`, `tacticalDC`, `spellPower`, `spellCritChance`,
+  `energyResistance`, `energyAbsorption` plus ~50 scalars. Referee:
+  `oracleDiff.ts` composes V2 display semantics (sub-save = base+sub;
+  school DC = dc.All + dc.school; per-type spell power/crit = universal +
+  Item=All + per-type; absorption recombined MULTIPLICATIVELY from resolved
+  winners; maxDexBonus 999 sentinel; movementSpeed −100 base; destinyAPs
+  from epic/legendary levels + FatePoints/3). V3 fixes found by the wider
+  net, each oracle-verified on YingsMonk:
+  - **Snapshot abilities**: `Snapshot*` StackSources (Henshin Mystic "Clear
+    Your Mind" Wis/2 → tactical DCs +3) read the persisted per-gear-set
+    ability snapshot (`Build::SnapshotAbilityValue`) when `GearSetSnapshot`
+    names an existing set — missing tags default 0; live totals only as
+    fallback. New `EffectContext.snapshotAbilities`.
+  - **SpellFocusMastery → dc.All** (was mis-mapped to spell penetration;
+    its ItemBuffs.xml template is SpellDC Item=All).
+  - **ItemBuff Value1/Value2 split** (`Buff::UpdatedEffects`): with both
+    values, template effect[0] gets Value1, effect[1] Value2 (Deception
+    "+12 to hit / +18 sneak damage" — Ophael's Cincture).
+  - **Tumble charges**: V2's universal "Attack" feat carries them (base 2 +
+    1 @10 Tumble ranks + 1 @20, cloth/light only).
+  - **Absorption bonus types**: V3 stamped every `absorb.*` bonus with a
+    fake "Absorption" type, defeating same-type Highest-Only stacking
+    (guild Stormreaver Memorial II/III/IV all counted; V2 keeps only IV).
+    Real bonus types restored; UI/export multiplicative math now matches V2.
+  - **Auto-stance race filter narrowed** to the build's OWN race — the
+    catalogue-wide filter swallowed persisted iconic past-life stances
+    whose trimmed names collide with race names ("Aasimar Scourge ").
+  Regression tests: `parityPass133.test.ts` (8 tests).
+
+- ✅ **Pass 132 — residuals closed: 151/151 builds oracle-exact (PR #175).**
   New tooling: `BreakdownItem::V2CalcDumpEffects` (V2CALC_LINUX-guarded) +
   `V2CALC_DUMP_EFFECTS=<key>` in the oracle prints a breakdown's per-effect
   pools (other/char/item, with active/inactive/non-stacking state) — the
@@ -431,7 +476,7 @@ the scoreboard wins.
     `useStaticBundle` into `importV2Build`.
   Regression tests: `parityPass132.test.ts` (8 tests). Full suite 1083.
 
-- ✅ **Pass 131 — fuzz-corpus alignment (fuzz 79→0, this PR).** Root causes,
+- ✅ **Pass 131 — fuzz-corpus alignment (fuzz 79→0, PR #174).** Root causes,
   each verified by direct oracle diff (all in V3 unless marked oracle):
   - **(oracle) headless auto-stance evaluation** — new
     `v2calc/shim/AutoStancesLinux.cpp` (see scoreboard note above). Fuzz

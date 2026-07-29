@@ -56,6 +56,11 @@ export interface EffectContext {
   materialBySlot?: Record<string, string>   // V2 slot name (Weapon1, …) → equipped item Material
   skillTotals?: Record<string, number>      // skill → resolved total (fixed-point pass 2+)
   casterLevels?: Record<string, number>     // class → bonus caster levels from cl.* effects (fixed-point pass 2+)
+  // Persisted gear-set ability snapshot (V2 Build::SnapshotAbilityValue): set
+  // only when the build's GearSetSnapshot names an existing gear set. When
+  // present, Snapshot* StackSources read THESE values (missing ability → 0,
+  // matching V2's DL_OPTIONAL default), not the live totals.
+  snapshotAbilities?: Record<string, number>
 }
 
 // ---------------------------------------------------------------------------
@@ -218,6 +223,12 @@ export interface ParsedBonus {
   stackGroup?: string
   stackAmounts?: number[]
   stackRank?: number
+  // V2 Effect identity: the effect's own DisplayName or the owner's stamped
+  // name (Feat/EnhancementTreeItem load-time stamp). Identical-effect merges
+  // in the gear pool key on THIS (Effect::operator== compares DisplayName),
+  // so e.g. all four Shadowdancer cores' "Shadowdancer: Epic Spell DCs" +1s
+  // merge into one ×4 effect even though their V3 sources differ.
+  v2Name?: string
 }
 
 /**
@@ -363,6 +374,23 @@ function abilityFromEffect(effect: Effect): string | undefined {
   return raw.startsWith('Snapshot') ? raw.slice('Snapshot'.length) : raw
 }
 
+/**
+ * Resolved ability score for ability-driven ATypes. Plain names ("Wisdom")
+ * read the live total. "Snapshot*" names go through V2's
+ * Build::SnapshotAbilityValue: the persisted gear-set snapshot when the build
+ * names an existing snapshot gear set (ctx.snapshotAbilities present), else
+ * the live total as fallback.
+ */
+function abilityTotalForEffect(effect: Effect, ctx?: EffectContext): number {
+  const raw = effect.StackSource ?? firstItem(effect)
+  if (!raw || !ctx) return 0
+  if (raw.startsWith('Snapshot') && ctx.snapshotAbilities) {
+    return ctx.snapshotAbilities[raw.slice('Snapshot'.length)] ?? 0
+  }
+  const ability = raw.startsWith('Snapshot') ? raw.slice('Snapshot'.length) : raw
+  return ctx.abilityTotals[ability] ?? 0
+}
+
 function effectHasCap(effect: Effect): boolean {
   return effect.Cap !== undefined && effect.Cap !== null
 }
@@ -453,8 +481,7 @@ function resolveValue(
     // ---------------------------------------------------------------------
     case 'AbilityValue':
     case 'AbilityTotal': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
+      const total = abilityTotalForEffect(effect, ctx)
       return effectHasCap(effect) ? Math.min(total, effectCap(effect)) : total
     }
 
@@ -467,21 +494,15 @@ function resolveValue(
     }
 
     case 'AbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return abilityModFromTotal(total)
+      return abilityModFromTotal(abilityTotalForEffect(effect, ctx))
     }
 
     case 'HalfAbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return Math.trunc(abilityModFromTotal(total) / 2)
+      return Math.trunc(abilityModFromTotal(abilityTotalForEffect(effect, ctx)) / 2)
     }
 
     case 'ThirdAbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return Math.trunc(abilityModFromTotal(total) / 3)
+      return Math.trunc(abilityModFromTotal(abilityTotalForEffect(effect, ctx)) / 3)
     }
 
     case 'BAB': {
@@ -741,6 +762,7 @@ export function parseEffect(
       statKey, value, bonusType: bt, source,
       percent: flagSet(effect.Percent),
       asItemEffect: flagSet(effect.ApplyAsItemEffect),
+      ...(identityName !== '' ? { v2Name: identityName } : {}),
       // statKey-scoped so Item=All fan-out to different stats doesn't merge.
       ...(stackGroupBase
         ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts, stackRank: Math.max(1, rank) }
@@ -888,8 +910,8 @@ export function parseEffect(
         return items.flatMap(elem =>
           elem === 'All'
             ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
-                .map(e => make(`absorb.${e}`, 'Absorption'))
-            : [make(`absorb.${elem}`, 'Absorption')],
+                .map(e => make(`absorb.${e}`))
+            : [make(`absorb.${elem}`)],
         )
       }
       return []
@@ -993,7 +1015,11 @@ export function parseEffect(
       return [make('spellPoints')]
 
     case 'SpellFocusMastery':
-      return [make('spellPenetration')]
+      // V2 ItemBuffs.xml template: SpellDC Item=All — "+N to the DC of ALL
+      // spells" (oracle-verified: Legendary Ring of Mystic Constitution's
+      // Insightful +3 lands in every school DC breakdown). Was wrongly
+      // mapped to spell penetration.
+      return [make('dc.All')]
 
     case 'SpellPenetration':
     case 'SpellPenetrationBonus':
@@ -1678,18 +1704,24 @@ function parseItemBuffViaTemplate(
   if (effects.length === 0) return []
 
   const hasValue1 = buff.Value1 != null
+  const hasValue2 = buff.Value2 != null
   const itemBonus = buff.BonusType && buff.BonusType !== '' ? buff.BonusType : undefined
   const itemFilter = buff.Item && buff.Item !== '' ? buff.Item : undefined
 
   const out: ParsedBonus[] = []
+  let index = 0
   for (const eff of effects) {
-    // Buff::UpdatedEffects: stamp BonusType (if the item supplies one), set the
-    // Item filter, and override Amount with Value1 (ItemBuff carries no Value2,
-    // so the even/odd split collapses to "Value1 on every effect").
+    // Buff::UpdatedEffects: stamp BonusType (if the item supplies one), set
+    // the Item filter, and override Amount — with BOTH Value1 and Value2 the
+    // even/odd split applies (effect[0]=Value1, effect[1]=Value2; e.g.
+    // Deception "+12 to hit / +18 damage for sneak attacks" — Ophael's
+    // Cincture, oracle-verified); with only Value1 every effect gets it.
     const cloned: Effect = { ...eff }
     if (itemBonus) cloned.Bonus = itemBonus
     if (itemFilter) cloned.Item = itemFilter
-    if (hasValue1) cloned.Amount = buff.Value1
+    if (hasValue1 && hasValue2) cloned.Amount = index % 2 === 0 ? buff.Value1 : buff.Value2
+    else if (hasValue1) cloned.Amount = buff.Value1
+    index++
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
     // active-stance set instead of being conservatively dropped.
@@ -1869,8 +1901,8 @@ export function parseItemBuff(
         return items.flatMap(elem =>
           elem === 'All'
             ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
-                .map(e => make(`absorb.${e}`, 'Absorption'))
-            : [make(`absorb.${elem}`, 'Absorption')],
+                .map(e => make(`absorb.${e}`))
+            : [make(`absorb.${elem}`)],
         )
       }
       return []
@@ -1986,7 +2018,11 @@ export function parseItemBuff(
       return [make('sp.Universal')]
 
     case 'SpellFocusMastery':
-      return [make('spellPenetration')]
+      // V2 ItemBuffs.xml template: SpellDC Item=All — "+N to the DC of ALL
+      // spells" (oracle-verified: Legendary Ring of Mystic Constitution's
+      // Insightful +3 lands in every school DC breakdown). Was wrongly
+      // mapped to spell penetration.
+      return [make('dc.All')]
 
     case 'SpellPenetration':
     case 'SpellPenetrationBonus':

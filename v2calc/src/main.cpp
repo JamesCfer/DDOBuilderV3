@@ -167,6 +167,52 @@ int main(int argc, char** argv)
         { Breakdown_BAB,             "bab",             true  },
         { Breakdown_MeleePower,      "meleePower",      false },
         { Breakdown_RangedPower,     "rangedPower",     false },
+        // full-analytics expansion
+        { Breakdown_NegativeLevels,       "negativeLevels",     false },
+        { Breakdown_FatePoints,           "fatePoints",         false },
+        { Breakdown_DestinyPoints,        "destinyAPs",         false },
+        { Breakdown_StyleBonusFeats,      "styleBonusFeats",    false },
+        { Breakdown_UnconsciousRange,     "unconsciousRange",   false },
+        { Breakdown_ReaperHitpoints,      "reaperHitpoints",    false },
+        { Breakdown_MovementSpeed,        "movementSpeed",      false },
+        { Breakdown_ArmorCheckPenalty,    "armorCheckPenalty",  false },
+        { Breakdown_ArmorCheckPenaltyShield, "armorCheckPenaltyShield", false },
+        { Breakdown_MissileDeflection,    "missileDeflection",  false },
+        { Breakdown_Incorporeality,       "incorporeality",     false },
+        { Breakdown_Displacement,         "displacement",       false },
+        { Breakdown_HelplessDamageReduction, "helplessDR",      false },
+        { Breakdown_HealingAmplification, "healAmp",            false },
+        { Breakdown_NegativeHealingAmplification, "negHealAmp", false },
+        { Breakdown_RepairAmplification,  "repairAmp",          false },
+        { Breakdown_ThreatMelee,          "threatMelee",        false },
+        { Breakdown_ThreatRanged,         "threatRanged",       false },
+        { Breakdown_ThreatSpell,          "threatSpell",        false },
+        { Breakdown_OffHandAttackBonus,   "offhandAttackChance",false },
+        { Breakdown_DoubleStrike,         "doublestrike",       false },
+        { Breakdown_DoublestrikeOffhand,  "offhandDoublestrike",false },
+        { Breakdown_DoubleShot,           "doubleshot",         false },
+        { Breakdown_ImbueDice,            "imbueDice",          false },
+        { Breakdown_SneakAttackDice,      "sneakAttackDice",    false },
+        { Breakdown_SneakAttackDamage,    "sneakAttackDamage",  false },
+        { Breakdown_SneakAttackAttack,    "sneakAttackAttack",  false },
+        { Breakdown_DodgeBypass,          "dodgeBypass",        false },
+        { Breakdown_FortificationBypass,  "fortificationBypass",false },
+        { Breakdown_Strikethrough,        "strikethrough",      false },
+        { Breakdown_HelplessDamage,       "helplessDamage",     false },
+        { Breakdown_Spellpoints,          "spellPoints",        false },
+        { Breakdown_SpellResistance,      "spellResistance",    false },
+        { Breakdown_SpellPenetration,     "spellPenetration",   false },
+        { Breakdown_SpellCostReduction,   "spellCostReduction", false },
+        { Breakdown_ArcaneSpellfailure,   "asfArmor",           false },
+        { Breakdown_ArcaneSpellfailureShields, "asfShields",    false },
+        { Breakdown_KiMaximum,            "kiMax",              false },
+        { Breakdown_KiPassive,            "kiPassive",          false },
+        { Breakdown_KiHit,                "kiHit",              false },
+        { Breakdown_KiCritical,           "kiCritical",         false },
+        { Breakdown_SongCount,            "songCount",          false },
+        { Breakdown_TumbleCharges,        "tumbleCharges",      false },
+        { Breakdown_SpellPowerUniversal,  "spellPowerUniversal",false },
+        { Breakdown_TurnUndeadLevel,      "turnUndeadLevel",    false },
     };
     printf("  \"breakdowns\": {\n");
     size_t n = sizeof(scalars) / sizeof(scalars[0]);
@@ -182,6 +228,131 @@ int main(int argc, char** argv)
         }
     }
     printf("  },\n");
+
+    // skills (Breakdown_SkillBalance.. contiguous with SkillType order)
+    static const char* skillNames[] = {
+        "Balance", "Bluff", "Concentration", "Diplomacy", "Disable Device",
+        "Haggle", "Heal", "Hide", "Intimidate", "Jump", "Listen",
+        "Move Silently", "Open Lock", "Perform", "Repair", "Search",
+        "Spellcraft", "Spot", "Swim", "Tumble", "Use Magic Device",
+    };
+    printf("  \"skills\": {\n");
+    for (size_t si = 0; si < Skill_Count - Skill_Unknown - 1; ++si)
+    {
+        BreakdownType bt = static_cast<BreakdownType>(Breakdown_SkillBalance + si);
+        printf("    \"%s\": %.2f%s\n", skillNames[si], v2calc::Total(bt),
+                (si + 1 < Skill_Count - Skill_Unknown - 1) ? "," : "");
+        if (dumpKeys != nullptr && strstr(dumpKeys, skillNames[si]) != nullptr)
+        {
+            v2calc::DumpEffects(bt, skillNames[si]);
+        }
+    }
+    printf("  },\n");
+
+    // tactical DCs
+    static const struct { BreakdownType bt; const char* key; } tacticals[] = {
+        { Breakdown_TacticalAssassinate,  "Assassinate" },
+        { Breakdown_TacticalStunning,     "Stun" },
+        { Breakdown_TacticalSunder,       "Sunder" },
+        { Breakdown_TacticalTrap,         "Trap" },
+        { Breakdown_TacticalTrip,         "Trip" },
+        { Breakdown_TacticalGeneral,      "General" },
+        { Breakdown_TacticalWands,        "Wands" },
+        { Breakdown_TacticalBreathWeapon, "Breath Weapon" },
+        { Breakdown_TacticalRuneArm,      "Rune Arm" },
+    };
+    printf("  \"tacticalDC\": {");
+    size_t ntac = sizeof(tacticals) / sizeof(tacticals[0]);
+    for (size_t i = 0; i < ntac; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                tacticals[i].key, (int)v2calc::Total(tacticals[i].bt));
+        if (dumpKeys != nullptr && strstr(dumpKeys, tacticals[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(tacticals[i].bt, tacticals[i].key);
+        }
+    }
+    printf(" },\n");
+
+    // spell power / crit chance per type (V3 sp.* / spCrit.* keys)
+    static const struct { BreakdownType sp; BreakdownType crit; const char* key; } spellPowers[] = {
+        { Breakdown_SpellPowerAcid,           Breakdown_SpellCriticalChanceAcid,           "Acid" },
+        { Breakdown_SpellPowerLightAlignment, Breakdown_SpellCriticalChanceLightAlignment, "LightAlignment" },
+        { Breakdown_SpellPowerChaos,          Breakdown_SpellCriticalChanceChaos,          "Chaos" },
+        { Breakdown_SpellPowerCold,           Breakdown_SpellCriticalChanceCold,           "Cold" },
+        { Breakdown_SpellPowerElectric,       Breakdown_SpellCriticalChanceElectric,       "Electric" },
+        { Breakdown_SpellPowerEvil,           Breakdown_SpellCriticalChanceEvil,           "Evil" },
+        { Breakdown_SpellPowerFire,           Breakdown_SpellCriticalChanceFire,           "Fire" },
+        { Breakdown_SpellPowerForce,          Breakdown_SpellCriticalChanceForce,          "Force" },
+        { Breakdown_SpellPowerLawful,         Breakdown_SpellCriticalChanceLawful,         "Lawful" },
+        { Breakdown_SpellPowerNegative,       Breakdown_SpellCriticalChanceNegative,       "Negative" },
+        { Breakdown_SpellPowerPhysical,       Breakdown_SpellCriticalChancePhysical,       "Physical" },
+        { Breakdown_SpellPowerPoison,         Breakdown_SpellCriticalChancePoison,         "Poison" },
+        { Breakdown_SpellPowerPositive,       Breakdown_SpellCriticalChancePositive,       "Positive" },
+        { Breakdown_SpellPowerRepair,         Breakdown_SpellCriticalChanceRepair,         "Repair" },
+        { Breakdown_SpellPowerRust,           Breakdown_SpellCriticalChanceRust,           "Rust" },
+        { Breakdown_SpellPowerSonic,          Breakdown_SpellCriticalChanceSonic,          "Sonic" },
+        { Breakdown_SpellPowerUntyped,        Breakdown_SpellCriticalChanceUntyped,        "Untyped" },
+    };
+    size_t nsp = sizeof(spellPowers) / sizeof(spellPowers[0]);
+    printf("  \"spellPower\": {");
+    for (size_t i = 0; i < nsp; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                spellPowers[i].key, (int)v2calc::Total(spellPowers[i].sp));
+        if (dumpKeys != nullptr && strstr(dumpKeys, spellPowers[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(spellPowers[i].sp, spellPowers[i].key);
+        }
+    }
+    printf(" },\n");
+    printf("  \"spellCritChance\": {");
+    for (size_t i = 0; i < nsp; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                spellPowers[i].key, (int)v2calc::Total(spellPowers[i].crit));
+    }
+    printf(" },\n");
+
+    // energy resistance / absorption
+    static const struct { BreakdownType res; BreakdownType abs; const char* key; } energies[] = {
+        { Breakdown_EnergyResistanceAcid,     Breakdown_EnergyAbsorptionAcid,     "Acid" },
+        { Breakdown_EnergyResistanceChaos,    Breakdown_EnergyAbsorptionChaos,    "Chaos" },
+        { Breakdown_EnergyResistanceCold,     Breakdown_EnergyAbsorptionCold,     "Cold" },
+        { Breakdown_EnergyResistanceElectric, Breakdown_EnergyAbsorptionElectric, "Electric" },
+        { Breakdown_EnergyResistanceEvil,     Breakdown_EnergyAbsorptionEvil,     "Evil" },
+        { Breakdown_EnergyResistanceFire,     Breakdown_EnergyAbsorptionFire,     "Fire" },
+        { Breakdown_EnergyResistanceForce,    Breakdown_EnergyAbsorptionForce,    "Force" },
+        { Breakdown_EnergyResistanceGood,     Breakdown_EnergyAbsorptionGood,     "Good" },
+        { Breakdown_EnergyResistanceLawful,   Breakdown_EnergyAbsorptionLawful,   "Lawful" },
+        { Breakdown_EnergyResistanceLight,    Breakdown_EnergyAbsorptionLight,    "Light" },
+        { Breakdown_EnergyResistanceNegative, Breakdown_EnergyAbsorptionNegative, "Negative" },
+        { Breakdown_EnergyResistancePoison,   Breakdown_EnergyAbsorptionPoison,   "Poison" },
+        { Breakdown_EnergyResistanceSonic,    Breakdown_EnergyAbsorptionSonic,    "Sonic" },
+    };
+    size_t nen = sizeof(energies) / sizeof(energies[0]);
+    printf("  \"energyResistance\": {");
+    for (size_t i = 0; i < nen; ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                energies[i].key, (int)v2calc::Total(energies[i].res));
+        if (dumpKeys != nullptr && strstr(dumpKeys, energies[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(energies[i].res, energies[i].key);
+        }
+    }
+    printf(" },\n");
+    printf("  \"energyAbsorption\": {");
+    for (size_t i = 0; i < nen; ++i)
+    {
+        printf("%s\"%s\": %.2f", (i ? ", " : " "),
+                energies[i].key, v2calc::Total(energies[i].abs));
+        if (dumpKeys != nullptr && strstr(dumpKeys, energies[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(energies[i].abs, energies[i].key);
+        }
+    }
+    printf(" },\n");
 
     // spell DCs per school
     static const struct { BreakdownType bt; const char* key; } spellDCs[] = {
@@ -203,6 +374,10 @@ int main(int argc, char** argv)
     {
         printf("%s\"%s\": %d", (i ? ", " : " "),
                 spellDCs[i].key, (int)v2calc::Total(spellDCs[i].bt));
+        if (dumpKeys != nullptr && strstr(dumpKeys, spellDCs[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(spellDCs[i].bt, spellDCs[i].key);
+        }
     }
     printf(" },\n");
 
