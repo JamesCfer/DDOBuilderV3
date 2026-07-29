@@ -50,9 +50,6 @@ void BreakdownItemUniversalSpellPower::CreateOtherEffects()
                 }
             }
         }
-#ifndef V2CALC_LINUX
-        // v2calc: the weapon-effects breakdown graph is not ported headless;
-        // this Conduit+Quarterstaff doubling needs its typeinfo at link time.
         if (pBuild->IsEnhancementTrained("U51DraconicIncarnationConduit", "", TT_epicDestiny)
                 && pBuild->IsStanceActive("Quarterstaff"))
         {
@@ -77,7 +74,6 @@ void BreakdownItemUniversalSpellPower::CreateOtherEffects()
                 }
             }
         }
-#endif // V2CALC_LINUX
     }
 }
 

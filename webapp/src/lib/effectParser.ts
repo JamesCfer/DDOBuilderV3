@@ -970,7 +970,11 @@ export function parseEffect(
 
     case 'NaturalArmor':
     case 'NaturalArmorBonus':
-      return [make('ac', 'Natural Armor')]
+      // V2 routes these to a SEPARATE NaturalArmor breakdown (own bonus types
+      // stack there: +14 Natural Armor augment + +4 Enhancement Yugoloth buff
+      // = 18) whose TOTAL feeds AC as one stacking line. Keep the effect's
+      // real bonus type in the ac.natural pool; buildStats lumps it into ac.
+      return [make('ac.natural')]
 
     case 'ShieldBonus':
       return [make('ac', 'Shield')]
@@ -1974,7 +1978,8 @@ export function parseItemBuff(
       return [make('ac')]
 
     case 'NaturalArmor':
-      return [make('ac', 'Natural Armor')]
+      // See the parseEffect case — V2's separate NaturalArmor breakdown.
+      return [make('ac.natural')]
 
     case 'Deflection':
       return [make('ac', 'Deflection')]

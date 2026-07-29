@@ -63,6 +63,11 @@
 #include "BreakdownItemPactDice.h"
 #include "BreakdownItemTurnUndeadLevel.h"
 #include "BreakdownItemTurnUndeadHitDice.h"
+#include "BreakdownItemAC.h"
+#include "BreakdownItemImmunities.h"
+#include "BreakdownItemDuration.h"
+#include "BreakdownItemWeaponEffects.h"
+#include "TreeListCtrl.h"
 #include "SpellSchoolTypes.h"
 
 #include "BreakdownHost.h"
@@ -84,6 +89,8 @@ namespace
 {
     std::map<EffectType, std::list<EffectCallbackItem*> > g_callbacks;
     std::map<BreakdownType, BreakdownItem*>               g_breakdowns;
+    MfcControls::CTreeListCtrl g_treeStub(false, false);
+    BreakdownItemWeaponEffects* g_pWeaponEffects = nullptr;
     std::vector<BreakdownItem*>                           g_allItems;
     CBreakdownsPane                                       g_paneStub;
     Character*                                            g_pActiveCharacter = nullptr;
@@ -231,6 +238,12 @@ namespace
                     WeaponType wtMain = b->ActiveGearSet().Weapon1();
                     WeaponType wtOffhand = b->ActiveGearSet().Weapon2();
                     ForItems([&](BreakdownItem* c){ c->SetWeaponTypes(wtMain, wtOffhand); });
+                    // CBreakdownsPane::UpdateGearChanged: re-create the
+                    // per-hand weapon breakdowns from the equipped items.
+                    if (g_pWeaponEffects != nullptr)
+                    {
+                        g_pWeaponEffects->WeaponsChanged(b->ActiveGearSet());
+                    }
                 }
                 ForItems([&](BreakdownItem* c){ c->GearChanged(b, slot); });
             }
@@ -620,6 +633,26 @@ namespace
                 &g_paneStub, Breakdown_TurnUndeadLevel, nullptr, nullptr));
         Reg(Breakdown_TurnUndeadHitDice, new BreakdownItemTurnUndeadHitDice(
                 &g_paneStub, Breakdown_TurnUndeadHitDice, nullptr, nullptr));
+
+        // ── pass 134: AC + weapon graph + immunities + song duration ──────
+        // The weapon-effects HOLDER (CBreakdownsPane::CreateWeaponBreakdowns):
+        // buffers every weapon effect per weapon type and instantiates the
+        // per-hand BreakdownItemWeapon graphs on WeaponsChanged(), replaying
+        // the buffered effects into them. It needs a live (stub) tree ctrl -
+        // WeaponsChanged calls DeleteSubItems/InsertItem/Expand on it.
+        g_pWeaponEffects = new BreakdownItemWeaponEffects(
+                &g_paneStub, &g_treeStub, nullptr);
+        Reg(Breakdown_WeaponEffectHolder, g_pWeaponEffects);
+        // AC (CBreakdownsPane::CreateACBreakdowns): Dex bonus capped by MDB /
+        // tower-shield MDB, armor/shield %-bonuses, natural armor; shield
+        // enchantment arrives via the weapon graph's off-hand LinkUp.
+        Reg(Breakdown_AC, new BreakdownItemAC(
+                &g_paneStub, Breakdown_AC, nullptr, nullptr));
+        Reg(Breakdown_Immunities, new BreakdownItemImmunities(
+                &g_paneStub, Breakdown_Immunities, nullptr, nullptr));
+        Reg(Breakdown_SongDuration, new BreakdownItemDuration(
+                &g_paneStub, Breakdown_SongDuration, Effect_SongDuration,
+                "Song Duration", nullptr, nullptr));
     }
 }
 
@@ -692,5 +725,29 @@ namespace v2calc
     {
         auto it = g_breakdowns.find(bt);
         if (it != g_breakdowns.end()) it->second->V2CalcDumpEffects(label);
+    }
+    bool HasWeaponBreakdown(bool bMainhand)
+    {
+        if (g_pWeaponEffects == nullptr) return false;
+        return g_pWeaponEffects->GetWeaponBreakdown(bMainhand, Breakdown_WeaponAttackBonus) != nullptr;
+    }
+    double WeaponTotal(bool bMainhand, BreakdownType bt)
+    {
+        if (g_pWeaponEffects == nullptr) return 0.0;
+        BreakdownItem* p = g_pWeaponEffects->GetWeaponBreakdown(bMainhand, bt);
+        return (p != nullptr) ? p->Total() : 0.0;
+    }
+    void DumpWeaponEffects(bool bMainhand, BreakdownType bt, const char* label)
+    {
+        if (g_pWeaponEffects == nullptr) return;
+        BreakdownItem* p = g_pWeaponEffects->GetWeaponBreakdown(bMainhand, bt);
+        if (p != nullptr) p->V2CalcDumpEffects(label);
+    }
+    const char* DisplayValue(BreakdownType bt)
+    {
+        static std::string s_value;
+        auto it = g_breakdowns.find(bt);
+        s_value = (it != g_breakdowns.end()) ? (LPCTSTR)it->second->Value() : "";
+        return s_value.c_str();
     }
 }

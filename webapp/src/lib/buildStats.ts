@@ -2129,8 +2129,12 @@ function buildStatMapOnce(
       }
       // Shield % bonus is gated on a shield being equipped (V2 "Shield" stance)
       // and uses only the printed shield AC as its base.
-      const hasShield = armorStances.has('Tower Shield') || armorStances.has('Heavy Shield')
-        || armorStances.has('Light Shield') || armorStances.has('Buckler')
+      // V2's shield stances are named by WEAPON TYPE: Buckler / Small Shield /
+      // Large Shield / Tower Shield (uBER TANK's Large Shield failed the old
+      // 'Heavy/Light Shield' gate, dropping the Sacred Defender 20% AC line).
+      const hasShield = armorStances.has('Tower Shield') || armorStances.has('Large Shield')
+        || armorStances.has('Small Shield') || armorStances.has('Buckler')
+        || armorStances.has('Heavy Shield') || armorStances.has('Light Shield')
       if (hasShield) {
         const shieldBaseAC = resolveBonus(acBonuses.filter(b => b.type === 'Shield')).total
         const shieldPct = resolveBonus(map.get('shieldACPercent') ?? []).total
@@ -2764,6 +2768,17 @@ function buildStatMapOnce(
         if (!already && lvl > 0) {
           add(map, 'sp.Universal', { value: lvl, type: 'Implement', source: 'Implement in your hands' })
         }
+      }
+    }
+
+    // ── Natural armor (V2 Breakdown_NaturalArmor → AC other-effect) ───────
+    // The NaturalArmor breakdown stacks by each effect's OWN bonus type
+    // (Natural Armor augment + Enhancement buff both count); its total joins
+    // AC as a single "Natural Armor" other-pool line.
+    {
+      const na = resolveBonus(map.get('ac.natural') ?? []).total
+      if (na !== 0) {
+        add(map, 'ac', { value: na, type: 'Natural Armor', source: 'Natural Armor' })
       }
     }
 

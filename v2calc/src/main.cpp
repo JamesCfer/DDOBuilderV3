@@ -276,24 +276,24 @@ int main(int argc, char** argv)
     printf(" },\n");
 
     // spell power / crit chance per type (V3 sp.* / spCrit.* keys)
-    static const struct { BreakdownType sp; BreakdownType crit; const char* key; } spellPowers[] = {
-        { Breakdown_SpellPowerAcid,           Breakdown_SpellCriticalChanceAcid,           "Acid" },
-        { Breakdown_SpellPowerLightAlignment, Breakdown_SpellCriticalChanceLightAlignment, "LightAlignment" },
-        { Breakdown_SpellPowerChaos,          Breakdown_SpellCriticalChanceChaos,          "Chaos" },
-        { Breakdown_SpellPowerCold,           Breakdown_SpellCriticalChanceCold,           "Cold" },
-        { Breakdown_SpellPowerElectric,       Breakdown_SpellCriticalChanceElectric,       "Electric" },
-        { Breakdown_SpellPowerEvil,           Breakdown_SpellCriticalChanceEvil,           "Evil" },
-        { Breakdown_SpellPowerFire,           Breakdown_SpellCriticalChanceFire,           "Fire" },
-        { Breakdown_SpellPowerForce,          Breakdown_SpellCriticalChanceForce,          "Force" },
-        { Breakdown_SpellPowerLawful,         Breakdown_SpellCriticalChanceLawful,         "Lawful" },
-        { Breakdown_SpellPowerNegative,       Breakdown_SpellCriticalChanceNegative,       "Negative" },
-        { Breakdown_SpellPowerPhysical,       Breakdown_SpellCriticalChancePhysical,       "Physical" },
-        { Breakdown_SpellPowerPoison,         Breakdown_SpellCriticalChancePoison,         "Poison" },
-        { Breakdown_SpellPowerPositive,       Breakdown_SpellCriticalChancePositive,       "Positive" },
-        { Breakdown_SpellPowerRepair,         Breakdown_SpellCriticalChanceRepair,         "Repair" },
-        { Breakdown_SpellPowerRust,           Breakdown_SpellCriticalChanceRust,           "Rust" },
-        { Breakdown_SpellPowerSonic,          Breakdown_SpellCriticalChanceSonic,          "Sonic" },
-        { Breakdown_SpellPowerUntyped,        Breakdown_SpellCriticalChanceUntyped,        "Untyped" },
+    static const struct { BreakdownType sp; BreakdownType crit; BreakdownType critMult; const char* key; } spellPowers[] = {
+        { Breakdown_SpellPowerAcid, Breakdown_SpellCriticalChanceAcid, Breakdown_SpellCriticalMultiplierAcid, "Acid" },
+        { Breakdown_SpellPowerLightAlignment, Breakdown_SpellCriticalChanceLightAlignment, Breakdown_SpellCriticalMultiplierLightAlignment, "LightAlignment" },
+        { Breakdown_SpellPowerChaos, Breakdown_SpellCriticalChanceChaos, Breakdown_SpellCriticalMultiplierChaos, "Chaos" },
+        { Breakdown_SpellPowerCold, Breakdown_SpellCriticalChanceCold, Breakdown_SpellCriticalMultiplierCold, "Cold" },
+        { Breakdown_SpellPowerElectric, Breakdown_SpellCriticalChanceElectric, Breakdown_SpellCriticalMultiplierElectric, "Electric" },
+        { Breakdown_SpellPowerEvil, Breakdown_SpellCriticalChanceEvil, Breakdown_SpellCriticalMultiplierEvil, "Evil" },
+        { Breakdown_SpellPowerFire, Breakdown_SpellCriticalChanceFire, Breakdown_SpellCriticalMultiplierFire, "Fire" },
+        { Breakdown_SpellPowerForce, Breakdown_SpellCriticalChanceForce, Breakdown_SpellCriticalMultiplierForce, "Force" },
+        { Breakdown_SpellPowerLawful, Breakdown_SpellCriticalChanceLawful, Breakdown_SpellCriticalMultiplierLawful, "Lawful" },
+        { Breakdown_SpellPowerNegative, Breakdown_SpellCriticalChanceNegative, Breakdown_SpellCriticalMultiplierNegative, "Negative" },
+        { Breakdown_SpellPowerPhysical, Breakdown_SpellCriticalChancePhysical, Breakdown_SpellCriticalMultiplierPhysical, "Physical" },
+        { Breakdown_SpellPowerPoison, Breakdown_SpellCriticalChancePoison, Breakdown_SpellCriticalMultiplierPoison, "Poison" },
+        { Breakdown_SpellPowerPositive, Breakdown_SpellCriticalChancePositive, Breakdown_SpellCriticalMultiplierPositive, "Positive" },
+        { Breakdown_SpellPowerRepair, Breakdown_SpellCriticalChanceRepair, Breakdown_SpellCriticalMultiplierRepair, "Repair" },
+        { Breakdown_SpellPowerRust, Breakdown_SpellCriticalChanceRust, Breakdown_SpellCriticalMultiplierRust, "Rust" },
+        { Breakdown_SpellPowerSonic, Breakdown_SpellCriticalChanceSonic, Breakdown_SpellCriticalMultiplierSonic, "Sonic" },
+        { Breakdown_SpellPowerUntyped, Breakdown_SpellCriticalChanceUntyped, Breakdown_SpellCriticalMultiplierUntyped, "Untyped" },
     };
     size_t nsp = sizeof(spellPowers) / sizeof(spellPowers[0]);
     printf("  \"spellPower\": {");
@@ -318,6 +318,14 @@ int main(int argc, char** argv)
             v2calc::DumpEffects(spellPowers[i].crit, spellPowers[i].key);
         }
     }
+    printf(" },\n");
+    printf("  \"spellCritMultiplier\": {");
+    for (size_t i = 0; i < nsp; ++i)
+    {
+        printf("%s\"%s\": %.2f", (i ? ", " : " "),
+                spellPowers[i].key, v2calc::Total(spellPowers[i].critMult));
+    }
+    printf(", \"Universal\": %.2f", v2calc::Total(Breakdown_SpellCriticalMultiplierUniversal));
     printf(" },\n");
 
     // energy resistance / absorption
@@ -400,7 +408,91 @@ int main(int argc, char** argv)
             firstCl = false;
         }
     }
-    printf(" }\n");
+    printf(" },\n");
+
+    // pass 134: AC, hirelings, immunities, song duration, weapon lines
+    printf("  \"ac\": %d,\n", (int)v2calc::Total(Breakdown_AC));
+    if (dumpKeys != nullptr && strstr(dumpKeys, "naturalArmor") != nullptr)
+    {
+        v2calc::DumpEffects(Breakdown_NaturalArmor, "naturalArmor");
+    }
+    if (dumpKeys != nullptr && strstr(dumpKeys, "ac:") != nullptr)
+    {
+        v2calc::DumpEffects(Breakdown_AC, "ac");
+    }
+    printf("  \"songDuration\": %d,\n", (int)v2calc::Total(Breakdown_SongDuration));
+    {
+        // JSON-escape the immunities display string (quotes/backslashes/newlines)
+        std::string imm = v2calc::DisplayValue(Breakdown_Immunities);
+        std::string esc;
+        for (char c : imm)
+        {
+            if (c == '"' || c == '\\') { esc += '\\'; esc += c; }
+            else if (c == '\n' || c == '\r') { esc += ' '; }
+            else esc += c;
+        }
+        printf("  \"immunities\": \"%s\",\n", esc.c_str());
+    }
+
+    static const struct { BreakdownType bt; const char* key; } hirelings[] = {
+        { Breakdown_HirelingAbilityBonus,  "abilityBonus" },
+        { Breakdown_HirelingHitpoints,     "hitpoints" },
+        { Breakdown_HirelingFortification, "fortification" },
+        { Breakdown_HirelingPRR,           "prr" },
+        { Breakdown_HirelingMRR,           "mrr" },
+        { Breakdown_HirelingDodge,         "dodge" },
+        { Breakdown_HirelingMeleePower,    "meleePower" },
+        { Breakdown_HirelingRangedPower,   "rangedPower" },
+        { Breakdown_HirelingSpellPower,    "spellPower" },
+        { Breakdown_HirelingConcealment,   "concealment" },
+    };
+    printf("  \"hireling\": {");
+    for (size_t i = 0; i < sizeof(hirelings)/sizeof(hirelings[0]); ++i)
+    {
+        printf("%s\"%s\": %d", (i ? ", " : " "),
+                hirelings[i].key, (int)v2calc::Total(hirelings[i].bt));
+    }
+    printf(" },\n");
+
+    // per-hand weapon lines (the BreakdownItemWeapon sub-breakdown totals)
+    static const struct { BreakdownType bt; const char* key; } weaponLines[] = {
+        { Breakdown_WeaponEnchantment,             "enchantment" },
+        { Breakdown_WeaponBaseDamage,              "baseDamage" },
+        { Breakdown_WeaponAttackBonus,             "attackBonus" },
+        { Breakdown_WeaponDamageBonus,             "damageBonus" },
+        { Breakdown_WeaponCriticalAttackBonus,     "critAttackBonus" },
+        { Breakdown_WeaponCriticalDamageBonus,     "critDamageBonus" },
+        { Breakdown_WeaponVorpalRange,             "vorpalRange" },
+        { Breakdown_WeaponCriticalThreatRange,     "critThreatRange" },
+        { Breakdown_WeaponCriticalMultiplier,      "critMultiplier" },
+        { Breakdown_WeaponCriticalMultiplier19To20,"critMultiplier19To20" },
+        { Breakdown_WeaponAttackSpeed,             "attackSpeed" },
+        { Breakdown_WeaponGhostTouch,              "ghostTouch" },
+        { Breakdown_WeaponTrueSeeing,              "trueSeeing" },
+        { Breakdown_DRBypass,                      "drBypass" },
+    };
+    static const struct { bool main; const char* key; const char* dumpTag; } hands[] = {
+        { true,  "weaponMain",    "wmain:" },
+        { false, "weaponOffhand", "woff:" },
+    };
+    for (size_t h = 0; h < 2; ++h)
+    {
+        if (!v2calc::HasWeaponBreakdown(hands[h].main)) continue;
+        printf("  \"%s\": {", hands[h].key);
+        for (size_t i = 0; i < sizeof(weaponLines)/sizeof(weaponLines[0]); ++i)
+        {
+            printf("%s\"%s\": %.2f", (i ? ", " : " "),
+                    weaponLines[i].key,
+                    v2calc::WeaponTotal(hands[h].main, weaponLines[i].bt));
+            if (dumpKeys != nullptr && strstr(dumpKeys, hands[h].dumpTag) != nullptr
+                    && strstr(dumpKeys, weaponLines[i].key) != nullptr)
+            {
+                v2calc::DumpWeaponEffects(hands[h].main, weaponLines[i].bt, weaponLines[i].key);
+            }
+        }
+        printf(" },\n");
+    }
+    printf("  \"v2calcPass\": 134\n");
     printf("}\n");
     return 0;
 }

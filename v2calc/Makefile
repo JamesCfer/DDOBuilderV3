@@ -174,6 +174,19 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/BreakdownItemTurnUndeadHitDice.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemCasterLevel.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemSchoolCasterLevel.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemAC.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemImmunities.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemDuration.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemDice.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeapon.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponEffects.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponAttackBonus.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponAttackSpeed.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponCriticalMultiplier.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponCriticalThreatRange.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponDRBypass.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponDamageBonus.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemWeaponVorpalRange.cpp \
     $(ROOT)/DDOBuilder/BonusTypesFile.cpp \
     $(ROOT)/DDOBuilder/SpellsFile.cpp \
     $(ROOT)/DDOBuilder/SetBonusFile.cpp \

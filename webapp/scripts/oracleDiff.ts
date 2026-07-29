@@ -296,6 +296,99 @@ for (const f of files) {
   for (const [name, v2v] of Object.entries(oracleExt.energyResistance ?? {})) {
     rows.push([`resist.${name}`, v2v, stats.total(`resist.${name}`)])
   }
+  // ── pass 134: AC / hirelings / immunities / song duration / crit mult ──
+  const o134 = oracle as {
+    ac?: number; songDuration?: number; immunities?: string
+    hireling?: Record<string, number>
+    spellCritMultiplier?: Record<string, number>
+  }
+  if (o134.ac !== undefined) rows.push(['ac', o134.ac, stats.total('ac')])
+  if (o134.songDuration !== undefined) {
+    rows.push(['songDuration', o134.songDuration, stats.total('song.duration')])
+  }
+  // Immunities: V2 emits the display string (comma-joined effect names, with
+  // duplicates); V3 pools immunity.<name> keys. Compare as SETS of names.
+  if (o134.immunities !== undefined) {
+    const v2Set = new Set(o134.immunities.split(',').map(x => x.trim()).filter(Boolean))
+    const v3Set = new Set(stats.keys()
+      .filter(k => k.startsWith('immunity.') && stats.total(k) > 0)
+      .map(k => k.slice('immunity.'.length).trim()))
+    let diff = 0
+    for (const n of v2Set) if (!v3Set.has(n)) diff++
+    for (const n of v3Set) if (!v2Set.has(n)) diff++
+    rows.push(['immunities', v2Set.size, v2Set.size - diff])
+  }
+  // Hirelings: V2's ability breakdown is ONE pool for all six abilities.
+  const HIRELING_MAP: Record<string, string> = {
+    hitpoints: 'hireling.hp', fortification: 'hireling.fort',
+    prr: 'hireling.prr', mrr: 'hireling.mrr', dodge: 'hireling.dodge',
+    meleePower: 'hireling.melee.power', rangedPower: 'hireling.ranged.power',
+    spellPower: 'hireling.sp.All', concealment: 'hireling.concealment',
+  }
+  for (const [ok, v3k] of Object.entries(HIRELING_MAP)) {
+    if (o134.hireling?.[ok] === undefined) continue
+    rows.push([`hireling.${ok}`, o134.hireling[ok], stats.total(v3k)])
+  }
+  if (o134.hireling?.abilityBonus !== undefined) {
+    const v3ab = stats.keys()
+      .filter(k => k.startsWith('hireling.ability.'))
+      .reduce((sum, k) => sum + stats.total(k), 0)
+    rows.push(['hireling.abilityBonus', o134.hireling.abilityBonus, v3ab])
+  }
+  // Spell crit multipliers: V2 per-type = universal feed + per-type effects;
+  // fractional (0.25 steps) — compare ×100 as ints.
+  const v3UniversalCritDmg = stats.total('spCritDmg.Universal') + stats.total('spCritDmg.All')
+  for (const [name, v2v] of Object.entries(o134.spellCritMultiplier ?? {})) {
+    const v3v = name === 'Universal'
+      ? stats.total('spCritDmg.Universal')
+      : v3UniversalCritDmg + stats.total(`spCritDmg.${name}`)
+    rows.push([`spCritDmg.${name}`, Math.round(v2v * 100), Math.round(v3v * 100)])
+  }
+
+  // ── pass 134: weapon lines (per-hand BreakdownItemWeapon totals) ───────
+  // V3's weapon model is main-hand-centric flat keys; compose best-effort
+  // equivalents. Lines V3 cannot yet model are compared anyway — mismatches
+  // are the fix backlog, exactly like every previous widening.
+  const oWeapons = oracle as {
+    weaponMain?: Record<string, number>
+    weaponOffhand?: Record<string, number>
+  }
+  const wm = oWeapons.weaponMain
+  if (wm !== undefined) {
+    const babT = Math.min(25, stats.total('bab'))
+    const w = stats.weapon
+    if (wm.attackBonus !== undefined) {
+      const isRanged = w?.isRanged === true
+      const toHit = babT + stats.total(isRanged ? 'ranged.toHit' : 'melee.toHit')
+      rows.push(['weaponMain.attackBonus', wm.attackBonus, toHit])
+    }
+    if (wm.damageBonus !== undefined) {
+      const isRanged = w?.isRanged === true
+      rows.push(['weaponMain.damageBonus', wm.damageBonus,
+        stats.total(isRanged ? 'ranged.damage' : 'melee.damage')])
+    }
+    if (wm.critThreatRange !== undefined) {
+      const base = w?.critThreatRange ?? 1
+      rows.push(['weaponMain.critThreatRange', wm.critThreatRange,
+        base + stats.total('weapon.threatRange') + stats.total('melee.crit.range')])
+    }
+    if (wm.critMultiplier !== undefined) {
+      const base = w?.critMultiplier ?? 2
+      rows.push(['weaponMain.critMultiplier', wm.critMultiplier,
+        base + stats.total('melee.crit.multiplier')])
+    }
+    if (wm.attackSpeed !== undefined) {
+      rows.push(['weaponMain.attackSpeed', wm.attackSpeed,
+        stats.total('weapon.alacrity') + stats.total('melee.alacrity')])
+    }
+    if (wm.ghostTouch !== undefined) {
+      rows.push(['weaponMain.ghostTouch', wm.ghostTouch, stats.total('ghostTouch')])
+    }
+    if (wm.trueSeeing !== undefined) {
+      rows.push(['weaponMain.trueSeeing', wm.trueSeeing, stats.total('trueSeeing')])
+    }
+  }
+
   // V2 BreakdownItemEnergyAbsorption::Total is MULTIPLICATIVE:
   // 100 - 100·∏(1 - aᵢ/100) over the active (post-non-stacking) effects,
   // after V2's identical-effect merge. V3 pools the same effects additively

@@ -35,6 +35,7 @@
 #include "BreakdownItem.h"
 #include "Bonus.h"
 #include "TreeListCtrl.h"
+#include "TreeListHeaderCtrl.h"
 
 extern const std::list<Class>& Classes(); // from GlobalDataLinux.cpp
 
@@ -260,6 +261,84 @@ namespace MfcControls
     BOOL CTreeListCtrl::SetItemColor(HTREEITEM, COLORREF, BOOL)     { return TRUE; }
     HTREEITEM CTreeListCtrl::GetSelectedItem() const               { return nullptr; }
     BOOL CTreeListCtrl::SelectItem(HTREEITEM)                       { return TRUE; }
+    // pass 134: the weapon-effects holder (BreakdownItemWeaponEffects::
+    // WeaponsChanged / BreakdownItemWeapon::AddTreeItem) drives a live tree
+    // ctrl instance headless - inert stubs, tree items are never realized.
+    CTlcTree::CTlcTree() {}
+    CTlcTree::~CTlcTree() {}
+    BOOL CTlcTree::PreTranslateMessage(MSG* pMsg) { return CWnd::PreTranslateMessage(pMsg); }
+    CTreeListHeaderCtrl::CTreeListHeaderCtrl() {}
+    CTreeListHeaderCtrl::~CTreeListHeaderCtrl() {}
+    CTreeListCtrl::CTreeListCtrl(bool, bool) {}
+    CTreeListCtrl::~CTreeListCtrl() {}
+    void CTreeListCtrl::Initialise() {}
+    BOOL CTreeListCtrl::Create(LPCTSTR, LPCTSTR, DWORD, const RECT&, CWnd*, UINT, CCreateContext*) { return TRUE; }
+    BOOL CTreeListCtrl::CreateEx(DWORD, LPCTSTR, LPCTSTR, DWORD, const RECT&, CWnd*, UINT, CCreateContext*) { return TRUE; }
+    BOOL CTreeListCtrl::EnableWindow(BOOL) { return TRUE; }
+    BOOL CTreeListCtrl::DeleteSubItems(HTREEITEM)                   { return TRUE; }
+    BOOL CTreeListCtrl::Expand(HTREEITEM, UINT)                     { return TRUE; }
+    HTREEITEM CTreeListCtrl::InsertItem(LPCTSTR, HTREEITEM, HTREEITEM) { return nullptr; }
+    BOOL CTreeListCtrl::SetItemData(HTREEITEM, DWORD)               { return TRUE; }
+}
+
+// pass 134 verbatim copies from GlobalSupportFunctions.cpp (UI TU, not built
+// headless) needed by the weapon breakdown graph:
+bool IsShield(WeaponType wt)
+{
+    bool isShield = false;
+    switch (wt)
+    {
+        case Weapon_ShieldBuckler:
+        case Weapon_ShieldSmall:
+        case Weapon_ShieldLarge:
+        case Weapon_ShieldTower:
+            isShield = true;
+            break;
+    }
+    return isShield;
+}
+
+size_t WeaponBaseCriticalRange(WeaponType wt)
+{
+    // from the wiki: This feat adds 1, 2, or 3 to critical threat
+    // range based on the weapon type's unmodified threat range.
+    size_t baseRange = 0;     // assume unknown
+    switch (wt)
+    {
+        case Weapon_Falchion:
+        case Weapon_GreatCrossbow:
+        case Weapon_Kukri:
+        case Weapon_Rapier:
+        case Weapon_Scimitar:
+            baseRange = +3;
+            break;
+        case Weapon_BastardSword:
+        case Weapon_Dagger:
+        case Weapon_GreatSword:
+        case Weapon_HeavyCrossbow:
+        case Weapon_Khopesh:
+        case Weapon_LightCrossbow:
+        case Weapon_Longsword:
+        case Weapon_RepeatingHeavyCrossbow:
+        case Weapon_RepeatingLightCrossbow:
+        case Weapon_Shortsword:
+        case Weapon_ThrowingDagger:
+            baseRange = +2;
+            break;
+        case Weapon_ShieldBuckler:
+        case Weapon_ShieldSmall:
+        case Weapon_ShieldLarge:
+        case Weapon_ShieldTower:
+        case Weapon_Orb:
+        case Weapon_RuneArm:
+            baseRange = 0;
+            break;
+        default:
+            // all other weapon types
+            baseRange = +1;
+            break;
+    }
+    return baseRange;
 }
 
 // BreakdownItem::SetLockState is now provided by the real (V2CALC_LINUX-guarded)
