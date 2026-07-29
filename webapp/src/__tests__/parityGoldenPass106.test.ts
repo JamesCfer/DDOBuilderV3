@@ -24,8 +24,11 @@ const have = existsSync(DATA) && existsSync(FIXTURE) && existsSync(EXPORT)
 
 // Residues still under investigation — see PARITY_TODO.md "Golden-build residue".
 // hp left this set in pass 120 (favor feats + TotalLevel×rank + Reaper stance
-// gate closed the whole gap) — it is now exact-checked like everything else.
-const KNOWN_OPEN = new Set(['ac', 'mrr', 'prr'])
+// gate closed the whole gap); ac/mrr/prr left in pass 133 (the pass 121-132
+// oracle work — tracked armor stances, shield/weapon naming, PRR/MRR selector
+// own-effects — closed them as a side effect, re-verified exact against this
+// real V2 export) — every tracked stat is now exact-checked.
+const KNOWN_OPEN = new Set<string>([])
 
 describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   const cat = loadAllCatalogues(DATA)
@@ -70,16 +73,15 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
     expect(failures).toEqual([])
   })
 
-  it('documented open residues stay within their known bounds (catch regressions)', () => {
-    // If any of these drift FURTHER from V2 than the recorded gap, a
-    // regression slipped in; if they close, move them out of KNOWN_OPEN
-    // (hp closed in pass 120 and left this list).
-    const gaps: Record<string, number> = { ac: -4, mrr: -8, prr: -4 }
-    for (const [key, gap] of Object.entries(gaps)) {
+  it('ac/mrr/prr are exact against the real V2 export (closed in pass 133; KNOWN_OPEN is empty)', () => {
+    // These three were the last "documented open residue" (bounded at
+    // -4/-8/-4). The pass 121-132 oracle work closed them as a side effect;
+    // this pins them down directly so a future regression fails loudly
+    // instead of silently reopening up to the old bound.
+    for (const key of ['ac', 'mrr', 'prr']) {
       const v2 = parsed.stats[key]
-      if (v2 === undefined) continue
-      const diff = composed(key) - v2
-      expect(Math.abs(diff), `${key} drifted: diff=${diff}, recorded=${gap}`).toBeLessThanOrEqual(Math.abs(gap))
+      expect(v2, `expected '${key}' in the parsed export`).toBeDefined()
+      expect(composed(key), key).toBe(v2)
     }
   })
 
