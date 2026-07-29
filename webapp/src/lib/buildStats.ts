@@ -2718,6 +2718,25 @@ function buildStatMapOnce(
       }
     }
 
+    // ── Implement bonus (V2 BreakdownItemUniversalSpellPower) ─────────────
+    // When any active ImplementInYourHands effect exists and no gear-sourced
+    // "Implement"-typed universal-SP bonus is already present, the MAIN-HAND
+    // weapon's MinLevel joins sp.Universal as an Implement-typed effect
+    // (ddowiki: Implement bonus; oracle-verified on Healer Q1 2026, +31).
+    {
+      let iiyh = 0
+      for (const k of map.keys()) {
+        if (k.startsWith('implementInHands.')) iiyh += resolveBonus(map.get(k) ?? []).total
+      }
+      if (iiyh > 0) {
+        const mainItem = gearItems['Main Hand'] ?? gearItems['Weapon1']
+        const already = (map.get('sp.Universal') ?? []).some(b => b.fromGear && b.type === 'Implement')
+        const lvl = Number((mainItem as { MinLevel?: number } | undefined)?.MinLevel ?? 0)
+        if (!already && lvl > 0) {
+          add(map, 'sp.Universal', { value: lvl, type: 'Implement', source: 'Implement in your hands' })
+        }
+      }
+    }
 
     // ── Percentage effects (V2 BreakdownItem::DoPercentageEffects) ────────
     // Effects tagged <Percent/> add (base × percent / 100) of the stat's own

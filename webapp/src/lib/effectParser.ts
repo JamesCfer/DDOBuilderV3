@@ -344,6 +344,15 @@ export function getAmountAtRank(raw: unknown, rank: number): number {
  * Normalises a spell-element string to the canonical form used by the stat key
  * system (e.g. 'Light/Alignment' → 'LightAlignment').
  */
+// V2 energyTypeMap: Energy_All matches EVERY concrete energy — including the
+// four alignment energies (Dragon Lord's +3 All resistance shows under
+// Chaos/Evil/Good/Lawful in V2's pane, oracle-verified).
+const ENERGY_ALL_TYPES = [
+  'Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force', 'Good',
+  'Lawful', 'Light', 'Negative', 'Positive', 'Poison', 'Repair', 'Sonic',
+  'Untyped',
+]
+
 // The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
 // pseudo-entries). Item=All effects fan out to each so per-type Highest-Only
 // stacking sees them (V2 keeps ONE winner per bonus type per element).
@@ -944,7 +953,7 @@ export function parseEffect(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`resist.${e}`))
             : [make(`resist.${elem}`)],
         )
@@ -956,7 +965,7 @@ export function parseEffect(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`absorb.${e}`))
             : [make(`absorb.${elem}`)],
         )
@@ -1953,7 +1962,7 @@ export function parseItemBuff(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`resist.${e}`))
             : [make(`resist.${elem}`)],
         )
@@ -1965,7 +1974,7 @@ export function parseItemBuff(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`absorb.${e}`))
             : [make(`absorb.${elem}`)],
         )

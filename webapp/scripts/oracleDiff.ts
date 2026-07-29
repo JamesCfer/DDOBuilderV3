@@ -219,7 +219,9 @@ for (const f of files) {
     energyAbsorption?: Record<string, number>
   }
   for (const [name, v2v] of Object.entries(oracleExt.skills ?? {})) {
-    rows.push([`skill.${name}`, v2v, stats.total(`skill.${name}`)])
+    // Skills carry half-ranks (cross-class 0.5/point); V2 emits the raw
+    // double (67.50). Compare both sides truncated, like V2's int display.
+    rows.push([`skill.${name}`, Math.trunc(v2v), stats.total(`skill.${name}`)])
   }
   for (const [name, v2v] of Object.entries(oracleExt.tacticalDC ?? {})) {
     rows.push([`tacticalDC.${name}`, v2v, stats.total(`tacticalDC.${name}`)])
@@ -304,7 +306,7 @@ for (const [stat, n] of Object.entries(perStatMismatch).sort((a, b) => b[1] - a[
   console.log(`  ${String(n).padStart(4)}  ${stat}`)
 }
 console.log('\nsample mismatches (V2 → V3):')
-for (const w of worst.slice(0, 25)) {
+for (const w of worst.slice(0, 100)) {
   console.log(`  ${w.stat.padEnd(20)} V2=${String(w.v2).padStart(6)}  V3=${String(w.v3).padStart(6)}  ${w.file}`)
 }
 process.exit(buildsWithDiff > 0 ? 1 : 0)
