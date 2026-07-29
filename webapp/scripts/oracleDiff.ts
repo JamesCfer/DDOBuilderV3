@@ -112,9 +112,14 @@ initBonusTypes(cat.allBonusTypes)
 function v3Stats(buildPath: string) {
   const { build, document } = importV2Build(readFileSync(buildPath, 'utf-8'), { allTrees: cat.allTrees }) as never as { build: never, document?: never }
   const gearItems: Record<string, Item> = {}
+  const embedded = (build as { embeddedGearItems?: Record<string, unknown> }).embeddedGearItems ?? {}
   for (const [slot, name] of Object.entries((build as { gear: Record<string, string> }).gear ?? {})) {
     if (!name) continue
-    const item = cat.allItems.find(i => i.Name === name)
+    // V2 Build::GetLatestVersionOfItem: catalogue version when the name is
+    // found there, else the file's embedded item definition (Cannith
+    // crafted armor, leveled challenge rings — oracle-verified on
+    // fuzz-5056/-5092).
+    const item = cat.allItems.find(i => i.Name === name) ?? (embedded[slot] as Item | undefined)
     if (item) gearItems[slot] = item
   }
   const specialFeats = document ? findActiveLife(document)?.specialFeats : undefined
@@ -182,7 +187,12 @@ for (const f of files) {
     const docentAsCloth = armorItem?.Armor === 'Docent'
       && !featsChosen.has('Mithral Body') && !featsChosen.has('Adamantine Body')
     const clothNoLimit = (!armorItem || armorItem.Armor === 'Cloth' || docentAsCloth) && !towerShield
-    const v3mdb = (clothNoLimit || stats.armorMaxDex === null ? 999 : stats.armorMaxDex) + stats.total('mdb')
+    // Typeless embedded armor (no <Armor> field): NOT cloth in V2, and with
+    // no printed MDB the armored total is just the mdb effect pool.
+    const typelessArmor = armorItem !== undefined && armorItem.Armor === undefined
+    const v3mdb = (clothNoLimit && !typelessArmor
+      ? 999
+      : (stats.armorMaxDex ?? 0)) + stats.total('mdb')
     rows.push(['maxDexBonus', v2mdb, v3mdb])
   }
   // Spell school DCs. V2 BreakdownItemSpellSchool holds Item=All AND

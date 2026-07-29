@@ -439,7 +439,58 @@ the scoreboard wins.
   - **Auto-stance race filter narrowed** to the build's OWN race — the
     catalogue-wide filter swallowed persisted iconic past-life stances
     whose trimmed names collide with race names ("Aasimar Scourge ").
-  Regression tests: `parityPass133.test.ts` (8 tests).
+  Full-corpus rounds (the widened referee took the corpus 136 → 0
+  mismatching builds over four more fix rounds):
+  - **Skill tomes**: V2 `<SkillTomes>` element names map to display names
+    (DisableDevice → "Disable Device", SpellCraft → "Spellcraft", UMD →
+    "Use Magic Device") — multi-word tomes were dropped from every skill
+    total and the Spellcraft-fed spell powers; plus the
+    `Character::SkillTomeValue` level cap (2, +1 at 3/7/…/31).
+  - **Skill requirements gate on TRAINED ranks + capped tome**
+    (`Requirement::EvaluateSkill`), not resolved totals — item skill
+    bonuses wrongly passed Tumble rank gates. New
+    `EffectContext.skillRanks`.
+  - **Absorption identical-effect merge** (`absorptionTotal`, shared by
+    referee/UI/export): group by (v2Name, value) so five Arcane-sphere
+    "+1% Energy Absorbance" ×3 passives form ONE (1−0.15) factor while
+    the same-named 10%/stack "Block Energy" stays separate; and absorb.*
+    bonuses keep their REAL types so guild tiers compete Highest-Only.
+  - **Item=All spell power/lore fan-out** into the 17 concrete types so
+    All-typed items compete Highest-Only per type with per-element items
+    (V2 pools them together); school DCs re-resolve the UNION of dc.All +
+    dc.school pools for the same reason. Bare 'Light'/'Alignment' Items
+    are DEAD in V2 (spellPowerTypeMap has only "Light/Alignment").
+  - **GroupMember/GroupMember2 requirements** = V2
+    EvaluateWeaponGroupMember on main/off hand ("Favored Weapon" gates —
+    Divine Crusader implement, ranged doublestrike/doubleshot);
+    `ItemTypeInSlot` and `WeaponTypesEquipped` (main-hand-only Item[0])
+    evaluated honestly via new gear context fields.
+  - **Effect identity includes StackSource** (`Effect::operator==`): two
+    "Spell: Jump" casts from different classes compete Highest-Only
+    instead of merging ×2; effect Item lists dedupe (V2 notifies each
+    breakdown once per effect — Dolorous Combat Mastery lists Stun twice).
+  - **Mixed Magics** raises ClassCasterLevel-driven amounts to
+    min(20, char level) (Bless at CL 27) and the referee's per-class
+    caster levels compose class levels + Mixed Magics + cl pools.
+  - **SpellPoints**: casting-stat pick replicates V2's observer graph
+    (early pick by base+racial+levelup+tome TOTALS; re-pick with final
+    totals only when an OBSERVED stat changes); FvS/Sorc item multiplier
+    excludes percent effects and truncates; "Purity of Heart" and 89
+    other legacy feat names translate at import
+    (`TrainedFeat::TranslateOldFeatNames`).
+  - **Embedded gear fallback**: items not in the catalogue (Cannith
+    crafted, leveled challenge items) use the .DDOBuild's embedded
+    definition, matching `Build::GetLatestVersionOfItem`.
+  - **ItemBuffs.xml duplicate Types**: V2 FindBuff returns the FIRST
+    match; the catalogue Map now keeps first-wins ("Silent Moves" has a
+    5 and a 0 variant).
+  - **Misc**: `<NegativeValues/>` item-buff templates negate stamped
+    values (Undying = negative UnconsciousRange); shield ACP routes to
+    the shield pool; implement bonus (main-hand MinLevel → sp.Universal);
+    destinyAPs/maxDexBonus referee composition (+1 level offset; cloth =
+    999 "No limit"); Energy_All includes the alignment energies; V2's
+    universal "Attack" feat grants Tumble charges.
+  Regression tests: `parityPass133.test.ts` (16 tests).
 
 - ✅ **Pass 132 — residuals closed: 151/151 builds oracle-exact (PR #175).**
   New tooling: `BreakdownItem::V2CalcDumpEffects` (V2CALC_LINUX-guarded) +

@@ -631,6 +631,11 @@ export interface CharacterBuild {
    * `gearSetSnapshot` name (V2 Build::GearSetSnapshot). Round-trips only.
    */
   gearSetSnapshots?: Record<string, Partial<Record<Ability, number>>>
+  /** Raw embedded gear item nodes from the V2 file (v3 slot → item XML).
+   *  V2 keeps the embedded definition when the item name is NOT in the
+   *  catalogue (Cannith crafted, leveled challenge items) — fallback data
+   *  for stats when catalogue lookup fails. Not persisted by V3. */
+  embeddedGearItems?: Record<string, unknown>
   /** Name of the gear set used as the ability snapshot baseline. */
   gearSetSnapshot?: string
 }

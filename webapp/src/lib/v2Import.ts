@@ -394,17 +394,25 @@ function parseGear(equippedGearNode: AnyRec): {
   augmentChoices: Record<string, string>
   augmentLevelChoices: Record<string, number>
   augmentValueChoices: Record<string, number>
+  embeddedItems: Record<string, AnyRec>
 } {
   const gear: Record<string, string> = {}
   const augmentChoices: Record<string, string> = {}
   const augmentLevelChoices: Record<string, number> = {}
   const augmentValueChoices: Record<string, number> = {}
+  // V2 serialises the FULL item into the build file; at load it swaps in the
+  // latest catalogue version ONLY when the name is found there
+  // (Build::UpdateGearToLatestVersions / GetLatestVersionOfItem). Cannith
+  // crafted and other non-catalogue items keep their embedded definition, so
+  // the importer preserves the raw nodes for that fallback.
+  const embeddedItems: Record<string, AnyRec> = {}
   for (const [v2Slot, v3Slot] of Object.entries(V2_TO_V3_SLOT)) {
     const item = getRec(equippedGearNode, v2Slot)
     if (!item) continue
     const name = asStr(item.Name)
     if (!name) continue
     gear[v3Slot] = name
+    embeddedItems[v3Slot] = item
 
     // Each item carries <ItemAugment> children with Type + SelectedAugment.
     // Key format is `slot:type:arrayIndex` — array index matches the position
@@ -432,7 +440,7 @@ function parseGear(equippedGearNode: AnyRec): {
       }
     }
   }
-  return { gear, augmentChoices, augmentLevelChoices, augmentValueChoices }
+  return { gear, augmentChoices, augmentLevelChoices, augmentValueChoices, embeddedItems }
 }
 
 function parseFiligreeSlots(parent: AnyRec, tag: 'Filigree' | 'ArtifactFiligree', count: number): FiligreeSlot[] {
@@ -780,6 +788,7 @@ function parseBuildNode(
   if (activeGearSet) {
     const g = parseGear(activeGearSet)
     out.gear = g.gear
+    out.embeddedGearItems = g.embeddedItems
     out.augmentChoices = g.augmentChoices
     out.augmentLevelChoices = g.augmentLevelChoices
     out.augmentValueChoices = g.augmentValueChoices

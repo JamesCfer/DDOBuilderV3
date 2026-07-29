@@ -1076,9 +1076,17 @@ function buildStatMapOnce(
 
   // ItemBuffs.xml template catalogue (Type → template) for resolving
   // flavour-named item Buff Types via parseItemBuff (V2 Item::FindEffect).
-  const buffCatalogue = allItemBuffs && allItemBuffs.length > 0
-    ? new Map<string, ItemBuffTemplate>(allItemBuffs.map(b => [b.Type, b]))
-    : undefined
+  // V2 FindBuff (GlobalSupportFunctions.cpp:353) returns the FIRST match —
+  // ItemBuffs.xml carries duplicate Types ("Silent Moves" appears with
+  // Amount 5 and again with Amount 0) and a last-wins Map inverted V2's
+  // choice (oracle-verified on fuzz-5055).
+  let buffCatalogue: Map<string, ItemBuffTemplate> | undefined
+  if (allItemBuffs && allItemBuffs.length > 0) {
+    buffCatalogue = new Map<string, ItemBuffTemplate>()
+    for (const b of allItemBuffs) {
+      if (!buffCatalogue.has(b.Type)) buffCatalogue.set(b.Type, b)
+    }
+  }
 
     // ──────────────────────────────────────────────────────────────────────
     // Build the EffectContext used to gate effects via Requirements::Met.
@@ -2398,19 +2406,27 @@ function buildStatMapOnce(
         + Object.values(build.abilityLevelUps).filter(v => v === ab).length
       finalTotalMap[ab] = resolveBonus(map.get(`ability.${ab}`) ?? []).total
     }
-    for (const bc of build.classes) {
-      if (!bc.name || bc.levels <= 0) continue
-      const cls = allClasses.find(c => c.Name === bc.name)
+    // Two-phase pick, replicating V2's observer graph: every casting class's
+    // chosen stat breakdown is OBSERVED by the SpellPoints breakdown, so a
+    // later change to ANY observed stat re-runs CreateOtherEffects and
+    // re-picks EVERY class with the by-then-final totals (fuzz-5092: FvS's
+    // early Cha/Wis tie resolves to Wisdom because Cleric's observed Wisdom
+    // grows). If no observed stat ever changes, the early picks stand
+    // (fuzz-5000 keeps Wisdom over the gear-boosted Charisma).
+    const spCastingClasses = build.classes
+      .filter(bc => bc.name && bc.levels > 0)
+      .map(bc => ({ bc, cls: allClasses.find(c => c.Name === bc.name) }))
+      .filter(({ bc, cls }) => cls && spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) > 0)
+    const earlyPicks = spCastingClasses.map(({ cls }) =>
+      pickCastingStat(cls!.CastingStat as string | string[] | undefined, earlyTotalMap))
+    const observedChanged = earlyPicks.some(st =>
+      st && (finalTotalMap[st] ?? 0) !== (earlyTotalMap[st] ?? 0))
+    for (let ci = 0; ci < spCastingClasses.length; ci++) {
+      const { bc, cls } = spCastingClasses[ci]
       if (!cls) continue
-      if (spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) <= 0) continue
-      let stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, earlyTotalMap)
-      if (stat && (finalTotalMap[stat] ?? 0) !== (earlyTotalMap[stat] ?? 0)) {
-        // A later change to the CHOSEN stat's total re-runs V2's
-        // CreateOtherEffects, which re-picks with the by-then-final totals.
-        // (Fate-point re-runs fire during the FEAT phase, before gear, so
-        // they never see the gear-boosted totals — not a re-pick trigger.)
-        stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, finalTotalMap)
-      }
+      const stat = observedChanged
+        ? pickCastingStat(cls.CastingStat as string | string[] | undefined, finalTotalMap)
+        : earlyPicks[ci]
       if (!stat) continue
       const mod = abilModMap[stat] ?? 0
       const bonus = (bc.levels + 9) * mod
@@ -2449,7 +2465,10 @@ function buildStatMapOnce(
           // HasPercent entries (they're handled by DoPercentageEffects on the
           // post-multiplier base, not multiplied themselves).
           const gearSP = resolveBonus((map.get('spellPoints') ?? []).filter(b => b.fromGear && !b.percent)).total
-          const bonus = Math.round(gearSP * factor)
+          // V2 keeps the multiplied item SP as a continuous double and truncates
+          // ONCE at display — floor here so the separate bonus never rounds up
+          // past V2's total (fuzz-5092: 136×0.35 = 47.6 → 47, not 48).
+          const bonus = Math.trunc(gearSP * factor)
           if (bonus !== 0) {
             add(map, 'spellPoints', {
               value: bonus,
