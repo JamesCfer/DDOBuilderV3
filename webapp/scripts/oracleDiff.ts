@@ -355,18 +355,16 @@ for (const f of files) {
   }
   const wm = oWeapons.weaponMain
   if (wm !== undefined) {
-    const babT = Math.min(25, stats.total('bab'))
-    const w = stats.weapon
+    // BAB is now a line INSIDE the melee.toHit pool (V2 puts it in the attack
+    // pool so percent effects scale over it). melee.* IS the unified
+    // main-hand weapon line — ranged weapons' effects route there too.
     if (wm.attackBonus !== undefined) {
-      const isRanged = w?.isRanged === true
-      const toHit = babT + stats.total(isRanged ? 'ranged.toHit' : 'melee.toHit')
-      rows.push(['weaponMain.attackBonus', wm.attackBonus, toHit])
+      rows.push(['weaponMain.attackBonus', wm.attackBonus, stats.total('melee.toHit')])
     }
     if (wm.damageBonus !== undefined) {
-      const isRanged = w?.isRanged === true
-      rows.push(['weaponMain.damageBonus', wm.damageBonus,
-        stats.total(isRanged ? 'ranged.damage' : 'melee.damage')])
+      rows.push(['weaponMain.damageBonus', wm.damageBonus, stats.total('melee.damage')])
     }
+    const w = stats.weapon
     if (wm.critThreatRange !== undefined) {
       const base = w?.critThreatRange ?? 1
       rows.push(['weaponMain.critThreatRange', wm.critThreatRange,

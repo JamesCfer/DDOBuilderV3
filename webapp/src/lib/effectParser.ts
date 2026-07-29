@@ -1710,22 +1710,27 @@ export function parseEffect(
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.range')] : []
     case 'WeaponAlacrityClass':
+      // Same pool as Weapon_Alacrity — V2 has ONE per-weapon attack-speed
+      // breakdown, so a gear WeaponAlacrityClass (Shadow Striker) competes
+      // Highest-Only with gear Weapon_Alacrity (Topaz of Swiftness, Haste).
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.alacrity')] : []
+        ? [make('weapon.alacrity')] : []
     case 'WeaponOtherDamageBonusClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.damage')] : []
     case 'WeaponOtherDamageBonusCriticalClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.damage')] : []
-    // Weapon enchantment adds to BOTH attack and damage (V2 routes
-    // Effect_Weapon_Enchantment into the attack and damage breakdowns).
+    // Weapon enchantment pools in its own per-weapon sub-breakdown (V2
+    // Breakdown_WeaponEnchantment: the item's own +X buff competes with
+    // effect bonuses under normal stacking there); the sub-breakdown TOTAL
+    // then feeds the attack and damage lines as a single entry — composed
+    // in buildStats from this key.
     case 'Weapon_Enchantment':
-      return items.includes('All') || (ctx && items.some(i => ctx.weaponTypes.has(i)))
-        ? [make('melee.toHit'), make('melee.damage')] : []
+      return weaponScopeMatches(items, ctx) ? [make('weapon.enchantMain')] : []
     case 'Weapon_EnchantmentClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.toHit'), make('melee.damage')] : []
+        ? [make('weapon.enchantMain')] : []
     // Extra base damage dice (+W) for the listed weapon TYPES.
     case 'Weapon_BaseDamage':
       return ctx && items.some(i => ctx.weaponTypes.has(i))

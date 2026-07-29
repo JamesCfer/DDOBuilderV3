@@ -64,13 +64,16 @@ export interface BonusTypeEntry {
 
 /**
  * Builds the exclusive (Highest-Only) set from BonusTypes.xml data.
- * Names are trimmed to handle trailing-space variants in the XML.
+ * Names are used VERBATIM: "Competence " (deliberate trailing space,
+ * restored by loadBonusTypes) is a separate Highest-Only type from
+ * "Competence" in V2 — the Marksmanship buffs compete with each other but
+ * stack with plain Competence items (dump-verified on STR BOW).
  */
 export function buildExclusiveSet(specs: BonusTypeEntry[]): Set<string> {
   const s = new Set<string>()
   for (const spec of specs) {
     if ((spec.Stacking ?? 'Highest Only') !== 'Always') {
-      s.add(spec.Name.trim())
+      s.add(spec.Name)
     }
   }
   return s

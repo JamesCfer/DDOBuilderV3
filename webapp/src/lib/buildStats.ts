@@ -1024,6 +1024,17 @@ export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): Weapo
   return null
 }
 
+// V2 GlobalSupportFunctions.cpp WeaponBaseCriticalRange: the amount Keen /
+// Improved Critical adds — the weapon TYPE's unmodified threat range.
+export function weaponBaseCriticalRange(weaponType: string): number {
+  if (['Falchion', 'Great Crossbow', 'Kukri', 'Rapier', 'Scimitar'].includes(weaponType)) return 3
+  if (['Bastard Sword', 'Dagger', 'Great Sword', 'Heavy Crossbow', 'Khopesh', 'Light Crossbow',
+    'Longsword', 'Repeating Heavy Crossbow', 'Repeating Light Crossbow', 'Shortsword',
+    'Throwing Dagger'].includes(weaponType)) return 2
+  if (['Buckler', 'Small Shield', 'Large Shield', 'Tower Shield', 'Orb', 'Rune Arm'].includes(weaponType)) return 0
+  return weaponType ? 1 : 0
+}
+
 export function extractArmorMaxDex(gearItems: Record<string, Item>): number | null {
   const armor = gearItems['Armor'] ?? gearItems['Body']
   if (armor?.MaximumDexterityBonus != null) return armor.MaximumDexterityBonus
@@ -1365,9 +1376,14 @@ function buildStatMapOnce(
       if (ctxWeaponClassMain.has('All Ranged')) {
         ctxStances.add('Ranged Combat')
       }
+      // V2 Requirement::EvaluateWeaponGroupMember (Requirement.cpp:921-929)
+      // hardcodes: GroupMember/GroupMember2 "One Handed" is TRUE for
+      // handwraps main hand + empty off hand — so unarmed monks auto-enter
+      // the Two Weapon Fighting stance (and eat its attack penalty).
+      const handwrapsTwf = mainWeaponType === 'Handwraps' && offWeaponType === ''
       if (!inAnimalForm
-          && ctxWeaponClassMain.has('One Handed')
-          && ctxWeaponClassOff.has('One Handed')) {
+          && ((ctxWeaponClassMain.has('One Handed') && ctxWeaponClassOff.has('One Handed'))
+              || handwrapsTwf)) {
         ctxStances.add('Two Weapon Fighting')
       }
       if (!inAnimalForm
@@ -1794,13 +1810,17 @@ function buildStatMapOnce(
       // V2's universal "Attack" feat (AutomaticAcquisition at level 1) carries
       // the tumble-charge effects: base 2 charges + 1 @10 Tumble ranks + 1 @20
       // ranks (cloth/light armor only) — oracle-verified on YingsMonk
-      // (tumbleCharges 5 vs V3's 1). Only the TumbleCharge effects are
-      // accumulated; the feat's other entries (unconscious range, helpless
-      // damage, off-hand chance) stay modeled as V3's built-in defaults.
+      // (tumbleCharges 5 vs V3's 1) — and the DAMAGE ABILITY MULTIPLIER
+      // baselines (Base 1.0 main hand, +0.5 THF stance, +0.1 bastard sword/
+      // dwarven axe, Base 0.5 off hand) that scale the weapon damage line's
+      // ability bonus (BreakdownItemWeaponDamageBonus.cpp:56-95). The feat's
+      // other entries (unconscious range, helpless damage, off-hand chance)
+      // stay modeled as V3's built-in defaults.
       const attackFeat = allFeats.find(f => f.Name === 'Attack')
       if (attackFeat) {
         for (const eff of toArray(attackFeat.Effect)) {
-          if (eff.Type === 'TumbleCharge') {
+          if (eff.Type === 'TumbleCharge' || eff.Type === 'DamageAbilityMultiplier'
+              || eff.Type === 'DamageAbilityMultiplierOffhand') {
             addParsed(map, parseEffect(eff, 1, 'Automatic: Attack', charLevelTotal, 0, ctx, 'Attack'))
           }
         }
@@ -2073,38 +2093,8 @@ function buildStatMapOnce(
       }
     }
 
-    // Melee attack/damage ability — V2 BreakdownItemWeapon collects Strength
-    // (always) plus every granted Weapon_AttackAbility / Weapon_DamageAbility
-    // candidate whose weapon gate passed (finesse/Dex, Zen-style Wisdom,
-    // Insightful Fighting/Int, …) and uses the BEST MOD
-    // (BreakdownItem::AddAbility + LargestStatBonus). YingsMonk's handwraps
-    // attack with WIS 45, not STR 9 — oracle-verified.
-    const weaponInfo = extractWeaponInfo(gearItems)
-    {
-      const mods: Record<string, number> = {
-        Strength: strMod, Dexterity: dexMod, Constitution: conModFull,
-        Intelligence: intModFull, Wisdom: wisMod, Charisma: chaMod,
-      }
-      const pickBest = (cands: string[]): [string, number] => {
-        let best = cands[0], bestMod = mods[cands[0]] ?? 0
-        for (const c of cands) {
-          const m = mods[c] ?? 0
-          if (m > bestMod) { best = c; bestMod = m }
-        }
-        return [best, bestMod]
-      }
-      const grantedOf = (prefix: string): string[] => [...map.keys()]
-        .filter(k => k.startsWith(prefix) && resolveBonus(map.get(k) ?? []).total > 0)
-        .map(k => k.slice(prefix.length))
-      const atkCands = ['Strength',
-        ...(weaponInfo?.attackModifier === 'Dexterity' ? ['Dexterity'] : []),
-        ...grantedOf('melee.attackAbility.')]
-      const [atkAb, atkMod] = pickBest(atkCands)
-      if (atkMod !== 0) add(map, 'melee.toHit', { value: atkMod, type: 'Ability mod', source: atkAb })
-      const dmgCands = ['Strength', ...grantedOf('melee.damageAbility.')]
-      const [dmgAb, dmgMod] = pickBest(dmgCands)
-      if (dmgMod !== 0) add(map, 'melee.damage', { value: dmgMod, type: 'Ability mod', source: dmgAb })
-    }
+    // (Main-hand weapon attack/damage lines are composed AFTER the BAB
+    // pool is final — see below, past the babOverride fold.)
 
     // Ranged
     if (dexMod !== 0) add(map, 'ranged.toHit', { value: dexMod, type: 'Ability mod', source: 'Dexterity' })
@@ -2396,6 +2386,114 @@ function buildStatMapOnce(
         const boost = Math.min(MAX_BAB, charLevel) - classBabSum
         if (boost > 0) {
           add(map, 'bab', { value: boost, type: 'Stacking', source: 'BAB boost to character level (max 25)' })
+        }
+      }
+    }
+
+    // Main-hand weapon attack/damage lines — V2 BreakdownItemWeaponEffects::
+    // CreateWeaponBreakdown synthesizes ability CANDIDATES for the wielded
+    // weapon (no feat needed):
+    //   • the item's own AttackModifier / DamageModifier lists (most
+    //     weapons: Strength; bows: Dexterity)
+    //   • Finesseable or thrown → Str+Dex ATTACK candidates
+    //   • thrown → Str+Dex DAMAGE candidates
+    //   • "Light" group → Dex attack AND damage
+    //   • Crossbow / RepeatingCrossbow → Dex attack AND damage
+    // plus every granted Weapon_AttackAbility / Weapon_DamageAbility effect
+    // (Zen-style Wisdom, Insightful Fighting/Int, Swashbuckler CHA, …).
+    // The BEST MOD wins (BreakdownItem::LargestStatBonus). YingsMonk's
+    // handwraps attack with WIS 45, not STR 9; Dodge v7's kukri damages
+    // with DEX — both oracle-verified.
+    const weaponInfo = extractWeaponInfo(gearItems)
+    {
+      const mods: Record<string, number> = {
+        Strength: strMod, Dexterity: dexMod, Constitution: conModFull,
+        Intelligence: intModFull, Wisdom: wisMod, Charisma: chaMod,
+      }
+      const pickBest = (cands: string[]): [string, number] => {
+        let best = cands[0] ?? '', bestMod = cands.length > 0 ? (mods[cands[0]] ?? 0) : 0
+        for (const c of cands) {
+          const m = mods[c] ?? 0
+          if (m > bestMod) { best = c; bestMod = m }
+        }
+        return [best, bestMod]
+      }
+      const grantedOf = (prefix: string): string[] => [...map.keys()]
+        .filter(k => k.startsWith(prefix) && resolveBonus(map.get(k) ?? []).total > 0)
+        .map(k => k.slice(prefix.length))
+      const mainItem = weaponInfo ? gearItems[weaponInfo.slot] : undefined
+      const itemAtkMods = toArray(mainItem?.AttackModifier as string | string[] | undefined)
+      const itemDmgMods = toArray((mainItem as { DamageModifier?: string | string[] } | undefined)?.DamageModifier)
+      const thrown = ['Shuriken', 'Dart', 'Throwing Dagger', 'Throwing Axe', 'Throwing Hammer']
+        .includes(mainWeaponType)
+      const dexWeaponAtk = ctxWeaponClassMain.has('Finesseable') || thrown
+        || ctxWeaponClassMain.has('Light')
+        || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
+      const dexWeaponDmg = thrown || ctxWeaponClassMain.has('Light')
+        || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
+      const atkCands = [...itemAtkMods,
+        ...(dexWeaponAtk ? ['Strength', 'Dexterity'] : []),
+        ...grantedOf('melee.attackAbility.')]
+      const [atkAb, atkMod] = pickBest(atkCands)
+      if (atkMod !== 0) add(map, 'melee.toHit', { value: atkMod, type: 'Ability mod', source: atkAb })
+      // The damage ability bonus is scaled by the Damage Ability Multiplier
+      // breakdown (Base 1.0 from the auto "Attack" feat, +0.5 THF stance,
+      // +0.5 SWF feats, …) and TRUNCATED toward zero
+      // (BreakdownItemWeaponDamageBonus.cpp:56-95).
+      const dmgCands = [...itemDmgMods,
+        ...(dexWeaponDmg ? ['Dexterity'] : []),
+        ...(thrown ? ['Strength'] : []),
+        ...grantedOf('melee.damageAbility.')]
+      const [dmgAb, dmgModRaw] = pickBest(dmgCands)
+      const dmgMult = resolveBonus(map.get('melee.damageAbilityMult') ?? []).total
+      const dmgMod = Math.trunc(dmgModRaw * dmgMult)
+      if (dmgMod !== 0) add(map, 'melee.damage', { value: dmgMod, type: 'Ability mod', source: `${dmgAb} (x${dmgMult})` })
+
+
+      // V2 BreakdownItemWeaponAttackBonus adds the BAB breakdown total INTO
+      // the attack pool when positive — so PERCENT effects (Precision +5%)
+      // scale over a base that includes BAB (oracle-verified on YingsMonk:
+      // 5% of 195, not of the pool without BAB).
+      const babTotal = resolveBonus(map.get('bab') ?? []).total
+      if (babTotal > 0) add(map, 'melee.toHit', { value: babTotal, type: 'Base', source: 'Base Attack Bonus' })
+
+      // V2 BreakdownItemWeaponAttackBonus/DamageBonus: the per-weapon
+      // enchantment sub-breakdown total feeds BOTH lines as one entry.
+      const ench = resolveBonus(map.get('weapon.enchantMain') ?? []).total
+      if (ench !== 0) {
+        add(map, 'melee.toHit', { value: ench, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
+        add(map, 'melee.damage', { value: ench, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
+      }
+
+      // V2 attack-line penalties (BreakdownItemWeaponAttackBonus::
+      // CreateOtherEffects): armor check penalty (never a bonus), and the
+      // TWF penalty when the Two Weapon Fighting stance is active (-4 with
+      // the TWF feat else -6, +2 back for a light off-hand weapon or
+      // Oversized Two Weapon Fighting).
+      if (weaponInfo) {
+        // Attack uses -max(0, ARMOR pool total) — the shield ACP breakdown is
+        // NOT consulted here, and the sign clamp is the OPPOSITE of the skill
+        // consumer's min(0, total) (BreakdownItemWeaponAttackBonus.cpp:102-115
+        // vs BreakdownItemSkill.cpp:126-149 — V2's exact behavior).
+        const acp = Math.max(0, resolveBonus(map.get('armorCheckPenalty') ?? []).total)
+        if (acp !== 0) add(map, 'melee.toHit', { value: -acp, type: 'Penalty', source: 'Armor check penalty' })
+        if (ctxStances.has('Two Weapon Fighting')) {
+          let twf = ctxFeats.has('Two Weapon Fighting') ? -4 : -6
+          if (ctxWeaponClassOff.has('Light') || ctxFeats.has('Oversized Two Weapon Fighting')) twf += 2
+          add(map, 'melee.toHit', { value: twf, type: 'Penalty', source: 'TWF attack penalty' })
+        }
+      }
+
+      // Keen/Impact & Improved Critical — V2 BreakdownItemWeaponCriticalThreat
+      // Range::HandleAddSpecialEffects IGNORES the effect's own amount and
+      // synthesizes ONE "Keen"-typed ITEM effect worth the weapon TYPE's
+      // unmodified threat range (GlobalSupportFunctions WeaponBaseCriticalRange
+      // table), for the first Weapon_Keen AND the first WeaponKeenDamageType
+      // each; both share the "Keen" bonus type so item stacking keeps one.
+      if ((map.get('weapon.keen') ?? []).some(l => l.active !== false)) {
+        const kb = weaponBaseCriticalRange(mainWeaponType)
+        if (kb > 0) {
+          add(map, 'melee.crit.range', { value: kb, type: 'Keen', source: 'Keen/Improved Critical', fromGear: true })
         }
       }
     }

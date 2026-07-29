@@ -53,11 +53,14 @@ describe('weapon-class gated effects', () => {
     expect(parseEffect(critDmg, 1, 't', 0, 0, ctx())[0].statKey).toBe('melee.crit.damage')
   })
 
-  it('Weapon_Enchantment(Class) feeds BOTH attack and damage', () => {
+  it('Weapon_Enchantment(Class) pools in weapon.enchantMain (fed to attack AND damage by buildStats)', () => {
+    // V2 pools weapon enchantment in its own per-weapon sub-breakdown
+    // (Breakdown_WeaponEnchantment) whose TOTAL then feeds the attack and
+    // damage lines as one entry; buildStats composes that from this key.
     const ench = mk({ Type: 'Weapon_Enchantment', Bonus: 'Enhancement', AType: 'Simple', Amount: { '#text': 1 }, Item: ['All'] })
-    expect(parseEffect(ench, 1, 't', 0, 0, ctx()).map(o => o.statKey).sort()).toEqual(['melee.damage', 'melee.toHit'])
+    expect(parseEffect(ench, 1, 't', 0, 0, ctx()).map(o => o.statKey)).toEqual(['weapon.enchantMain'])
     const enchC = mk({ Type: 'Weapon_EnchantmentClass', Bonus: 'Enhancement', AType: 'Simple', Amount: { '#text': 2 }, Item: ['Two Handed'] })
-    expect(parseEffect(enchC, 1, 't', 0, 0, ctx()).map(o => o.statKey).sort()).toEqual(['melee.damage', 'melee.toHit'])
+    expect(parseEffect(enchC, 1, 't', 0, 0, ctx()).map(o => o.statKey)).toEqual(['weapon.enchantMain'])
   })
 
   it('Weapon_BaseDamage adds +W only for the wielded weapon type', () => {

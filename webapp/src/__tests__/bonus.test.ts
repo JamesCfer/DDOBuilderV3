@@ -111,12 +111,17 @@ describe('buildExclusiveSet', () => {
     expect(set.has('Untyped')).toBe(false)
   })
 
-  it('trims trailing spaces from names (XML artifact)', () => {
+  it('keeps names VERBATIM — "Competence " is its own Highest-Only type', () => {
+    // V2 BonusTypes.xml registers both "Competence" and "Competence "
+    // (deliberate trailing space, used by the Marksmanship item buffs): the
+    // two Marksmanship lines compete with each other but STACK with plain
+    // Competence items (dump-verified on STR BOW: Accuracy 23 + one GM 3).
     const set = buildExclusiveSet([
+      { Name: 'Competence', Stacking: 'Highest Only' },
       { Name: 'Competence ', Stacking: 'Highest Only' },
     ])
     expect(set.has('Competence')).toBe(true)
-    expect(set.has('Competence ')).toBe(false)
+    expect(set.has('Competence ')).toBe(true)
   })
 
   it('defaults to Highest Only when Stacking field is absent', () => {
