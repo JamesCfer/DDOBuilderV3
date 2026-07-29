@@ -20,6 +20,7 @@ const mk = (Type: string, extra: Partial<Effect> = {}): Effect => ({
   Type,
   Amount: 1,
   Bonus: 'Enhancement',
+  Item: 'All',  // pass-134: weapon effects need an Item scope (V2 AffectsThisWeapon)
   AType: 'Stacks',
   ...extra,
 }) as Effect
@@ -39,7 +40,7 @@ describe('parseEffect — niche V2 effects', () => {
   })
 
   it('Guard without Item emits bare guard', () => {
-    const out = parseEffect(mk('Guard', { Amount: 5 }), 1, 'Test', 0, 0, ctx)
+    const out = parseEffect(mk('Guard', { Amount: 5, Item: undefined }), 1, 'Test', 0, 0, ctx)
     expect(out[0].statKey).toBe('guard')
   })
 

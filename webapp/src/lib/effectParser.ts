@@ -371,6 +371,19 @@ const ENERGY_ALL_TYPES = [
   'Untyped',
 ]
 
+/**
+ * V2 BreakdownItemWeaponEffects::AffectsThisWeapon — a weapon effect's
+ * <Item> list names the weapon TYPES it applies to ('All' = every weapon).
+ * V3's flat weapon keys model the MAIN hand, so gate on the main-hand type.
+ */
+function weaponScopeMatches(items: string[], ctx?: EffectContext): boolean {
+  if (!ctx) return true
+  if (ctx.weaponTypeMain === undefined || ctx.weaponTypeMain === '') {
+    return items.includes('All') || items.some(i => ctx.weaponTypes.has(i))
+  }
+  return items.some(i => i === 'All' || i === ctx.weaponTypeMain)
+}
+
 // The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
 // pseudo-entries). Item=All effects fan out to each so per-type Highest-Only
 // stacking sees them (V2 keeps ONE winner per bonus type per element).
@@ -1100,16 +1113,16 @@ export function parseEffect(
       return [make('ranged.doubleshot')]
 
     case 'Weapon_Attack':
-      return [make('melee.toHit')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.toHit')] : []
 
     case 'Weapon_Damage':
-      return [make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
 
     case 'Weapon_AttackAndDamage':
-      return [make('melee.toHit'), make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.toHit'), make('melee.damage')] : []
 
     case 'Weapon_OtherDamageBonus':
-      return [make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
 
     case 'SneakAttack':
     case 'SneakAttackDice':
@@ -1645,30 +1658,30 @@ export function parseEffect(
     // keen totals (V2 BreakdownItemWeaponAttackSpeed, ...VorpalRange).
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return [make('weapon.alacrity')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
     case 'Weapon_Keen':
-      return [make('weapon.keen')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.keen')] : []
     case 'Weapon_VorpalRange':
-      return [make('weapon.vorpalRange')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
     // Weapon_CriticalMultiplier is universal (not weapon-class-gated) but V2
     // (BreakdownItemWeaponCriticalMultiplier.cpp:70-93) sums it into the same
     // total as the class-gated WeaponCriticalMultiplierClass sibling, so both
     // route to melee.crit.multiplier (V2 parity pass N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('melee.crit.multiplier')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.multiplier')] : []
     case 'Weapon_CriticalMultiplier19To20':
-      return [make('weapon.critMultiplier19to20')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.critMultiplier19to20')] : []
     // Universal sibling of WeaponCriticalRangeClass — same total (N7),
     // matching V2 BreakdownItemWeaponCriticalThreatRange.cpp:52-57.
     case 'Weapon_CriticalRange':
-      return [make('melee.crit.range')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.range')] : []
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
     case 'Weapon_DamageCritical':
     case 'Weapon_AttackAndDamageCritical':
     case 'WeaponOtherDamageBonusCritical':
-      return [make('melee.crit.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
     // -----------------------------------------------------------------------
     // Per-weapon-class effects (V2 BreakdownItemWeaponAttackBonus.cpp:233-279,
     // BreakdownItemWeaponDamageBonus.cpp:157-205, ...CriticalThreatRange /
@@ -2588,25 +2601,25 @@ export function parseItemBuff(
     // Weapon-specific (modeled by the weapon breakdown engine)
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return [make('weapon.alacrity')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
     case 'Weapon_Keen':
-      return [make('weapon.keen')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.keen')] : []
     case 'Weapon_VorpalRange':
-      return [make('weapon.vorpalRange')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
     // Universal sibling of WeaponCriticalMultiplierClass — same total (N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('melee.crit.multiplier')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.multiplier')] : []
     case 'Weapon_CriticalMultiplier19To20':
-      return [make('weapon.critMultiplier19to20')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.critMultiplier19to20')] : []
     // Universal sibling of WeaponCriticalRangeClass — same total (N7).
     case 'Weapon_CriticalRange':
-      return [make('melee.crit.range')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.range')] : []
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // surfaced as `melee.crit.damage` for the DPR estimator's crit term.
     case 'Weapon_AttackAndDamageCritical':
     case 'Weapon_DamageCritical':
     case 'WeaponOtherDamageBonusCritical':
-      return [make('melee.crit.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
     case 'Weapon_Attack':
     case 'Weapon_AttackAbility':
     case 'Weapon_AttackAndDamage':
