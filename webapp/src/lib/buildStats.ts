@@ -2073,12 +2073,38 @@ function buildStatMapOnce(
       }
     }
 
-    // Melee (weapon attack modifier checked — could be DEX for finesse weapons)
+    // Melee attack/damage ability — V2 BreakdownItemWeapon collects Strength
+    // (always) plus every granted Weapon_AttackAbility / Weapon_DamageAbility
+    // candidate whose weapon gate passed (finesse/Dex, Zen-style Wisdom,
+    // Insightful Fighting/Int, …) and uses the BEST MOD
+    // (BreakdownItem::AddAbility + LargestStatBonus). YingsMonk's handwraps
+    // attack with WIS 45, not STR 9 — oracle-verified.
     const weaponInfo = extractWeaponInfo(gearItems)
-    const meleeAtkMod = weaponInfo?.attackModifier === 'Dexterity' ? dexMod : strMod
-    const meleeAtkAbName = weaponInfo?.attackModifier === 'Dexterity' ? 'Dexterity' : 'Strength'
-    if (meleeAtkMod !== 0) add(map, 'melee.toHit', { value: meleeAtkMod, type: 'Ability mod', source: meleeAtkAbName })
-    if (strMod !== 0)      add(map, 'melee.damage', { value: strMod, type: 'Ability mod', source: 'Strength' })
+    {
+      const mods: Record<string, number> = {
+        Strength: strMod, Dexterity: dexMod, Constitution: conModFull,
+        Intelligence: intModFull, Wisdom: wisMod, Charisma: chaMod,
+      }
+      const pickBest = (cands: string[]): [string, number] => {
+        let best = cands[0], bestMod = mods[cands[0]] ?? 0
+        for (const c of cands) {
+          const m = mods[c] ?? 0
+          if (m > bestMod) { best = c; bestMod = m }
+        }
+        return [best, bestMod]
+      }
+      const grantedOf = (prefix: string): string[] => [...map.keys()]
+        .filter(k => k.startsWith(prefix) && resolveBonus(map.get(k) ?? []).total > 0)
+        .map(k => k.slice(prefix.length))
+      const atkCands = ['Strength',
+        ...(weaponInfo?.attackModifier === 'Dexterity' ? ['Dexterity'] : []),
+        ...grantedOf('melee.attackAbility.')]
+      const [atkAb, atkMod] = pickBest(atkCands)
+      if (atkMod !== 0) add(map, 'melee.toHit', { value: atkMod, type: 'Ability mod', source: atkAb })
+      const dmgCands = ['Strength', ...grantedOf('melee.damageAbility.')]
+      const [dmgAb, dmgMod] = pickBest(dmgCands)
+      if (dmgMod !== 0) add(map, 'melee.damage', { value: dmgMod, type: 'Ability mod', source: dmgAb })
+    }
 
     // Ranged
     if (dexMod !== 0) add(map, 'ranged.toHit', { value: dexMod, type: 'Ability mod', source: 'Dexterity' })

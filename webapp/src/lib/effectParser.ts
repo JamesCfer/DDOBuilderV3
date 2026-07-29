@@ -805,7 +805,9 @@ export function parseEffect(
     if (!ctx || its.length < 2) return []
     const byClass = effect.Type.endsWith('Class')
     const memberSet = byClass ? ctx.weaponClassMain : ctx.weaponTypes
-    if (!memberSet || !its.slice(1).some(i => memberSet.has(i))) return []
+    // Item[1..] may be 'All' — every weapon qualifies (Monk Dragon Disciple's
+    // Wisdom-to-attack grant, oracle-verified on YingsMonk).
+    if (!memberSet || !its.slice(1).some(i => i === 'All' || memberSet.has(i))) return []
     const kind = effect.Type.includes('Attack') ? 'attackAbility' : 'damageAbility'
     return [{ statKey: `melee.${kind}.${its[0]}`, value: 1, bonusType: effect.Bonus ?? 'Enhancement', source }]
   }
