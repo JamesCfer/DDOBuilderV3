@@ -33,4 +33,8 @@ namespace v2calc
     bool   HasBreakdown(BreakdownType bt);
     double Total(BreakdownType bt);         // BreakdownItem::Total()
     double Capped(BreakdownType bt);        // BreakdownItem::CappedTotal()
+
+    // Parity debugging: print the breakdown's per-effect pools to stderr
+    // (BreakdownItem::V2CalcDumpEffects). No-op for unknown types.
+    void   DumpEffects(BreakdownType bt, const char* label);
 }

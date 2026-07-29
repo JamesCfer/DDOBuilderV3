@@ -1269,6 +1269,41 @@ double BreakdownItem::GetEffectValue(const std::string& bonus, bool bItemEffects
     return total;
 }
 
+#ifdef V2CALC_LINUX
+void BreakdownItem::V2CalcDumpEffects(const char* label) const
+{
+    // mirror Total()'s pool processing exactly, but print each effect
+    fprintf(stderr, "[dump] === %s ===\n", label);
+    auto dumpPool = [this](const char* pool, const std::list<Effect>& src, bool bItemPool)
+    {
+        std::list<Effect> effects = src;
+        std::list<Effect> inactive;
+        std::list<Effect> nonStacking;
+        std::list<Effect> temporary;
+        RemoveInactive(&effects, &inactive);
+        if (bItemPool)
+        {
+            RemoveNonStacking(&effects, &nonStacking);
+            RemoveTemporary(&effects, &temporary);
+        }
+        auto line = [pool](const char* state, const Effect& e)
+        {
+            fprintf(stderr, "[dump] %-6s %-11s %-10s %8.2f%s x%zu \"%s\"\n",
+                    pool, state, e.Bonus().c_str(),
+                    e.TotalAmount(false), e.HasPercent() ? "%" : " ",
+                    e.EffectStacks(), e.DisplayName().c_str());
+        };
+        for (auto&& e : effects)    line(e.HasPercent() ? "pct" : "active", e);
+        for (auto&& e : inactive)   line("inactive", e);
+        for (auto&& e : nonStacking) line("nonstack", e);
+        for (auto&& e : temporary)  line("temp", e);
+    };
+    dumpPool("other", m_otherEffects, false);
+    dumpPool("char", m_effects, false);
+    dumpPool("item", m_itemEffects, true);
+}
+#endif
+
 std::list<Effect> BreakdownItem::AllActiveEffects() const
 {
     // build a list of all the current active effects

@@ -11,6 +11,7 @@ import {
   findActiveBuild,
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
+import { useStaticBundle } from './useStaticBundle'
 import { importV1Build, isV1CharacterXml } from '../lib/v1Import'
 import { exportV2DocumentModel } from '../lib/v2Export'
 import type { ItemCatalogue } from '../lib/v2Export'
@@ -114,6 +115,9 @@ export interface PersistenceAPI {
 
 export function usePersistence(): PersistenceAPI {
   const [docs, setDocs] = useState<CharacterDocument[]>(() => readDocs())
+  // Tree catalogue for the V2 tree-version gate on import (SpendInTree
+  // parity: spends in out-of-version trees are revoked at load).
+  const { allTrees } = useStaticBundle()
 
   const saves = docs.flatMap(flattenDocument)
 
@@ -243,7 +247,7 @@ export function usePersistence(): PersistenceAPI {
           const isXml = file.name.toLowerCase().endsWith('.ddobuild') ||
                         text.trim().startsWith('<')
           if (isXml) {
-            const result = importV2Build(text)
+            const result = importV2Build(text, { allTrees })
             if (result.document.lives.length === 0) {
               reject(new Error('V2 file contained no lives'))
               return

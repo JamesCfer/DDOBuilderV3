@@ -356,8 +356,13 @@ mismatches, largest first — each needs a source-by-source V2 trace:
 The v2calc oracle is now the source of truth. Ranked by builds affected
 (V2 oracle value is correct; the number is how many builds mismatch).
 
-**Current scoreboard after pass 131 (2026-07-28, UNIFIED 151-build corpus =
-53 curated + 98 fuzz, 3 builds with any mismatch):** `oracleDiff.ts` now
+**Current scoreboard after pass 132 (2026-07-29, UNIFIED 151-build corpus =
+53 curated + 98 fuzz): 0 builds with any mismatch — every tracked stat on
+every build in the corpus is V2-oracle-exact.** The pass-131 residuals
+(Nerfer / Odd tank / New New Inquiz) are closed; see the pass-132 entry
+below for the mechanisms.
+
+Pass-131 scoreboard (2026-07-28, same corpus, 3 residuals): `oracleDiff.ts` now
 sweeps `Output/FuzzBuilds` by default. The fuzz corpus went **79 → 0
 mismatching builds** in this pass; the old 98 `fuzz-*.golden.json` /
 `.v3stats.json` files were exposed as a CIRCULAR baseline (byte-identical
@@ -390,6 +395,41 @@ last "Maetrim" rangedPower/meleePower mismatch (`EnterValue` augments like
 see pass 130 above). Historical per-bucket notes below are kept for the
 evidence trail; where a note conflicts with this scoreboard,
 the scoreboard wins.
+
+- ✅ **Pass 132 — residuals closed: 151/151 builds oracle-exact (this PR).**
+  New tooling: `BreakdownItem::V2CalcDumpEffects` (V2CALC_LINUX-guarded) +
+  `V2CALC_DUMP_EFFECTS=<key>` in the oracle prints a breakdown's per-effect
+  pools (other/char/item, with active/inactive/non-stacking state) — the
+  per-effect referee that localised every fix below. Also fixed an
+  `oracleDiff.ts` arg bug that silently DROPPED the first file argument
+  (`i !== tolIdx+1` with tolIdx=-1) — single-file runs were falling through
+  to the full sweep, which had masked one unverified "fix" during pass 131.
+  - **Off-hand removal** (Inquiz hp +66): V2 `EquippedGear::SetItem` removes
+    the off-hand item when the main hand cannot have one
+    (`CanEquipTo2ndWeapon`: two-handed melee/bows/handwraps/quarterstaff
+    never; the five crossbows only with "Artificer Rune Arm Use" trained or
+    granted). The item AND its slotted augments contribute nothing.
+  - **Persisted stance semantics** (Nerfer): AUTO-family stances are never
+    read from `<ActiveStances>` (armor/shield, weapon types, fighting
+    styles, Ranged Combat, Centered, races, alignments — all re-derived);
+    persisted USER stances are revoked when their stance definition's
+    Requirements fail at load (`CStanceButton::Evaluate` → `DisableStance`)
+    — stance defs indexed from `allFeats[].Stance`.
+  - **Data-driven AUTO stances** (Odd tank saves −3): Stances.xml Auto
+    entries (e.g. "Aura of Good"/"Aura of Courage", BaseClassMinLevel-
+    gated) now auto-activate; `loadStances` is part of `loadAllCatalogues`
+    and `BuildStatsInput.allStances`. Feat-granted Group=Auto stance defs
+    self-activate too. A whitelist keeps the pass honest: stances whose
+    requirements use types `requirementsMet` only conservatively passes
+    (GroupMember/ItemTypeInSlot/…) are left to the dedicated derivations.
+  - **Centered is class-free** ("lowest hp possible" dodge, "Max imbue"
+    6-stat cluster): V2's Centered stance requires only Cloth Armor + both
+    hands in the "Centered" weapon group (Empty counts) — the old
+    monk-level requirement was wrong; it had been masked by the stale
+    persisted-stance merge.
+  - **UI import tree gate**: `usePersistence` passes `allTrees` from
+    `useStaticBundle` into `importV2Build`.
+  Regression tests: `parityPass132.test.ts` (8 tests). Full suite 1083.
 
 - ✅ **Pass 131 — fuzz-corpus alignment (fuzz 79→0, this PR).** Root causes,
   each verified by direct oracle diff (all in V3 unless marked oracle):
@@ -644,23 +684,23 @@ occurrences confirmed), so no change is needed there.
 - ✅ **Settings** — done (#67/#69).
 - ✅ **Build version migration** — done (#66).
 
-### Pass-131 follow-ups
-- ❌ **UI import path doesn't pass `allTrees` to `importV2Build`** — the
-  tree-version gate (pass 131) fires for `oracleDiff.ts` and any caller that
-  supplies the catalogue, but `usePersistence.ts`'s file-import call runs
-  without it (catalogues aren't plumbed into that hook), so a UI-imported
-  build keeps out-of-version tree spends V2 would revoke. Wire the tree
-  catalogue through the import dialog.
-- ❌ **"New New Inquiz" hp +66** — V2 ignores the off-hand "Melancholic
-  False Life (Legendary)" augment via an unidentified mechanism (stale
-  "(Accessory)" slot type disproven by direct oracle experiment — renaming
-  to "(Weapon)" changes nothing; `CopyUserSetValues` keeps original
-  augments wholesale, so `GetLatestVersionOfItem` match-by-type is also
-  out). Needs a per-effect oracle dump to localise.
-- ❌ **Nerfer / Odd tank residuals** — the last 2 curated-corpus builds with
-  mismatches (7 stats / 3 saves). Both were "clean" pre-131 only because
-  the oracle and V3 shared the stale-persisted-stance blind spot; the
-  oracle is now more faithful, and these deltas are real V3 gaps.
+### Pass-131 follow-ups — ALL CLOSED by pass 132 (see the pass-132 entry
+### in the oracle-derived bug list; the referee is now 151/151 exact)
+- ✅ **UI import `allTrees`** — `usePersistence.ts` now reads the tree
+  catalogue from `useStaticBundle()` and passes it to `importV2Build`, so
+  the tree-version gate fires on UI imports too.
+- ✅ **"New New Inquiz" hp +66** — mechanism identified with the new
+  per-effect oracle dump (`V2CALC_DUMP_EFFECTS`): the off-hand item itself
+  is REMOVED by `EquippedGear::SetItem` + `CanEquipTo2ndWeapon`
+  (crossbow main hand without "Artificer Rune Arm Use" → no off-hand at
+  all, augments included). Replicated in `buildStats` (off-hand removal +
+  augments die with the host).
+- ✅ **Nerfer / Odd tank** — both were stale-persisted-stance artifacts:
+  Nerfer persisted "Wind Stance" that V2 revokes at load (its stance
+  definition requires Centered, and a longbow isn't a centering weapon);
+  Odd tank was missing the Stances.xml AUTO stances "Aura of Good"/"Aura
+  of Courage" (Sacred Defender "Resistance Aura" +saves is gated on one).
+  V3 now models V2's full stance load semantics (pass 132).
 
 ### Data-file edge cases
 - ✅ **Item slot edge cases** — done (#71); trinket-via-augment not a V2 mechanic.

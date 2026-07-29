@@ -19,9 +19,9 @@ import { SKILLS } from './gamedata'
 import type {
   Race, DDOClass, Feat, EnhancementTree, EnhancementTreeItem, Item,
   Effect, EnhancementSelection, Augment, SetBonus, FiligreeSetBonus, Filigree,
-  OptionalBuff, FiligreeSlot, Spell, GuildBuff, ItemBuff,
+  OptionalBuff, FiligreeSlot, Spell, GuildBuff, ItemBuff, Stance, Requirements,
 } from '../types/ddo'
-import { parseEffect, parseItemBuff } from './effectParser'
+import { parseEffect, parseItemBuff, requirementsMet } from './effectParser'
 import type { EffectContext, ItemBuffTemplate } from './effectParser'
 import { resolveBonus, emptyResolvedStat } from './bonus'
 import type { RawBonus, ResolvedStat } from './bonus'
@@ -105,6 +105,13 @@ export interface BuildStatsInput {
    * whose stat effects live only in the template (V2 Item::FindEffect).
    */
   allItemBuffs?: ItemBuffTemplate[]
+  /**
+   * Stances.xml catalogue. Optional — enables the data-driven AUTO stance
+   * pass (V2 CStancesPane creates a button per Stances.xml entry and
+   * CStanceButton::Evaluate auto-activates Group=Auto ones whose
+   * Requirements hold, e.g. Paladin "Aura of Good"/"Aura of Courage").
+   */
+  allStances?: Stance[]
   /**
    * Life-level "Special" acquired feats (V2 `Life.specialFeats` /
    * `Life::AllSpecialFeats`), e.g. Chrism reincarnation-cache feats (Inherent
@@ -1189,17 +1196,55 @@ function buildStatMapOnce(
         ctxAbilityTotals[ab] = base + racial + lv
       }
     }
-    const ctxStances = deriveArmorStances(gearItems, ctxFeats)
-    // V2 parity: Build::IsStanceActive checks both armor-derived stances AND
-    // player-toggled stances.  Merge activeBuffs so that effects gated on e.g.
-    // "Mountain Stance", "Favored Weapon", "Power Attack", "Rage", etc. fire
-    // correctly when the player has toggled them on in the Stances panel.
-    // Armor/shield stances are AUTO-CONTROLLED in V2 (re-derived from gear on
-    // every load/change) — a stale persisted entry must not survive the
-    // re-derivation, so skip them here (deriveArmorStances is authoritative).
-    for (const s of build.activeBuffs) {
-      if (!AUTO_ARMOR_SHIELD_STANCES.has(s)) ctxStances.add(s)
+    // Slots V2 strips from the gear set at load (their augments die too).
+    const gearSlotsRemovedByV2 = new Set<string>()
+    // ── V2 EquippedGear::SetItem off-hand rule (EquippedGear.cpp:377-385) ─
+    // When the MAIN-HAND weapon "cannot have an item in your off hand"
+    // (CanEquipTo2ndWeapon, GlobalSupportFunctions.cpp): two-handed melee,
+    // bows, handwraps and quarterstaves NEVER allow one; the five crossbow
+    // types allow one only with "Artificer Rune Arm Use" trained or granted.
+    // V2 REMOVES the off-hand item from the gear set — buffs and slotted
+    // augments included. This runs at load via UpdateGearToLatestVersions'
+    // SetItem calls, so it is part of the oracle's numbers. Oracle-verified
+    // on "New New Inquiz": pure Fighter, repeating crossbow main hand →
+    // the rune-arm off-hand (and its Melancholic False Life augment)
+    // contributes nothing.
+    {
+      const NO_OFFHAND_EVER = new Set([
+        'Falchion', 'Great Axe', 'Great Club', 'Great Sword', 'Handwraps',
+        'Longbow', 'Maul', 'Quarterstaff', 'Shortbow',
+      ])
+      const CROSSBOWS = new Set([
+        'Great Crossbow', 'Heavy Crossbow', 'Light Crossbow',
+        'Repeating Heavy Crossbow', 'Repeating Light Crossbow',
+      ])
+      const mainW = (gearItems['Main Hand'] ?? gearItems['Weapon1'] ?? gearItems['MainHand'])?.Weapon
+      if (mainW) {
+        const runeArmOk = ctxFeats.has('Artificer Rune Arm Use')
+        const cannot = NO_OFFHAND_EVER.has(mainW)
+          || (CROSSBOWS.has(mainW) && !runeArmOk)
+        if (cannot) {
+          for (const slot of ['Off Hand', 'Weapon2', 'OffHand', 'Shield']) {
+            if (gearItems[slot]) {
+              delete gearItems[slot]
+              gearSlotsRemovedByV2.add(slot)
+            }
+          }
+        }
+      }
     }
+
+    const ctxStances = deriveArmorStances(gearItems, ctxFeats)
+    // V2 parity: alignment stances are auto-controlled too (Stances.xml
+    // "Good"/"Lawful"/... gated on Requirement Type=Alignment) — derive from
+    // the build's alignment so alignment-stance-gated effects fire.
+    for (const token of (build.alignment ?? '').split(' ')) {
+      if (token) ctxStances.add(token)
+    }
+    // NOTE: the persisted activeBuffs merge happens BELOW, after the
+    // weapon-type / fighting-style / Centered derivation — V2's pane
+    // evaluates user stances only after every auto stance has settled, and
+    // user-stance requirements can reference them (Wind Stance → Centered).
     // V2 parity: StancesPane.cpp:329-354 adds an Auto-controlled stance named
     // after every race, gated on Requirement_Race; CStanceButton::Evaluate
     // auto-activates it when the build's race matches. Effects gated on
@@ -1308,12 +1353,122 @@ function buildStatMapOnce(
     // Centered gates all Monk Ki effects (KiMaximum, KiHit, KiPassive,
     // KiCritical) and the WIS-to-AC family.
     {
-      const monkLevels = (ctxClassLevels['Monk'] ?? 0) + (ctxClassLevels['Sacred Fist'] ?? 0)
-      const weaponOk = !mainWeaponType || ctxWeaponClassMain.has('Centered')
-      if (monkLevels > 0 && ctxStances.has('Cloth Armor') && weaponOk) {
+      // V2's "Centered" auto stance (Stances.xml) is CLASS-FREE: Stance
+      // "Cloth Armor" + GroupMember/GroupMember2 "Centered" (the weapon
+      // group holds Empty/Kama/Shuriken/Handwraps/Quarterstaff/Unarmed) —
+      // an unarmored unarmed character of ANY class is Centered. The old
+      // monk-level requirement was wrong (oracle-verified on "lowest hp
+      // possible": Flurry of Blows' +6 dodge is Centered-gated and fires).
+      const mainOk = !mainWeaponType || ctxWeaponClassMain.has('Centered')
+      const offOk = !offWeaponType || ctxWeaponClassOff.has('Centered')
+      if (ctxStances.has('Cloth Armor') && mainOk && offOk) {
         ctxStances.add('Centered')
       }
     }
+
+    // ── Persisted stance toggles (V2 CStancesPane load semantics) ────────
+    // AUTO-group stances are NEVER taken from the file — every family the
+    // pane auto-controls was re-derived above (armor/shield, weapon types,
+    // fighting styles, Ranged Combat, Centered, race, alignment), so a
+    // stale persisted entry must not resurrect one. USER stances keep their
+    // toggled state — EXCEPT that V2 disables (revokes) any whose stance
+    // definition's Requirements fail at load (CStanceButton ctor →
+    // Evaluate: bDisabled = !Met → DisableStance). Oracle-verified on
+    // Nerfer: a longbow monk without a centering weapon persists
+    // "Wind Stance" (+2 DEX, requires Stance: Centered), and V2 revokes it.
+    {
+      const autoFamily = new Set<string>([
+        ...AUTO_ARMOR_SHIELD_STANCES,
+        'Two Handed Fighting', 'Two Weapon Fighting', 'Single Weapon Fighting',
+        'Ranged Combat', 'Centered',
+        'Lawful', 'Chaotic', 'Good', 'Evil', 'Neutral', 'True',
+      ])
+      for (const r of allRaces) if (r.Name) autoFamily.add(r.Name)
+      for (const g of allWeaponGroups ?? []) {
+        for (const w of toArray(g.Weapon)) autoFamily.add(w as string)
+      }
+      // stance definitions (with their ActiveRequirements) granted by feats
+      // — V2 Feat::Stances(); enhancement-granted stance defs are not
+      // indexed here (none in the corpus carry requirements).
+      const stanceDefs = new Map<string, Stance>()
+      for (const f of allFeats) {
+        for (const st of toArray((f as { Stance?: Stance | Stance[] }).Stance)) {
+          if (st.Name) stanceDefs.set(st.Name, st)
+        }
+      }
+      const stanceCtx: EffectContext = {
+        race: build.race,
+        alignment: build.alignment,
+        classLevels: ctxClassLevels,
+        baseClassLevels: ctxBaseClassLevels,
+        totalLevel: build.totalLevel,
+        feats: ctxFeats,
+        featCounts: ctxFeatCounts,
+        enhancements: ctxEnhancements,
+        enhancementSelections: ctxEnhancementSelections,
+        abilityTotals: ctxAbilityTotals,
+        stances: ctxStances,               // live set: sees all derived autos
+        bab: 0,
+        weaponTypes: ctxWeaponTypes,
+        sliderValues: {},
+        weaponClassMain: ctxWeaponClassMain,
+        weaponClassOffhand: ctxWeaponClassOff,
+        materialBySlot: {},
+      }
+      // Feat-granted AUTO stances (V2: Feat::Stances() → NewStance → the
+      // pane's Auto group → CStanceButton::Evaluate auto-activates them).
+      for (const f of allFeats) {
+        if (!ctxFeats.has(f.Name)) continue
+        for (const st of toArray((f as { Stance?: Stance | Stance[] }).Stance)) {
+          // Group parses as an array ('Group' is in the loader isArray list)
+          if (!st.Name || !toArray(st.Group).includes('Auto')) continue
+          if (st.Requirements && !requirementsMet(st.Requirements, stanceCtx)) continue
+          ctxStances.add(st.Name)
+        }
+      }
+      // Stances.xml AUTO stances (V2 CStancesPane::CreateStanceWindows makes
+      // a button per catalogue entry; Auto ones self-activate when their
+      // Requirements hold — e.g. "Aura of Good"/"Aura of Courage" gated on
+      // BaseClassMinLevel Paladin; oracle-verified on Odd tank, whose Sacred
+      // Defender "Resistance Aura" +saves needs Stance "Aura of Courage").
+      // Families already re-derived above (armor/shield/fighting styles/…)
+      // are skipped via autoFamily, and a stance is only auto-evaluated here
+      // when EVERY requirement type is one V3 evaluates honestly —
+      // requirementsMet conservatively PASSES types like GroupMember/
+      // ItemTypeInSlot, which would wrongly switch on gear-dependent
+      // stances this pass doesn't model.
+      {
+        const HONEST = new Set([
+          'Feat', 'FeatAnySource', 'Race', 'Alignment', 'Class', 'BaseClass',
+          'ClassMinLevel', 'ClassAtLevel', 'BaseClassMinLevel', 'BaseClassAtLevel',
+          'Level', 'SpecificLevel', 'Enhancement', 'Stance', 'NotConstruct',
+          'RaceConstruct',
+        ])
+        const allHonest = (reqs: Requirements | undefined): boolean => {
+          if (!reqs) return true
+          const lists = [
+            ...toArray(reqs.Requirement),
+            ...toArray(reqs.RequiresOneOf).flatMap(r => toArray(r.Requirement)),
+            ...toArray(reqs.RequiresNoneOf).flatMap(r => toArray(r.Requirement)),
+          ]
+          return lists.every(r => r?.Type !== undefined && HONEST.has(r.Type))
+        }
+        for (const st of input.allStances ?? []) {
+          if (!st.Name || !toArray(st.Group).includes('Auto') || ctxStances.has(st.Name)) continue
+          if (autoFamily.has(st.Name)) continue
+          if (!allHonest(st.Requirements)) continue
+          if (st.Requirements && !requirementsMet(st.Requirements, stanceCtx)) continue
+          ctxStances.add(st.Name)
+        }
+      }
+      for (const s of build.activeBuffs) {
+        if (autoFamily.has(s)) continue
+        const def = stanceDefs.get(s)
+        if (def?.Requirements && !requirementsMet(def.Requirements, stanceCtx)) continue
+        ctxStances.add(s)
+      }
+    }
+
     const ctxSliderValues: Record<string, number> = {
       ...((build as { sliderValues?: Record<string, number> }).sliderValues ?? {}),
     }
@@ -1607,6 +1762,8 @@ function buildStatMapOnce(
     const allAugmentChoices = {} as Record<string, string>
     for (const [key, name] of Object.entries(build.augmentChoices)) {
       if (key.startsWith('Cosmetic')) continue
+      // host item stripped by V2's off-hand rule → its augments die with it
+      if (gearSlotsRemovedByV2.has(key.split(':')[0])) continue
       allAugmentChoices[key] = name
     }
     if (build.sentientGem.majorAugment) {

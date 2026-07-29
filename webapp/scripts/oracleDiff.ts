@@ -49,7 +49,10 @@ const ABILITY_MAP: Record<string, string> = {
 const args = process.argv.slice(2)
 const tolIdx = args.indexOf('--tol')
 const tol = tolIdx >= 0 ? Number(args[tolIdx + 1]) : 0
-const fileArgs = args.filter((a, i) => !a.startsWith('--') && i !== tolIdx + 1)
+// NOTE: guard tolIdx — with no --tol flag, tolIdx is -1 and `i !== tolIdx+1`
+// silently dropped the FIRST file argument (and a single-file invocation fell
+// through to the full default sweep).
+const fileArgs = args.filter((a, i) => !a.startsWith('--') && (tolIdx < 0 || i !== tolIdx + 1))
 
 let files: string[]
 if (fileArgs.length) {
@@ -86,7 +89,7 @@ function v3Stats(buildPath: string) {
     allSetBonuses: cat.allSetBonuses, allFiligreeBonuses: cat.allFiligreeBonuses,
     allFiligrees: cat.allFiligrees, allWeaponGroups: cat.allWeaponGroups,
     allSpells: cat.allSpells, allGuildBuffs: cat.allGuildBuffs,
-    allItemBuffs: cat.allItemBuffs, specialFeats, gearItems,
+    allItemBuffs: cat.allItemBuffs, allStances: cat.allStances, specialFeats, gearItems,
   }, build)
 }
 

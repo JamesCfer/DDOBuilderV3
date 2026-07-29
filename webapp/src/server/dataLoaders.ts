@@ -611,6 +611,7 @@ export interface LoadedCatalogues {
   allChallenges: Challenge[]
   allItemBuffs: ItemBuffSpec[]
   allItemClickies: ItemClickieSpec[]
+  allStances: Stance[]
 }
 
 export function loadAllCatalogues(dataDir: string): LoadedCatalogues {
@@ -633,5 +634,6 @@ export function loadAllCatalogues(dataDir: string): LoadedCatalogues {
     allChallenges: loadChallenges(dataDir),
     allItemBuffs: loadItemBuffs(dataDir),
     allItemClickies: loadItemClickies(dataDir),
+    allStances: loadStances(dataDir),
   }
 }
