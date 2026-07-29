@@ -1895,15 +1895,22 @@ function parseItemBuffViaTemplate(
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
     // active-stance set instead of being conservatively dropped.
-    // Stamp the merge identity with the BUFF TYPE: V2's identical-effect
-    // merge (Effect::operator==) distinguishes effects born from different
-    // buff templates — Phase Hammer's "GhostTouch" and "Greater Incorporeal
-    // Bane" buffs both grant GhostTouch 1 but stay SEPARATE effects that
-    // compete Highest-Only instead of stack-merging (oracle-verified on
-    // fuzz-5019: ghost touch 1, not 2).
+    // Stamp the merge identity to mirror V2's Effect::operator== on stamped
+    // item effects: Build::NotifyItem(Weapon)Effect sets DisplayName to the
+    // ITEM NAME, ApplyToWeaponOnly buffs route via the weapon path (only the
+    // wielded hand's flag set — a content-equal effect from a general buff
+    // has BOTH flags and stays SEPARATE), and equality compares the full
+    // stamped content. So: Spectral Longbow's GhostTouch + Ghostbane2 buffs
+    // (identical stamped effects, same path) MERGE ×2 = ghost touch 2, while
+    // Phase Hammer's GhostTouch + Greater Incorporeal Bane (weapon-only
+    // path) stay separate and compete Highest-Only = 1 — both oracle-
+    // verified (fuzz-5028 / fuzz-5019).
+    const path = flagSet((tpl as { ApplyToWeaponOnly?: unknown }).ApplyToWeaponOnly as never) ? 'W' : 'G'
+    const content = JSON.stringify([cloned.Type, cloned.Bonus, cloned.AType, cloned.Amount,
+      cloned.Item ?? null, cloned.Requirements ?? null, (cloned as { Dice?: unknown }).Dice ?? null])
     out.push(...parseEffect(cloned, 1, source, 0, 0, ctx).map(p => ({
       ...p,
-      v2Name: p.v2Name ?? `${source}::${buff.Type}`,
+      v2Name: p.v2Name ?? `${source}::${path}:${content}`,
     })))
   }
   return out
