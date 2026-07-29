@@ -416,6 +416,10 @@ int main(int argc, char** argv)
     {
         v2calc::DumpEffects(Breakdown_NaturalArmor, "naturalArmor");
     }
+    if (dumpKeys != nullptr && strstr(dumpKeys, "immunities") != nullptr)
+    {
+        v2calc::DumpEffects(Breakdown_Immunities, "immunities");
+    }
     if (dumpKeys != nullptr && strstr(dumpKeys, "ac:") != nullptr)
     {
         v2calc::DumpEffects(Breakdown_AC, "ac");

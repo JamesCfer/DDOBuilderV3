@@ -565,9 +565,28 @@ function accumulateGear(
     for (const buff of toArray(item.Buff)) {
       addParsed(map, parseItemBuff(buff, source, buffCatalogue, ctx), true)
     }
-    // Armor bonus from armor/shield items — treated as Armor bonus type
-    if (item.ArmorBonus) {
-      add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source, fromGear: true })
+    // Armor bonus from armor/shield items — treated as Armor bonus type.
+    // DOCENTS (items with a <MithralBody> field): V2 Build::ApplyArmorEffects
+    // gates the base ArmorBonus on "Composite Plating" (Warforged racial),
+    // MithralBody's value on "Mithral Body", AdamantineBody's on "Adamantine
+    // Body" — a fleshie in a docent gets NO armor bonus (fuzz-5019/-5037).
+    {
+      const mithral = (item as { MithralBody?: number }).MithralBody
+      const adamantine = (item as { AdamantineBody?: number }).AdamantineBody
+      const feats = ctx?.feats
+      if (mithral != null) {
+        if (item.ArmorBonus && feats?.has('Composite Plating')) {
+          add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source: `${source} (Composite Plating)`, fromGear: true })
+        }
+        if (feats?.has('Mithral Body')) {
+          add(map, 'ac', { value: mithral, type: 'Armor', source: `${source} (Mithral Body)`, fromGear: true })
+        }
+      } else if (item.ArmorBonus) {
+        add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source, fromGear: true })
+      }
+      if (adamantine != null && feats?.has('Adamantine Body')) {
+        add(map, 'ac', { value: adamantine, type: 'Armor', source: `${source} (Adamantine Body)`, fromGear: true })
+      }
     }
     if (item.ShieldBonus) {
       add(map, 'ac', { value: item.ShieldBonus, type: 'Shield', source, fromGear: true })
@@ -1583,6 +1602,7 @@ function buildStatMapOnce(
       itemTypeBySlot: ctxItemTypeBySlot,
       weaponTypeMain: mainWeaponType,
       weaponTypeOffhand: offWeaponType,
+      charLevelTotal: (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0),
       // Wild Mage / Arcane Trickster "Mixed Magics" (see EffectContext)
       ...(['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
         ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
@@ -2078,7 +2098,12 @@ function buildStatMapOnce(
     // field is not part of the `mdb` stat (which collects only Effect_MaxDexBonus
     // contributions), so adding them together does not double-count.
     const mdbEffectBonus = resolveBonus(map.get('mdb') ?? []).total
-    const armorMaxDex = armorMaxDexBase != null ? armorMaxDexBase + mdbEffectBonus : null
+    // V2 BreakdownItemMDB::m_bNoLimit: with the CLOTH ARMOR stance active
+    // (robes, outfits, and docents without a body feat) and no tower shield,
+    // dex-to-AC is UNCAPPED even if the item prints an MDB of 0
+    // (fuzz-5099's Enigma Core docent).
+    const mdbNoLimit = armorStances.has('Cloth Armor') && !armorStances.has('Tower Shield')
+    const armorMaxDex = !mdbNoLimit && armorMaxDexBase != null ? armorMaxDexBase + mdbEffectBonus : null
     let effectiveDexForAC = dexMod
     let dexCapLabel: string | null = null
     if (armorMaxDex != null && effectiveDexForAC > armorMaxDex) {

@@ -77,6 +77,11 @@ export interface EffectContext {
   // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
   // cap when the enhancement is trained; ClassCasterLevel amounts read it.
   mixedMagicsCapLevel?: number
+  // FULL character level (heroic+epic+legendary) for AType=TotalLevel — V2
+  // Amount_TotalLevel always indexes by Build::Level(). The per-call level
+  // param carries CLASS levels on the enhancement path, which under-indexed
+  // 40-entry tables (Machrotechnic Armor of Legends 34 → 20 on Bardbox).
+  charLevelTotal?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -557,7 +562,9 @@ function resolveValue(
       // V2: m_Amount[totalLevel-1] * m_stacks (40-entry array indexed by char
       // level). m_stacks counts repeat acquisitions (Past Life ×3, Toughness
       // retrains) — V2 merges/sums them, so the table value multiplies by rank.
-      const idx = Math.max(1, classLevels)
+      // Always the FULL character level (ctx.charLevelTotal) when available;
+      // the positional param carries class levels on the enhancement path.
+      const idx = Math.max(1, ctx?.charLevelTotal ?? classLevels)
       return getAmountAtRank(effect.Amount, idx) * Math.max(1, rank)
     }
 
@@ -724,10 +731,16 @@ export function parseEffect(
   // V2 Effect::IsActive → Requirements::Met. Gate the effect entirely if any
   // top-level requirement, OneOf group, or NoneOf group fails.
   // When no ctx is supplied, fall back to the legacy stance-only check.
-  if (ctx) {
-    if (!requirementsMet(effect.Requirements, ctx)) return []
-  } else {
-    if (hasStanceRequirement(effect)) return []
+  // EXCEPTION: Immunity markers — V2's Immunities breakdown lists EVERY
+  // effect's items with NO IsActive filter (BreakdownItemImmunities::Value),
+  // so stance-gated Wild Shape immunities appear even with the form off.
+  const gateExempt = effect.Type === 'Immunity'
+  if (!gateExempt) {
+    if (ctx) {
+      if (!requirementsMet(effect.Requirements, ctx)) return []
+    } else {
+      if (hasStanceRequirement(effect)) return []
+    }
   }
 
   const resolved = resolveValue(effect, rank, classLevels, treeTotalAP, ctx)
@@ -1459,7 +1472,11 @@ export function parseEffect(
       return [make('imbueDice')]
 
     case 'Immunity':
-      return [make(`immunity.${items[0] ?? 'All'}`)]
+      // V2 lists EVERY Item in the Immunities breakdown ("Fear, Death
+      // Effects" is two names) — fan out all of them, not just the first.
+      return items.length > 0
+        ? items.map(i => make(`immunity.${i}`))
+        : [make('immunity.All')]
 
     case 'EldritchBlastD6':
       return [make('eldritchBlast.d6')]
@@ -2476,7 +2493,11 @@ export function parseItemBuff(
     case 'ImprovedCritical':       return [make('weapon.threatRange')]
 
     case 'Immunity':
-      return [make(`immunity.${items[0] ?? 'All'}`)]
+      // V2 lists EVERY Item in the Immunities breakdown ("Fear, Death
+      // Effects" is two names) — fan out all of them, not just the first.
+      return items.length > 0
+        ? items.map(i => make(`immunity.${i}`))
+        : [make('immunity.All')]
 
     case 'EldritchBlastD6':
       return [make('eldritchBlast.d6')]
