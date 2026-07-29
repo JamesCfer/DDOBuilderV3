@@ -142,7 +142,7 @@ function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGe
     // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
     // (BreakdownItem.cpp:623-698, :205-221).
     const asGear = fromGear || pb.asItemEffect === true
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank })
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank, v2Name: pb.v2Name })
   }
 }
 
@@ -584,7 +584,12 @@ function accumulateGear(
     // V2 armor check penalty: armor and shield clamped to ≤0, accumulated separately.
     if (item.ArmorCheckPenalty != null && item.ArmorCheckPenalty < 0) {
       const slotLower = slot.toLowerCase()
-      const isShield = slotLower.includes('shield') || (item.Armor === 'Shield' || item.Armor === 'TowerShield')
+      // Shields are WEAPON-typed items ("<Weapon>Large Shield</Weapon>") in
+      // an off-hand slot — uBER TANK's shield ACP was landing in the ARMOR
+      // pool, where Vanguard Armor Training wrongly cancelled it.
+      const isShield = slotLower.includes('shield')
+        || (item.Armor === 'Shield' || item.Armor === 'TowerShield')
+        || /Shield|Buckler/.test((item as { Weapon?: string }).Weapon ?? '')
       const key = isShield ? 'armorCheckPenaltyShield' : 'armorCheckPenalty'
       add(map, key, {
         value: item.ArmorCheckPenalty,
@@ -1071,9 +1076,17 @@ function buildStatMapOnce(
 
   // ItemBuffs.xml template catalogue (Type → template) for resolving
   // flavour-named item Buff Types via parseItemBuff (V2 Item::FindEffect).
-  const buffCatalogue = allItemBuffs && allItemBuffs.length > 0
-    ? new Map<string, ItemBuffTemplate>(allItemBuffs.map(b => [b.Type, b]))
-    : undefined
+  // V2 FindBuff (GlobalSupportFunctions.cpp:353) returns the FIRST match —
+  // ItemBuffs.xml carries duplicate Types ("Silent Moves" appears with
+  // Amount 5 and again with Amount 0) and a last-wins Map inverted V2's
+  // choice (oracle-verified on fuzz-5055).
+  let buffCatalogue: Map<string, ItemBuffTemplate> | undefined
+  if (allItemBuffs && allItemBuffs.length > 0) {
+    buffCatalogue = new Map<string, ItemBuffTemplate>()
+    for (const b of allItemBuffs) {
+      if (!buffCatalogue.has(b.Type)) buffCatalogue.set(b.Type, b)
+    }
+  }
 
     // ──────────────────────────────────────────────────────────────────────
     // Build the EffectContext used to gate effects via Requirements::Met.
@@ -1383,7 +1396,13 @@ function buildStatMapOnce(
         'Ranged Combat', 'Centered',
         'Lawful', 'Chaotic', 'Good', 'Evil', 'Neutral', 'True',
       ])
-      for (const r of allRaces) if (r.Name) autoFamily.add(r.Name)
+      // Only the CURRENT race's auto stance is filtered (it is re-derived
+      // above). Other race names must NOT be blanket-filtered: V2's iconic
+      // past-life toggles are named "<Race> " with a TRAILING SPACE
+      // ("Aasimar Scourge " ≠ race "Aasimar Scourge") which our trimming
+      // parsers collapse — a blanket race filter ate YingsMonk's persisted
+      // "Aasimar Scourge" iconic stance (+6% doublestrike, oracle-verified).
+      if (build.race) autoFamily.add(build.race)
       for (const g of allWeaponGroups ?? []) {
         for (const w of toArray(g.Weapon)) autoFamily.add(w as string)
       }
@@ -1475,10 +1494,67 @@ function buildStatMapOnce(
     // V2 Requirement::EvaluateMaterialType inputs: equipped item Material per
     // V2 slot name (Requirement.cpp:1083-1100).
     const ctxMaterialBySlot: Record<string, string> = {}
+    // V2 Requirement::EvaluateItemInSlot inputs: the equipped item's Weapon
+    // (or Armor) type per V2 slot name (Requirement.cpp:958-990) — gates
+    // e.g. Lamordia weapon augments' "+1 Spell DCs if slotted in a
+    // Quarterstaff" (oracle-verified on Bardbox).
+    const ctxItemTypeBySlot: Record<string, string> = {}
     for (const [v3Slot, item] of Object.entries(gearItems)) {
       const v2Slot = V3_SLOT_TO_V2_ENUM[v3Slot]
       const material = (item as { Material?: string }).Material
       if (v2Slot && material) ctxMaterialBySlot[v2Slot] = material
+      const itemType = (item as { Weapon?: string }).Weapon
+        ?? (item as { Armor?: string }).Armor
+      if (v2Slot && itemType) ctxItemTypeBySlot[v2Slot] = itemType
+    }
+
+    // V2 Build::SkillAtLevel per skill: trained ranks (1.0 when the class
+    // trained AT THAT LEVEL has it as a class skill, 0.5 otherwise) plus the
+    // level-capped tome. Skill-type Requirements gate on THIS, not on the
+    // resolved skill breakdown (Requirement::EvaluateSkill).
+    const ctxSkillRanks: Record<string, number> = {}
+    {
+      const lvlClasses = getLevelClasses(build)
+      const perClass = new Map<string, Set<string>>()
+      const skillsOf = (name: string | undefined): Set<string> => {
+        if (!name) return new Set()
+        let s = perClass.get(name)
+        if (!s) {
+          s = new Set(toArray(allClasses.find(c => c.Name === name)?.ClassSkill))
+          perClass.set(name, s)
+        }
+        return s
+      }
+      const unionSkills = new Set<string>()
+      for (const bc of build.classes) {
+        if (bc.name && bc.levels > 0) for (const s of skillsOf(bc.name)) unionSkills.add(s)
+      }
+      // V2 Character::SkillTomeValue level cap: 2, +1 at char level 3/7/11/
+      // 15/19/23/27/31.
+      const charLvl = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      let skillTomeCap = 2
+      for (const t of [3, 7, 11, 15, 19, 23, 27, 31]) if (charLvl >= t) skillTomeCap++
+      const byLevel = build.skillRanksByLevel
+      const names = new Set<string>([
+        ...Object.keys(build.skillRanks ?? {}),
+        ...Object.keys(build.skillTomes ?? {}),
+        ...(byLevel ? Object.values(byLevel).flatMap(r => Object.keys(r ?? {})) : []),
+      ])
+      for (const skill of names) {
+        let ranks = 0
+        if (byLevel && Object.keys(byLevel).length > 0) {
+          for (const [lvlStr, r] of Object.entries(byLevel)) {
+            const spent = r?.[skill] ?? 0
+            if (!spent) continue
+            ranks += spent * (skillsOf(lvlClasses[Number(lvlStr) - 1]).has(skill) ? 1 : 0.5)
+          }
+        } else {
+          const trained = build.skillRanks?.[skill] ?? 0
+          ranks = unionSkills.has(skill) ? trained : trained / 2
+        }
+        ranks += Math.min(skillTomeCap, build.skillTomes?.[skill] ?? 0)
+        if (ranks > 0) ctxSkillRanks[skill] = ranks
+      }
     }
 
     const ctx: EffectContext = {
@@ -1504,8 +1580,29 @@ function buildStatMapOnce(
       weaponClassMain: ctxWeaponClassMain,
       weaponClassOffhand: ctxWeaponClassOff,
       materialBySlot: ctxMaterialBySlot,
+      itemTypeBySlot: ctxItemTypeBySlot,
+      weaponTypeMain: mainWeaponType,
+      weaponTypeOffhand: offWeaponType,
+      // Wild Mage / Arcane Trickster "Mixed Magics" (see EffectContext)
+      ...(['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
+        ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
+        ? { mixedMagicsCapLevel: Math.min(20, (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)) }
+        : {}),
       skillTotals: skillTotalsOverride,
+      skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
+    }
+    // V2 Build::SnapshotAbilityValue — Snapshot* StackSources read the
+    // persisted per-gear-set ability snapshot when GearSetSnapshot names an
+    // existing gear set (missing tags default 0); otherwise live totals.
+    if (build.gearSetSnapshot && build.namedGearSets
+        && build.gearSetSnapshot in build.namedGearSets) {
+      const snap = build.gearSetSnapshots?.[build.gearSetSnapshot] ?? {}
+      ctx.snapshotAbilities = {
+        Strength: 0, Dexterity: 0, Constitution: 0,
+        Intelligence: 0, Wisdom: 0, Charisma: 0,
+        ...snap,
+      }
     }
 
     // ── Ability base scores ───────────────────────────────────────────────
@@ -1674,6 +1771,21 @@ function buildStatMapOnce(
         if (feat) accumulateFeat(map, feat, 1, `Automatic: ${fn}`, charLevelTotal, ctx)
       }
 
+      // V2's universal "Attack" feat (AutomaticAcquisition at level 1) carries
+      // the tumble-charge effects: base 2 charges + 1 @10 Tumble ranks + 1 @20
+      // ranks (cloth/light armor only) — oracle-verified on YingsMonk
+      // (tumbleCharges 5 vs V3's 1). Only the TumbleCharge effects are
+      // accumulated; the feat's other entries (unconscious range, helpless
+      // damage, off-hand chance) stay modeled as V3's built-in defaults.
+      const attackFeat = allFeats.find(f => f.Name === 'Attack')
+      if (attackFeat) {
+        for (const eff of toArray(attackFeat.Effect)) {
+          if (eff.Type === 'TumbleCharge') {
+            addParsed(map, parseEffect(eff, 1, 'Automatic: Attack', charLevelTotal, 0, ctx, 'Attack'))
+          }
+        }
+      }
+
       // V2 Class::ImprovedHeroicDurabilityFeats (Class.cpp:375-399): every heroic
       // (non-NotHeroic) class dynamically synthesizes "Improved Heroic Durability
       // (<Class> 5/10/15)" feats, each auto-acquired via Requirement_ClassAtLevel
@@ -1795,9 +1907,16 @@ function buildStatMapOnce(
       (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0))
 
     // ── Skill tomes ───────────────────────────────────────────────────────
-    for (const [skill, bonus] of Object.entries(build.skillTomes ?? {})) {
-      if (!bonus) continue
-      add(map, `skill.${skill}`, { value: bonus, type: 'Tome', source: `${skill} tome` })
+    // V2 Character::SkillTomeValue caps the applied tome by character level:
+    // 2, +1 at 3/7/11/15/19/23/27/31 (a +5 tome shows +2 on a level-1 build).
+    {
+      const charLvl = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      let skillTomeCap = 2
+      for (const t of [3, 7, 11, 15, 19, 23, 27, 31]) if (charLvl >= t) skillTomeCap++
+      for (const [skill, bonus] of Object.entries(build.skillTomes ?? {})) {
+        if (!bonus) continue
+        add(map, `skill.${skill}`, { value: Math.min(skillTomeCap, bonus), type: 'Tome', source: `${skill} tome` })
+      }
     }
 
     // ── GrantFeat effects: V2 does NOT apply the granted feat's own stat
@@ -2269,13 +2388,45 @@ function buildStatMapOnce(
     }
 
     // V2 SpellPoints: per-casting-class bonus = (classLevels + 9) * BaseStatToBonus(castingStat).
-    // Class::ClassCastingStat picks the highest-mod stat for multi-stat classes (FavoredSoul).
-    for (const bc of build.classes) {
-      if (!bc.name || bc.levels <= 0) continue
-      const cls = allClasses.find(c => c.Name === bc.name)
+    // Class::ClassCastingStat picks the highest-TOTAL stat for multi-stat
+    // classes (FavoredSoul) — but with a timing quirk: the pick happens when
+    // the breakdown is CREATED, when ability totals hold only base +
+    // level-ups + capped tome (feats/gear apply later), and it is only
+    // re-evaluated when the CHOSEN stat's total (or fate points) changes
+    // afterwards. fuzz-5000: FvS early WIS 17 beats CHA 16, CHA's later +10
+    // never re-triggers the pick — V2 keeps Wisdom. Oracle-verified.
+    // V2 compares raw TOTALS (`amount > best`, list order, first wins ties)
+    // — WIS 17 beats CHA 16 even though both mods are +3.
+    const earlyTotalMap: Record<string, number> = {}
+    const finalTotalMap: Record<string, number> = {}
+    for (const ab of ABILITIES) {
+      const racial = ctxRace ? Number((ctxRace as unknown as Record<string, number>)[ab]) || 0 : 0
+      earlyTotalMap[ab] = (build.baseAbilities[ab] ?? 0) + racial
+        + Math.min(build.abilityTomes[ab] ?? 0, tomeCap)
+        + Object.values(build.abilityLevelUps).filter(v => v === ab).length
+      finalTotalMap[ab] = resolveBonus(map.get(`ability.${ab}`) ?? []).total
+    }
+    // Two-phase pick, replicating V2's observer graph: every casting class's
+    // chosen stat breakdown is OBSERVED by the SpellPoints breakdown, so a
+    // later change to ANY observed stat re-runs CreateOtherEffects and
+    // re-picks EVERY class with the by-then-final totals (fuzz-5092: FvS's
+    // early Cha/Wis tie resolves to Wisdom because Cleric's observed Wisdom
+    // grows). If no observed stat ever changes, the early picks stand
+    // (fuzz-5000 keeps Wisdom over the gear-boosted Charisma).
+    const spCastingClasses = build.classes
+      .filter(bc => bc.name && bc.levels > 0)
+      .map(bc => ({ bc, cls: allClasses.find(c => c.Name === bc.name) }))
+      .filter(({ bc, cls }) => cls && spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) > 0)
+    const earlyPicks = spCastingClasses.map(({ cls }) =>
+      pickCastingStat(cls!.CastingStat as string | string[] | undefined, earlyTotalMap))
+    const observedChanged = earlyPicks.some(st =>
+      st && (finalTotalMap[st] ?? 0) !== (earlyTotalMap[st] ?? 0))
+    for (let ci = 0; ci < spCastingClasses.length; ci++) {
+      const { bc, cls } = spCastingClasses[ci]
       if (!cls) continue
-      if (spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) <= 0) continue
-      const stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, abilModMap)
+      const stat = observedChanged
+        ? pickCastingStat(cls.CastingStat as string | string[] | undefined, finalTotalMap)
+        : earlyPicks[ci]
       if (!stat) continue
       const mod = abilModMap[stat] ?? 0
       const bonus = (bc.levels + 9) * mod
@@ -2309,9 +2460,15 @@ function buildStatMapOnce(
         const lvCap = Math.min(build.totalLevel, 20)
         if (lvCap > 0) {
           const factor = total / lvCap
-          // Only the gear-sourced SP contributions are multiplied (V2 m_itemEffects).
-          const gearSP = resolveBonus((map.get('spellPoints') ?? []).filter(b => b.fromGear)).total
-          const bonus = Math.round(gearSP * factor)
+          // Only the gear-sourced SP contributions are multiplied (V2
+          // m_itemEffects); percent effects are excluded — V2 SumItems skips
+          // HasPercent entries (they're handled by DoPercentageEffects on the
+          // post-multiplier base, not multiplied themselves).
+          const gearSP = resolveBonus((map.get('spellPoints') ?? []).filter(b => b.fromGear && !b.percent)).total
+          // V2 keeps the multiplied item SP as a continuous double and truncates
+          // ONCE at display — floor here so the separate bonus never rounds up
+          // past V2's total (fuzz-5092: 136×0.35 = 47.6 → 47, not 48).
+          const bonus = Math.trunc(gearSP * factor)
           if (bonus !== 0) {
             add(map, 'spellPoints', {
               value: bonus,
@@ -2590,6 +2747,25 @@ function buildStatMapOnce(
       }
     }
 
+    // ── Implement bonus (V2 BreakdownItemUniversalSpellPower) ─────────────
+    // When any active ImplementInYourHands effect exists and no gear-sourced
+    // "Implement"-typed universal-SP bonus is already present, the MAIN-HAND
+    // weapon's MinLevel joins sp.Universal as an Implement-typed effect
+    // (ddowiki: Implement bonus; oracle-verified on Healer Q1 2026, +31).
+    {
+      let iiyh = 0
+      for (const k of map.keys()) {
+        if (k.startsWith('implementInHands.')) iiyh += resolveBonus(map.get(k) ?? []).total
+      }
+      if (iiyh > 0) {
+        const mainItem = gearItems['Main Hand'] ?? gearItems['Weapon1']
+        const already = (map.get('sp.Universal') ?? []).some(b => b.fromGear && b.type === 'Implement')
+        const lvl = Number((mainItem as { MinLevel?: number } | undefined)?.MinLevel ?? 0)
+        if (!already && lvl > 0) {
+          add(map, 'sp.Universal', { value: lvl, type: 'Implement', source: 'Implement in your hands' })
+        }
+      }
+    }
 
     // ── Percentage effects (V2 BreakdownItem::DoPercentageEffects) ────────
     // Effects tagged <Percent/> add (base × percent / 100) of the stat's own

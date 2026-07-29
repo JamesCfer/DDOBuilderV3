@@ -75,6 +75,161 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
+// verbatim from GlobalSupportFunctions.cpp - needed by the skill and
+// spell-power breakdowns.
+int ArmorCheckPenalty_Multiplier(SkillType skill)
+{
+    int multiplier = 0; // default
+    switch (skill)
+    {
+    case Skill_Balance:
+    case Skill_Hide:
+    case Skill_Jump:
+    case Skill_MoveSilently:
+    case Skill_Tumble:
+        multiplier = 1;
+        break;
+    case Skill_Swim:
+        // is subject to double the standard Armor check penalty 
+        multiplier = 2;
+        break;
+    }
+    return multiplier;
+}
+
+BreakdownType SpellPowerToBreakdown(SpellPowerType sp)
+{
+    BreakdownType bt = Breakdown_Unknown;
+    switch (sp)
+    {
+    case SpellPower_Acid:           bt = Breakdown_SpellPowerAcid; break;
+    case SpellPower_Chaos:          bt = Breakdown_SpellPowerChaos; break;
+    case SpellPower_Cold:           bt = Breakdown_SpellPowerCold; break;
+    case SpellPower_Electric:       bt = Breakdown_SpellPowerElectric; break;
+    case SpellPower_Evil:           bt = Breakdown_SpellPowerEvil; break;
+    case SpellPower_Fire:           bt = Breakdown_SpellPowerFire; break;
+    case SpellPower_Force:          bt = Breakdown_SpellPowerForce; break;
+    case SpellPower_Lawful:         bt = Breakdown_SpellPowerLawful; break;
+    case SpellPower_LightAlignment: bt = Breakdown_SpellPowerLightAlignment; break;
+    case SpellPower_Negative:       bt = Breakdown_SpellPowerNegative; break;
+    case SpellPower_Physical:       bt = Breakdown_SpellPowerPhysical; break;
+    case SpellPower_Poison:         bt = Breakdown_SpellPowerPoison; break;
+    case SpellPower_Positive:       bt = Breakdown_SpellPowerPositive; break;
+    case SpellPower_Repair:         bt = Breakdown_SpellPowerRepair; break;
+    case SpellPower_Rust:           bt = Breakdown_SpellPowerRust; break;
+    case SpellPower_Sonic:          bt = Breakdown_SpellPowerSonic; break;
+    case SpellPower_Untyped:        bt = Breakdown_SpellPowerUntyped; break;
+    }
+    return bt;
+}
+
+BreakdownType SpellPowerToCriticalChanceBreakdown(SpellPowerType sp)
+{
+    BreakdownType bt = Breakdown_Unknown;
+    switch (sp)
+    {
+    case SpellPower_Acid:           bt = Breakdown_SpellCriticalChanceAcid; break;
+    case SpellPower_Chaos:          bt = Breakdown_SpellCriticalChanceChaos; break;
+    case SpellPower_Cold:           bt = Breakdown_SpellCriticalChanceCold; break;
+    case SpellPower_Electric:       bt = Breakdown_SpellCriticalChanceElectric; break;
+    case SpellPower_Evil:           bt = Breakdown_SpellCriticalChanceEvil; break;
+    case SpellPower_Fire:           bt = Breakdown_SpellCriticalChanceFire; break;
+    case SpellPower_Force:          bt = Breakdown_SpellCriticalChanceForce; break;
+    case SpellPower_Lawful:         bt = Breakdown_SpellCriticalChanceLawful; break;
+    case SpellPower_LightAlignment: bt = Breakdown_SpellCriticalChanceLightAlignment; break;
+    case SpellPower_Negative:       bt = Breakdown_SpellCriticalChanceNegative; break;
+    case SpellPower_Physical:       bt = Breakdown_SpellCriticalChancePhysical; break;
+    case SpellPower_Poison:         bt = Breakdown_SpellCriticalChancePoison; break;
+    case SpellPower_Positive:       bt = Breakdown_SpellCriticalChancePositive; break;
+    case SpellPower_Repair:         bt = Breakdown_SpellCriticalChanceRepair; break;
+    case SpellPower_Rust:           bt = Breakdown_SpellCriticalChanceRust; break;
+    case SpellPower_Sonic:          bt = Breakdown_SpellCriticalChanceSonic; break;
+    case SpellPower_Untyped:        bt = Breakdown_SpellCriticalChanceUntyped; break;
+    }
+    return bt;
+}
+
+BreakdownType SpellPowerToCriticalMultiplierBreakdown(SpellPowerType sp)
+{
+    BreakdownType bt = Breakdown_Unknown;
+    switch (sp)
+    {
+    case SpellPower_Acid:           bt = Breakdown_SpellCriticalMultiplierAcid; break;
+    case SpellPower_Chaos:          bt = Breakdown_SpellCriticalMultiplierChaos; break;
+    case SpellPower_Cold:           bt = Breakdown_SpellCriticalMultiplierCold; break;
+    case SpellPower_Electric:       bt = Breakdown_SpellCriticalMultiplierElectric; break;
+    case SpellPower_Evil:           bt = Breakdown_SpellCriticalMultiplierEvil; break;
+    case SpellPower_Fire:           bt = Breakdown_SpellCriticalMultiplierFire; break;
+    case SpellPower_Force:          bt = Breakdown_SpellCriticalMultiplierForce; break;
+    case SpellPower_Lawful:         bt = Breakdown_SpellCriticalMultiplierLawful; break;
+    case SpellPower_LightAlignment: bt = Breakdown_SpellCriticalMultiplierLightAlignment; break;
+    case SpellPower_Negative:       bt = Breakdown_SpellCriticalMultiplierNegative; break;
+    case SpellPower_Physical:       bt = Breakdown_SpellCriticalMultiplierPhysical; break;
+    case SpellPower_Poison:         bt = Breakdown_SpellCriticalMultiplierPoison; break;
+    case SpellPower_Positive:       bt = Breakdown_SpellCriticalMultiplierPositive; break;
+    case SpellPower_Repair:         bt = Breakdown_SpellCriticalMultiplierRepair; break;
+    case SpellPower_Rust:           bt = Breakdown_SpellCriticalMultiplierRust; break;
+    case SpellPower_Sonic:          bt = Breakdown_SpellCriticalMultiplierSonic; break;
+    case SpellPower_Untyped:        bt = Breakdown_SpellCriticalMultiplierUntyped; break;
+    }
+    return bt;
+}
+
+
+// verbatim from GlobalSupportFunctions.cpp (that TU is UI-heavy and not
+// compiled headless) - needed by the skill breakdowns.
+AbilityType StatFromSkill(SkillType skill)
+{
+    // return which ability provides the bonus to the skill type
+    AbilityType at = Ability_Unknown;
+    switch (skill)
+    {
+    case Skill_Bluff:
+    case Skill_Diplomacy:
+    case Skill_Haggle:
+    case Skill_Intimidate:
+    case Skill_Perform:
+    case Skill_UMD:
+        at = Ability_Charisma;
+        break;
+
+    case Skill_Concentration:
+        at = Ability_Constitution;
+        break;
+
+    case Skill_Balance:
+    case Skill_Hide:
+    case Skill_MoveSilently:
+    case Skill_OpenLock:
+    case Skill_Tumble:
+        at = Ability_Dexterity;
+        break;
+
+    case Skill_DisableDevice:
+    case Skill_Repair:
+    case Skill_Search:
+    case Skill_SpellCraft:
+        at = Ability_Intelligence;
+        break;
+
+    case Skill_Heal:
+    case Skill_Listen:
+    case Skill_Spot:
+        at = Ability_Wisdom;
+        break;
+
+    case Skill_Jump:
+    case Skill_Swim:
+        at = Ability_Strength;
+        break;
+
+    default:
+        break;
+    }
+    ASSERT(at != Ability_Unknown);  // should have been found
+    return at;
+}
+
 size_t TrainedCount(const std::list<TrainedFeat>& currentFeats, const std::string& featName)
 {
     size_t count = 0;

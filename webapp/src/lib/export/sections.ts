@@ -9,6 +9,7 @@ import type {
 } from '../../types/ddo'
 import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
+import { absorptionTotal } from '../bonus'
 import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../gamedata'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
 import { buildSlots } from '../levelTraining'
@@ -224,11 +225,10 @@ const energyResistances: SectionDef = {
       const resist = stats.total(`resist.${t}`)
       if (resist) rows.push(`  ${t}: ${resist}`)
 
-      const active = stats.resolve(`absorb.${t}`).bonuses.filter(b => b.active)
-      if (active.length > 0) {
-        let factor = 1
-        for (const b of active) factor *= (100 - b.value) / 100
-        const pct = 100 - factor * 100
+      const abs = stats.resolve(`absorb.${t}`).bonuses
+      if (abs.some(b => b.active)) {
+        // Multiplicative absorption with V2's identical-effect merge
+        const pct = absorptionTotal(abs)
         if (pct > 0) rows.push(`    ${t} Absorption: ${pct.toFixed(1)}%`)
       }
     }

@@ -56,6 +56,27 @@ export interface EffectContext {
   materialBySlot?: Record<string, string>   // V2 slot name (Weapon1, …) → equipped item Material
   skillTotals?: Record<string, number>      // skill → resolved total (fixed-point pass 2+)
   casterLevels?: Record<string, number>     // class → bonus caster levels from cl.* effects (fixed-point pass 2+)
+  // Persisted gear-set ability snapshot (V2 Build::SnapshotAbilityValue): set
+  // only when the build's GearSetSnapshot names an existing gear set. When
+  // present, Snapshot* StackSources read THESE values (missing ability → 0,
+  // matching V2's DL_OPTIONAL default), not the live totals.
+  snapshotAbilities?: Record<string, number>
+  // V2 Build::SkillAtLevel: TRAINED ranks (1.0 class / 0.5 cross-class per
+  // spend) + level-capped tome. Skill REQUIREMENTS gate on this — not on the
+  // resolved breakdown total, which item/enhancement bonuses inflate.
+  skillRanks?: Record<string, number>
+  // V2 Requirement::EvaluateItemInSlot inputs: equipped item's Weapon (or
+  // Armor) type per V2 slot name (Weapon1, Armor, …).
+  itemTypeBySlot?: Record<string, string>
+  // Ordered hand weapon types for V2 Requirement::EvaluateWeaponTypesEquipped
+  // (Item[0] tests the MAIN hand only; optional Item[1] the off-hand).
+  weaponTypeMain?: string
+  weaponTypeOffhand?: string
+  // Wild Mage / Arcane Trickster "Mixed Magics": every trained caster class's
+  // caster-level breakdown is raised to min(20, character level) before
+  // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
+  // cap when the enhancement is trained; ClassCasterLevel amounts read it.
+  mixedMagicsCapLevel?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -127,8 +148,21 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       const a = ctx.alignment
       return its.some(i => a.includes(i))
     }
-    case 'WeaponTypesEquipped':
-      return its.some(i => ctx.weaponTypes.has(i))
+    case 'WeaponTypesEquipped': {
+      // V2 Requirement::EvaluateWeaponTypesEquipped (Requirement.cpp:937-956):
+      // Item[0] is checked against the MAIN hand only ("All" matches any);
+      // a second Item checks the off-hand. A Rune Arm (off-hand only) never
+      // satisfies a single-Item requirement (Machrotechnic "Forcefield
+      // Generator I + Rune Arm", oracle-verified on Bardbox). Legacy callers
+      // without hand context keep the either-hand approximation.
+      if (ctx.weaponTypeMain === undefined) return its.some(i => ctx.weaponTypes.has(i))
+      let met = its[0] === ctx.weaponTypeMain || its[0] === 'All'
+      if (its.length > 1) {
+        const off = ctx.weaponTypeOffhand ?? ''
+        met = met && (its[its.length - 1] === off || its[its.length - 1] === 'All')
+      }
+      return met
+    }
     case 'WeaponClassMainHand':
       // Conservative pass when caller hasn't populated weaponClassMain.
       if (!ctx.weaponClassMain) return true
@@ -137,9 +171,12 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       if (!ctx.weaponClassOffhand) return true
       return its.some(i => ctx.weaponClassOffhand!.has(i))
     case 'Skill':
-      // V2 Requirement::EvaluateSkill (Requirement.cpp:1040-1048):
-      // SkillAtLevel ≥ Value. Resolved totals arrive via the fixed-point
-      // wrapper (pass 2+); conservative pass until then / for older callers.
+      // V2 Requirement::EvaluateSkill (Requirement.cpp:1040-1048) gates on
+      // Build::SkillAtLevel = TRAINED ranks + capped tome — NOT the resolved
+      // breakdown total (item skill bonuses wrongly passed Maetrim's Tumble
+      // 10/20-rank gates, oracle-verified). Legacy fallback for callers that
+      // populate neither: totals, then conservative pass.
+      if (ctx.skillRanks) return (ctx.skillRanks[its[0]] ?? 0) >= (req.Value ?? 0)
       if (!ctx.skillTotals) return true
       return (ctx.skillTotals[its[0]] ?? 0) >= (req.Value ?? 0)
     case 'EnemyType':
@@ -156,9 +193,28 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       return ctx.materialBySlot[its[1]] === its[0]
     }
     case 'GroupMember':
+      // V2 Requirement.cpp:472 — GroupMember is EvaluateWeaponGroupMember on
+      // the MAIN hand: the equipped main-hand weapon belongs to the named
+      // runtime group ("Favored Weapon", "Centered", …). NOT a slot check.
+      if (!ctx.weaponClassMain) return true
+      return its.some(i => ctx.weaponClassMain!.has(i))
     case 'GroupMember2':
+      // …and GroupMember2 the OFF hand (Requirement.cpp:473).
+      if (!ctx.weaponClassOffhand) return true
+      return its.some(i => ctx.weaponClassOffhand!.has(i))
+    case 'ItemTypeInSlot': {
+      // V2 Requirement::EvaluateItemInSlot (Requirement.cpp:958-990):
+      // Item[0] = V2 slot name, Item[last] = weapon/armor type. Met when the
+      // equipped item's type matches ("All" matches any weapon; "Empty"
+      // matches an empty slot). Conservative pass for callers without gear
+      // context.
+      if (!ctx.itemTypeBySlot) return true
+      const have = ctx.itemTypeBySlot[its[0]]
+      const want = its[its.length - 1]
+      if (have === undefined) return want === 'Empty'
+      return want === have || want === 'All'
+    }
     case 'StartingWorld':
-    case 'ItemTypeInSlot':
     case 'ItemSlot':
     case 'Exclusive':
       // Not gated client-side; always pass.
@@ -218,6 +274,12 @@ export interface ParsedBonus {
   stackGroup?: string
   stackAmounts?: number[]
   stackRank?: number
+  // V2 Effect identity: the effect's own DisplayName or the owner's stamped
+  // name (Feat/EnhancementTreeItem load-time stamp). Identical-effect merges
+  // in the gear pool key on THIS (Effect::operator== compares DisplayName),
+  // so e.g. all four Shadowdancer cores' "Shadowdancer: Epic Spell DCs" +1s
+  // merge into one ×4 effect even though their V3 sources differ.
+  v2Name?: string
 }
 
 /**
@@ -295,6 +357,43 @@ export function getAmountAtRank(raw: unknown, rank: number): number {
  * Normalises a spell-element string to the canonical form used by the stat key
  * system (e.g. 'Light/Alignment' → 'LightAlignment').
  */
+// V2 energyTypeMap: Energy_All matches EVERY concrete energy — including the
+// four alignment energies (Dragon Lord's +3 All resistance shows under
+// Chaos/Evil/Good/Lawful in V2's pane, oracle-verified).
+const ENERGY_ALL_TYPES = [
+  'Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force', 'Good',
+  'Lawful', 'Light', 'Negative', 'Positive', 'Poison', 'Repair', 'Sonic',
+  'Untyped',
+]
+
+// The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
+// pseudo-entries). Item=All effects fan out to each so per-type Highest-Only
+// stacking sees them (V2 keeps ONE winner per bonus type per element).
+const SP_ALL_TYPES = [
+  'Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force', 'Lawful',
+  'LightAlignment', 'Negative', 'Physical', 'Poison', 'Positive', 'Repair',
+  'Rust', 'Sonic', 'Untyped',
+]
+
+/**
+ * V2 spellPowerTypeMap contains ONLY "Light/Alignment" for the light type —
+ * a bare "Light" or "Alignment" Item maps to SpellPower_Unknown and the
+ * effect affects NO spell power/lore breakdown (the Woeful Light augments
+ * are dead in V2; oracle-verified on Magic missile healer). Returns null
+ * for such dead items.
+ */
+function spellPowerElement(raw: string): string | null {
+  switch (raw) {
+    case 'Light/Alignment':
+      return 'LightAlignment'
+    case 'Light':
+    case 'Alignment':
+      return null
+    default:
+      return raw
+  }
+}
+
 function normalizeSpellElement(raw: string): string {
   switch (raw) {
     case 'Alignment':
@@ -363,6 +462,23 @@ function abilityFromEffect(effect: Effect): string | undefined {
   return raw.startsWith('Snapshot') ? raw.slice('Snapshot'.length) : raw
 }
 
+/**
+ * Resolved ability score for ability-driven ATypes. Plain names ("Wisdom")
+ * read the live total. "Snapshot*" names go through V2's
+ * Build::SnapshotAbilityValue: the persisted gear-set snapshot when the build
+ * names an existing snapshot gear set (ctx.snapshotAbilities present), else
+ * the live total as fallback.
+ */
+function abilityTotalForEffect(effect: Effect, ctx?: EffectContext): number {
+  const raw = effect.StackSource ?? firstItem(effect)
+  if (!raw || !ctx) return 0
+  if (raw.startsWith('Snapshot') && ctx.snapshotAbilities) {
+    return ctx.snapshotAbilities[raw.slice('Snapshot'.length)] ?? 0
+  }
+  const ability = raw.startsWith('Snapshot') ? raw.slice('Snapshot'.length) : raw
+  return ctx.abilityTotals[ability] ?? 0
+}
+
 function effectHasCap(effect: Effect): boolean {
   return effect.Cap !== undefined && effect.Cap !== null
 }
@@ -423,8 +539,15 @@ function resolveValue(
         // LEVEL breakdown (class levels + CasterLevel effects incl. "All"),
         // not the raw class level. Only classes with actual levels get the
         // bonus (a 0-level class's spells stay inert).
-        if (atype === 'ClassCasterLevel' && level > 0 && ctx.casterLevels) {
-          level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)
+        if (atype === 'ClassCasterLevel' && level > 0) {
+          // Mixed Magics raises the class-levels part to min(20, char level)
+          // BEFORE bonuses (oracle-verified: dragon breath's Bless at CL 27).
+          if (ctx.mixedMagicsCapLevel !== undefined && ctx.mixedMagicsCapLevel > level) {
+            level = ctx.mixedMagicsCapLevel
+          }
+          if (ctx.casterLevels) {
+            level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)
+          }
         }
       }
       return getAmountAtRank(effect.Amount, level + 1)
@@ -453,8 +576,7 @@ function resolveValue(
     // ---------------------------------------------------------------------
     case 'AbilityValue':
     case 'AbilityTotal': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
+      const total = abilityTotalForEffect(effect, ctx)
       return effectHasCap(effect) ? Math.min(total, effectCap(effect)) : total
     }
 
@@ -467,21 +589,15 @@ function resolveValue(
     }
 
     case 'AbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return abilityModFromTotal(total)
+      return abilityModFromTotal(abilityTotalForEffect(effect, ctx))
     }
 
     case 'HalfAbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return Math.trunc(abilityModFromTotal(total) / 2)
+      return Math.trunc(abilityModFromTotal(abilityTotalForEffect(effect, ctx)) / 2)
     }
 
     case 'ThirdAbilityMod': {
-      const ability = abilityFromEffect(effect)
-      const total = ability && ctx ? (ctx.abilityTotals[ability] ?? 0) : 0
-      return Math.trunc(abilityModFromTotal(total) / 3)
+      return Math.trunc(abilityModFromTotal(abilityTotalForEffect(effect, ctx)) / 3)
     }
 
     case 'BAB': {
@@ -716,7 +832,10 @@ export function parseEffect(
   const value: number = resolved
 
   const bonusType = effect.Bonus ?? 'Enhancement'
-  const items = toStringArray(effect.Item)
+  // Dedupe: V2 notifies each breakdown ONCE per effect no matter how many of
+  // its <Item> entries match (a data bug lists Stun twice on Dolorous Combat
+  // Mastery — V2 counts +3 once, a naive per-item fan-out doubled it).
+  const items = [...new Set(toStringArray(effect.Item))]
 
   // V2 stack-merge (BreakdownItem::AddEffect + Amount_Stacks): identical
   // AType=Stacks effects merge into one whose value is Amount[count-1], not the
@@ -731,7 +850,17 @@ export function parseEffect(
   // old conservative behavior: no group, they sum.
   const stacksAType = (effect.AType ?? 'Stacks') === 'Stacks'
   const displayName = typeof effect.DisplayName === 'string' ? effect.DisplayName.trim() : ''
-  const identityName = displayName !== '' ? displayName : stampName
+  // V2 Effect::operator== compares the FULL effect — including StackSource.
+  // Two trained "Jump" spells from different classes share the DisplayName
+  // "Spell: Jump" but stay SEPARATE effects in V2 (dragon breath: the item
+  // pool keeps ONE via Highest-Only; they must not merge into a ×2 stack).
+  const identityBase = displayName !== '' ? displayName : stampName
+  // Anonymous effects (no DisplayName/stamp — e.g. trained-spell effects,
+  // whose merge identity is otherwise their source string) get the same
+  // StackSource disambiguation via the source.
+  const identityName = effect.StackSource
+    ? `${identityBase !== '' ? identityBase : source}·${effect.StackSource}`
+    : identityBase
   const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
   const stackGroupBase = (identityName !== '' && stackAmounts && stackAmounts.length > 1)
     ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
@@ -741,6 +870,7 @@ export function parseEffect(
       statKey, value, bonusType: bt, source,
       percent: flagSet(effect.Percent),
       asItemEffect: flagSet(effect.ApplyAsItemEffect),
+      ...(identityName !== '' ? { v2Name: identityName } : {}),
       // statKey-scoped so Item=All fan-out to different stats doesn't merge.
       ...(stackGroupBase
         ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts, stackRank: Math.max(1, rank) }
@@ -875,7 +1005,7 @@ export function parseEffect(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`resist.${e}`))
             : [make(`resist.${elem}`)],
         )
@@ -887,9 +1017,9 @@ export function parseEffect(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
-                .map(e => make(`absorb.${e}`, 'Absorption'))
-            : [make(`absorb.${elem}`, 'Absorption')],
+            ? ENERGY_ALL_TYPES
+                .map(e => make(`absorb.${e}`))
+            : [make(`absorb.${elem}`)],
         )
       }
       return []
@@ -970,8 +1100,15 @@ export function parseEffect(
     // Spell power / crit / DC
     // -----------------------------------------------------------------------
     case 'SpellPower':
+      // V2: an Item=All spell power effect lands in EVERY per-type breakdown's
+      // item pool, where it competes Highest-Only with same-type per-element
+      // effects (Bardbox: "Slayer of the Living" +116 All loses to "Demon
+      // Engine" +158 Electric). A separate sp.All pool would escape that
+      // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.map(item => make(`sp.${normalizeSpellElement(item)}`))
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)])
       }
       return []
 
@@ -980,8 +1117,11 @@ export function parseEffect(
 
     case 'SpellCritChance':
     case 'SpellLore':
+      // Same Item=All fan-out as SpellPower (see above).
       if (items.length > 0) {
-        return items.map(item => make(`spCrit.${normalizeSpellElement(item)}`))
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)])
       }
       return []
 
@@ -993,7 +1133,11 @@ export function parseEffect(
       return [make('spellPoints')]
 
     case 'SpellFocusMastery':
-      return [make('spellPenetration')]
+      // V2 ItemBuffs.xml template: SpellDC Item=All — "+N to the DC of ALL
+      // spells" (oracle-verified: Legendary Ring of Mystic Constitution's
+      // Insightful +3 lands in every school DC breakdown). Was wrongly
+      // mapped to spell penetration.
+      return [make('dc.All')]
 
     case 'SpellPenetration':
     case 'SpellPenetrationBonus':
@@ -1655,6 +1799,10 @@ export function parseEffect(
 export interface ItemBuffTemplate {
   Type: string
   Effect?: Effect | Effect[]
+  /** V2 <NegativeValues/>: the item's Value1/Value2 are NEGATED when stamped
+   *  (Buff::UpdatedEffects bNegativeValues) — e.g. "Undying +270" is a
+   *  −270 UnconsciousRange effect. */
+  NegativeValues?: unknown
 }
 
 /**
@@ -1678,18 +1826,26 @@ function parseItemBuffViaTemplate(
   if (effects.length === 0) return []
 
   const hasValue1 = buff.Value1 != null
+  const hasValue2 = buff.Value2 != null
+  // V2 <NegativeValues/> template flag (Buff::UpdatedEffects bNegativeValues)
+  const sign = flagSet(tpl.NegativeValues as never) ? -1 : 1
   const itemBonus = buff.BonusType && buff.BonusType !== '' ? buff.BonusType : undefined
   const itemFilter = buff.Item && buff.Item !== '' ? buff.Item : undefined
 
   const out: ParsedBonus[] = []
+  let index = 0
   for (const eff of effects) {
-    // Buff::UpdatedEffects: stamp BonusType (if the item supplies one), set the
-    // Item filter, and override Amount with Value1 (ItemBuff carries no Value2,
-    // so the even/odd split collapses to "Value1 on every effect").
+    // Buff::UpdatedEffects: stamp BonusType (if the item supplies one), set
+    // the Item filter, and override Amount — with BOTH Value1 and Value2 the
+    // even/odd split applies (effect[0]=Value1, effect[1]=Value2; e.g.
+    // Deception "+12 to hit / +18 damage for sneak attacks" — Ophael's
+    // Cincture, oracle-verified); with only Value1 every effect gets it.
     const cloned: Effect = { ...eff }
     if (itemBonus) cloned.Bonus = itemBonus
     if (itemFilter) cloned.Item = itemFilter
-    if (hasValue1) cloned.Amount = buff.Value1
+    if (hasValue1 && hasValue2) cloned.Amount = sign * (index % 2 === 0 ? buff.Value1! : buff.Value2!)
+    else if (hasValue1) cloned.Amount = sign * buff.Value1!
+    index++
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
     // active-stance set instead of being conservatively dropped.
@@ -1720,7 +1876,7 @@ export function parseItemBuff(
     return parseItemBuffViaTemplate(buff, source, catalogue, ctx)
   }
   const value = buff.Value1 ?? 0
-  const items = toStringArray(buff.Item as string | string[] | undefined)
+  const items = [...new Set(toStringArray(buff.Item as string | string[] | undefined))]
 
   // Determine effective bonus type with override logic
   let bonusType: string
@@ -1856,7 +2012,7 @@ export function parseItemBuff(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
+            ? ENERGY_ALL_TYPES
                 .map(e => make(`resist.${e}`))
             : [make(`resist.${elem}`)],
         )
@@ -1868,9 +2024,9 @@ export function parseItemBuff(
       if (items.length > 0) {
         return items.flatMap(elem =>
           elem === 'All'
-            ? ['Acid','Cold','Electric','Fire','Sonic','Force','Light','Negative','Positive','Poison','Repair','Untyped']
-                .map(e => make(`absorb.${e}`, 'Absorption'))
-            : [make(`absorb.${elem}`, 'Absorption')],
+            ? ENERGY_ALL_TYPES
+                .map(e => make(`absorb.${e}`))
+            : [make(`absorb.${elem}`)],
         )
       }
       return []
@@ -1977,8 +2133,15 @@ export function parseItemBuff(
       return [make('spellPoints')]
 
     case 'SpellPower':
+      // V2: an Item=All spell power effect lands in EVERY per-type breakdown's
+      // item pool, where it competes Highest-Only with same-type per-element
+      // effects (Bardbox: "Slayer of the Living" +116 All loses to "Demon
+      // Engine" +158 Electric). A separate sp.All pool would escape that
+      // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.map(item => make(`sp.${normalizeSpellElement(item)}`))
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)])
       }
       return []
 
@@ -1986,7 +2149,11 @@ export function parseItemBuff(
       return [make('sp.Universal')]
 
     case 'SpellFocusMastery':
-      return [make('spellPenetration')]
+      // V2 ItemBuffs.xml template: SpellDC Item=All — "+N to the DC of ALL
+      // spells" (oracle-verified: Legendary Ring of Mystic Constitution's
+      // Insightful +3 lands in every school DC breakdown). Was wrongly
+      // mapped to spell penetration.
+      return [make('dc.All')]
 
     case 'SpellPenetration':
     case 'SpellPenetrationBonus':
@@ -2149,9 +2316,16 @@ export function parseItemBuff(
     // Spell-related
     // -----------------------------------------------------------------------
     case 'SpellLore':
-    case 'SpellCritChance':
-      if (items.length > 0) return items.map(item => make(`spCrit.${normalizeSpellElement(item)}`))
-      return []
+    case 'SpellCritChance': {
+      // Same Item=All fan-out as SpellPower (see above). An item buff with
+      // NO <Item> resolves through the ItemBuffs.xml 'SpellLore' template,
+      // whose effect is Item=All (Darstil's Gloves "+13% Spell Lore",
+      // oracle-verified on wiz dc caster).
+      const loreItems = items.length > 0 ? items : ['All']
+      const loreEls = [...new Set(loreItems.map(spellPowerElement))].filter((e): e is string => e !== null)
+      return loreEls.flatMap(el =>
+        el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)])
+    }
 
     case 'UniversalSpellLore':
     case 'UniversalSpellCritChance':

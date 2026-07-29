@@ -159,6 +159,19 @@ DDO_SRC := \
     $(ROOT)/DDOBuilder/BreakdownItemBAB.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemDestinyAps.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemSpellSchool.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSkill.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemTactical.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSpellPower.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemUniversalSpellPower.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemEnergyResistance.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemEnergyAbsorption.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSpellPoints.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemMaximumKi.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemSneakAttackDice.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemOffhandDoublestrike.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemPactDice.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemTurnUndeadLevel.cpp \
+    $(ROOT)/DDOBuilder/BreakdownItemTurnUndeadHitDice.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemCasterLevel.cpp \
     $(ROOT)/DDOBuilder/BreakdownItemSchoolCasterLevel.cpp \
     $(ROOT)/DDOBuilder/BonusTypesFile.cpp \
