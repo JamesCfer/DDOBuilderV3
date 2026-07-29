@@ -182,6 +182,31 @@ V3 equivalent: `BreakdownItemEnergyCasterLevel` (never instantiated in
 
 ---
 
+## Pass 134 — full BreakdownsPane surface at 0/151 (2026-07-29)
+
+The v2calc oracle + `scripts/oracleDiff.ts` referee now cover the complete
+BreakdownsPane analytics surface — including AC, the 14 main-hand weapon
+lines (attack/damage bonus, crit threat/multiplier, attack speed, ghost
+touch, true seeing, …), hirelings, immunities, song durations and spell
+crit multipliers — and the full 151-build corpus (Example Builds +
+UserBuilds/collection + FuzzBuilds) compares EXACT (tolerance 0) on every
+emitted stat. Landed across PR #178 and the follow-up rounds: V2 weapon
+attack/damage composition (ability candidates per CreateWeaponBreakdown:
+item modifiers, Str+Dex finesseable/thrown, Dex-only Light/crossbow;
+damage-ability multiplier with truncation; weapon-enchantment pool;
+BAB-in-pool percent base; ACP/TWF/non-proficiency/negative-level
+penalties; Keen synthesis), auto-acquired feats' AddGroupWeapon adds
+(dwarven-axe proficiency), requirement-gated runtime group adds (Kensei
+Exotic Weapon Mastery), the item-effect merge identity (item name +
+notify path + stamped content), the Requirements-aware stack-merge
+identity, and the literal "Competence " (trailing space) Highest-Only
+bonus type.
+
+Remaining known-unmodeled surfaces (oracle emits nothing for these, so
+they are NOT covered by the 0/151 claim): weaponOffhand referee rows
+(oracle emits them; referee compares main hand only) and metamagic spell
+point costs (no dedicated V2 breakdown found — derived in SpellsPane).
+
 ## ⚠️ Methodology caveat (read before trusting "Done")
 
 The `parityPass*` unit tests and `scripts/v2DiffReport.ts` assert V3's **own**

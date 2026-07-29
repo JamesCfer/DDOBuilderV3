@@ -28,6 +28,7 @@ import type { RawBonus, ResolvedStat } from './bonus'
 import { deriveWeaponClasses } from './weapons/groups'
 import type { WeaponGroupSpec, RuntimeGroupAdd, RuntimeGroupMerge } from './weapons/groups'
 import { buildAutomaticFeatGroups } from './automaticFeats'
+import { meetsRequirements as meetsFeatRequirements, type RequirementContext } from './requirements'
 import {
   reaperHpCap, styleBonusHp, effectiveDodgeCap,
   divineGraceCap, halfElfLesserDivineGraceCap,
@@ -229,8 +230,39 @@ export function buildRuntimeGroupAdds(
     }
   }
 
+  // V2 Build::UpdateFeats (Build.cpp:2512-2531) evaluates EVERY standard
+  // feat's AutomaticAcquisition entries regardless of its Acquire type —
+  // e.g. "Exotic Weapon Proficiency: Dwarven Axe" (Acquire=Train) is auto-
+  // granted to Dwarf/Duergar with a martial class, carrying the
+  // AddGroupWeapon [Proficiency, Dwarven Axe] add (oracle-verified on
+  // fuzz-5029: no non-proficiency -4). Unless the block sets
+  // <IgnoreRequirements/>, the feat's normal train requirements must ALSO
+  // hold.
+  const reqCtx: RequirementContext = { build, allClasses, race }
+  {
+    for (const f of allFeats) {
+      if (featNames.has(f.Name)) continue
+      const aaList = toArray((f as { AutomaticAcquisition?: unknown }).AutomaticAcquisition) as Array<
+        Record<string, unknown> & { IgnoreRequirements?: unknown }>
+      for (const aa of aaList) {
+        if (!aa || !meetsFeatRequirements(aa as never, reqCtx)) continue
+        const ignore = aa.IgnoreRequirements !== undefined
+        if (!ignore && f.Requirements && !meetsFeatRequirements(f.Requirements as never, reqCtx)) continue
+        featNames.add(f.Name)
+        break
+      }
+    }
+  }
+
   function extractFromEffects(effects: Effect[]): void {
     for (const eff of effects) {
+      // V2 AddWeaponToGroup stores requirement-carrying adds as weapons-
+      // with-requirements, honored per query (WeaponGroup::HasWeapon) —
+      // e.g. Kensei Exotic Weapon Mastery only extends "Focus Weapon" to
+      // the exotics matching the TRAINED Weapon Group Specialization
+      // selection (oracle-verified on fuzz-5025: a crossbow is NOT a focus
+      // weapon when the Axes focus is selected).
+      if (eff.Requirements && !meetsFeatRequirements(eff.Requirements as never, reqCtx)) continue
       const its = toArray(eff.Item) as string[]
       if (eff.Type === 'AddGroupWeapon' && its.length >= 2) {
         const group = its[0]
@@ -2442,13 +2474,17 @@ function buildStatMapOnce(
       const itemDmgMods = toArray((mainItem as { DamageModifier?: string | string[] } | undefined)?.DamageModifier)
       const thrown = ['Shuriken', 'Dart', 'Throwing Dagger', 'Throwing Axe', 'Throwing Hammer']
         .includes(mainWeaponType)
-      const dexWeaponAtk = ctxWeaponClassMain.has('Finesseable') || thrown
-        || ctxWeaponClassMain.has('Light')
+      // V2 CreateWeaponBreakdown synthesis: finesseable/thrown add BOTH
+      // Str+Dex attack candidates; Light and crossbow groups add ONLY Dex
+      // (fuzz-5075's repeating crossbow attacks with Dex 2, not Str 4 —
+      // Strength is not a candidate there).
+      const strDexAtk = ctxWeaponClassMain.has('Finesseable') || thrown
+      const dexOnlyWeapon = ctxWeaponClassMain.has('Light')
         || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
-      const dexWeaponDmg = thrown || ctxWeaponClassMain.has('Light')
-        || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
+      const dexWeaponDmg = thrown || dexOnlyWeapon
       const atkCands = [...itemAtkMods,
-        ...(dexWeaponAtk ? ['Strength', 'Dexterity'] : []),
+        ...(strDexAtk ? ['Strength', 'Dexterity'] : []),
+        ...(dexOnlyWeapon ? ['Dexterity'] : []),
         ...grantedOf('melee.attackAbility.')]
       const [atkAb, atkMod] = pickBest(atkCands)
       if (atkMod !== 0) add(map, 'melee.toHit', { value: atkMod, type: 'Ability mod', source: atkAb })
