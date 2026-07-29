@@ -21,7 +21,7 @@ import path from 'node:path'
 import { importV2Build } from '../src/lib/v2Import'
 import { computeBuildStats } from '../src/lib/buildStats'
 import { loadAllCatalogues } from '../src/server/dataLoaders'
-import { absorptionTotal, initBonusTypes } from '../src/lib/bonus'
+import { absorptionTotal, initBonusTypes, resolveBonus } from '../src/lib/bonus'
 import { findActiveLife } from '../src/lib/multiLife'
 import type { Item } from '../src/types/ddo'
 
@@ -168,15 +168,25 @@ for (const f of files) {
   // the same effects in the 'mdb' pool.
   if (oracle.breakdowns?.maxDexBonus !== undefined) {
     const v2mdb = oracle.breakdowns.maxDexBonus
-    const v3mdb = stats.armorMaxDex === null ? 999 + stats.total('mdb') : stats.armorMaxDex
+    // stats.armorMaxDex is the armor's PRINTED cap only; Effect_MaxDexBonus
+    // contributions (armor mastery, Horizon Walker cores, …) pool under
+    // 'mdb' in both the armored and unarmored cases.
+    const v3mdb = (stats.armorMaxDex === null ? 999 : stats.armorMaxDex) + stats.total('mdb')
     rows.push(['maxDexBonus', v2mdb, v3mdb])
   }
-  // Spell school DCs (BreakdownItemSpellSchool totals; V3 dc.<School> keys +
-  // the school-independent dc.All pool).
+  // Spell school DCs. V2 BreakdownItemSpellSchool holds Item=All AND
+  // school-specific SpellDC effects in ONE pool, so gear-pool Highest-Only
+  // competes across both (fuzz-5000: quarterstaff +3 Evocation beats Amber
+  // Pendant +2 All). Re-resolve the UNION of V3's dc.All and dc.<School>
+  // pools to reproduce that competition.
   const spellDC = (oracle as { spellDC?: Record<string, number> }).spellDC
   for (const [ok, school] of Object.entries(SPELL_DC_MAP)) {
     if (spellDC?.[ok] === undefined) continue
-    rows.push([`dc.${school}`, spellDC[ok], stats.total('dc.All') + stats.total(`dc.${school}`)])
+    const combined = resolveBonus([
+      ...stats.resolve('dc.All').bonuses,
+      ...stats.resolve(`dc.${school}`).bonuses,
+    ]).total
+    rows.push([`dc.${school}`, spellDC[ok], combined])
   }
   // Per-class caster levels. V2 BreakdownItemClassCasterLevel composes:
   // class levels + Wild Mage/Arcane Trickster "Mixed Magics" (min(20, level)
@@ -215,9 +225,10 @@ for (const f of files) {
     rows.push([`tacticalDC.${name}`, v2v, stats.total(`tacticalDC.${name}`)])
   }
   // V2 per-type spell power totals INCLUDE the universal breakdown (sibling
-  // feed) AND the Item=All fan-out (which V2 applies per type, V3 pools as
-  // sp.All); V2's universal DISPLAY total is just the universal pool.
-  const v3UniversalSP = stats.total('sp.All') + stats.total('sp.Universal')
+  // feed); Item=All effects are fanned into every per-type pool by the
+  // parser (so they compete Highest-Only per type, V2-style). V2's
+  // universal DISPLAY total is just the universal pool.
+  const v3UniversalSP = stats.total('sp.Universal')
   if (oracle.breakdowns?.spellPowerUniversal !== undefined) {
     rows.push(['spellPowerUniversal', oracle.breakdowns.spellPowerUniversal, stats.total('sp.Universal')])
   }
@@ -226,10 +237,26 @@ for (const f of files) {
   if (oracle.breakdowns?.movementSpeed !== undefined) {
     rows.push(['movementSpeed', oracle.breakdowns.movementSpeed, stats.total('speed') - 100])
   }
-  // Destiny APs: V2's breakdown total = epic levels ×4 + legendary levels ×4
-  // + FatePoints/3 + bonus-AP effects; V3 'destinyAP' is the bonus pool only.
+  // Destiny APs — V2 BreakdownItemDestinyAps::CreateOtherEffects derives the
+  // level APs from Build::Level() with a +1 offset: at char level L ≥ 20,
+  // epic APs = min(L−20+1, 10)×4 (so a flat level-20 build already has 4);
+  // at L ≥ 30, legendary APs = min(L−30+1, 10)×4 EXCEPT exactly at
+  // BUILD_START_LEVEL (34) where the count is pinned to 4. Plus FatePoints/3
+  // (fractions dropped) and DestinyAPBonus effects (V3 'destinyAP' pool).
   if (oracle.breakdowns?.destinyAPs !== undefined) {
-    const v3daps = 4 * ((buildForStats.epicLevels ?? 0) + (buildForStats.legendaryLevels ?? 0))
+    const charLvl = (buildForStats.totalLevel ?? 0)
+      + (buildForStats.epicLevels ?? 0) + (buildForStats.legendaryLevels ?? 0)
+    let levelAPs = 0
+    if (charLvl >= 20) {
+      const l = charLvl - 20
+      levelAPs += Math.min(l + 1, 10) * 4
+      if (l >= 10) {
+        let ll = Math.min(l - 10 + 1, 10)
+        if (charLvl === 34) ll = 4
+        levelAPs += ll * 4
+      }
+    }
+    const v3daps = levelAPs
       + Math.floor(stats.total('fatePoint') / 3)
       + stats.total('destinyAP')
     rows.push(['destinyAPs', oracle.breakdowns.destinyAPs, v3daps])
@@ -238,9 +265,8 @@ for (const f of files) {
     rows.push([`sp.${name}`, v2v, v3UniversalSP + stats.total(`sp.${name}`)])
   }
   // V2 per-type spell crit chance = universal-lore breakdown (sibling feed)
-  // + Item=All lore (V3 pools as spCrit.All) + per-type lore — the same
-  // three-way shape as spell power above.
-  const v3UniversalCrit = stats.total('spCrit.All') + stats.total('spCrit.Universal')
+  // + per-type lore (Item=All fanned per type by the parser, as above).
+  const v3UniversalCrit = stats.total('spCrit.Universal')
   for (const [name, v2v] of Object.entries(oracleExt.spellCritChance ?? {})) {
     rows.push([`spCrit.${name}`, v2v, v3UniversalCrit + stats.total(`spCrit.${name}`)])
   }

@@ -169,6 +169,109 @@ function parseAbilities(spend: AnyRec | undefined): Record<Ability, number> {
   return result
 }
 
+// V2 TrainedFeat::TranslateOldFeatNames (TrainedFeat.cpp:151-284): legacy
+// trained-feat names in old .DDOBuild files are renamed at LOAD to their
+// current catalogue names ("Purity of Heart" -> "Purity of Spirit", the
+// pre-U51 Domain tiers, Warlock pact prefixes, archetype past-life spellings).
+// Without this the feat silently fails catalogue lookup and its effects drop
+// (oracle-verified on DOT: Purity of Spirit's 540 SP).
+const V2_FEAT_RENAMES = new Map<string, string>([
+  ["Purity of Heart", "Purity of Spirit"],
+  ["Air Domain Tier I", "Domain of Air"],
+  ["Air Domain Tier II", "Improved Domain of Air"],
+  ["Air Domain Tier III", "Greater Domain of Air"],
+  ["Air Domain Tier IV", "Master of the Domain of Air"],
+  ["Animal Domain Tier I", "Domain of Animals"],
+  ["Animal Domain Tier II", "Improved Domain of Animals"],
+  ["Animal Domain Tier III", "Greater Domain of Animals"],
+  ["Animal Domain Tier IV", "Master of the Domain of Animals"],
+  ["Chaos Domain Tier I", "Domain of Chaos"],
+  ["Chaos Domain Tier II", "Improved Domain of Chaos"],
+  ["Chaos Domain Tier III", "Greater Domain of Chaos"],
+  ["Chaos Domain Tier IV", "Master of the Domain of Chaos"],
+  ["Death Domain Tier I", "Domain of Death"],
+  ["Death Domain Tier II", "Improved Domain of Death"],
+  ["Death Domain Tier III", "Greater Domain of Death"],
+  ["Death Domain Tier IV", "Master of the Domain of Death"],
+  ["Destruction Domain Tier I", "Domain of Destruction"],
+  ["Destruction Domain Tier II", "Improved Domain of Destruction"],
+  ["Destruction Domain Tier III", "Greater Domain of Destruction"],
+  ["Destruction Domain Tier IV", "Master of the Domain of Destruction"],
+  ["Earth Domain Tier I", "Domain of Earth"],
+  ["Earth Domain Tier II", "Improved Domain of Earth"],
+  ["Earth Domain Tier III", "Greater Domain of Earth"],
+  ["Earth Domain Tier IV", "Master of the Domain of Earth"],
+  ["Fire Domain Tier I", "Domain of Fire"],
+  ["Fire Domain Tier IV", "Master of the Domain of Fire"],
+  ["Good Domain Tier I", "Domain of Good"],
+  ["Good Domain Tier II", "Improved Domain of Good"],
+  ["Good Domain Tier III", "Greater Domain of Good"],
+  ["Good Domain Tier IV", "Master of the Domain of Good"],
+  ["Healing Domain Tier I", "Domain of Healing"],
+  ["Healing Domain Tier II", "Improved Domain of Healing"],
+  ["Healing Domain Tier III", "Greater Domain of Healing"],
+  ["Healing Domain Tier IV", "Master of the Domain of Healing"],
+  ["Knowledge Domain Tier I", "Domain of Knowledge"],
+  ["Knowledge Domain Tier II", "Improved Domain of Knowledge"],
+  ["Knowledge Domain Tier III", "Greater Domain of Knowledge"],
+  ["Knowledge Domain Tier IV", "Master of the Domain of Knowledge"],
+  ["Law Domain Tier I", "Domain of Law"],
+  ["Law Domain Tier II", "Improved Domain of Law"],
+  ["Law Domain Tier III", "Greater Domain of Law"],
+  ["Law Domain Tier IV", "Master of the Domain of Law"],
+  ["Luck Domain Tier I", "Domain of Luck"],
+  ["Luck Domain Tier II", "Improved Domain of Luck"],
+  ["Luck Domain Tier III", "Greater Domain of Luck"],
+  ["Luck Domain Tier IV", "Master of the Domain of Luck"],
+  ["Magic Domain Tier I", "Domain of Magic"],
+  ["Magic Domain Tier II", "Improved Domain of Magic"],
+  ["Magic Domain Tier III", "Greater Domain of Magic"],
+  ["Magic Domain Tier IV", "Master of the Domain of Magic"],
+  ["Protection Domain Tier I", "Domain of Protection"],
+  ["Protection Domain Tier II", "Improved Domain of Protection"],
+  ["Protection Domain Tier III", "Greater Domain of Protection"],
+  ["Protection Domain Tier IV", "Master of the Domain of Protection"],
+  ["Strength Domain Tier I", "Domain of Strength"],
+  ["Strength Domain Tier II", "Improved Domain of Strength"],
+  ["Strength Domain Tier III", "Greater Domain of Strength"],
+  ["Strength Domain Tier IV", "Master of the Domain of Strength"],
+  ["Sun Domain Tier I", "Domain of Sun"],
+  ["Sun Domain Tier II", "Improved Domain of Sun"],
+  ["Sun Domain Tier III", "Greater Domain of Sun"],
+  ["Sun Domain Tier IV", "Master of the Domain of Sun"],
+  ["Trickery Domain Tier I", "Domain of Trickery"],
+  ["Trickery Domain Tier II", "Improved Domain of Trickery"],
+  ["Trickery Domain Tier III", "Greater Domain of Trickery"],
+  ["Trickery Domain Tier IV", "Master of the Domain of Trickery"],
+  ["War Domain Tier I", "Domain of War"],
+  ["War Domain Tier II", "Improved Domain of War"],
+  ["War Domain Tier III", "Greater Domain of War"],
+  ["War Domain Tier IV", "Master of the Domain of War"],
+  ["Water Domain Tier I", "Domain of Water"],
+  ["Water Domain Tier II", "Improved Domain of Water"],
+  ["Water Domain Tier III", "Greater Domain of Water"],
+  ["Water Domain Tier IV", "Master of the Domain of Water"],
+  ["Warlock: Pact: Fey", "Pact: Fey"],
+  ["Warlock: Pact: Fiend", "Pact: Fiend"],
+  ["Warlock: Pact: Great Old One", "Pact: Great Old One"],
+  ["Warlock: Pact: Celestial", "Pact: Celestial"],
+  ["Warlock: Pact: The Abyss", "Pact: The Abyss"],
+  ["Warlock: Pact: The Carceri Storm", "Pact: The Carceri Storm"],
+  ["Past Life: Bard (Stormsinger)", "Past Life: Bard - Stormsinger"],
+  ["Past Life: Cleric (Dark Apostate)", "Past Life: Cleric - Dark Apostate"],
+  ["Past Life: Druid (Blight Caster)", "Past Life: Druid - Blight Caster"],
+  ["Past Life: Fighter (Dragon Lord)", "Past Life: Fighter - Dragon Lord"],
+  ["Past Life: Paladin (Sacred Fist)", "Past Life: Paladin - Sacred Fist"],
+  ["Past Life: Ranger (Dark Hunter)", "Past Life: Ranger - Dark Hunter"],
+  ["Past Life: Sorcerer (Wild Mage)", "Past Life: Sorcerer - Wild Mage"],
+  ["Past Life: Warlock (Acolyte of the Skin)", "Past Life: Warlock - Acolyte of the Skin"],
+  ["Amaunator's Brilliance", "Amaunator's Flames"],
+])
+
+function translateFeatName(name: string): string {
+  return V2_FEAT_RENAMES.get(name) ?? name
+}
+
 interface LevelTrainingV2 {
   className: string
   feats: { name: string; type: string; level: number }[]
@@ -180,7 +283,7 @@ function parseLevelTraining(lt: AnyRec | undefined): LevelTrainingV2 {
   return {
     className: mapClassName(asStr(lt.Class)),
     feats: arr(lt.TrainedFeat as AnyRec | AnyRec[] | undefined).map(f => ({
-      name: asStr((f as AnyRec).FeatName),
+      name: translateFeatName(asStr((f as AnyRec).FeatName)),
       type: salvageFeatType(asStr((f as AnyRec).Type)),
       level: asNum((f as AnyRec).LevelTrainedAt),
     })),
@@ -471,7 +574,7 @@ function parseFeatsListObject(node: AnyRec | undefined): {
   if (!node) return { pastLives, pastLifeTypes, feats }
   for (const f of arr(node.TrainedFeat as AnyRec | AnyRec[] | undefined)) {
     const fr = f as AnyRec
-    const name = asStr(fr.FeatName)
+    const name = translateFeatName(asStr(fr.FeatName))
     const type = asStr(fr.Type)
     if (!name) continue
     if (type === 'HeroicPastLife' || type === 'RacialPastLife') {

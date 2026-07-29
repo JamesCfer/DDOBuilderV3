@@ -1481,10 +1481,18 @@ function buildStatMapOnce(
     // V2 Requirement::EvaluateMaterialType inputs: equipped item Material per
     // V2 slot name (Requirement.cpp:1083-1100).
     const ctxMaterialBySlot: Record<string, string> = {}
+    // V2 Requirement::EvaluateItemInSlot inputs: the equipped item's Weapon
+    // (or Armor) type per V2 slot name (Requirement.cpp:958-990) — gates
+    // e.g. Lamordia weapon augments' "+1 Spell DCs if slotted in a
+    // Quarterstaff" (oracle-verified on Bardbox).
+    const ctxItemTypeBySlot: Record<string, string> = {}
     for (const [v3Slot, item] of Object.entries(gearItems)) {
       const v2Slot = V3_SLOT_TO_V2_ENUM[v3Slot]
       const material = (item as { Material?: string }).Material
       if (v2Slot && material) ctxMaterialBySlot[v2Slot] = material
+      const itemType = (item as { Weapon?: string }).Weapon
+        ?? (item as { Armor?: string }).Armor
+      if (v2Slot && itemType) ctxItemTypeBySlot[v2Slot] = itemType
     }
 
     // V2 Build::SkillAtLevel per skill: trained ranks (1.0 when the class
@@ -1559,6 +1567,9 @@ function buildStatMapOnce(
       weaponClassMain: ctxWeaponClassMain,
       weaponClassOffhand: ctxWeaponClassOff,
       materialBySlot: ctxMaterialBySlot,
+      itemTypeBySlot: ctxItemTypeBySlot,
+      weaponTypeMain: mainWeaponType,
+      weaponTypeOffhand: offWeaponType,
       skillTotals: skillTotalsOverride,
       skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
@@ -2359,13 +2370,37 @@ function buildStatMapOnce(
     }
 
     // V2 SpellPoints: per-casting-class bonus = (classLevels + 9) * BaseStatToBonus(castingStat).
-    // Class::ClassCastingStat picks the highest-mod stat for multi-stat classes (FavoredSoul).
+    // Class::ClassCastingStat picks the highest-TOTAL stat for multi-stat
+    // classes (FavoredSoul) — but with a timing quirk: the pick happens when
+    // the breakdown is CREATED, when ability totals hold only base +
+    // level-ups + capped tome (feats/gear apply later), and it is only
+    // re-evaluated when the CHOSEN stat's total (or fate points) changes
+    // afterwards. fuzz-5000: FvS early WIS 17 beats CHA 16, CHA's later +10
+    // never re-triggers the pick — V2 keeps Wisdom. Oracle-verified.
+    // V2 compares raw TOTALS (`amount > best`, list order, first wins ties)
+    // — WIS 17 beats CHA 16 even though both mods are +3.
+    const earlyTotalMap: Record<string, number> = {}
+    const finalTotalMap: Record<string, number> = {}
+    for (const ab of ABILITIES) {
+      const racial = ctxRace ? Number((ctxRace as unknown as Record<string, number>)[ab]) || 0 : 0
+      earlyTotalMap[ab] = (build.baseAbilities[ab] ?? 0) + racial
+        + Math.min(build.abilityTomes[ab] ?? 0, tomeCap)
+        + Object.values(build.abilityLevelUps).filter(v => v === ab).length
+      finalTotalMap[ab] = resolveBonus(map.get(`ability.${ab}`) ?? []).total
+    }
     for (const bc of build.classes) {
       if (!bc.name || bc.levels <= 0) continue
       const cls = allClasses.find(c => c.Name === bc.name)
       if (!cls) continue
       if (spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) <= 0) continue
-      const stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, abilModMap)
+      let stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, earlyTotalMap)
+      if (stat && (finalTotalMap[stat] ?? 0) !== (earlyTotalMap[stat] ?? 0)) {
+        // A later change to the CHOSEN stat's total re-runs V2's
+        // CreateOtherEffects, which re-picks with the by-then-final totals.
+        // (Fate-point re-runs fire during the FEAT phase, before gear, so
+        // they never see the gear-boosted totals — not a re-pick trigger.)
+        stat = pickCastingStat(cls.CastingStat as string | string[] | undefined, finalTotalMap)
+      }
       if (!stat) continue
       const mod = abilModMap[stat] ?? 0
       const bonus = (bc.levels + 9) * mod
@@ -2399,8 +2434,11 @@ function buildStatMapOnce(
         const lvCap = Math.min(build.totalLevel, 20)
         if (lvCap > 0) {
           const factor = total / lvCap
-          // Only the gear-sourced SP contributions are multiplied (V2 m_itemEffects).
-          const gearSP = resolveBonus((map.get('spellPoints') ?? []).filter(b => b.fromGear)).total
+          // Only the gear-sourced SP contributions are multiplied (V2
+          // m_itemEffects); percent effects are excluded — V2 SumItems skips
+          // HasPercent entries (they're handled by DoPercentageEffects on the
+          // post-multiplier base, not multiplied themselves).
+          const gearSP = resolveBonus((map.get('spellPoints') ?? []).filter(b => b.fromGear && !b.percent)).total
           const bonus = Math.round(gearSP * factor)
           if (bonus !== 0) {
             add(map, 'spellPoints', {

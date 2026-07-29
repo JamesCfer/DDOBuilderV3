@@ -65,6 +65,13 @@ export interface EffectContext {
   // spend) + level-capped tome. Skill REQUIREMENTS gate on this — not on the
   // resolved breakdown total, which item/enhancement bonuses inflate.
   skillRanks?: Record<string, number>
+  // V2 Requirement::EvaluateItemInSlot inputs: equipped item's Weapon (or
+  // Armor) type per V2 slot name (Weapon1, Armor, …).
+  itemTypeBySlot?: Record<string, string>
+  // Ordered hand weapon types for V2 Requirement::EvaluateWeaponTypesEquipped
+  // (Item[0] tests the MAIN hand only; optional Item[1] the off-hand).
+  weaponTypeMain?: string
+  weaponTypeOffhand?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -136,8 +143,21 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       const a = ctx.alignment
       return its.some(i => a.includes(i))
     }
-    case 'WeaponTypesEquipped':
-      return its.some(i => ctx.weaponTypes.has(i))
+    case 'WeaponTypesEquipped': {
+      // V2 Requirement::EvaluateWeaponTypesEquipped (Requirement.cpp:937-956):
+      // Item[0] is checked against the MAIN hand only ("All" matches any);
+      // a second Item checks the off-hand. A Rune Arm (off-hand only) never
+      // satisfies a single-Item requirement (Machrotechnic "Forcefield
+      // Generator I + Rune Arm", oracle-verified on Bardbox). Legacy callers
+      // without hand context keep the either-hand approximation.
+      if (ctx.weaponTypeMain === undefined) return its.some(i => ctx.weaponTypes.has(i))
+      let met = its[0] === ctx.weaponTypeMain || its[0] === 'All'
+      if (its.length > 1) {
+        const off = ctx.weaponTypeOffhand ?? ''
+        met = met && (its[its.length - 1] === off || its[its.length - 1] === 'All')
+      }
+      return met
+    }
     case 'WeaponClassMainHand':
       // Conservative pass when caller hasn't populated weaponClassMain.
       if (!ctx.weaponClassMain) return true
@@ -168,9 +188,20 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       return ctx.materialBySlot[its[1]] === its[0]
     }
     case 'GroupMember':
+    case 'ItemTypeInSlot': {
+      // V2 Requirement::EvaluateItemInSlot (Requirement.cpp:958-990):
+      // Item[0] = V2 slot name, Item[last] = weapon/armor type. Met when the
+      // equipped item's type matches ("All" matches any weapon; "Empty"
+      // matches an empty slot). Conservative pass for callers without gear
+      // context.
+      if (!ctx.itemTypeBySlot) return true
+      const have = ctx.itemTypeBySlot[its[0]]
+      const want = its[its.length - 1]
+      if (have === undefined) return want === 'Empty'
+      return want === have || want === 'All'
+    }
     case 'GroupMember2':
     case 'StartingWorld':
-    case 'ItemTypeInSlot':
     case 'ItemSlot':
     case 'Exclusive':
       // Not gated client-side; always pass.
@@ -313,6 +344,15 @@ export function getAmountAtRank(raw: unknown, rank: number): number {
  * Normalises a spell-element string to the canonical form used by the stat key
  * system (e.g. 'Light/Alignment' → 'LightAlignment').
  */
+// The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
+// pseudo-entries). Item=All effects fan out to each so per-type Highest-Only
+// stacking sees them (V2 keeps ONE winner per bonus type per element).
+const SP_ALL_TYPES = [
+  'Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force', 'Lawful',
+  'LightAlignment', 'Negative', 'Physical', 'Poison', 'Positive', 'Repair',
+  'Rust', 'Sonic', 'Untyped',
+]
+
 function normalizeSpellElement(raw: string): string {
   switch (raw) {
     case 'Alignment':
@@ -999,8 +1039,16 @@ export function parseEffect(
     // Spell power / crit / DC
     // -----------------------------------------------------------------------
     case 'SpellPower':
+      // V2: an Item=All spell power effect lands in EVERY per-type breakdown's
+      // item pool, where it competes Highest-Only with same-type per-element
+      // effects (Bardbox: "Slayer of the Living" +116 All loses to "Demon
+      // Engine" +158 Electric). A separate sp.All pool would escape that
+      // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.map(item => make(`sp.${normalizeSpellElement(item)}`))
+        return items.flatMap(item => {
+          const el = normalizeSpellElement(item)
+          return el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)]
+        })
       }
       return []
 
@@ -1009,8 +1057,12 @@ export function parseEffect(
 
     case 'SpellCritChance':
     case 'SpellLore':
+      // Same Item=All fan-out as SpellPower (see above).
       if (items.length > 0) {
-        return items.map(item => make(`spCrit.${normalizeSpellElement(item)}`))
+        return items.flatMap(item => {
+          const el = normalizeSpellElement(item)
+          return el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)]
+        })
       }
       return []
 
@@ -1688,6 +1740,10 @@ export function parseEffect(
 export interface ItemBuffTemplate {
   Type: string
   Effect?: Effect | Effect[]
+  /** V2 <NegativeValues/>: the item's Value1/Value2 are NEGATED when stamped
+   *  (Buff::UpdatedEffects bNegativeValues) — e.g. "Undying +270" is a
+   *  −270 UnconsciousRange effect. */
+  NegativeValues?: unknown
 }
 
 /**
@@ -1712,6 +1768,8 @@ function parseItemBuffViaTemplate(
 
   const hasValue1 = buff.Value1 != null
   const hasValue2 = buff.Value2 != null
+  // V2 <NegativeValues/> template flag (Buff::UpdatedEffects bNegativeValues)
+  const sign = flagSet(tpl.NegativeValues as never) ? -1 : 1
   const itemBonus = buff.BonusType && buff.BonusType !== '' ? buff.BonusType : undefined
   const itemFilter = buff.Item && buff.Item !== '' ? buff.Item : undefined
 
@@ -1726,8 +1784,8 @@ function parseItemBuffViaTemplate(
     const cloned: Effect = { ...eff }
     if (itemBonus) cloned.Bonus = itemBonus
     if (itemFilter) cloned.Item = itemFilter
-    if (hasValue1 && hasValue2) cloned.Amount = index % 2 === 0 ? buff.Value1 : buff.Value2
-    else if (hasValue1) cloned.Amount = buff.Value1
+    if (hasValue1 && hasValue2) cloned.Amount = sign * (index % 2 === 0 ? buff.Value1! : buff.Value2!)
+    else if (hasValue1) cloned.Amount = sign * buff.Value1!
     index++
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
@@ -2016,8 +2074,16 @@ export function parseItemBuff(
       return [make('spellPoints')]
 
     case 'SpellPower':
+      // V2: an Item=All spell power effect lands in EVERY per-type breakdown's
+      // item pool, where it competes Highest-Only with same-type per-element
+      // effects (Bardbox: "Slayer of the Living" +116 All loses to "Demon
+      // Engine" +158 Electric). A separate sp.All pool would escape that
+      // competition, so fan All out per type.
       if (items.length > 0) {
-        return items.map(item => make(`sp.${normalizeSpellElement(item)}`))
+        return items.flatMap(item => {
+          const el = normalizeSpellElement(item)
+          return el === 'All' ? SP_ALL_TYPES.map(t => make(`sp.${t}`)) : [make(`sp.${el}`)]
+        })
       }
       return []
 
@@ -2193,7 +2259,13 @@ export function parseItemBuff(
     // -----------------------------------------------------------------------
     case 'SpellLore':
     case 'SpellCritChance':
-      if (items.length > 0) return items.map(item => make(`spCrit.${normalizeSpellElement(item)}`))
+      // Same Item=All fan-out as SpellPower (see above).
+      if (items.length > 0) {
+        return items.flatMap(item => {
+          const el = normalizeSpellElement(item)
+          return el === 'All' ? SP_ALL_TYPES.map(t => make(`spCrit.${t}`)) : [make(`spCrit.${el}`)]
+        })
+      }
       return []
 
     case 'UniversalSpellLore':
