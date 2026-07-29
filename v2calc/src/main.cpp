@@ -15,6 +15,7 @@
 #include "stdafx.h" // v2calc: windows+afxwin shims + DDOBuilder game constants
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 
 #include "DDOBuilderDoc.h"
@@ -114,6 +115,11 @@ int main(int argc, char** argv)
             pCharacter->ActiveLifeIndex(), pCharacter->ActiveBuildIndex());
     v2calc::ComputeBreakdowns(pCharacter, const_cast<Build*>(pBuild));
 
+    // Parity debugging: V2CALC_DUMP_EFFECTS=<key>[,<key>...] prints the named
+    // breakdowns' per-effect pools to stderr (keys match the JSON keys below,
+    // e.g. "hitpoints", "saveWill", "prr", "STR").
+    const char* dumpKeys = getenv("V2CALC_DUMP_EFFECTS");
+
     static const struct { BreakdownType bt; const char* key; } abilityTotals[] = {
         { Breakdown_Strength,     "STR" },
         { Breakdown_Dexterity,    "DEX" },
@@ -127,12 +133,17 @@ int main(int argc, char** argv)
     {
         printf("%s\"%s\": %d", (i ? ", " : " "),
                 abilityTotals[i].key, (int)v2calc::Total(abilityTotals[i].bt));
+        if (dumpKeys != nullptr && strstr(dumpKeys, abilityTotals[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(abilityTotals[i].bt, abilityTotals[i].key);
+        }
     }
     printf(" },\n");
 
     // scalar defensive/offensive breakdown totals
     static const struct { BreakdownType bt; const char* key; bool capped; } scalars[] = {
         { Breakdown_Hitpoints,       "hitpoints",       false },
+        { Breakdown_FalseLife,       "falseLife",       false },
         { Breakdown_SaveFortitude,   "saveFortitude",   false },
         { Breakdown_SaveReflex,      "saveReflex",      false },
         { Breakdown_SaveWill,        "saveWill",        false },
@@ -165,6 +176,10 @@ int main(int argc, char** argv)
                  ? v2calc::Capped(scalars[i].bt)
                  : v2calc::Total(scalars[i].bt);
         printf("    \"%s\": %d%s\n", scalars[i].key, (int)v, (i + 1 < n) ? "," : "");
+        if (dumpKeys != nullptr && strstr(dumpKeys, scalars[i].key) != nullptr)
+        {
+            v2calc::DumpEffects(scalars[i].bt, scalars[i].key);
+        }
     }
     printf("  },\n");
 

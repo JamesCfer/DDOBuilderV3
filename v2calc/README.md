@@ -109,6 +109,16 @@ make -C v2calc clean
 ```
 Diagnostic `[AfxMessageBox] ...` notices go to **stderr**; stdout is pure JSON.
 
+Parity debugging: `V2CALC_DUMP_EFFECTS=<key>[,<key>...]` prints the named
+breakdowns' per-effect pools to stderr (`[dump]` lines, keys matching the
+JSON keys — e.g. `hitpoints`, `saveWill`, `prr`, `DEX`). Each line shows the
+pool (other/char/item), resolved state (active / inactive / non-stacking /
+temporary / percent), bonus type, amount, stack count and DisplayName —
+exactly what `BreakdownItem::Total()` sums (`BreakdownItem::V2CalcDumpEffects`,
+V2CALC_LINUX-guarded). `V2CALC_STANCE_DEBUG=1` traces the headless
+auto-stance evaluator's activate/deactivate/disable decisions
+(`shim/AutoStancesLinux.cpp`).
+
 ## Headless breakdown host (KEY DESIGN — `shim/BreakdownHostLinux.cpp`)
 
 V2's displayed stats come from a `BreakdownItem` **observer graph** that the UI

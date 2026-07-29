@@ -52,6 +52,12 @@ class BreakdownItem :
 
         static void SetLockState(bool bLock);
         static bool GetLockState();
+#ifdef V2CALC_LINUX
+        // v2calc parity debugging: print every effect in this breakdown's
+        // three pools (other/effects/itemEffects) with its resolved state
+        // (active / inactive / non-stacking / temporary / percent) to stderr.
+        void V2CalcDumpEffects(const char* label) const;
+#endif
 
         virtual void BuildChanged(Character * charData);
         virtual void BuildChangeComplete();

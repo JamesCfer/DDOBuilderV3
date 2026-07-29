@@ -453,4 +453,9 @@ namespace v2calc
         auto it = g_breakdowns.find(bt);
         return (it != g_breakdowns.end()) ? it->second->CappedTotal() : 0.0;
     }
+    void DumpEffects(BreakdownType bt, const char* label)
+    {
+        auto it = g_breakdowns.find(bt);
+        if (it != g_breakdowns.end()) it->second->V2CalcDumpEffects(label);
+    }
 }

@@ -292,6 +292,9 @@ export interface Stance {
   AutoControlled?: boolean
   /** V2 IncompatibleStance — list of stance names mutually exclusive with this one. */
   IncompatibleStance?: string | string[]
+  /** V2 Stance ActiveRequirements (<Requirements> on the stance definition) —
+   *  evaluated at load; an active user stance failing them is revoked. */
+  Requirements?: Requirements
 }
 
 // ---------------------------------------------------------------------------
