@@ -565,9 +565,28 @@ function accumulateGear(
     for (const buff of toArray(item.Buff)) {
       addParsed(map, parseItemBuff(buff, source, buffCatalogue, ctx), true)
     }
-    // Armor bonus from armor/shield items — treated as Armor bonus type
-    if (item.ArmorBonus) {
-      add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source, fromGear: true })
+    // Armor bonus from armor/shield items — treated as Armor bonus type.
+    // DOCENTS (items with a <MithralBody> field): V2 Build::ApplyArmorEffects
+    // gates the base ArmorBonus on "Composite Plating" (Warforged racial),
+    // MithralBody's value on "Mithral Body", AdamantineBody's on "Adamantine
+    // Body" — a fleshie in a docent gets NO armor bonus (fuzz-5019/-5037).
+    {
+      const mithral = (item as { MithralBody?: number }).MithralBody
+      const adamantine = (item as { AdamantineBody?: number }).AdamantineBody
+      const feats = ctx?.feats
+      if (mithral != null) {
+        if (item.ArmorBonus && feats?.has('Composite Plating')) {
+          add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source: `${source} (Composite Plating)`, fromGear: true })
+        }
+        if (feats?.has('Mithral Body')) {
+          add(map, 'ac', { value: mithral, type: 'Armor', source: `${source} (Mithral Body)`, fromGear: true })
+        }
+      } else if (item.ArmorBonus) {
+        add(map, 'ac', { value: item.ArmorBonus, type: 'Armor', source, fromGear: true })
+      }
+      if (adamantine != null && feats?.has('Adamantine Body')) {
+        add(map, 'ac', { value: adamantine, type: 'Armor', source: `${source} (Adamantine Body)`, fromGear: true })
+      }
     }
     if (item.ShieldBonus) {
       add(map, 'ac', { value: item.ShieldBonus, type: 'Shield', source, fromGear: true })
@@ -1005,6 +1024,17 @@ export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): Weapo
   return null
 }
 
+// V2 GlobalSupportFunctions.cpp WeaponBaseCriticalRange: the amount Keen /
+// Improved Critical adds — the weapon TYPE's unmodified threat range.
+export function weaponBaseCriticalRange(weaponType: string): number {
+  if (['Falchion', 'Great Crossbow', 'Kukri', 'Rapier', 'Scimitar'].includes(weaponType)) return 3
+  if (['Bastard Sword', 'Dagger', 'Great Sword', 'Heavy Crossbow', 'Khopesh', 'Light Crossbow',
+    'Longsword', 'Repeating Heavy Crossbow', 'Repeating Light Crossbow', 'Shortsword',
+    'Throwing Dagger'].includes(weaponType)) return 2
+  if (['Buckler', 'Small Shield', 'Large Shield', 'Tower Shield', 'Orb', 'Rune Arm'].includes(weaponType)) return 0
+  return weaponType ? 1 : 0
+}
+
 export function extractArmorMaxDex(gearItems: Record<string, Item>): number | null {
   const armor = gearItems['Armor'] ?? gearItems['Body']
   if (armor?.MaximumDexterityBonus != null) return armor.MaximumDexterityBonus
@@ -1338,17 +1368,29 @@ function buildStatMapOnce(
       //   TWF    = main AND offhand in "One Handed" group (no animal form)
       //   SWF    = main in "Single Weapon" or "Thrown" group AND offhand
       //            Empty/Buckler/Orb/Rune Arm (no animal form)
+      // Animal-form stances may arrive via persisted user buffs, which merge
+      // into ctxStances only AFTER this derivation — consult both, matching
+      // V2's pane where user stances are visible to auto-stance evaluation
+      // (oracle-verified on "highest Number possible": Winter Wolf form
+      // suppresses the handwraps TWF penalty).
+      const userBuffStances = new Set(build.activeBuffs ?? [])
       const inAnimalForm = ['Plague Wolf', 'Blight Wolf', 'Wolf', 'Bear', 'Winter Wolf',
-        'Dire Bear', 'Fire Elemental', 'Water Elemental'].some(s => ctxStances.has(s))
+        'Dire Bear', 'Fire Elemental', 'Water Elemental']
+        .some(s => ctxStances.has(s) || userBuffStances.has(s))
       if (ctxWeaponClassMain.has('Two Handed')) {
         ctxStances.add('Two Handed Fighting')
       }
       if (ctxWeaponClassMain.has('All Ranged')) {
         ctxStances.add('Ranged Combat')
       }
+      // V2 Requirement::EvaluateWeaponGroupMember (Requirement.cpp:921-929)
+      // hardcodes: GroupMember/GroupMember2 "One Handed" is TRUE for
+      // handwraps main hand + empty off hand — so unarmed monks auto-enter
+      // the Two Weapon Fighting stance (and eat its attack penalty).
+      const handwrapsTwf = mainWeaponType === 'Handwraps' && offWeaponType === ''
       if (!inAnimalForm
-          && ctxWeaponClassMain.has('One Handed')
-          && ctxWeaponClassOff.has('One Handed')) {
+          && ((ctxWeaponClassMain.has('One Handed') && ctxWeaponClassOff.has('One Handed'))
+              || handwrapsTwf)) {
         ctxStances.add('Two Weapon Fighting')
       }
       if (!inAnimalForm
@@ -1462,6 +1504,12 @@ function buildStatMapOnce(
           'ClassMinLevel', 'ClassAtLevel', 'BaseClassMinLevel', 'BaseClassAtLevel',
           'Level', 'SpecificLevel', 'Enhancement', 'Stance', 'NotConstruct',
           'RaceConstruct',
+          // Weapon-class gates evaluate honestly against ctxWeaponClassMain/
+          // Off (incl. runtime AddGroupWeapon adds) — needed for the
+          // "Favored Weapon" auto stance (WeaponClassMainHand "Favored
+          // Weapon"), which gates faith-feat attack bonuses and Sacred Fist
+          // strikes (oracle-verified on fuzz-5008).
+          'WeaponClassMainHand', 'WeaponClassOffHand',
         ])
         const allHonest = (reqs: Requirements | undefined): boolean => {
           if (!reqs) return true
@@ -1583,6 +1631,7 @@ function buildStatMapOnce(
       itemTypeBySlot: ctxItemTypeBySlot,
       weaponTypeMain: mainWeaponType,
       weaponTypeOffhand: offWeaponType,
+      charLevelTotal: (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0),
       // Wild Mage / Arcane Trickster "Mixed Magics" (see EffectContext)
       ...(['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
         ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
@@ -1774,13 +1823,17 @@ function buildStatMapOnce(
       // V2's universal "Attack" feat (AutomaticAcquisition at level 1) carries
       // the tumble-charge effects: base 2 charges + 1 @10 Tumble ranks + 1 @20
       // ranks (cloth/light armor only) — oracle-verified on YingsMonk
-      // (tumbleCharges 5 vs V3's 1). Only the TumbleCharge effects are
-      // accumulated; the feat's other entries (unconscious range, helpless
-      // damage, off-hand chance) stay modeled as V3's built-in defaults.
+      // (tumbleCharges 5 vs V3's 1) — and the DAMAGE ABILITY MULTIPLIER
+      // baselines (Base 1.0 main hand, +0.5 THF stance, +0.1 bastard sword/
+      // dwarven axe, Base 0.5 off hand) that scale the weapon damage line's
+      // ability bonus (BreakdownItemWeaponDamageBonus.cpp:56-95). The feat's
+      // other entries (unconscious range, helpless damage, off-hand chance)
+      // stay modeled as V3's built-in defaults.
       const attackFeat = allFeats.find(f => f.Name === 'Attack')
       if (attackFeat) {
         for (const eff of toArray(attackFeat.Effect)) {
-          if (eff.Type === 'TumbleCharge') {
+          if (eff.Type === 'TumbleCharge' || eff.Type === 'DamageAbilityMultiplier'
+              || eff.Type === 'DamageAbilityMultiplierOffhand') {
             addParsed(map, parseEffect(eff, 1, 'Automatic: Attack', charLevelTotal, 0, ctx, 'Attack'))
           }
         }
@@ -2053,12 +2106,8 @@ function buildStatMapOnce(
       }
     }
 
-    // Melee (weapon attack modifier checked — could be DEX for finesse weapons)
-    const weaponInfo = extractWeaponInfo(gearItems)
-    const meleeAtkMod = weaponInfo?.attackModifier === 'Dexterity' ? dexMod : strMod
-    const meleeAtkAbName = weaponInfo?.attackModifier === 'Dexterity' ? 'Dexterity' : 'Strength'
-    if (meleeAtkMod !== 0) add(map, 'melee.toHit', { value: meleeAtkMod, type: 'Ability mod', source: meleeAtkAbName })
-    if (strMod !== 0)      add(map, 'melee.damage', { value: strMod, type: 'Ability mod', source: 'Strength' })
+    // (Main-hand weapon attack/damage lines are composed AFTER the BAB
+    // pool is final — see below, past the babOverride fold.)
 
     // Ranged
     if (dexMod !== 0) add(map, 'ranged.toHit', { value: dexMod, type: 'Ability mod', source: 'Dexterity' })
@@ -2078,7 +2127,15 @@ function buildStatMapOnce(
     // field is not part of the `mdb` stat (which collects only Effect_MaxDexBonus
     // contributions), so adding them together does not double-count.
     const mdbEffectBonus = resolveBonus(map.get('mdb') ?? []).total
-    const armorMaxDex = armorMaxDexBase != null ? armorMaxDexBase + mdbEffectBonus : null
+    // V2 BreakdownItemMDB::m_bNoLimit: with the CLOTH ARMOR stance active
+    // (robes, outfits, and docents without a body feat) and no tower shield,
+    // dex-to-AC is UNCAPPED even if the item prints an MDB of 0
+    // (fuzz-5099's Enigma Core docent).
+    const mdbNoLimit = armorStances.has('Cloth Armor') && !armorStances.has('Tower Shield')
+    // Without the no-limit stance the cap ALWAYS applies: an armor item with
+    // no printed MaximumDexterityBonus contributes 0 in V2's MDB breakdown
+    // (fuzz-5092's Cannith Crafted Heavy Armor caps dex-to-AC at 0).
+    const armorMaxDex = !mdbNoLimit ? (armorMaxDexBase ?? 0) + mdbEffectBonus : null
     let effectiveDexForAC = dexMod
     let dexCapLabel: string | null = null
     if (armorMaxDex != null && effectiveDexForAC > armorMaxDex) {
@@ -2129,8 +2186,12 @@ function buildStatMapOnce(
       }
       // Shield % bonus is gated on a shield being equipped (V2 "Shield" stance)
       // and uses only the printed shield AC as its base.
-      const hasShield = armorStances.has('Tower Shield') || armorStances.has('Heavy Shield')
-        || armorStances.has('Light Shield') || armorStances.has('Buckler')
+      // V2's shield stances are named by WEAPON TYPE: Buckler / Small Shield /
+      // Large Shield / Tower Shield (uBER TANK's Large Shield failed the old
+      // 'Heavy/Light Shield' gate, dropping the Sacred Defender 20% AC line).
+      const hasShield = armorStances.has('Tower Shield') || armorStances.has('Large Shield')
+        || armorStances.has('Small Shield') || armorStances.has('Buckler')
+        || armorStances.has('Heavy Shield') || armorStances.has('Light Shield')
       if (hasShield) {
         const shieldBaseAC = resolveBonus(acBonuses.filter(b => b.type === 'Shield')).total
         const shieldPct = resolveBonus(map.get('shieldACPercent') ?? []).total
@@ -2341,6 +2402,126 @@ function buildStatMapOnce(
         const boost = Math.min(MAX_BAB, charLevel) - classBabSum
         if (boost > 0) {
           add(map, 'bab', { value: boost, type: 'Stacking', source: 'BAB boost to character level (max 25)' })
+        }
+      }
+    }
+
+    // Main-hand weapon attack/damage lines — V2 BreakdownItemWeaponEffects::
+    // CreateWeaponBreakdown synthesizes ability CANDIDATES for the wielded
+    // weapon (no feat needed):
+    //   • the item's own AttackModifier / DamageModifier lists (most
+    //     weapons: Strength; bows: Dexterity)
+    //   • Finesseable or thrown → Str+Dex ATTACK candidates
+    //   • thrown → Str+Dex DAMAGE candidates
+    //   • "Light" group → Dex attack AND damage
+    //   • Crossbow / RepeatingCrossbow → Dex attack AND damage
+    // plus every granted Weapon_AttackAbility / Weapon_DamageAbility effect
+    // (Zen-style Wisdom, Insightful Fighting/Int, Swashbuckler CHA, …).
+    // The BEST MOD wins (BreakdownItem::LargestStatBonus). YingsMonk's
+    // handwraps attack with WIS 45, not STR 9; Dodge v7's kukri damages
+    // with DEX — both oracle-verified.
+    const weaponInfo = extractWeaponInfo(gearItems)
+    {
+      const mods: Record<string, number> = {
+        Strength: strMod, Dexterity: dexMod, Constitution: conModFull,
+        Intelligence: intModFull, Wisdom: wisMod, Charisma: chaMod,
+      }
+      const pickBest = (cands: string[]): [string, number] => {
+        let best = cands[0] ?? '', bestMod = cands.length > 0 ? (mods[cands[0]] ?? 0) : 0
+        for (const c of cands) {
+          const m = mods[c] ?? 0
+          if (m > bestMod) { best = c; bestMod = m }
+        }
+        return [best, bestMod]
+      }
+      const grantedOf = (prefix: string): string[] => [...map.keys()]
+        .filter(k => k.startsWith(prefix) && resolveBonus(map.get(k) ?? []).total > 0)
+        .map(k => k.slice(prefix.length))
+      const mainItem = weaponInfo ? gearItems[weaponInfo.slot] : undefined
+      const itemAtkMods = toArray(mainItem?.AttackModifier as string | string[] | undefined)
+      const itemDmgMods = toArray((mainItem as { DamageModifier?: string | string[] } | undefined)?.DamageModifier)
+      const thrown = ['Shuriken', 'Dart', 'Throwing Dagger', 'Throwing Axe', 'Throwing Hammer']
+        .includes(mainWeaponType)
+      const dexWeaponAtk = ctxWeaponClassMain.has('Finesseable') || thrown
+        || ctxWeaponClassMain.has('Light')
+        || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
+      const dexWeaponDmg = thrown || ctxWeaponClassMain.has('Light')
+        || ctxWeaponClassMain.has('Crossbow') || ctxWeaponClassMain.has('RepeatingCrossbow')
+      const atkCands = [...itemAtkMods,
+        ...(dexWeaponAtk ? ['Strength', 'Dexterity'] : []),
+        ...grantedOf('melee.attackAbility.')]
+      const [atkAb, atkMod] = pickBest(atkCands)
+      if (atkMod !== 0) add(map, 'melee.toHit', { value: atkMod, type: 'Ability mod', source: atkAb })
+      // The damage ability bonus is scaled by the Damage Ability Multiplier
+      // breakdown (Base 1.0 from the auto "Attack" feat, +0.5 THF stance,
+      // +0.5 SWF feats, …) and TRUNCATED toward zero
+      // (BreakdownItemWeaponDamageBonus.cpp:56-95).
+      const dmgCands = [...itemDmgMods,
+        ...(dexWeaponDmg ? ['Dexterity'] : []),
+        ...(thrown ? ['Strength'] : []),
+        ...grantedOf('melee.damageAbility.')]
+      const [dmgAb, dmgModRaw] = pickBest(dmgCands)
+      const dmgMult = resolveBonus(map.get('melee.damageAbilityMult') ?? []).total
+      const dmgMod = Math.trunc(dmgModRaw * dmgMult)
+      if (dmgMod !== 0) add(map, 'melee.damage', { value: dmgMod, type: 'Ability mod', source: `${dmgAb} (x${dmgMult})` })
+
+
+      // V2 BreakdownItemWeaponAttackBonus adds the BAB breakdown total INTO
+      // the attack pool when positive — so PERCENT effects (Precision +5%)
+      // scale over a base that includes BAB (oracle-verified on YingsMonk:
+      // 5% of 195, not of the pool without BAB).
+      const babTotal = resolveBonus(map.get('bab') ?? []).total
+      if (babTotal > 0) add(map, 'melee.toHit', { value: babTotal, type: 'Base', source: 'Base Attack Bonus' })
+
+      // V2 BreakdownItemWeaponAttackBonus/DamageBonus: the per-weapon
+      // enchantment sub-breakdown total feeds BOTH lines as one entry.
+      const ench = resolveBonus(map.get('weapon.enchantMain') ?? []).total
+      if (ench !== 0) {
+        add(map, 'melee.toHit', { value: ench, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
+        add(map, 'melee.damage', { value: ench, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
+      }
+
+      // V2 attack-line penalties (BreakdownItemWeaponAttackBonus::
+      // CreateOtherEffects): armor check penalty (never a bonus), and the
+      // TWF penalty when the Two Weapon Fighting stance is active (-4 with
+      // the TWF feat else -6, +2 back for a light off-hand weapon or
+      // Oversized Two Weapon Fighting).
+      if (weaponInfo) {
+        // Non-proficiency: -4 when the wielded weapon is not in the runtime
+        // "Proficiency" group (populated by AddGroupWeapon effects on the
+        // proficiency feats — BreakdownItemWeaponAttackBonus.cpp:71-80).
+        if (!ctxWeaponClassMain.has('Proficiency')) {
+          add(map, 'melee.toHit', { value: -4, type: 'Penalty', source: 'Non proficient penalty' })
+        }
+        // Negative levels: -1 attack per level
+        // (BreakdownItemWeaponAttackBonus.cpp:83-98).
+        const negLev = Math.round(resolveBonus(map.get('negativeLevel') ?? []).total)
+        if (negLev !== 0) {
+          add(map, 'melee.toHit', { value: -negLev, type: 'Negative Levels', source: 'Negative Levels' })
+        }
+        // Attack uses -max(0, ARMOR pool total) — the shield ACP breakdown is
+        // NOT consulted here, and the sign clamp is the OPPOSITE of the skill
+        // consumer's min(0, total) (BreakdownItemWeaponAttackBonus.cpp:102-115
+        // vs BreakdownItemSkill.cpp:126-149 — V2's exact behavior).
+        const acp = Math.max(0, resolveBonus(map.get('armorCheckPenalty') ?? []).total)
+        if (acp !== 0) add(map, 'melee.toHit', { value: -acp, type: 'Penalty', source: 'Armor check penalty' })
+        if (ctxStances.has('Two Weapon Fighting')) {
+          let twf = ctxFeats.has('Two Weapon Fighting') ? -4 : -6
+          if (ctxWeaponClassOff.has('Light') || ctxFeats.has('Oversized Two Weapon Fighting')) twf += 2
+          add(map, 'melee.toHit', { value: twf, type: 'Penalty', source: 'TWF attack penalty' })
+        }
+      }
+
+      // Keen/Impact & Improved Critical — V2 BreakdownItemWeaponCriticalThreat
+      // Range::HandleAddSpecialEffects IGNORES the effect's own amount and
+      // synthesizes ONE "Keen"-typed ITEM effect worth the weapon TYPE's
+      // unmodified threat range (GlobalSupportFunctions WeaponBaseCriticalRange
+      // table), for the first Weapon_Keen AND the first WeaponKeenDamageType
+      // each; both share the "Keen" bonus type so item stacking keeps one.
+      if ((map.get('weapon.keen') ?? []).some(l => l.active !== false)) {
+        const kb = weaponBaseCriticalRange(mainWeaponType)
+        if (kb > 0) {
+          add(map, 'melee.crit.range', { value: kb, type: 'Keen', source: 'Keen/Improved Critical', fromGear: true })
         }
       }
     }
@@ -2764,6 +2945,17 @@ function buildStatMapOnce(
         if (!already && lvl > 0) {
           add(map, 'sp.Universal', { value: lvl, type: 'Implement', source: 'Implement in your hands' })
         }
+      }
+    }
+
+    // ── Natural armor (V2 Breakdown_NaturalArmor → AC other-effect) ───────
+    // The NaturalArmor breakdown stacks by each effect's OWN bonus type
+    // (Natural Armor augment + Enhancement buff both count); its total joins
+    // AC as a single "Natural Armor" other-pool line.
+    {
+      const na = resolveBonus(map.get('ac.natural') ?? []).total
+      if (na !== 0) {
+        add(map, 'ac', { value: na, type: 'Natural Armor', source: 'Natural Armor' })
       }
     }
 

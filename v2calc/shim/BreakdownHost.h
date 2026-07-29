@@ -37,4 +37,13 @@ namespace v2calc
     // Parity debugging: print the breakdown's per-effect pools to stderr
     // (BreakdownItem::V2CalcDumpEffects). No-op for unknown types.
     void   DumpEffects(BreakdownType bt, const char* label);
+
+    // pass 134: per-hand weapon breakdown access (the weapon-effects holder's
+    // BreakdownItemWeapon graphs, created on WeaponsChanged).
+    bool   HasWeaponBreakdown(bool bMainhand);
+    double WeaponTotal(bool bMainhand, BreakdownType bt);
+    void   DumpWeaponEffects(bool bMainhand, BreakdownType bt, const char* label);
+    // A breakdown's DISPLAY value (BreakdownItem::Value()) - used for the
+    // Immunities list, which is a text concatenation not a number.
+    const char* DisplayValue(BreakdownType bt);
 }

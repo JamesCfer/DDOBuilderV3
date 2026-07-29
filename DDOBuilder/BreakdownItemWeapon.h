@@ -11,7 +11,9 @@
 #include "BreakdownItemWeaponCriticalThreatRange.h"
 #include "BreakdownItemWeaponCriticalMultiplier.h"
 #include "BreakdownItemWeaponDRBypass.h"
+#ifndef V2CALC_LINUX
 #include "BreakdownItemWeaponOtherDamageEffects.h"
+#endif // V2CALC_LINUX (member m_otherDamageEffects is commented out; header needs ActiveEffect)
 #include "BreakdownItemWeaponAttackSpeed.h"
 #include "BreakdownItemWeaponVorpalRange.h"
 #include "WeaponDamageTypes.h"

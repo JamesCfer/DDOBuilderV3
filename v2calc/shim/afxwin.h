@@ -423,6 +423,8 @@ class CCmdTarget
         virtual ~CCmdTarget() {}
 };
 
+#define TVE_EXPAND 0x0002
+
 class CWnd : public CCmdTarget
 {
     public:
@@ -430,6 +432,9 @@ class CWnd : public CCmdTarget
         virtual BOOL PreTranslateMessage(MSG*) { return FALSE; }
         virtual BOOL OnCommand(WPARAM, LPARAM) { return FALSE; }
         virtual BOOL OnNotify(WPARAM, LPARAM, LRESULT*) { return FALSE; }
+        // UI-only repaint hooks (BreakdownItemWeaponEffects::WeaponsChanged
+        // calls RedrawWindow on the headless tree stub) - inert.
+        BOOL RedrawWindow() { return TRUE; }
 };
 
 class CListBox : public CWnd {};

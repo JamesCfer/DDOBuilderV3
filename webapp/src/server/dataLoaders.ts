@@ -502,7 +502,19 @@ export interface BonusTypeSpec {
 export function loadBonusTypes(dataDir: string): BonusTypeSpec[] {
   try {
     const parsed = readXml(path.join(dataDir, 'BonusTypes.xml')) as { BonusTypes?: { Bonus?: unknown[] } }
-    return (parsed?.BonusTypes?.Bonus ?? []) as BonusTypeSpec[]
+    const types = (parsed?.BonusTypes?.Bonus ?? []) as BonusTypeSpec[]
+    // BonusTypes.xml registers "Competence " (deliberate trailing space) as
+    // its OWN Highest-Only bonus type — the Marksmanship item buffs use it so
+    // they compete with each other but stack with plain Competence (V2 dump-
+    // verified on STR BOW: Accuracy 23 + one Greater Marksmanship 3). The XML
+    // parser trims text values, leaving a duplicate "Competence"; restore the
+    // space on the second occurrence of any duplicated name.
+    const seen = new Set<string>()
+    for (const t of types) {
+      if (t.Name && seen.has(t.Name)) (t as { Name: string }).Name = `${t.Name} `
+      else if (t.Name) seen.add(t.Name)
+    }
+    return types
   } catch { return [] }
 }
 
@@ -569,7 +581,20 @@ export interface ItemBuffSpec {
 export function loadItemBuffs(dataDir: string): ItemBuffSpec[] {
   try {
     const parsed = readXml(path.join(dataDir, 'ItemBuffs.xml')) as { Buffs?: { Buff?: unknown[] } }
-    return (parsed?.Buffs?.Buff ?? []) as ItemBuffSpec[]
+    const buffs = (parsed?.Buffs?.Buff ?? []) as ItemBuffSpec[]
+    // ItemBuffs.xml's Marksmanship / Greater Marksmanship templates carry a
+    // DELIBERATE trailing space in their bonus type ("Competence ") so V2's
+    // stacking never collides them with plain Competence attack/damage items
+    // (both lines stay active — oracle-verified on STR BOW: 23 + 3). The XML
+    // parser trims text values; restore the space here.
+    for (const b of buffs) {
+      if (b.Type === 'Marksmanship' || b.Type === 'Greater Marksmanship') {
+        for (const e of Array.isArray(b.Effect) ? b.Effect : b.Effect ? [b.Effect] : []) {
+          if (e.Bonus === 'Competence') (e as { Bonus?: string }).Bonus = 'Competence '
+        }
+      }
+    }
+    return buffs
   } catch { return [] }
 }
 

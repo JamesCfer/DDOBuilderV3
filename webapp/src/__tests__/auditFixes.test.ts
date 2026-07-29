@@ -9,8 +9,11 @@ const ctx: EffectContext = {
   abilityTotals: { Strength: 18, Dexterity: 14, Constitution: 14, Intelligence: 10, Wisdom: 10, Charisma: 8 },
   stances: new Set(), bab: 20, weaponTypes: new Set(),
 }
+// Weapon-scoped effects need an <Item> weapon list — V2's
+// AffectsThisWeapon drops item-less weapon effects, so the fixtures carry
+// Item:'All' (pass-134 main-hand scoping parity).
 const mk = (Type: string, extra: Partial<Effect> = {}): Effect => ({
-  Type, Amount: 1, Bonus: 'Enhancement', AType: 'Stacks', ...extra,
+  Type, Amount: 1, Bonus: 'Enhancement', AType: 'Stacks', Item: 'All', ...extra,
 }) as Effect
 
 describe('Audit-fix surfaced effect cases', () => {

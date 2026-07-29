@@ -24,7 +24,7 @@ const ctx: EffectContext = {
 
 describe('N8 — Weapon_CriticalMultiplier routes to melee.crit.multiplier', () => {
   it('parseEffect: Weapon_CriticalMultiplier emits melee.crit.multiplier', () => {
-    const eff = { Type: 'Weapon_CriticalMultiplier', Amount: 1, Bonus: 'Enhancement', AType: 'Stacks' } as Effect
+    const eff = { Type: 'Weapon_CriticalMultiplier', Amount: 1, Bonus: 'Enhancement', Item: ['All'], AType: 'Stacks' } as Effect
     const out = parseEffect(eff, 1, 'Test', 0, 0, ctx)
     expect(out).toHaveLength(1)
     expect(out[0].statKey).toBe('melee.crit.multiplier')
@@ -39,7 +39,7 @@ describe('N8 — Weapon_CriticalMultiplier routes to melee.crit.multiplier', () 
   })
 
   it('stacks additively with the class-gated sibling in the same total', () => {
-    const universal = { Type: 'Weapon_CriticalMultiplier', Amount: 1, Bonus: 'Enhancement', AType: 'Stacks' } as Effect
+    const universal = { Type: 'Weapon_CriticalMultiplier', Amount: 1, Bonus: 'Enhancement', Item: ['All'], AType: 'Stacks' } as Effect
     const gated = { Type: 'WeaponCriticalMultiplierClass', Amount: 1, Bonus: 'Feat', Item: ['Melee'], AType: 'Stacks' } as unknown as Effect
     const gatedCtx: EffectContext = { ...ctx, weaponClassMain: new Set(['Melee']) }
     const outUniversal = parseEffect(universal, 1, 'Test', 0, 0, ctx)

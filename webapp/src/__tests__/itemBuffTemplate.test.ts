@@ -46,9 +46,15 @@ describe('parseItemBuff template resolution (synthetic catalogue)', () => {
     // V2 Buff::UpdatedEffects: Value1 overrides Amount, BonusType overrides Bonus.
     const buff: ItemBuff = { Type: 'PhysicalSheltering', Value1: 30, BonusType: 'Enhancement' }
     const res = parseItemBuff(buff, 'Helm', catalogue)
-    expect(res).toEqual([
+    // v2Name carries the merge identity (source + notify path + stamped
+    // content) mirroring V2's Effect::operator== on item-name-stamped
+    // effects; assert the stat payload and the identity prefix.
+    expect(res).toHaveLength(1)
+    const { v2Name, ...rest } = res[0]
+    expect(rest).toEqual(
       { statKey: 'prr', value: 30, bonusType: 'Enhancement', source: 'Helm', percent: false, asItemEffect: false },
-    ])
+    )
+    expect(v2Name).toMatch(/^Helm::G:/)
   })
 
   it('applies Value1 to every effect of a multi-effect template (no Value2)', () => {

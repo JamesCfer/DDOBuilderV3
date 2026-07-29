@@ -80,12 +80,12 @@ void BreakdownItemWeaponDamageBonus::CreateOtherEffects()
                                 "%d%% of Ability bonus (%s)",
                                 (int)(multiplier * 100),
                                 (LPCTSTR)EnumEntryText(ability, abilityTypeMap));
-                        bonusName = text;
+                        bonusName = (LPCTSTR)text;
                         bonus = (int)(bonus * multiplier);
                     }
                     else
                     {
-                        bonusName = "Ability bonus (" + EnumEntryText(ability, abilityTypeMap) + ")";
+                        bonusName = (LPCTSTR)("Ability bonus (" + EnumEntryText(ability, abilityTypeMap) + ")");
                     }
                     Effect abilityBonus(
                             Effect_AbilityBonus,

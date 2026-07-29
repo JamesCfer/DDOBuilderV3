@@ -77,6 +77,11 @@ export interface EffectContext {
   // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
   // cap when the enhancement is trained; ClassCasterLevel amounts read it.
   mixedMagicsCapLevel?: number
+  // FULL character level (heroic+epic+legendary) for AType=TotalLevel — V2
+  // Amount_TotalLevel always indexes by Build::Level(). The per-call level
+  // param carries CLASS levels on the enhancement path, which under-indexed
+  // 40-entry tables (Machrotechnic Armor of Legends 34 → 20 on Bardbox).
+  charLevelTotal?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -366,6 +371,19 @@ const ENERGY_ALL_TYPES = [
   'Untyped',
 ]
 
+/**
+ * V2 BreakdownItemWeaponEffects::AffectsThisWeapon — a weapon effect's
+ * <Item> list names the weapon TYPES it applies to ('All' = every weapon).
+ * V3's flat weapon keys model the MAIN hand, so gate on the main-hand type.
+ */
+function weaponScopeMatches(items: string[], ctx?: EffectContext): boolean {
+  if (!ctx) return true
+  if (ctx.weaponTypeMain === undefined || ctx.weaponTypeMain === '') {
+    return items.includes('All') || items.some(i => ctx.weaponTypes.has(i))
+  }
+  return items.some(i => i === 'All' || i === ctx.weaponTypeMain)
+}
+
 // The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
 // pseudo-entries). Item=All effects fan out to each so per-type Highest-Only
 // stacking sees them (V2 keeps ONE winner per bonus type per element).
@@ -557,7 +575,9 @@ function resolveValue(
       // V2: m_Amount[totalLevel-1] * m_stacks (40-entry array indexed by char
       // level). m_stacks counts repeat acquisitions (Past Life ×3, Toughness
       // retrains) — V2 merges/sums them, so the table value multiplies by rank.
-      const idx = Math.max(1, classLevels)
+      // Always the FULL character level (ctx.charLevelTotal) when available;
+      // the positional param carries class levels on the enhancement path.
+      const idx = Math.max(1, ctx?.charLevelTotal ?? classLevels)
       return getAmountAtRank(effect.Amount, idx) * Math.max(1, rank)
     }
 
@@ -724,10 +744,16 @@ export function parseEffect(
   // V2 Effect::IsActive → Requirements::Met. Gate the effect entirely if any
   // top-level requirement, OneOf group, or NoneOf group fails.
   // When no ctx is supplied, fall back to the legacy stance-only check.
-  if (ctx) {
-    if (!requirementsMet(effect.Requirements, ctx)) return []
-  } else {
-    if (hasStanceRequirement(effect)) return []
+  // EXCEPTION: Immunity markers — V2's Immunities breakdown lists EVERY
+  // effect's items with NO IsActive filter (BreakdownItemImmunities::Value),
+  // so stance-gated Wild Shape immunities appear even with the form off.
+  const gateExempt = effect.Type === 'Immunity'
+  if (!gateExempt) {
+    if (ctx) {
+      if (!requirementsMet(effect.Requirements, ctx)) return []
+    } else {
+      if (hasStanceRequirement(effect)) return []
+    }
   }
 
   const resolved = resolveValue(effect, rank, classLevels, treeTotalAP, ctx)
@@ -792,7 +818,9 @@ export function parseEffect(
     if (!ctx || its.length < 2) return []
     const byClass = effect.Type.endsWith('Class')
     const memberSet = byClass ? ctx.weaponClassMain : ctx.weaponTypes
-    if (!memberSet || !its.slice(1).some(i => memberSet.has(i))) return []
+    // Item[1..] may be 'All' — every weapon qualifies (Monk Dragon Disciple's
+    // Wisdom-to-attack grant, oracle-verified on YingsMonk).
+    if (!memberSet || !its.slice(1).some(i => i === 'All' || memberSet.has(i))) return []
     const kind = effect.Type.includes('Attack') ? 'attackAbility' : 'damageAbility'
     return [{ statKey: `melee.${kind}.${its[0]}`, value: 1, bonusType: effect.Bonus ?? 'Enhancement', source }]
   }
@@ -862,8 +890,13 @@ export function parseEffect(
     ? `${identityBase !== '' ? identityBase : source}·${effect.StackSource}`
     : identityBase
   const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
+  // Effect::operator== compares the FULL effect INCLUDING Requirements — the
+  // two "Ravager: Draconic Power Attack" Weapon_Damage effects share name/
+  // type/amounts but differ in stance gates, so they stay SEPARATE and both
+  // add (oracle-verified on Dragon Lord: 3+3, not one merged ×6 stack).
+  const reqFingerprint = effect.Requirements ? JSON.stringify(effect.Requirements) : ''
   const stackGroupBase = (identityName !== '' && stackAmounts && stackAmounts.length > 1)
-    ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
+    ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}|${reqFingerprint}`
     : undefined
   function make(statKey: string, bt = bonusType): ParsedBonus {
     return {
@@ -970,7 +1003,11 @@ export function parseEffect(
 
     case 'NaturalArmor':
     case 'NaturalArmorBonus':
-      return [make('ac', 'Natural Armor')]
+      // V2 routes these to a SEPARATE NaturalArmor breakdown (own bonus types
+      // stack there: +14 Natural Armor augment + +4 Enhancement Yugoloth buff
+      // = 18) whose TOTAL feeds AC as one stacking line. Keep the effect's
+      // real bonus type in the ac.natural pool; buildStats lumps it into ac.
+      return [make('ac.natural')]
 
     case 'ShieldBonus':
       return [make('ac', 'Shield')]
@@ -1081,16 +1118,16 @@ export function parseEffect(
       return [make('ranged.doubleshot')]
 
     case 'Weapon_Attack':
-      return [make('melee.toHit')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.toHit')] : []
 
     case 'Weapon_Damage':
-      return [make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
 
     case 'Weapon_AttackAndDamage':
-      return [make('melee.toHit'), make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.toHit'), make('melee.damage')] : []
 
     case 'Weapon_OtherDamageBonus':
-      return [make('melee.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
 
     case 'SneakAttack':
     case 'SneakAttackDice':
@@ -1455,7 +1492,11 @@ export function parseEffect(
       return [make('imbueDice')]
 
     case 'Immunity':
-      return [make(`immunity.${items[0] ?? 'All'}`)]
+      // V2 lists EVERY Item in the Immunities breakdown ("Fear, Death
+      // Effects" is two names) — fan out all of them, not just the first.
+      return items.length > 0
+        ? items.map(i => make(`immunity.${i}`))
+        : [make('immunity.All')]
 
     case 'EldritchBlastD6':
       return [make('eldritchBlast.d6')]
@@ -1622,30 +1663,30 @@ export function parseEffect(
     // keen totals (V2 BreakdownItemWeaponAttackSpeed, ...VorpalRange).
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return [make('weapon.alacrity')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
     case 'Weapon_Keen':
-      return [make('weapon.keen')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.keen')] : []
     case 'Weapon_VorpalRange':
-      return [make('weapon.vorpalRange')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
     // Weapon_CriticalMultiplier is universal (not weapon-class-gated) but V2
     // (BreakdownItemWeaponCriticalMultiplier.cpp:70-93) sums it into the same
     // total as the class-gated WeaponCriticalMultiplierClass sibling, so both
     // route to melee.crit.multiplier (V2 parity pass N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('melee.crit.multiplier')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.multiplier')] : []
     case 'Weapon_CriticalMultiplier19To20':
-      return [make('weapon.critMultiplier19to20')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.critMultiplier19to20')] : []
     // Universal sibling of WeaponCriticalRangeClass — same total (N7),
     // matching V2 BreakdownItemWeaponCriticalThreatRange.cpp:52-57.
     case 'Weapon_CriticalRange':
-      return [make('melee.crit.range')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.range')] : []
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
     case 'Weapon_DamageCritical':
     case 'Weapon_AttackAndDamageCritical':
     case 'WeaponOtherDamageBonusCritical':
-      return [make('melee.crit.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
     // -----------------------------------------------------------------------
     // Per-weapon-class effects (V2 BreakdownItemWeaponAttackBonus.cpp:233-279,
     // BreakdownItemWeaponDamageBonus.cpp:157-205, ...CriticalThreatRange /
@@ -1674,22 +1715,27 @@ export function parseEffect(
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.range')] : []
     case 'WeaponAlacrityClass':
+      // Same pool as Weapon_Alacrity — V2 has ONE per-weapon attack-speed
+      // breakdown, so a gear WeaponAlacrityClass (Shadow Striker) competes
+      // Highest-Only with gear Weapon_Alacrity (Topaz of Swiftness, Haste).
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.alacrity')] : []
+        ? [make('weapon.alacrity')] : []
     case 'WeaponOtherDamageBonusClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.damage')] : []
     case 'WeaponOtherDamageBonusCriticalClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.damage')] : []
-    // Weapon enchantment adds to BOTH attack and damage (V2 routes
-    // Effect_Weapon_Enchantment into the attack and damage breakdowns).
+    // Weapon enchantment pools in its own per-weapon sub-breakdown (V2
+    // Breakdown_WeaponEnchantment: the item's own +X buff competes with
+    // effect bonuses under normal stacking there); the sub-breakdown TOTAL
+    // then feeds the attack and damage lines as a single entry — composed
+    // in buildStats from this key.
     case 'Weapon_Enchantment':
-      return items.includes('All') || (ctx && items.some(i => ctx.weaponTypes.has(i)))
-        ? [make('melee.toHit'), make('melee.damage')] : []
+      return weaponScopeMatches(items, ctx) ? [make('weapon.enchantMain')] : []
     case 'Weapon_EnchantmentClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.toHit'), make('melee.damage')] : []
+        ? [make('weapon.enchantMain')] : []
     // Extra base damage dice (+W) for the listed weapon TYPES.
     case 'Weapon_BaseDamage':
       return ctx && items.some(i => ctx.weaponTypes.has(i))
@@ -1849,7 +1895,23 @@ function parseItemBuffViaTemplate(
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
     // active-stance set instead of being conservatively dropped.
-    out.push(...parseEffect(cloned, 1, source, 0, 0, ctx))
+    // Stamp the merge identity to mirror V2's Effect::operator== on stamped
+    // item effects: Build::NotifyItem(Weapon)Effect sets DisplayName to the
+    // ITEM NAME, ApplyToWeaponOnly buffs route via the weapon path (only the
+    // wielded hand's flag set — a content-equal effect from a general buff
+    // has BOTH flags and stays SEPARATE), and equality compares the full
+    // stamped content. So: Spectral Longbow's GhostTouch + Ghostbane2 buffs
+    // (identical stamped effects, same path) MERGE ×2 = ghost touch 2, while
+    // Phase Hammer's GhostTouch + Greater Incorporeal Bane (weapon-only
+    // path) stay separate and compete Highest-Only = 1 — both oracle-
+    // verified (fuzz-5028 / fuzz-5019).
+    const path = flagSet((tpl as { ApplyToWeaponOnly?: unknown }).ApplyToWeaponOnly as never) ? 'W' : 'G'
+    const content = JSON.stringify([cloned.Type, cloned.Bonus, cloned.AType, cloned.Amount,
+      cloned.Item ?? null, cloned.Requirements ?? null, (cloned as { Dice?: unknown }).Dice ?? null])
+    out.push(...parseEffect(cloned, 1, source, 0, 0, ctx).map(p => ({
+      ...p,
+      v2Name: p.v2Name ?? `${source}::${path}:${content}`,
+    })))
   }
   return out
 }
@@ -1974,7 +2036,8 @@ export function parseItemBuff(
       return [make('ac')]
 
     case 'NaturalArmor':
-      return [make('ac', 'Natural Armor')]
+      // See the parseEffect case — V2's separate NaturalArmor breakdown.
+      return [make('ac.natural')]
 
     case 'Deflection':
       return [make('ac', 'Deflection')]
@@ -2471,7 +2534,11 @@ export function parseItemBuff(
     case 'ImprovedCritical':       return [make('weapon.threatRange')]
 
     case 'Immunity':
-      return [make(`immunity.${items[0] ?? 'All'}`)]
+      // V2 lists EVERY Item in the Immunities breakdown ("Fear, Death
+      // Effects" is two names) — fan out all of them, not just the first.
+      return items.length > 0
+        ? items.map(i => make(`immunity.${i}`))
+        : [make('immunity.All')]
 
     case 'EldritchBlastD6':
       return [make('eldritchBlast.d6')]
@@ -2560,25 +2627,25 @@ export function parseItemBuff(
     // Weapon-specific (modeled by the weapon breakdown engine)
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return [make('weapon.alacrity')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
     case 'Weapon_Keen':
-      return [make('weapon.keen')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.keen')] : []
     case 'Weapon_VorpalRange':
-      return [make('weapon.vorpalRange')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
     // Universal sibling of WeaponCriticalMultiplierClass — same total (N8).
     case 'Weapon_CriticalMultiplier':
-      return [make('melee.crit.multiplier')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.multiplier')] : []
     case 'Weapon_CriticalMultiplier19To20':
-      return [make('weapon.critMultiplier19to20')]
+      return weaponScopeMatches(items, ctx) ? [make('weapon.critMultiplier19to20')] : []
     // Universal sibling of WeaponCriticalRangeClass — same total (N7).
     case 'Weapon_CriticalRange':
-      return [make('melee.crit.range')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.range')] : []
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // surfaced as `melee.crit.damage` for the DPR estimator's crit term.
     case 'Weapon_AttackAndDamageCritical':
     case 'Weapon_DamageCritical':
     case 'WeaponOtherDamageBonusCritical':
-      return [make('melee.crit.damage')]
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
     case 'Weapon_Attack':
     case 'Weapon_AttackAbility':
     case 'Weapon_AttackAndDamage':
