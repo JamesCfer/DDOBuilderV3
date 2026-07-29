@@ -61,6 +61,10 @@ export interface EffectContext {
   // present, Snapshot* StackSources read THESE values (missing ability → 0,
   // matching V2's DL_OPTIONAL default), not the live totals.
   snapshotAbilities?: Record<string, number>
+  // V2 Build::SkillAtLevel: TRAINED ranks (1.0 class / 0.5 cross-class per
+  // spend) + level-capped tome. Skill REQUIREMENTS gate on this — not on the
+  // resolved breakdown total, which item/enhancement bonuses inflate.
+  skillRanks?: Record<string, number>
 }
 
 // ---------------------------------------------------------------------------
@@ -142,9 +146,12 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       if (!ctx.weaponClassOffhand) return true
       return its.some(i => ctx.weaponClassOffhand!.has(i))
     case 'Skill':
-      // V2 Requirement::EvaluateSkill (Requirement.cpp:1040-1048):
-      // SkillAtLevel ≥ Value. Resolved totals arrive via the fixed-point
-      // wrapper (pass 2+); conservative pass until then / for older callers.
+      // V2 Requirement::EvaluateSkill (Requirement.cpp:1040-1048) gates on
+      // Build::SkillAtLevel = TRAINED ranks + capped tome — NOT the resolved
+      // breakdown total (item skill bonuses wrongly passed Maetrim's Tumble
+      // 10/20-rank gates, oracle-verified). Legacy fallback for callers that
+      // populate neither: totals, then conservative pass.
+      if (ctx.skillRanks) return (ctx.skillRanks[its[0]] ?? 0) >= (req.Value ?? 0)
       if (!ctx.skillTotals) return true
       return (ctx.skillTotals[its[0]] ?? 0) >= (req.Value ?? 0)
     case 'EnemyType':

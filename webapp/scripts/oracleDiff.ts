@@ -21,7 +21,7 @@ import path from 'node:path'
 import { importV2Build } from '../src/lib/v2Import'
 import { computeBuildStats } from '../src/lib/buildStats'
 import { loadAllCatalogues } from '../src/server/dataLoaders'
-import { initBonusTypes } from '../src/lib/bonus'
+import { absorptionTotal, initBonusTypes } from '../src/lib/bonus'
 import { findActiveLife } from '../src/lib/multiLife'
 import type { Item } from '../src/types/ddo'
 
@@ -178,11 +178,22 @@ for (const f of files) {
     if (spellDC?.[ok] === undefined) continue
     rows.push([`dc.${school}`, spellDC[ok], stats.total('dc.All') + stats.total(`dc.${school}`)])
   }
-  // Per-class caster levels (only classes V3 tracked for this build).
+  // Per-class caster levels. V2 BreakdownItemClassCasterLevel composes:
+  // class levels + Wild Mage/Arcane Trickster "Mixed Magics" (min(20, level)
+  // − classLevels, only when classLevels > 0) + CasterLevel effects (per-
+  // class and Item=All pools).
   const casterLevel = (oracle as { casterLevel?: Record<string, number> }).casterLevel
+  const mixedMagics = ['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
+    Object.entries(buildForStats.enhancementSelections ?? {}).some(([tree, sels]) =>
+      (sels as Record<string, string>)[n] === 'Mixed Magics'
+      && ((buildForStats.enhancementChoices?.[tree] as Record<string, number> | undefined)?.[n] ?? 0) > 0))
+  const charLvlForCl = (buildForStats.totalLevel ?? 0)
+    + (buildForStats.epicLevels ?? 0) + (buildForStats.legendaryLevels ?? 0)
   for (const [cls, v2cl] of Object.entries(casterLevel ?? {})) {
-    if (!stats.keys().includes(`cl.${cls}`)) continue
-    rows.push([`cl.${cls}`, v2cl, stats.total(`cl.${cls}`)])
+    const lv = buildForStats.classes.find((c: { name: string }) => c.name === cls)?.levels ?? 0
+    let v3cl = lv + stats.total(`cl.${cls}`) + stats.total('cl.All')
+    if (lv > 0 && mixedMagics) v3cl += Math.min(20, charLvlForCl) - lv
+    rows.push([`cl.${cls}`, v2cl, v3cl])
   }
   // Full-analytics expansion
   for (const [ok, v3k] of Object.entries(SCALAR2_MAP)) {
@@ -237,15 +248,11 @@ for (const f of files) {
     rows.push([`resist.${name}`, v2v, stats.total(`resist.${name}`)])
   }
   // V2 BreakdownItemEnergyAbsorption::Total is MULTIPLICATIVE:
-  // 100 - 100·∏(1 - aᵢ/100) over the active (post-non-stacking) effects.
-  // V3 pools the same effects additively under absorb.<type>; recombine the
-  // resolved winners multiplicatively for the comparison.
+  // 100 - 100·∏(1 - aᵢ/100) over the active (post-non-stacking) effects,
+  // after V2's identical-effect merge. V3 pools the same effects additively
+  // under absorb.<type>; absorptionTotal() recombines them V2-style.
   for (const [name, v2v] of Object.entries(oracleExt.energyAbsorption ?? {})) {
-    let frac = 1
-    for (const b of stats.resolve(`absorb.${name}`).bonuses) {
-      if (b.active) frac *= 1 - b.value / 100
-    }
-    rows.push([`absorb.${name}`, Math.trunc(v2v), 100 - 100 * frac])
+    rows.push([`absorb.${name}`, Math.trunc(v2v), absorptionTotal(stats.resolve(`absorb.${name}`).bonuses)])
   }
 
   let hasDiff = false

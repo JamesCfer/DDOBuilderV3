@@ -19,6 +19,7 @@
 import { describe, it, expect } from 'vitest'
 import { computeBuildStats, type BuildStatsInput } from '../hooks/useBuildStats'
 import { parseEffect, parseItemBuff } from '../lib/effectParser'
+import { absorptionTotal } from '../lib/bonus'
 import { emptyBuild as makeEmptyBuild } from '../types/ddo'
 import type { DDOClass, Feat, Race } from '../types/ddo'
 import type { Effect, ItemBuffTemplate } from '../types/ddo'
@@ -203,5 +204,108 @@ describe('iconic past-life stance vs race-name collision', () => {
     )
     expect(stats.resolve('save.Will').bonuses
       .some(b => b.source.includes('Scourge Sensor'))).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 6 — Skill requirements gate on TRAINED ranks (+tome), not resolved totals
+// ---------------------------------------------------------------------------
+
+describe('Skill requirement (V2 Requirement::EvaluateSkill = ranks + tome)', () => {
+  const attack = {
+    Name: 'Attack', Acquire: 'Automatic',
+    Effect: [
+      { DisplayName: 'Tumble Base Charges', Type: 'TumbleCharge', Bonus: 'Feat', AType: 'Simple', Amount: 2 },
+      {
+        DisplayName: '10 Skill Ranks in Tumble', Type: 'TumbleCharge',
+        Bonus: 'Enhancement', AType: 'Simple', Amount: 1,
+        Requirements: { Requirement: [{ Type: 'Skill', Item: 'Tumble', Value: 10 }] },
+      },
+    ],
+  } as unknown as Feat
+  // +30 Tumble from a feat — inflates the TOTAL, not the ranks
+  const tumbleItemFeat = {
+    Name: 'Tumble Booster', Acquire: 'Automatic',
+    Effect: { Type: 'SkillBonus', Bonus: 'Enhancement', Item: 'Tumble', AType: 'Simple', Amount: 30 },
+  } as unknown as Feat
+  const cls = {
+    ...fighter, AutomaticFeats: [{ Level: 1, Feats: 'Tumble Booster' }],
+  } as unknown as DDOClass
+
+  it('a big skill-total bonus does NOT satisfy a rank requirement (Maetrim)', () => {
+    const stats = computeBuildStats(
+      input({ allClasses: [cls], allFeats: [attack, tumbleItemFeat] }),
+      build({}),
+    )
+    expect(stats.total('tumbleCharge')).toBe(2)
+  })
+
+  it('actual trained ranks DO satisfy it', () => {
+    const clsWithTumble = {
+      ...fighter, ClassSkill: ['Tumble'],
+      AutomaticFeats: [{ Level: 1, Feats: 'Tumble Booster' }],
+    } as unknown as DDOClass
+    const stats = computeBuildStats(
+      input({ allClasses: [clsWithTumble], allFeats: [attack, tumbleItemFeat] }),
+      build({ skillRanks: { Tumble: 10 } }),
+    )
+    expect(stats.total('tumbleCharge')).toBe(3)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 7 — skill tomes: level cap (V2 Character::SkillTomeValue)
+// ---------------------------------------------------------------------------
+
+describe('skill tome level cap', () => {
+  it('a +5 tome applies only +2 at character level 1', () => {
+    const stats = computeBuildStats(
+      input({}),
+      build({ totalLevel: 1, epicLevels: 0, legendaryLevels: 0, classes: [{ name: 'Fighter', levels: 1 }], skillTomes: { Jump: 5 } }),
+    )
+    const tome = stats.resolve('skill.Jump').bonuses.find(b => b.type === 'Tome')
+    expect(tome?.value).toBe(2)
+  })
+
+  it('the full +5 applies at level 20', () => {
+    const stats = computeBuildStats(
+      input({}),
+      build({ skillTomes: { Jump: 5 } }),
+    )
+    const tome = stats.resolve('skill.Jump').bonuses.find(b => b.type === 'Tome')
+    expect(tome?.value).toBe(5)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 8 — absorption: multiplicative with V2's identical-effect merge
+// ---------------------------------------------------------------------------
+
+describe('absorptionTotal (V2 BreakdownItemEnergyAbsorption::Total)', () => {
+  const mk = (value: number, v2Name?: string) => ({
+    value, type: 'Feat', source: 'test', active: true,
+    ...(v2Name !== undefined ? { v2Name } : {}),
+  })
+
+  it('same-name same-value effects merge into ONE factor', () => {
+    // five ×3% past-life passives → single (1-0.15), NOT (1-0.03)^5
+    const bonuses = Array.from({ length: 5 }, () => mk(3, 'EPL: Energy Absorbance'))
+    expect(absorptionTotal(bonuses as never)).toBeCloseTo(15, 5)
+  })
+
+  it('same-name DIFFERENT-value effects stay separate factors', () => {
+    // passives 15% + Block Energy 30% → 100-100*(0.85*0.70) = 40.5
+    const bonuses = [mk(15, 'EPL: Energy Absorbance'), mk(30, 'EPL: Energy Absorbance')]
+    expect(absorptionTotal(bonuses as never)).toBeCloseTo(40.5, 5)
+  })
+
+  it('anonymous bonuses each multiply separately', () => {
+    const bonuses = [mk(20), mk(20)]
+    expect(absorptionTotal(bonuses as never)).toBeCloseTo(36, 5)
+  })
+
+  it('inactive bonuses are ignored', () => {
+    const bonuses = [mk(20), { ...mk(50), active: false }]
+    expect(absorptionTotal(bonuses as never)).toBeCloseTo(20, 5)
   })
 })

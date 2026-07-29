@@ -19,6 +19,7 @@ import type {
   QuestDifficulty,
 } from '../types/ddo'
 import { emptyBuild } from '../types/ddo'
+import { V2_SKILL_TOMES } from './v2Export'
 
 // ---------------------------------------------------------------------------
 // XML parsing
@@ -533,11 +534,17 @@ function parseBuildNode(
   }
 
   // SkillTomes live at the Character level in V2 XML, not inside Life.
+  // V2 element names differ from the display names buildStats keys skills by
+  // (DisableDevice → "Disable Device", SpellCraft → "Spellcraft", UMD →
+  // "Use Magic Device", …) — un-mapped multi-word tomes were silently
+  // dropped from every skill total (oracle-verified on Maetrim: Open Lock
+  // −3, Move Silently −5, and Spellcraft-fed spell powers −4).
   const skillTomesNode = getRec(character, 'SkillTomes')
   if (skillTomesNode) {
+    const tagToName = new Map(V2_SKILL_TOMES)
     for (const [k, v] of Object.entries(skillTomesNode)) {
       const n = asNum(v)
-      if (n > 0) out.skillTomes[k] = n
+      if (n > 0) out.skillTomes[tagToName.get(k) ?? k] = n
     }
   }
 

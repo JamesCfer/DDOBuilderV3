@@ -1487,6 +1487,55 @@ function buildStatMapOnce(
       if (v2Slot && material) ctxMaterialBySlot[v2Slot] = material
     }
 
+    // V2 Build::SkillAtLevel per skill: trained ranks (1.0 when the class
+    // trained AT THAT LEVEL has it as a class skill, 0.5 otherwise) plus the
+    // level-capped tome. Skill-type Requirements gate on THIS, not on the
+    // resolved skill breakdown (Requirement::EvaluateSkill).
+    const ctxSkillRanks: Record<string, number> = {}
+    {
+      const lvlClasses = getLevelClasses(build)
+      const perClass = new Map<string, Set<string>>()
+      const skillsOf = (name: string | undefined): Set<string> => {
+        if (!name) return new Set()
+        let s = perClass.get(name)
+        if (!s) {
+          s = new Set(toArray(allClasses.find(c => c.Name === name)?.ClassSkill))
+          perClass.set(name, s)
+        }
+        return s
+      }
+      const unionSkills = new Set<string>()
+      for (const bc of build.classes) {
+        if (bc.name && bc.levels > 0) for (const s of skillsOf(bc.name)) unionSkills.add(s)
+      }
+      // V2 Character::SkillTomeValue level cap: 2, +1 at char level 3/7/11/
+      // 15/19/23/27/31.
+      const charLvl = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      let skillTomeCap = 2
+      for (const t of [3, 7, 11, 15, 19, 23, 27, 31]) if (charLvl >= t) skillTomeCap++
+      const byLevel = build.skillRanksByLevel
+      const names = new Set<string>([
+        ...Object.keys(build.skillRanks ?? {}),
+        ...Object.keys(build.skillTomes ?? {}),
+        ...(byLevel ? Object.values(byLevel).flatMap(r => Object.keys(r ?? {})) : []),
+      ])
+      for (const skill of names) {
+        let ranks = 0
+        if (byLevel && Object.keys(byLevel).length > 0) {
+          for (const [lvlStr, r] of Object.entries(byLevel)) {
+            const spent = r?.[skill] ?? 0
+            if (!spent) continue
+            ranks += spent * (skillsOf(lvlClasses[Number(lvlStr) - 1]).has(skill) ? 1 : 0.5)
+          }
+        } else {
+          const trained = build.skillRanks?.[skill] ?? 0
+          ranks = unionSkills.has(skill) ? trained : trained / 2
+        }
+        ranks += Math.min(skillTomeCap, build.skillTomes?.[skill] ?? 0)
+        if (ranks > 0) ctxSkillRanks[skill] = ranks
+      }
+    }
+
     const ctx: EffectContext = {
       race: build.race,
       alignment: build.alignment,
@@ -1511,6 +1560,7 @@ function buildStatMapOnce(
       weaponClassOffhand: ctxWeaponClassOff,
       materialBySlot: ctxMaterialBySlot,
       skillTotals: skillTotalsOverride,
+      skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
     }
     // V2 Build::SnapshotAbilityValue — Snapshot* StackSources read the
@@ -1828,9 +1878,16 @@ function buildStatMapOnce(
       (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0))
 
     // ── Skill tomes ───────────────────────────────────────────────────────
-    for (const [skill, bonus] of Object.entries(build.skillTomes ?? {})) {
-      if (!bonus) continue
-      add(map, `skill.${skill}`, { value: bonus, type: 'Tome', source: `${skill} tome` })
+    // V2 Character::SkillTomeValue caps the applied tome by character level:
+    // 2, +1 at 3/7/11/15/19/23/27/31 (a +5 tome shows +2 on a level-1 build).
+    {
+      const charLvl = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      let skillTomeCap = 2
+      for (const t of [3, 7, 11, 15, 19, 23, 27, 31]) if (charLvl >= t) skillTomeCap++
+      for (const [skill, bonus] of Object.entries(build.skillTomes ?? {})) {
+        if (!bonus) continue
+        add(map, `skill.${skill}`, { value: Math.min(skillTomeCap, bonus), type: 'Tome', source: `${skill} tome` })
+      }
     }
 
     // ── GrantFeat effects: V2 does NOT apply the granted feat's own stat

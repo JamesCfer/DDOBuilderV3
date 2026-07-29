@@ -4,6 +4,7 @@
 // keyed identically ("Section/Label") for the shared favorites list.
 
 import type { BuildStats } from '../../lib/buildStats'
+import { absorptionTotal } from '../../lib/bonus'
 import type { ResolvedBonus } from '../../lib/bonus'
 import type { CharacterBuild, DDOClass } from '../../types/ddo'
 import { SKILLS, SCHOOL_DCS } from '../../lib/gamedata'
@@ -163,10 +164,8 @@ export function buildBreakdownSections(
       energyStats.push(fixedRow(`${e} Resistance`, r.total, String(r.total), r.bonuses))
     }
     if (a.total !== 0) {
-      // Multiplicative absorption: 100 - Π((100-x)/100)*100
-      let factor = 1
-      for (const b of a.bonuses) if (b.active) factor *= (100 - b.value) / 100
-      const absPct = 100 - factor * 100
+      // Multiplicative absorption with V2's identical-effect merge
+      const absPct = absorptionTotal(a.bonuses)
       energyStats.push(fixedRow(`${e} Absorption`, absPct, `${absPct.toFixed(1)}%`, a.bonuses))
     }
   }

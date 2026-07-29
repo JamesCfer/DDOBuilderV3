@@ -275,3 +275,27 @@ export function resolveBonus(bonuses: RawBonus[]): ResolvedStat {
 export function emptyResolvedStat(): ResolvedStat {
   return { total: 0, bonuses: [] }
 }
+
+/**
+ * V2 BreakdownItemEnergyAbsorption::Total — energy absorption stacks
+ * MULTIPLICATIVELY: 100 − 100·∏(1 − aᵢ/100) over the active effects. V2
+ * merges IDENTICAL effects (Effect::operator== — same DisplayName AND same
+ * Amount) into ONE effect whose TotalAmount is amount × stacks BEFORE
+ * multiplying — five Arcane-sphere past lives' "+1% Energy Absorbance" ×3
+ * each combine into a single (1 − 0.15) factor, not (1 − 0.03)⁵, while the
+ * SAME-NAMED Divine "Block Energy" 10%/stack effect stays a separate factor
+ * (different Amount → not identical). Grouping by (v2Name, value) replicates
+ * that; bonuses without a V2 identity each stay their own factor.
+ */
+export function absorptionTotal(bonuses: ResolvedBonus[]): number {
+  const factors = new Map<string, number>()
+  let anon = 0
+  for (const b of bonuses) {
+    if (!b.active) continue
+    const key = b.v2Name !== undefined ? `${b.v2Name}|${b.value}` : `#anon${anon++}`
+    factors.set(key, (factors.get(key) ?? 0) + b.value)
+  }
+  let frac = 1
+  for (const v of factors.values()) frac *= 1 - v / 100
+  return 100 - 100 * frac
+}
