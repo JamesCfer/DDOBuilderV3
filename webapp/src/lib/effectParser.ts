@@ -890,8 +890,13 @@ export function parseEffect(
     ? `${identityBase !== '' ? identityBase : source}·${effect.StackSource}`
     : identityBase
   const stackAmounts = stacksAType ? parseAmount(effect.Amount) : undefined
+  // Effect::operator== compares the FULL effect INCLUDING Requirements — the
+  // two "Ravager: Draconic Power Attack" Weapon_Damage effects share name/
+  // type/amounts but differ in stance gates, so they stay SEPARATE and both
+  // add (oracle-verified on Dragon Lord: 3+3, not one merged ×6 stack).
+  const reqFingerprint = effect.Requirements ? JSON.stringify(effect.Requirements) : ''
   const stackGroupBase = (identityName !== '' && stackAmounts && stackAmounts.length > 1)
-    ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}`
+    ? `${identityName}|${String(effect.Type)}|${bonusType}|${items.join(',')}|${stackAmounts.join(',')}|${reqFingerprint}`
     : undefined
   function make(statKey: string, bt = bonusType): ParsedBonus {
     return {
@@ -1890,7 +1895,16 @@ function parseItemBuffViaTemplate(
     // Pass ctx so stance-gated template effects (e.g. Enhanced Bloodrage's
     // +8 CON while the item stance is toggled on) evaluate against the
     // active-stance set instead of being conservatively dropped.
-    out.push(...parseEffect(cloned, 1, source, 0, 0, ctx))
+    // Stamp the merge identity with the BUFF TYPE: V2's identical-effect
+    // merge (Effect::operator==) distinguishes effects born from different
+    // buff templates — Phase Hammer's "GhostTouch" and "Greater Incorporeal
+    // Bane" buffs both grant GhostTouch 1 but stay SEPARATE effects that
+    // compete Highest-Only instead of stack-merging (oracle-verified on
+    // fuzz-5019: ghost touch 1, not 2).
+    out.push(...parseEffect(cloned, 1, source, 0, 0, ctx).map(p => ({
+      ...p,
+      v2Name: p.v2Name ?? `${source}::${buff.Type}`,
+    })))
   }
   return out
 }

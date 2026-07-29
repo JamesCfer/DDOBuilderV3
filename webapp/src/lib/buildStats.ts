@@ -1368,8 +1368,15 @@ function buildStatMapOnce(
       //   TWF    = main AND offhand in "One Handed" group (no animal form)
       //   SWF    = main in "Single Weapon" or "Thrown" group AND offhand
       //            Empty/Buckler/Orb/Rune Arm (no animal form)
+      // Animal-form stances may arrive via persisted user buffs, which merge
+      // into ctxStances only AFTER this derivation — consult both, matching
+      // V2's pane where user stances are visible to auto-stance evaluation
+      // (oracle-verified on "highest Number possible": Winter Wolf form
+      // suppresses the handwraps TWF penalty).
+      const userBuffStances = new Set(build.activeBuffs ?? [])
       const inAnimalForm = ['Plague Wolf', 'Blight Wolf', 'Wolf', 'Bear', 'Winter Wolf',
-        'Dire Bear', 'Fire Elemental', 'Water Elemental'].some(s => ctxStances.has(s))
+        'Dire Bear', 'Fire Elemental', 'Water Elemental']
+        .some(s => ctxStances.has(s) || userBuffStances.has(s))
       if (ctxWeaponClassMain.has('Two Handed')) {
         ctxStances.add('Two Handed Fighting')
       }
@@ -1497,6 +1504,12 @@ function buildStatMapOnce(
           'ClassMinLevel', 'ClassAtLevel', 'BaseClassMinLevel', 'BaseClassAtLevel',
           'Level', 'SpecificLevel', 'Enhancement', 'Stance', 'NotConstruct',
           'RaceConstruct',
+          // Weapon-class gates evaluate honestly against ctxWeaponClassMain/
+          // Off (incl. runtime AddGroupWeapon adds) — needed for the
+          // "Favored Weapon" auto stance (WeaponClassMainHand "Favored
+          // Weapon"), which gates faith-feat attack bonuses and Sacred Fist
+          // strikes (oracle-verified on fuzz-5008).
+          'WeaponClassMainHand', 'WeaponClassOffHand',
         ])
         const allHonest = (reqs: Requirements | undefined): boolean => {
           if (!reqs) return true
@@ -2119,7 +2132,10 @@ function buildStatMapOnce(
     // dex-to-AC is UNCAPPED even if the item prints an MDB of 0
     // (fuzz-5099's Enigma Core docent).
     const mdbNoLimit = armorStances.has('Cloth Armor') && !armorStances.has('Tower Shield')
-    const armorMaxDex = !mdbNoLimit && armorMaxDexBase != null ? armorMaxDexBase + mdbEffectBonus : null
+    // Without the no-limit stance the cap ALWAYS applies: an armor item with
+    // no printed MaximumDexterityBonus contributes 0 in V2's MDB breakdown
+    // (fuzz-5092's Cannith Crafted Heavy Armor caps dex-to-AC at 0).
+    const armorMaxDex = !mdbNoLimit ? (armorMaxDexBase ?? 0) + mdbEffectBonus : null
     let effectiveDexForAC = dexMod
     let dexCapLabel: string | null = null
     if (armorMaxDex != null && effectiveDexForAC > armorMaxDex) {
@@ -2471,6 +2487,18 @@ function buildStatMapOnce(
       // the TWF feat else -6, +2 back for a light off-hand weapon or
       // Oversized Two Weapon Fighting).
       if (weaponInfo) {
+        // Non-proficiency: -4 when the wielded weapon is not in the runtime
+        // "Proficiency" group (populated by AddGroupWeapon effects on the
+        // proficiency feats — BreakdownItemWeaponAttackBonus.cpp:71-80).
+        if (!ctxWeaponClassMain.has('Proficiency')) {
+          add(map, 'melee.toHit', { value: -4, type: 'Penalty', source: 'Non proficient penalty' })
+        }
+        // Negative levels: -1 attack per level
+        // (BreakdownItemWeaponAttackBonus.cpp:83-98).
+        const negLev = Math.round(resolveBonus(map.get('negativeLevel') ?? []).total)
+        if (negLev !== 0) {
+          add(map, 'melee.toHit', { value: -negLev, type: 'Negative Levels', source: 'Negative Levels' })
+        }
         // Attack uses -max(0, ARMOR pool total) — the shield ACP breakdown is
         // NOT consulted here, and the sign clamp is the OPPOSITE of the skill
         // consumer's min(0, total) (BreakdownItemWeaponAttackBonus.cpp:102-115
