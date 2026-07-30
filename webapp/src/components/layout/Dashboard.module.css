@@ -1,0 +1,182 @@
+/* Custom › Windows — floating-window work area.
+   Themed to match the app (gold on dark), with thin styled scrollbars and a
+   canvas that grows in both axes as windows are dragged outward. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 4px 2px 10px;
+}
+
+.toolbarTitle {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-gold-light, #f0b840);
+}
+
+.toolbar select,
+.toolbar button {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--color-border, #444);
+  background: var(--color-bg-panel, #23232b);
+  color: inherit;
+}
+
+.toolbar button:hover,
+.toolbar select:hover {
+  border-color: var(--color-gold-dark, #a07020);
+}
+
+.hint {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* ── Canvas ──────────────────────────────────────────────────────────────── */
+
+.viewport {
+  position: relative;
+  flex: 1;
+  min-height: calc(100vh - 220px);
+  overflow: auto;
+  border: 1px solid var(--color-border, #3a3a44);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at top, rgba(212, 152, 42, 0.04), transparent 60%),
+    var(--color-bg-secondary, #141419);
+}
+
+.canvas {
+  position: relative;
+}
+
+/* ── Windows ─────────────────────────────────────────────────────────────── */
+
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  min-height: 120px;
+  background: var(--color-bg-panel, #1c1c22);
+  border: 1px solid var(--color-border, #444);
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+  resize: both;
+  overflow: hidden;
+}
+
+.windowFocused {
+  border-color: var(--color-gold-dark, #a07020);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 152, 42, 0.25);
+}
+
+.titleBar {
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+  color: var(--color-gold-light, #f0b840);
+  background: linear-gradient(180deg, rgba(212, 152, 42, 0.14), rgba(212, 152, 42, 0.04));
+  border-bottom: 1px solid var(--color-border, #444);
+}
+
+.titleText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleBtn {
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 18px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  opacity: 0.75;
+}
+
+.titleBtn:hover {
+  opacity: 1;
+  border-color: var(--color-border, #555);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* The zoom readout is itself a button: click toggles auto-fit. */
+.zoomBtn {
+  min-width: 46px;
+  font-size: 10px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.zoomAuto {
+  color: var(--color-gold-light, #f0b840);
+}
+
+.body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* ── Thin themed scrollbars (viewport + every window body) ──────────────── */
+
+.viewport,
+.body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gold-dark, #a07020) transparent;
+}
+
+.viewport::-webkit-scrollbar,
+.body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.viewport::-webkit-scrollbar-track,
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.viewport::-webkit-scrollbar-thumb,
+.body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-gold-dark, #a07020) 55%, transparent);
+  border-radius: 4px;
+}
+
+.viewport::-webkit-scrollbar-thumb:hover,
+.body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-dark, #a07020);
+}
+
+.viewport::-webkit-scrollbar-corner,
+.body::-webkit-scrollbar-corner {
+  background: transparent;
+}

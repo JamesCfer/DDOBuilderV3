@@ -13,6 +13,15 @@
   margin: 0 auto;
 }
 
+/* Custom › Windows: the floating-window work area uses every pixel a wide
+   monitor has — no centered max-width, minimal chrome padding. */
+.contentFull {
+  max-width: none;
+  padding: 10px 10px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (max-width: 768px) {
   .content {
     padding: 14px 12px 28px;
