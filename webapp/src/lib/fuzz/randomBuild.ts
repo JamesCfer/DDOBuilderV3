@@ -134,17 +134,17 @@ function parseCosts(costPerRank: unknown, maxRanks: number): number[] {
   return out
 }
 
-function costUpToRank(item: EnhancementTreeItem, targetRank: number): number {
+export function costUpToRank(item: EnhancementTreeItem, targetRank: number): number {
   const costs = parseCosts(item.CostPerRank, item.Ranks ?? 1)
   return costs.slice(0, targetRank).reduce((a, b) => a + b, 0)
 }
 
-function nextRankCost(item: EnhancementTreeItem, currentRank: number): number {
+export function nextRankCost(item: EnhancementTreeItem, currentRank: number): number {
   const costs = parseCosts(item.CostPerRank, item.Ranks ?? 1)
   return costs[currentRank] ?? 1
 }
 
-function itemKey(item: EnhancementTreeItem): string {
+export function itemKey(item: EnhancementTreeItem): string {
   return item.InternalName ?? item.Name
 }
 

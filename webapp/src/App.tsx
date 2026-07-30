@@ -47,6 +47,7 @@ import ContentPanel from './components/layout/ContentPanel'
 import HelpPanel from './components/layout/HelpPanel'
 import AppShortcuts from './components/layout/AppShortcuts'
 import Dashboard from './components/layout/Dashboard'
+import OptimizerPanel from './components/optimizer/OptimizerPanel'
 import LifeBuildBar from './components/layout/LifeBuildBar'
 import { findActiveBuild } from './lib/multiLife'
 import type { CharacterDocument } from './types/ddo'
@@ -67,13 +68,14 @@ const PAGE_TABS: Record<Page, string[]> = {
   Equipment:   ['Gear', 'Filigrees', 'Set Bonuses', 'Clickies'],
   Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Stances', 'Bonuses', 'Buffs', 'Compare'],
   Community:   ['Browse', 'My Builds'],
-  Custom:      ['Windows', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
+  Custom:      ['Windows', 'Optimizer', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
 }
 
 /** Tabs whose content wants the full viewport width (trees, tables). */
 const WIDE_TABS = new Set([
   'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Combat',
   'Breakdowns', 'Compare', 'Windows', 'Level Plan', 'Filigrees',
+  'Optimizer',
 ])
 
 export default function App() {
@@ -198,6 +200,7 @@ function AppInner() {
 
       // ── Custom ───────────────────────────────────────────────────────────
       case 'Custom/Windows':      return <Dashboard />
+      case 'Custom/Optimizer':    return <OptimizerPanel />
       case 'Custom/Notes':        return <NotesPanel />
       case 'Custom/Forum Export': return <ForumExportPanel />
       case 'Custom/Content':      return <ContentPanel />
