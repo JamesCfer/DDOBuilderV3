@@ -141,8 +141,10 @@ export default function TopNav({
   fileMenu, account, livesBar,
 }: TopNavProps) {
   const { build } = useCharacter()
+  // Never display the literal 'unknown' sentinel — hide the badge instead.
   const [version, setVersion] = useState<string>(
-    typeof __BUILDER_VERSION__ !== 'undefined' ? __BUILDER_VERSION__ : ''
+    typeof __BUILDER_VERSION__ !== 'undefined' && __BUILDER_VERSION__ !== 'unknown'
+      ? __BUILDER_VERSION__ : ''
   )
   const [livesOpen, setLivesOpen] = useState<boolean>(() => {
     try { return localStorage.getItem(LIVES_OPEN_KEY) === '1' } catch { return false }

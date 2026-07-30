@@ -9,7 +9,9 @@ export default function HelpPanel() {
   const [version, setVersion] = useState('')
 
   useEffect(() => {
-    api.version().then(v => setVersion(v.version)).catch(() => setVersion(''))
+    api.version()
+      .then(v => setVersion(v.version && v.version !== 'unknown' ? v.version : ''))
+      .catch(() => setVersion(''))
   }, [])
 
   return (

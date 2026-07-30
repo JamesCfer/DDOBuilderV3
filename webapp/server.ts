@@ -100,14 +100,17 @@ app.get('/api/version', (_req, res) => {
     if (m) version = `#${m[1]}`
   } catch { /* not a git checkout — fall through */ }
   if (version === 'unknown') {
-    // The VERSION file lives at the repo root. __dirname differs between dev
-    // (ts-node from webapp/) and prod (compiled to webapp/dist-server/), and
-    // the process cwd may also vary, so try the candidate locations in order.
+    // webapp/VERSION is COMMITTED and updated with each PR (works without
+    // git); the repo-root VERSION (V2's data version) is the last resort.
+    // __dirname differs between dev (ts-node from webapp/) and prod
+    // (compiled to webapp/dist-server/), and the process cwd may also vary,
+    // so try the candidate locations in order.
     const candidates = [
-      path.resolve(__dirname, '..', 'VERSION'),        // dev: webapp/../VERSION
-      path.resolve(__dirname, '..', '..', 'VERSION'),  // prod: webapp/dist-server/../../VERSION
-      path.resolve(process.cwd(), '..', 'VERSION'),    // launched from webapp/
-      path.resolve(process.cwd(), 'VERSION'),          // launched from repo root
+      path.resolve(__dirname, 'VERSION'),              // dev: webapp/VERSION
+      path.resolve(__dirname, '..', 'VERSION'),        // prod: webapp/dist-server/../VERSION; dev repo root
+      path.resolve(process.cwd(), 'VERSION'),          // launched from webapp/ or repo root
+      path.resolve(__dirname, '..', '..', 'VERSION'),  // prod: repo root
+      path.resolve(process.cwd(), '..', 'VERSION'),    // launched from webapp/ (repo root)
     ]
     for (const file of candidates) {
       try {
