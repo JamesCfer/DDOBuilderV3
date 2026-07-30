@@ -21,7 +21,7 @@ export default function HelpPanel() {
           <p style={{ margin: '4px 0' }}>
             DDOBuilder V3 — a web port of Maetrim's DDOBuilder (V2) character
             planner for Dungeons &amp; Dragons Online.
-            {version ? ` Data version: ${version}.` : ''}
+            {version ? ` Version: ${version} (the most recently merged PR).` : ''}
           </p>
           <p style={{ margin: '4px 0' }}>
             All game data (classes, races, feats, enhancement trees, items,

@@ -2554,7 +2554,7 @@ function buildStatMapOnce(
       // unmodified threat range (GlobalSupportFunctions WeaponBaseCriticalRange
       // table), for the first Weapon_Keen AND the first WeaponKeenDamageType
       // each; both share the "Keen" bonus type so item stacking keeps one.
-      if ((map.get('weapon.keen') ?? []).some(l => l.active !== false)) {
+      if ((map.get('weapon.keen') ?? []).length > 0) {
         const kb = weaponBaseCriticalRange(mainWeaponType)
         if (kb > 0) {
           add(map, 'melee.crit.range', { value: kb, type: 'Keen', source: 'Keen/Improved Critical', fromGear: true })
