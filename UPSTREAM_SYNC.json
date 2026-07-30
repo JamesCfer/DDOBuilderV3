@@ -1,7 +1,7 @@
 {
   "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
-  "lastSyncedCommit": "d18539ecfe99b8d0726b84ffbe6072165091c396",
-  "lastChecked": "2026-07-19T05:08:59.305Z",
+  "lastSyncedCommit": "4dcd87286e9db2863e7e61ef2a975b926049cc2c",
+  "lastChecked": "2026-07-30T04:51:52.479Z",
   "dataPathUpstream": "Output/DataFiles",
-  "notes": "Full tree synced @ d18539ec (2.0.0.81, 2026-06-17): DataFiles (23 files, prior pass) + C++ source (129 modified, 2 new incl. dark-mode UI; XmlLib reorg 27 files) + Maetrim example build. XmlLib/Src/Release .obj artifacts deliberately excluded."
+  "notes": "Full tree synced @ 4dcd8728 (2.0.0.82, 2026-07): DataFiles (351 changed + 25 new: U72 balance pass — Greater Spell Focus +2, Epic Spell Focus consolidated into one feat + new Legendary Spell Focus, 330 items' Spell Focus values, new Underdark/Mindcleaver items) + C++ source (27 files via git apply --3way preserving local V2CALC_LINUX shim patches; BUILD_START_LEVEL 34→36, Enhanced Bloodrage item dedup)."
 }
