@@ -44,7 +44,10 @@ export const SKILL_NAMES = SKILLS.map(s => s.name)
 
 export const HEROIC_MAX_LEVEL = 20
 export const EPIC_MAX_LEVELS = 10
-export const LEGENDARY_MAX_LEVELS = 4
+// V2 MAX_BUILDER_LEVEL = 40 (stdafx.h): legendary levels 31-40. The live game
+// cap is 36 (BUILD_START_LEVEL upstream), but data files define all 10
+// legendary class levels — capping at 4 dropped levels 35+ of imported builds.
+export const LEGENDARY_MAX_LEVELS = 10
 
 export const LEVELUP_LEVELS = [4, 8, 12, 16, 20, 24, 28, 32, 36, 40] as const
 export type LevelUpLevel = typeof LEVELUP_LEVELS[number]

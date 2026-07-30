@@ -517,7 +517,7 @@ function buildFeatSlotKey(
     return `epic-${epicLevel}-${featType}-${idx}`
   }
 
-  // Legendary levels (class === "Legendary", charLvl 31-34)
+  // Legendary levels (class === "Legendary", charLvl 31-40)
   if (className === 'Legendary' && charLvl > 30) {
     const legLevel = charLvl - 30
     const ck = `legendary-${legLevel}-${featType}`
@@ -666,11 +666,14 @@ function parseBuildNode(
   const levelTrainings = arr(buildNode.LevelTraining as AnyRec | AnyRec[] | undefined)
     .map(parseLevelTraining)
 
-  // V2 stores 34 LevelTraining entries: heroic 1-20 carry the actual class,
-  // 21-30 carry "Epic", 31-34 carry "Legendary".
+  // V2 stores one LevelTraining entry per character level (up to
+  // MAX_BUILDER_LEVEL = 40): heroic 1-20 carry the actual class, 21-30 carry
+  // "Epic", 31-40 carry "Legendary". A level-36 build has 36 entries — slicing
+  // legendary at 34 silently dropped levels 35-36 (2× Legendary Power,
+  // 1× Legendary Knowledge, class HP, the L36 ability level-up, …).
   const heroicSlice = levelTrainings.slice(0, 20).map(lt => lt.className)
   const epicSlice = levelTrainings.slice(20, 30).map(lt => lt.className)
-  const legendarySlice = levelTrainings.slice(30, 34).map(lt => lt.className)
+  const legendarySlice = levelTrainings.slice(30, 40).map(lt => lt.className)
 
   out.levelClasses = heroicSlice
   out.totalLevel = heroicSlice.filter(Boolean).length

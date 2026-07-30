@@ -111,3 +111,32 @@ describe('V2 importer — Yings Monk (Aasimar 20 Monk / 10 Epic / 4 Legendary)',
     expect(greenSlot?.[1]).toContain('Sapphire')
   })
 })
+
+describe('V2 importer — level-36 builds (legendary levels 5+)', () => {
+  // The game cap moved past 34: a level-36 build stores 36 LevelTraining
+  // rows (heroic 1-20, Epic 21-30, Legendary 31-36). The importer used to
+  // slice legendary rows at 34, silently dropping levels 35-36 (2× Legendary
+  // Power, 1× Legendary Knowledge, class HP, the L36 ability level-up, …).
+  const rows = [
+    ...Array.from({ length: 20 }, () => 'Fighter'),
+    ...Array.from({ length: 10 }, () => 'Epic'),
+    ...Array.from({ length: 6 }, () => 'Legendary'),
+  ]
+  const xml = `<DDOBuilderCharacterData>
+  <Character version="1">
+    <Life version="1">
+      <Build version="1">
+        <Level>36</Level>
+${rows.map(c => `        <LevelTraining>\n          <Class>${c}</Class>\n        </LevelTraining>`).join('\n')}
+      </Build>
+    </Life>
+  </Character>
+</DDOBuilderCharacterData>`
+
+  it('imports all 6 legendary levels', () => {
+    const { build } = importV2Build(xml)
+    expect(build.totalLevel).toBe(20)
+    expect(build.epicLevels).toBe(10)
+    expect(build.legendaryLevels).toBe(6)
+  })
+})

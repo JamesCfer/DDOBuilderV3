@@ -24,10 +24,12 @@ describe('destinyPointPool (V2 BreakdownItemDestinyAps parity)', () => {
     expect(destinyPointPool(40)).toBe(80)   // both capped
   })
 
-  it('honours the BUILD_START_LEVEL (34) special case', () => {
-    // Normally L34 → 40 epic + min(34-30+1,10)=5 legendary*4 = 60; the special
-    // case forces legendary levels to 34-20-10 = 4 → 40 + 16 = 56.
-    expect(destinyPointPool(34)).toBe(56)
+  it('honours the BUILD_START_LEVEL (36) special case', () => {
+    // L34 is no longer the cap: 40 epic + min(34-30+1,10)=5 legendary*4 = 60.
+    expect(destinyPointPool(34)).toBe(60)
+    // At the cap the special case drops the in-progress level: normally L36 →
+    // 40 + min(36-30+1,10)=7*4 = 68; forced to 36-20-10 = 6 → 40 + 24 = 64.
+    expect(destinyPointPool(36)).toBe(64)
   })
 
   it('adds floor(fatePoints / 3) as an inherent bonus', () => {

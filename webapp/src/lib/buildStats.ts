@@ -2751,6 +2751,22 @@ function buildStatMapOnce(
       }
     }
 
+    // V2 BreakdownItemOffhandDoublestrike.cpp:44-77 — off-hand doublestrike
+    // has a derived base of 50% of the main-hand doublestrike total (65% with
+    // Perfect Two Weapon Fighting trained). Explicit DoublestrikeOffhand
+    // effects stack on top of the derived base.
+    {
+      const mainhandDoublestrike = resolveBonus(map.get('melee.doublestrike') ?? []).total
+      if (mainhandDoublestrike > 0) {
+        const ptwf = ctxFeats.has('Perfect Two Weapon Fighting')
+        add(map, 'offhand.doublestrike', {
+          value: mainhandDoublestrike * (ptwf ? 0.65 : 0.5),
+          type: 'Base',
+          source: ptwf ? '65% of main hand doublestrike' : '50% of main hand doublestrike',
+        })
+      }
+    }
+
     // V2 BreakdownItemSave.cpp:513-565 — Half-Elf Lesser Divine Grace.
     // Trigger feat: "Half-Elf Dilettante: Paladin". Cap = 2 + count of
     // "Improved Dilettante: Paladin" selections trained across the three

@@ -119,8 +119,9 @@ async function mountPanel(build: CharacterBuild): Promise<HTMLElement> {
 describe('destinyPoolForBuild uses the full character level', () => {
   it('level 34 (20 heroic + 10 epic + 4 legendary) pool includes epic + legendary points', () => {
     const build = level34Build()
-    // destinyPointPool(34) = 56 (V2 Build::Level() control flow); fate 51 → +17
-    expect(destinyPoolForBuild(build, 51, 0)).toBe(73)
+    // destinyPointPool(34) = 60 (V2 Build::Level() control flow with upstream
+    // BUILD_START_LEVEL = 36: 40 epic + 5×4 legendary); fate 51 → +17
+    expect(destinyPoolForBuild(build, 51, 0)).toBe(77)
   })
 
   it('heroic-only level 20 build gets the level-20 pool, no epic contribution', () => {
@@ -153,8 +154,9 @@ describe('Epic Destinies panel (V2 layout)', () => {
   it('shows the pool computed from the full character level', async () => {
     const container = await mountPanel(level34Build())
     const text = container.textContent ?? ''
-    // 7 points spent across the three synthetic trees; pool for L34, 0 fate = 56.
+    // 7 points spent across the three synthetic trees; pool for L34, 0 fate = 60
+    // (BUILD_START_LEVEL is 36 now, so L34 no longer hits the at-cap special case).
     expect(text).toContain('7')
-    expect(text).toContain('56')
+    expect(text).toContain('60')
   })
 })
