@@ -14,6 +14,7 @@ import {
 } from './src/server/dataLoaders'
 import { CommunityStore } from './src/server/communityStore'
 import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
+import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
 import type { CharacterDocument } from './src/types/ddo'
 
 dotenv.config()
@@ -254,6 +255,34 @@ app.get('/api/ignored-list', (_req, res) => res.json(cached('ignored-list', igno
 app.get('/api/adventure-packs', (_req, res) => res.json(cached('adventure-packs', adventurePacks)))
 app.get('/api/item-buffs', (_req, res) => res.json(cached('item-buffs', itemBuffs)))
 app.get('/api/item-clickies', (_req, res) => res.json(cached('item-clickies', itemClickies)))
+
+// ---------------------------------------------------------------------------
+// V2 parity check — every .DDOBuild upload is verified in the background
+// against the v2calc oracle (V2's own compiled C++ math, run headless). The
+// client posts the raw XML right after a successful import; the response
+// reports any stat where the two engines disagree. When the oracle binary
+// was never built (make -C v2calc) the check degrades to { available: false }
+// rather than failing the upload.
+// ---------------------------------------------------------------------------
+
+app.get('/api/parity-check/status', (_req, res) => {
+  res.json({ available: fs.existsSync(defaultOraclePath()) })
+})
+
+app.post('/api/parity-check', express.text({ type: '*/*', limit: '8mb' }), async (req, res) => {
+  const xml = typeof req.body === 'string' ? req.body : ''
+  if (!xml.trim().startsWith('<')) {
+    res.status(400).json({ error: 'Body must be .DDOBuild XML text' })
+    return
+  }
+  try {
+    const report = await runParityCheck(xml, cached('allCatalogues', allCatalogues), DATA_DIR)
+    res.json(report)
+  } catch (err) {
+    // runParityCheck is designed not to throw; this is a last-resort guard.
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) })
+  }
+})
 
 // ---------------------------------------------------------------------------
 // Community platform routes (accounts, saved builds, star-to-publish, votes)

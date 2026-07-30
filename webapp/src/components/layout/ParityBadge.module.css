@@ -1,0 +1,84 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.pending {
+  color: var(--text-muted, #999);
+  border-color: var(--border, #444);
+}
+
+.pass {
+  color: #3fa34d;
+  border-color: #3fa34d55;
+}
+
+.fail {
+  color: #d9822b;
+  border-color: #d9822b66;
+}
+
+.unavailable {
+  color: var(--text-muted, #999);
+  border-color: transparent;
+  opacity: 0.7;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 300;
+  min-width: 260px;
+  max-width: 420px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #444);
+  background: var(--panel-bg, #222);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.panelTitle {
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
+.reason {
+  font-size: 0.75rem;
+  color: var(--text-muted, #aaa);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 2px 6px;
+  border-bottom: 1px solid var(--border, #3333);
+}
+
+.table td:nth-child(2),
+.table td:nth-child(3),
+.table th:nth-child(2),
+.table th:nth-child(3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

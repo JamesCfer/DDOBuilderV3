@@ -11,6 +11,7 @@ import {
   findActiveBuild,
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
+import { runBackgroundParityCheck } from '../lib/parityClient'
 import { useStaticBundle } from './useStaticBundle'
 import { importV1Build, isV1CharacterXml } from '../lib/v1Import'
 import { exportV2DocumentModel } from '../lib/v2Export'
@@ -252,6 +253,11 @@ export function usePersistence(): PersistenceAPI {
               reject(new Error('V2 file contained no lives'))
               return
             }
+            // Background math verification: the server re-computes this build
+            // with V2's own compiled C++ (v2calc oracle) and diffs every stat
+            // against V3. Fire-and-forget — the result surfaces in the TopNav
+            // ParityBadge and never blocks or fails the import.
+            runBackgroundParityCheck(text, file.name)
             resolve(result.document)
             return
           }

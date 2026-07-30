@@ -197,10 +197,10 @@ export default function ClassSelector() {
                 onClick={() => dispatch({ type: 'SET_EPIC_LEVELS', levels: epicLevels + 1 })}>+</button>
             </div>
 
-            {/* ── Legendary levels 31–34 ── */}
+            {/* ── Legendary levels 31+ (game cap is level 36; data defines to 40) ── */}
             <div className={styles.sectionHeader}>
-              <span>Legendary <span className={styles.sectionRange}>(Lv 31–34)</span></span>
-              <span className={styles.sectionCount}>{legendaryLevels}/4</span>
+              <span>Legendary <span className={styles.sectionRange}>(Lv 31–{30 + LEGENDARY_MAX})</span></span>
+              <span className={styles.sectionCount}>{legendaryLevels}/{LEGENDARY_MAX}</span>
             </div>
             <div className={styles.progressionRow}>
               <button className={styles.adjBtn}

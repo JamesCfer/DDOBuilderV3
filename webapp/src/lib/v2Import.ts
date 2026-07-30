@@ -177,6 +177,17 @@ function parseAbilities(spend: AnyRec | undefined): Record<Ability, number> {
 // (oracle-verified on DOT: Purity of Spirit's 540 SP).
 const V2_FEAT_RENAMES = new Map<string, string>([
   ["Purity of Heart", "Purity of Spirit"],
+  // U72 / data 2.0.0.82: the seven per-school Epic Spell Focus feats were
+  // consolidated into a single "Epic Spell Focus" (+2 all DCs). V2 remaps the
+  // old names at load (TrainedFeat.cpp EndElement); without this V3 dropped
+  // the feat and every school DC came up short (oracle: wiz dc caster −4).
+  ["Epic Spell Focus: Abjuration", "Epic Spell Focus"],
+  ["Epic Spell Focus: Conjuration", "Epic Spell Focus"],
+  ["Epic Spell Focus: Enchantment", "Epic Spell Focus"],
+  ["Epic Spell Focus: Evocation", "Epic Spell Focus"],
+  ["Epic Spell Focus: Illusion", "Epic Spell Focus"],
+  ["Epic Spell Focus: Necromancy", "Epic Spell Focus"],
+  ["Epic Spell Focus: Transmutation", "Epic Spell Focus"],
   ["Air Domain Tier I", "Domain of Air"],
   ["Air Domain Tier II", "Improved Domain of Air"],
   ["Air Domain Tier III", "Greater Domain of Air"],

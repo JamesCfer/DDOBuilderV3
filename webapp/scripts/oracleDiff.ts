@@ -6,6 +6,11 @@
 // the oracle emits. This is the end of the manual-report loop: any V2↔V3
 // disagreement shows up here with the exact stat and both values.
 //
+// The oracle↔V3 stat mapping lives in src/lib/oracleParityRows.ts and the
+// oracle/V3 execution plumbing in src/server/oracleParity.ts — both shared
+// with the upload-time background check (POST /api/parity-check), so this
+// sweep and the live webapp can never drift apart.
+//
 // Prereq: build the oracle once — `make -C v2calc` (from repo root).
 //
 // Usage (from webapp/):
@@ -15,15 +20,12 @@
 //
 // Exit 1 if any build mismatches on a compared stat.
 
-import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
-import { importV2Build } from '../src/lib/v2Import'
-import { computeBuildStats } from '../src/lib/buildStats'
 import { loadAllCatalogues } from '../src/server/dataLoaders'
-import { absorptionTotal, initBonusTypes, resolveBonus } from '../src/lib/bonus'
-import { findActiveLife } from '../src/lib/multiLife'
-import type { Item } from '../src/types/ddo'
+import { initBonusTypes } from '../src/lib/bonus'
+import { buildParityRows, diffParityRows, type OracleJson } from '../src/lib/oracleParityRows'
+import { computeV3ForXml, runOracleOnFile } from '../src/server/oracleParity'
 
 const ROOT = path.join(__dirname, '..', '..')
 const DATA = path.join(ROOT, 'Output', 'DataFiles')
@@ -32,53 +34,6 @@ const ORACLE = path.join(ROOT, 'v2calc', 'build', 'v2calc')
 if (!existsSync(ORACLE)) {
   console.error(`oracle binary not found at ${ORACLE}\nBuild it first:  make -C v2calc`)
   process.exit(2)
-}
-
-// v2calc JSON key → V3 stat key. Sub-saves/spellpower composed separately below.
-const BREAKDOWN_MAP: Record<string, string> = {
-  hitpoints: 'hp', prr: 'prr', mrr: 'mrr', mrrCap: 'mrrCap',
-  dodge: 'dodge', dodgeCap: 'dodgeCap', fortification: 'fortification', bab: 'bab',
-  meleePower: 'melee.power', rangedPower: 'ranged.power',
-  saveFortitude: 'save.Fort', saveReflex: 'save.Reflex', saveWill: 'save.Will',
-}
-const ABILITY_MAP: Record<string, string> = {
-  STR: 'ability.Strength', DEX: 'ability.Dexterity', CON: 'ability.Constitution',
-  INT: 'ability.Intelligence', WIS: 'ability.Wisdom', CHA: 'ability.Charisma',
-}
-// oracle key → [V3 base-save key, V3 sub-save bonus key]
-const SUBSAVE_MAP: Array<[string, string, string]> = [
-  ['savePoison',      'save.Fort',   'save.sub.Poison'],
-  ['saveDisease',     'save.Fort',   'save.sub.Disease'],
-  ['saveTraps',       'save.Reflex', 'save.sub.Traps'],
-  ['saveSpell',       'save.Reflex', 'save.sub.Spell'],
-  ['saveMagic',       'save.Reflex', 'save.sub.Magic'],
-  ['saveEnchantment', 'save.Will',   'save.sub.Enchantment'],
-  ['saveIllusion',    'save.Will',   'save.sub.Illusion'],
-  ['saveFear',        'save.Will',   'save.sub.Fear'],
-  ['saveCurse',       'save.Will',   'save.sub.Curse'],
-]
-// oracle spellDC key → V3 dc.<School> suffix
-const SPELL_DC_MAP: Record<string, string> = {
-  abjuration: 'Abjuration', conjuration: 'Conjuration', divination: 'Divination',
-  enchantment: 'Enchantment', evocation: 'Evocation', illusion: 'Illusion',
-  necromancy: 'Necromancy', transmutation: 'Transmutation',
-}
-// full-analytics expansion — oracle scalar key → V3 stat key
-const SCALAR2_MAP: Record<string, string> = {
-  fatePoints: 'fatePoint', styleBonusFeats: 'styleFeats',
-  unconsciousRange: 'unconsciousRange',
-  incorporeality: 'incorporeality', helplessDR: 'helplessDR',
-  healAmp: 'healAmp', negHealAmp: 'negHealAmp', repairAmp: 'repairAmp',
-  threatMelee: 'threat.melee', threatRanged: 'threat.ranged', threatSpell: 'threat.spell',
-  doublestrike: 'melee.doublestrike', doubleshot: 'ranged.doubleshot',
-  imbueDice: 'imbueDice', sneakAttackDice: 'melee.sneakDice',
-  sneakAttackDamage: 'melee.sneakDamage', sneakAttackAttack: 'melee.sneakAttack',
-  dodgeBypass: 'dodgeBypass', fortificationBypass: 'fortBypass',
-  strikethrough: 'melee.strikethrough', helplessDamage: 'helpless',
-  spellPoints: 'spellPoints', spellResistance: 'spellResistance',
-  spellPenetration: 'spellPenetration', spellCostReduction: 'spellCostPct',
-  kiMax: 'ki.max', kiPassive: 'ki.passive', kiHit: 'ki.hit', kiCritical: 'ki.critical',
-  songCount: 'song.count', tumbleCharges: 'tumbleCharge',
 }
 
 const args = process.argv.slice(2)
@@ -109,316 +64,47 @@ if (fileArgs.length) {
 const cat = loadAllCatalogues(DATA)
 initBonusTypes(cat.allBonusTypes)
 
-function v3Stats(buildPath: string) {
-  const { build, document } = importV2Build(readFileSync(buildPath, 'utf-8'), { allTrees: cat.allTrees }) as never as { build: never, document?: never }
-  const gearItems: Record<string, Item> = {}
-  const embedded = (build as { embeddedGearItems?: Record<string, unknown> }).embeddedGearItems ?? {}
-  for (const [slot, name] of Object.entries((build as { gear: Record<string, string> }).gear ?? {})) {
-    if (!name) continue
-    // V2 Build::GetLatestVersionOfItem: catalogue version when the name is
-    // found there, else the file's embedded item definition (Cannith
-    // crafted armor, leveled challenge rings — oracle-verified on
-    // fuzz-5056/-5092).
-    const item = cat.allItems.find(i => i.Name === name) ?? (embedded[slot] as Item | undefined)
-    if (item) gearItems[slot] = item
+async function main(): Promise<void> {
+  const perStatMismatch: Record<string, number> = {}
+  let buildsWithDiff = 0
+  let buildsCompared = 0
+  const worst: Array<{ file: string; stat: string; v2: number; v3: number }> = []
+
+  for (const f of files) {
+    let oracle: OracleJson
+    try {
+      oracle = await runOracleOnFile(f, DATA, ORACLE)
+    } catch {
+      continue // multi-build docs / oracle parse issues — skip silently
+    }
+    let rows
+    try {
+      const { stats, build, gearItems } = computeV3ForXml(readFileSync(f, 'utf-8'), cat)
+      rows = buildParityRows(oracle, stats, build, gearItems)
+    } catch {
+      continue
+    }
+    buildsCompared++
+
+    const bad = diffParityRows(rows, tol)
+    for (const r of bad) {
+      perStatMismatch[r.stat] = (perStatMismatch[r.stat] ?? 0) + 1
+      worst.push({ file: path.basename(f), stat: r.stat, v2: r.v2, v3: r.v3 })
+    }
+    if (bad.length > 0) buildsWithDiff++
   }
-  const specialFeats = document ? findActiveLife(document)?.specialFeats : undefined
-  const stats = computeBuildStats({
-    allClasses: cat.allClasses, allRaces: cat.allRaces, allFeats: cat.allFeats,
-    allTrees: cat.allTrees, allSelfBuffs: cat.allSelfBuffs, allAugments: cat.allAugments,
-    allSetBonuses: cat.allSetBonuses, allFiligreeBonuses: cat.allFiligreeBonuses,
-    allFiligrees: cat.allFiligrees, allWeaponGroups: cat.allWeaponGroups,
-    allSpells: cat.allSpells, allGuildBuffs: cat.allGuildBuffs,
-    allItemBuffs: cat.allItemBuffs, allStances: cat.allStances, specialFeats, gearItems,
-  }, build)
-  return { stats, gearItems, build: build as unknown as { epicLevels?: number, legendaryLevels?: number } }
+
+  console.log(`\nOracle vs V3 — ${buildsCompared} builds compared (tol ${tol})`)
+  console.log(`${buildsWithDiff} builds with at least one mismatch\n`)
+  console.log('mismatches per stat (V2 oracle is truth):')
+  for (const [stat, n] of Object.entries(perStatMismatch).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${String(n).padStart(4)}  ${stat}`)
+  }
+  console.log('\nsample mismatches (V2 → V3):')
+  for (const w of worst.slice(0, 100)) {
+    console.log(`  ${w.stat.padEnd(20)} V2=${String(w.v2).padStart(6)}  V3=${String(w.v3).padStart(6)}  ${w.file}`)
+  }
+  process.exit(buildsWithDiff > 0 ? 1 : 0)
 }
 
-const perStatMismatch: Record<string, number> = {}
-let buildsWithDiff = 0
-let buildsCompared = 0
-const worst: Array<{ file: string; stat: string; v2: number; v3: number }> = []
-
-for (const f of files) {
-  let oracle: { abilityTotal?: Record<string, number>; breakdowns?: Record<string, number> }
-  try {
-    const out = execFileSync(ORACLE, [f, DATA], { maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] })
-    oracle = JSON.parse(out.toString())
-  } catch {
-    continue // multi-build docs / oracle parse issues — skip silently
-  }
-  let stats: ReturnType<typeof computeBuildStats>
-  let buildForStats: { epicLevels?: number, legendaryLevels?: number }
-  let gearForStats: Record<string, Item> = {}
-  try { ({ stats, gearItems: gearForStats, build: buildForStats } = v3Stats(f)) } catch { continue }
-  buildsCompared++
-
-  const rows: Array<[string, number, number]> = []
-  for (const [ok, v3k] of Object.entries(ABILITY_MAP)) {
-    if (oracle.abilityTotal?.[ok] === undefined) continue
-    rows.push([`ability.${ok}`, oracle.abilityTotal[ok], stats.total(v3k)])
-  }
-  for (const [ok, v3k] of Object.entries(BREAKDOWN_MAP)) {
-    if (oracle.breakdowns?.[ok] === undefined) continue
-    rows.push([ok, oracle.breakdowns[ok], stats.total(v3k)])
-  }
-  // Sub-saves: V2's BreakdownItemSave sub-breakdowns are BASE SAVE + the
-  // sub-type bonuses; V3 models the sub bonus separately (UI subSave()).
-  for (const [ok, base, sub] of SUBSAVE_MAP) {
-    if (oracle.breakdowns?.[ok] === undefined) continue
-    rows.push([ok, oracle.breakdowns[ok], stats.total(base) + stats.total(sub)])
-  }
-  // Max dex bonus: with no armor equipped V2 adds a 999 "No limit to Max
-  // Dex Bonus" effect (BreakdownItemMDB::CreateOtherEffects) and MDB
-  // effects stack on top; V3 models "no cap" as armorMaxDex === null with
-  // the same effects in the 'mdb' pool.
-  if (oracle.breakdowns?.maxDexBonus !== undefined) {
-    const v2mdb = oracle.breakdowns.maxDexBonus
-    // stats.armorMaxDex is the armor's PRINTED cap only; Effect_MaxDexBonus
-    // contributions (armor mastery, Horizon Walker cores, …) pool under
-    // 'mdb' in both the armored and unarmored cases. V2's "No limit" 999
-    // effect fires whenever the CLOTH ARMOR stance is on (robes/outfits,
-    // even with a printed 0) and no tower shield is equipped.
-    const armorItem = gearForStats['Armor'] as { Armor?: string } | undefined
-    const towerShield = Object.values(gearForStats)
-      .some(i => (i as { Weapon?: string }).Weapon === 'Tower Shield')
-    const featsChosen = new Set(Object.values(
-      (buildForStats as { featChoices?: Record<string, string> }).featChoices ?? {}))
-    const docentAsCloth = armorItem?.Armor === 'Docent'
-      && !featsChosen.has('Mithral Body') && !featsChosen.has('Adamantine Body')
-    const clothNoLimit = (!armorItem || armorItem.Armor === 'Cloth' || docentAsCloth) && !towerShield
-    // Typeless embedded armor (no <Armor> field): NOT cloth in V2, and with
-    // no printed MDB the armored total is just the mdb effect pool.
-    const typelessArmor = armorItem !== undefined && armorItem.Armor === undefined
-    const v3mdb = (clothNoLimit && !typelessArmor
-      ? 999
-      : (stats.armorMaxDex ?? 0)) + stats.total('mdb')
-    rows.push(['maxDexBonus', v2mdb, v3mdb])
-  }
-  // Spell school DCs. V2 BreakdownItemSpellSchool holds Item=All AND
-  // school-specific SpellDC effects in ONE pool, so gear-pool Highest-Only
-  // competes across both (fuzz-5000: quarterstaff +3 Evocation beats Amber
-  // Pendant +2 All). Re-resolve the UNION of V3's dc.All and dc.<School>
-  // pools to reproduce that competition.
-  const spellDC = (oracle as { spellDC?: Record<string, number> }).spellDC
-  for (const [ok, school] of Object.entries(SPELL_DC_MAP)) {
-    if (spellDC?.[ok] === undefined) continue
-    const combined = resolveBonus([
-      ...stats.resolve('dc.All').bonuses,
-      ...stats.resolve(`dc.${school}`).bonuses,
-    ]).total
-    rows.push([`dc.${school}`, spellDC[ok], combined])
-  }
-  // Per-class caster levels. V2 BreakdownItemClassCasterLevel composes:
-  // class levels + Wild Mage/Arcane Trickster "Mixed Magics" (min(20, level)
-  // − classLevels, only when classLevels > 0) + CasterLevel effects (per-
-  // class and Item=All pools).
-  const casterLevel = (oracle as { casterLevel?: Record<string, number> }).casterLevel
-  const mixedMagics = ['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
-    Object.entries(buildForStats.enhancementSelections ?? {}).some(([tree, sels]) =>
-      (sels as Record<string, string>)[n] === 'Mixed Magics'
-      && ((buildForStats.enhancementChoices?.[tree] as Record<string, number> | undefined)?.[n] ?? 0) > 0))
-  const charLvlForCl = (buildForStats.totalLevel ?? 0)
-    + (buildForStats.epicLevels ?? 0) + (buildForStats.legendaryLevels ?? 0)
-  for (const [cls, v2cl] of Object.entries(casterLevel ?? {})) {
-    const lv = buildForStats.classes.find((c: { name: string }) => c.name === cls)?.levels ?? 0
-    let v3cl = lv + stats.total(`cl.${cls}`) + stats.total('cl.All')
-    if (lv > 0 && mixedMagics) v3cl += Math.min(20, charLvlForCl) - lv
-    rows.push([`cl.${cls}`, v2cl, v3cl])
-  }
-  // Full-analytics expansion
-  for (const [ok, v3k] of Object.entries(SCALAR2_MAP)) {
-    if (oracle.breakdowns?.[ok] === undefined) continue
-    rows.push([ok, oracle.breakdowns[ok], stats.total(v3k)])
-  }
-  const oracleExt = oracle as {
-    skills?: Record<string, number>
-    tacticalDC?: Record<string, number>
-    spellPower?: Record<string, number>
-    spellCritChance?: Record<string, number>
-    energyResistance?: Record<string, number>
-    energyAbsorption?: Record<string, number>
-  }
-  for (const [name, v2v] of Object.entries(oracleExt.skills ?? {})) {
-    // Skills carry half-ranks (cross-class 0.5/point); V2 emits the raw
-    // double (67.50). Compare both sides truncated, like V2's int display.
-    rows.push([`skill.${name}`, Math.trunc(v2v), stats.total(`skill.${name}`)])
-  }
-  for (const [name, v2v] of Object.entries(oracleExt.tacticalDC ?? {})) {
-    rows.push([`tacticalDC.${name}`, v2v, stats.total(`tacticalDC.${name}`)])
-  }
-  // V2 per-type spell power totals INCLUDE the universal breakdown (sibling
-  // feed); Item=All effects are fanned into every per-type pool by the
-  // parser (so they compete Highest-Only per type, V2-style). V2's
-  // universal DISPLAY total is just the universal pool.
-  const v3UniversalSP = stats.total('sp.Universal')
-  if (oracle.breakdowns?.spellPowerUniversal !== undefined) {
-    rows.push(['spellPowerUniversal', oracle.breakdowns.spellPowerUniversal, stats.total('sp.Universal')])
-  }
-  // Movement speed: V3 models the base run speed as a flat 100; V2's
-  // breakdown holds only the bonuses.
-  if (oracle.breakdowns?.movementSpeed !== undefined) {
-    rows.push(['movementSpeed', oracle.breakdowns.movementSpeed, stats.total('speed') - 100])
-  }
-  // Destiny APs — V2 BreakdownItemDestinyAps::CreateOtherEffects derives the
-  // level APs from Build::Level() with a +1 offset: at char level L ≥ 20,
-  // epic APs = min(L−20+1, 10)×4 (so a flat level-20 build already has 4);
-  // at L ≥ 30, legendary APs = min(L−30+1, 10)×4 EXCEPT exactly at
-  // BUILD_START_LEVEL (34) where the count is pinned to 4. Plus FatePoints/3
-  // (fractions dropped) and DestinyAPBonus effects (V3 'destinyAP' pool).
-  if (oracle.breakdowns?.destinyAPs !== undefined) {
-    const charLvl = (buildForStats.totalLevel ?? 0)
-      + (buildForStats.epicLevels ?? 0) + (buildForStats.legendaryLevels ?? 0)
-    let levelAPs = 0
-    if (charLvl >= 20) {
-      const l = charLvl - 20
-      levelAPs += Math.min(l + 1, 10) * 4
-      if (l >= 10) {
-        let ll = Math.min(l - 10 + 1, 10)
-        if (charLvl === 34) ll = 4
-        levelAPs += ll * 4
-      }
-    }
-    const v3daps = levelAPs
-      + Math.floor(stats.total('fatePoint') / 3)
-      + stats.total('destinyAP')
-    rows.push(['destinyAPs', oracle.breakdowns.destinyAPs, v3daps])
-  }
-  for (const [name, v2v] of Object.entries(oracleExt.spellPower ?? {})) {
-    rows.push([`sp.${name}`, v2v, v3UniversalSP + stats.total(`sp.${name}`)])
-  }
-  // V2 per-type spell crit chance = universal-lore breakdown (sibling feed)
-  // + per-type lore (Item=All fanned per type by the parser, as above).
-  const v3UniversalCrit = stats.total('spCrit.Universal')
-  for (const [name, v2v] of Object.entries(oracleExt.spellCritChance ?? {})) {
-    rows.push([`spCrit.${name}`, v2v, v3UniversalCrit + stats.total(`spCrit.${name}`)])
-  }
-  for (const [name, v2v] of Object.entries(oracleExt.energyResistance ?? {})) {
-    rows.push([`resist.${name}`, v2v, stats.total(`resist.${name}`)])
-  }
-  // ── pass 134: AC / hirelings / immunities / song duration / crit mult ──
-  const o134 = oracle as {
-    ac?: number; songDuration?: number; immunities?: string
-    hireling?: Record<string, number>
-    spellCritMultiplier?: Record<string, number>
-  }
-  if (o134.ac !== undefined) rows.push(['ac', o134.ac, stats.total('ac')])
-  if (o134.songDuration !== undefined) {
-    rows.push(['songDuration', o134.songDuration, stats.total('song.duration')])
-  }
-  // Immunities: V2 emits the display string (comma-joined effect names, with
-  // duplicates); V3 pools immunity.<name> keys. Compare as SETS of names.
-  if (o134.immunities !== undefined) {
-    const v2Set = new Set(o134.immunities.split(',').map(x => x.trim()).filter(Boolean))
-    const v3Set = new Set(stats.keys()
-      .filter(k => k.startsWith('immunity.') && stats.total(k) > 0)
-      .map(k => k.slice('immunity.'.length).trim()))
-    let diff = 0
-    for (const n of v2Set) if (!v3Set.has(n)) diff++
-    for (const n of v3Set) if (!v2Set.has(n)) diff++
-    rows.push(['immunities', v2Set.size, v2Set.size - diff])
-  }
-  // Hirelings: V2's ability breakdown is ONE pool for all six abilities.
-  const HIRELING_MAP: Record<string, string> = {
-    hitpoints: 'hireling.hp', fortification: 'hireling.fort',
-    prr: 'hireling.prr', mrr: 'hireling.mrr', dodge: 'hireling.dodge',
-    meleePower: 'hireling.melee.power', rangedPower: 'hireling.ranged.power',
-    spellPower: 'hireling.sp.All', concealment: 'hireling.concealment',
-  }
-  for (const [ok, v3k] of Object.entries(HIRELING_MAP)) {
-    if (o134.hireling?.[ok] === undefined) continue
-    rows.push([`hireling.${ok}`, o134.hireling[ok], stats.total(v3k)])
-  }
-  if (o134.hireling?.abilityBonus !== undefined) {
-    const v3ab = stats.keys()
-      .filter(k => k.startsWith('hireling.ability.'))
-      .reduce((sum, k) => sum + stats.total(k), 0)
-    rows.push(['hireling.abilityBonus', o134.hireling.abilityBonus, v3ab])
-  }
-  // Spell crit multipliers: V2 per-type = universal feed + per-type effects;
-  // fractional (0.25 steps) — compare ×100 as ints.
-  const v3UniversalCritDmg = stats.total('spCritDmg.Universal') + stats.total('spCritDmg.All')
-  for (const [name, v2v] of Object.entries(o134.spellCritMultiplier ?? {})) {
-    const v3v = name === 'Universal'
-      ? stats.total('spCritDmg.Universal')
-      : v3UniversalCritDmg + stats.total(`spCritDmg.${name}`)
-    rows.push([`spCritDmg.${name}`, Math.round(v2v * 100), Math.round(v3v * 100)])
-  }
-
-  // ── pass 134: weapon lines (per-hand BreakdownItemWeapon totals) ───────
-  // V3's weapon model is main-hand-centric flat keys; compose best-effort
-  // equivalents. Lines V3 cannot yet model are compared anyway — mismatches
-  // are the fix backlog, exactly like every previous widening.
-  const oWeapons = oracle as {
-    weaponMain?: Record<string, number>
-    weaponOffhand?: Record<string, number>
-  }
-  const wm = oWeapons.weaponMain
-  if (wm !== undefined) {
-    // BAB is now a line INSIDE the melee.toHit pool (V2 puts it in the attack
-    // pool so percent effects scale over it). melee.* IS the unified
-    // main-hand weapon line — ranged weapons' effects route there too.
-    if (wm.attackBonus !== undefined) {
-      rows.push(['weaponMain.attackBonus', wm.attackBonus, stats.total('melee.toHit')])
-    }
-    if (wm.damageBonus !== undefined) {
-      rows.push(['weaponMain.damageBonus', wm.damageBonus, stats.total('melee.damage')])
-    }
-    const w = stats.weapon
-    if (wm.critThreatRange !== undefined) {
-      const base = w?.critThreatRange ?? 1
-      rows.push(['weaponMain.critThreatRange', wm.critThreatRange,
-        base + stats.total('weapon.threatRange') + stats.total('melee.crit.range')])
-    }
-    if (wm.critMultiplier !== undefined) {
-      const base = w?.critMultiplier ?? 2
-      rows.push(['weaponMain.critMultiplier', wm.critMultiplier,
-        base + stats.total('melee.crit.multiplier')])
-    }
-    if (wm.attackSpeed !== undefined) {
-      rows.push(['weaponMain.attackSpeed', wm.attackSpeed,
-        stats.total('weapon.alacrity') + stats.total('melee.alacrity')])
-    }
-    if (wm.ghostTouch !== undefined) {
-      rows.push(['weaponMain.ghostTouch', wm.ghostTouch, stats.total('ghostTouch')])
-    }
-    if (wm.trueSeeing !== undefined) {
-      rows.push(['weaponMain.trueSeeing', wm.trueSeeing, stats.total('trueSeeing')])
-    }
-  }
-
-  // V2 BreakdownItemEnergyAbsorption::Total is MULTIPLICATIVE:
-  // 100 - 100·∏(1 - aᵢ/100) over the active (post-non-stacking) effects,
-  // after V2's identical-effect merge. V3 pools the same effects additively
-  // under absorb.<type>; absorptionTotal() recombines them V2-style.
-  for (const [name, v2v] of Object.entries(oracleExt.energyAbsorption ?? {})) {
-    rows.push([`absorb.${name}`, Math.trunc(v2v), absorptionTotal(stats.resolve(`absorb.${name}`).bonuses)])
-  }
-
-  let hasDiff = false
-  for (const [stat, v2, v3raw] of rows) {
-    // The oracle prints V2's running double cast to (int) — v2calc main.cpp
-    // `(int)v` — exactly like V2's UI. Compare V3's double the same way so
-    // fractional contributions (e.g. Rapid Shot's 1.5 × BAB) don't produce
-    // phantom sub-integer mismatches.
-    const v3 = Math.trunc(v3raw)
-    if (Math.abs(v2 - v3) > tol) {
-      hasDiff = true
-      perStatMismatch[stat] = (perStatMismatch[stat] ?? 0) + 1
-      worst.push({ file: path.basename(f), stat, v2, v3 })
-    }
-  }
-  if (hasDiff) buildsWithDiff++
-}
-
-console.log(`\nOracle vs V3 — ${buildsCompared} builds compared (tol ${tol})`)
-console.log(`${buildsWithDiff} builds with at least one mismatch\n`)
-console.log('mismatches per stat (V2 oracle is truth):')
-for (const [stat, n] of Object.entries(perStatMismatch).sort((a, b) => b[1] - a[1])) {
-  console.log(`  ${String(n).padStart(4)}  ${stat}`)
-}
-console.log('\nsample mismatches (V2 → V3):')
-for (const w of worst.slice(0, 100)) {
-  console.log(`  ${w.stat.padEnd(20)} V2=${String(w.v2).padStart(6)}  V3=${String(w.v3).padStart(6)}  ${w.file}`)
-}
-process.exit(buildsWithDiff > 0 ? 1 : 0)
+main()

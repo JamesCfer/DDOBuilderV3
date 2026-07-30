@@ -15,12 +15,15 @@
 //  - DOT.DDOBuild "Purity of Heart" / "Dreadful Dimlight (Legendary)": absent
 //    from this repo's Output/DataFiles (the user's V2 install ships newer
 //    game data) — a data-sync gap, not an engine gap.
-//  - wiz dc caster.DDOBuild "Epic Spell Focus: <School>": upstream data
-//    2.0.0.82 consolidated the seven per-school Epic Spell Focus feats into
-//    a single "Epic Spell Focus" (+ new "Legendary Spell Focus"), so the old
-//    per-school names no longer exist; the dependent "Spell Specialty:
-//    <School>" prereq chains break with them. V2 loading this old build
-//    drops/red-flags the same feats — stale build data, not a V3 bug.
+//  - wiz dc caster.DDOBuild "Epic Spell Focus" ×2 / "Spell Specialty":
+//    upstream data 2.0.0.82 consolidated the seven per-school Epic Spell
+//    Focus feats into a single "Epic Spell Focus"; V2 (and now V3's
+//    importer) renames the old trained feats at load, which leaves this
+//    build with TWO copies of a MaxTimesAcquire-1 feat (the second is
+//    red-flagged in V2's UI but its effects still apply — oracle-verified),
+//    and "Spell Specialty: <School>" now carries a RequiresNoneOf on the
+//    base Spell Focus feats this build trains. Stale build data, not a V3
+//    engine gap.
 
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'fs'
@@ -43,14 +46,13 @@ const CORRUPT_SAVES = new Set(['Warlocks.DDOBuild'])
 // the build flagged red — V3 keeps them and shows them locked, same behavior.
 const V2_INVALID_TRAINED = new Set([
   'Mobile Spellcasting', 'Past Life: Arcane Initiate',
-  // Prereq chain broken by the 2.0.0.82 Epic Spell Focus consolidation.
+  // 2.0.0.82 Epic Spell Focus consolidation fallout (see header note): the
+  // renamed duplicate exceeds MaxTimesAcquire 1, and Spell Specialty now has
+  // a RequiresNoneOf on the trained base Spell Focus feats.
+  'Epic Spell Focus',
   'Spell Specialty: Illusion', 'Spell Specialty: Necromancy',
 ])
-const MISSING_DATA_FEATS = new Set([
-  'Purity of Heart',
-  // Removed by the 2.0.0.82 data update (consolidated into "Epic Spell Focus").
-  'Epic Spell Focus: Necromancy', 'Epic Spell Focus: Illusion',
-])
+const MISSING_DATA_FEATS = new Set(['Purity of Heart'])
 
 describe.skipIf(!have)('50-build user collection', () => {
   const cat = loadAllCatalogues(DATA)
