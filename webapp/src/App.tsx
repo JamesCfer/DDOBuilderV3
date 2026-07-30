@@ -57,9 +57,9 @@ import styles from './App.module.css'
 // (HeroForge-style consolidation of the old 30-item sidebar).
 // ---------------------------------------------------------------------------
 
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Analysis' | 'Community' | 'More'
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Analysis' | 'Community' | 'Custom'
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Analysis', 'Community', 'More']
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Analysis', 'Community', 'Custom']
 
 const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
@@ -67,7 +67,7 @@ const PAGE_TABS: Record<Page, string[]> = {
   Equipment:   ['Gear', 'Filigrees', 'Set Bonuses', 'Clickies'],
   Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Stances', 'Bonuses', 'Buffs', 'Compare'],
   Community:   ['Browse', 'My Builds'],
-  More:        ['Windows', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
+  Custom:      ['Windows', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
 }
 
 /** Tabs whose content wants the full viewport width (trees, tables). */
@@ -196,14 +196,14 @@ function AppInner() {
       case 'Community/Browse':      return <CommunityPanel onLoad={handleLoad} />
       case 'Community/My Builds':   return <AccountPanel onLoad={handleLoad} />
 
-      // ── More ─────────────────────────────────────────────────────────────
-      case 'More/Windows':      return <Dashboard />
-      case 'More/Notes':        return <NotesPanel />
-      case 'More/Forum Export': return <ForumExportPanel />
-      case 'More/Content':      return <ContentPanel />
-      case 'More/Settings':     return <SettingsPanel />
-      case 'More/Help':         return <HelpPanel />
-      case 'More/Build Log':    return <BuildHistoryPanel />
+      // ── Custom ───────────────────────────────────────────────────────────
+      case 'Custom/Windows':      return <Dashboard />
+      case 'Custom/Notes':        return <NotesPanel />
+      case 'Custom/Forum Export': return <ForumExportPanel />
+      case 'Custom/Content':      return <ContentPanel />
+      case 'Custom/Settings':     return <SettingsPanel />
+      case 'Custom/Help':         return <HelpPanel />
+      case 'Custom/Build Log':    return <BuildHistoryPanel />
 
       default: return null
     }
@@ -215,6 +215,7 @@ function AppInner() {
       <Layout
         pages={PAGES}
         activePage={page}
+        fullBleed={page === 'Custom' && tab === 'Windows'}
         onNavigate={p => setPage(p as Page)}
         subTabs={PAGE_TABS[page]}
         activeSubTab={tab}
