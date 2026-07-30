@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
-import { exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import dotenv from 'dotenv'
 import {
   loadRaces, loadClasses, loadFeats, loadEnhancementTrees, loadSpells,
@@ -86,21 +86,35 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.get('/api/version', (_req, res) => {
-  // The VERSION file lives at the repo root. __dirname differs between dev
-  // (ts-node from webapp/) and prod (compiled to webapp/dist-server/), and the
-  // process cwd may also vary, so try the candidate locations in order.
-  const candidates = [
-    path.resolve(__dirname, '..', 'VERSION'),        // dev: webapp/../VERSION
-    path.resolve(__dirname, '..', '..', 'VERSION'),  // prod: webapp/dist-server/../../VERSION
-    path.resolve(process.cwd(), '..', 'VERSION'),    // launched from webapp/
-    path.resolve(process.cwd(), 'VERSION'),          // launched from repo root
-  ]
+  // V3's version is the most recently MERGED PR number — every merge to main
+  // is a squash commit whose subject ends in "(#NNN)". Scan recent history so
+  // work-in-progress commits on a feature branch don't hide it. Falls back to
+  // the repo-root VERSION file (V2's data version) for non-git deployments.
   let version = 'unknown'
-  for (const file of candidates) {
-    try {
-      const v = fs.readFileSync(file, 'utf-8').trim()
-      if (v) { version = v; break }
-    } catch { /* try next candidate */ }
+  try {
+    const subjects = execSync('git log -50 --pretty=%s', {
+      cwd: __dirname,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString()
+    const m = subjects.match(/\(#(\d+)\)/)
+    if (m) version = `#${m[1]}`
+  } catch { /* not a git checkout — fall through */ }
+  if (version === 'unknown') {
+    // The VERSION file lives at the repo root. __dirname differs between dev
+    // (ts-node from webapp/) and prod (compiled to webapp/dist-server/), and
+    // the process cwd may also vary, so try the candidate locations in order.
+    const candidates = [
+      path.resolve(__dirname, '..', 'VERSION'),        // dev: webapp/../VERSION
+      path.resolve(__dirname, '..', '..', 'VERSION'),  // prod: webapp/dist-server/../../VERSION
+      path.resolve(process.cwd(), '..', 'VERSION'),    // launched from webapp/
+      path.resolve(process.cwd(), 'VERSION'),          // launched from repo root
+    ]
+    for (const file of candidates) {
+      try {
+        const v = fs.readFileSync(file, 'utf-8').trim()
+        if (v) { version = v; break }
+      } catch { /* try next candidate */ }
+    }
   }
   res.json({ version })
 })
