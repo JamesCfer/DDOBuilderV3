@@ -1981,7 +1981,16 @@ function buildStatMapOnce(
     accumulateSetBonuses(map, gearItems, allSetBonuses, allAugmentChoices, allAugments, ctx)
 
     // ── Filigrees + filigree set bonuses ──────────────────────────────────
-    accumulateFiligrees(map, build.filigreeSlots, build.artifactFiligreeSlots ?? [], allFiligrees, allFiligreeBonuses, ctx)
+    // V2 Build::ApplyGearEffects/RevokeGearEffects (Build.cpp:4776-4783,
+    // 4852-4859) only apply/revoke the 10 Artifact Filigree slots when
+    // `gear.HasMinorArtifact()` — i.e. some equipped item carries the
+    // presence-only <MinorArtifact/> flag (EquippedGear.cpp:424-435). A build
+    // with no Minor Artifact equipped gets no Artifact Filigree effects.
+    const hasMinorArtifact = Object.values(gearItems).some(item => 'MinorArtifact' in item)
+    accumulateFiligrees(
+      map, build.filigreeSlots,
+      hasMinorArtifact ? (build.artifactFiligreeSlots ?? []) : [],
+      allFiligrees, allFiligreeBonuses, ctx)
 
     // ── Self / party buffs ────────────────────────────────────────────────
     accumulateSelfBuffs(map, build.selfBuffs ?? [], allSelfBuffs, ctx)
