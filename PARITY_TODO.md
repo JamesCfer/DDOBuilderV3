@@ -152,6 +152,7 @@ the PR number, so this file doubles as a changelog.
 | 129 | **Max imbue rangedPower −10 CLOSED — `ctxBAB` had two compensating bugs: Epic/Legendary double-count AND a missing `OverrideBAB` feed** — confirmed the pass-127 "suspected, unconfirmed" lead directly against the real V2 dump (temporary `AllActiveEffects()` debug hook added to `DDOBuilder/BreakdownItem.h` + `v2calc/shim/BreakdownHostLinux.cpp`/`v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix). **(A) Double-count**: `ctxBAB` (`buildStats.ts`, the value fed to `EffectContext.bab` for `AType=BAB` effect resolution — NOT the same code path as the `bab` stat itself) looped once over `ctxClassLevels` — which already carries `'Epic'`/`'Legendary'` entries seeded a few lines above from `build.epicLevels`/`build.legendaryLevels` — then added `classBAB(epicCls, …)`/`classBAB(legCls, …)` a SECOND time in two redundant follow-up `if` blocks. **(B) Missing override**: V2 `Effect::TotalAmount`'s `Amount_BAB` case (`Effect.cpp:1121-1145`) reads the LIVE, fully-resolved `Breakdown_BAB.Total()`, which already folds in any active `OverrideBAB` boost (Max imbue trains "Tenser's Transformation", boosting real V2 BAB from 15 to 25); `ctxBAB` was computed once, up front, from class tables only, and never saw that boost. On this build the two bugs partly canceled — buggy `ctxBAB` was 15 (correct) + 5 (Epic dup) + 0 (Legendary dup) = 20, vs the true 25, so "Multitude of Missiles"' `RangedPower AType=BAB Amount=2` effect gave `2×20=40` instead of the correct `2×25=50` (−10, matching the observed diff exactly). Fixing only (A) in isolation — an earlier draft of this pass — dropped `ctxBAB` to 15 with the override still missing, making the SAME build worse (`2×15=30`, −20) and newly exposing the identical missing-override gap on "Nerfer.DDOBuild" (previously masked by the same double-count coincidence). Full fix: removed the redundant double-count blocks, AND threaded the fully-resolved `bab` stat (which independently folds in any override) back into `ctxBAB` through the SAME fixed-point iteration `buildStatMap` already runs for ability totals/skills/caster levels (`#93`) — iteration 1 falls back to the raw class-table sum, iteration 2+ uses the previous iteration's resolved `bab`, converging immediately since `bab` doesn't itself depend on `ctxBAB`. `oracleDiff.ts`: **rangedPower 2→0 mismatched builds closed for both Max imbue AND the newly-surfaced Nerfer regression**; corpus-wide down to 1 build / 2 cells (Maetrim MP/RP −2/−2, unrelated pre-existing augment-scaling lead). 2 regression tests in `parityPass129BABDoubleCount.test.ts` (synthetic builds, oracle-independent — one isolates the double-count from the `MAX_BAB=25` cap, one isolates the override feed-through). | #172 |
 | 130 | **Maetrim MP/RP −2/−2 CLOSED — `EnterValue` augments (e.g. "Mythic Power Boost") never read the player-entered `ItemAugment::Value`** — confirmed directly against the real V2 dump (temporary `AllActiveEffects()`/`IsActive()` debug hook added to `DDOBuilder/BreakdownItem.h` + `v2calc/shim/BreakdownHostLinux.cpp`/`v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix). V2 `Build::ApplyAugment` (`Build.cpp:4948-4966`) checks `augment.HasEnterValue()` and, when set, replaces EVERY effect's `Amount` with `itemAugment.Value()` — the mechanic behind "Mythic Power Boost" (the Mythic-slot augment the player reforges to raise its rank), completely independent of the already-implemented `ChooseLevel`/`LevelValue` mechanic. `webapp/src/lib/buildStats.ts`'s `accumulateAugments` never read `EnterValue`/`Value` at all, so every such augment always contributed its catalogue placeholder Amount (`1`) regardless of what the player actually entered. On `Maetrim_EndGameHandwrapsMonk.DDOBuild`'s ACTIVE gear set (selected via `<ActiveGear>`, itself already correct in `v2Import.ts`) three "Mythic Power Boost" augments are slotted with `Value` 3/1/1 (Dinosaur Bone Cloak/Waistwrap/Karissa's Goggles); V2 sums all three (Mythic bonus type stacks `Always`) for 5, V3 summed 1+1+1=3 — a flat −2 on both `melee.power` and `ranged.power` (both effects on the same augment), matching the observed diff exactly and closing the corpus's last remaining oracle mismatch. Fix: `v2Import.ts` now captures `<Value>` into a new `build.augmentValueChoices` map (parallel to the existing `augmentLevelChoices`); `accumulateAugments` accepts it and, when the resolved augment has `EnterValue`, overrides every effect's Amount with the stored value before parsing (mirroring the ChooseLevel override path); `v2Export.ts` round-trips `<Value>` back out for `.DDOBuild` re-export. `oracleDiff.ts`: **rangedPower/meleePower 1→0 — 0 of 53 builds mismatch** (down from 46 pre-pass-119). 3 regression tests in `parityPass130EnterValueAugment.test.ts` (synthetic builds, oracle-independent). | #173 |
 | 133 | **G-MRR / G-PRR / G-AC golden-build residue CLOSED — closed as a side effect of passes 127-132, just never re-verified** — the "Golden-build residue" section tracked a bounded (not exact) PRR/MRR/AC gap against the real V2 forum export `exampledps.cc1.v2export.txt`, guarded by `parityGoldenPass106.test.ts`'s `KNOWN_OPEN` set + a `gaps: { ac: -4, mrr: -8, prr: -4 }` tolerance test. Re-running the diff directly against that real export (not just the `oracleDiff.ts` synthetic corpus) shows all three now match V2 exactly (diff 0) — the corpus-wide PRR/MRR/armor-stance root causes fixed in passes 121, 127, and 131-132 (Attack-feat per-shield PRR/MRR, `featCounts` wiring, shield/weapon `<Weapon>`-tag naming, tracked + auto-derived armor stances) closed this specific build's residue too, but nobody had re-run this particular test's bounds since #165 to notice they'd hit zero. `KNOWN_OPEN` is now empty; `parityGoldenPass106.test.ts`'s loose bounds check replaced with an exact-match assertion on `ac`/`mrr`/`prr` so a future regression fails immediately instead of silently reopening up to the old bound. No production code changed — this closes stale tracking + tightens regression coverage. | this PR |
+| 134 | **D4 — Artifact Filigree slots gate on an equipped Minor Artifact item** — V2 `Build::ApplyGearEffects`/`RevokeGearEffects` (`Build.cpp:4776-4783`, `4852-4859`) only apply/revoke the 10 "Artifact Filigree" slot effects when `gear.HasMinorArtifact()` — some equipped item carries the presence-only `<MinorArtifact/>` flag (`EquippedGear::HasMinorArtifact`, `EquippedGear.cpp:424-435`). `buildStats.ts`'s call to `accumulateFiligrees` always applied `build.artifactFiligreeSlots` unconditionally, so a build with no Minor Artifact equipped still received Artifact Filigree bonuses in V3. Fixed by checking `'MinorArtifact' in item` across `gearItems` (same presence-only-flag pattern as `NoPastLife`/`NotHeroic`) and passing an empty artifact-filigree slot list when no Minor Artifact is equipped. Also corrected a stale D5 marker discovered during this pass — Docent armor-AC feat gating had already shipped (pass 134/#178) but the TODO entry was never flipped to done. 3 regression tests in `parityPassD4ArtifactFiligree.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -850,25 +851,25 @@ occurrences confirmed), so no change is needed there.
   (`types/ddo.ts`) and nothing in the reducer/`buildStats.ts` checks it — a
   V3 build can equip multiple Minor Artifacts simultaneously, which V2
   forbids.
-- ❌ **D4 — Artifact Filigree slots should gate on an equipped Minor
-  Artifact item.** V2 `Build.cpp:4767-4771`/`4843-4849` only applies/revokes
-  the 10 "Artifact Filigree" slot effects when `gear.HasMinorArtifact()` is
-  true. `webapp/src/lib/buildStats.ts:1278`
-  (`accumulateFiligrees(map, build.filigreeSlots,
-  build.artifactFiligreeSlots ?? [], ...)`) always applies
-  `artifactFiligreeSlots` with no such gate — a build with no Minor
-  Artifact equipped still gets Artifact Filigree bonuses in V3.
-- ❌ **D5 — Docent (Mithral/Adamantine Body) armor AC requires a matching
-  feat in V2; V3 applies it unconditionally (201 items).** V2 `Item.h:85-86`
-  (`MithralBody`/`AdamantineBody`) + `Build.cpp:5779-5822`
-  (`ApplyArmorEffects`): an item with `HasMithralBody()` requires the
-  "Composite Plating" feat for its base `ArmorBonus` and the "Mithral Body"
-  feat for the bonus's own AC effect (each carries a `Requirement_Feat`
-  gate); `HasAdamantineBody()` requires "Adamantine Body" similarly.
-  `webapp/src/lib/buildStats.ts:506-507` applies `item.ArmorBonus`
-  unconditionally for every item — any race/build (not just
-  Warforged/Bladeforged with the racial feat trained) gets full AC from a
-  Docent-type item in V3.
+- ✅ **D4 — Artifact Filigree slots now gate on an equipped Minor Artifact
+  item** — done (#134, this pass). V2 `Build.cpp:4767-4771`/`4843-4849`
+  only applies/revokes the 10 "Artifact Filigree" slot effects when
+  `gear.HasMinorArtifact()` is true. `buildStats.ts`'s call to
+  `accumulateFiligrees` always applied `build.artifactFiligreeSlots` with
+  no such gate — a build with no Minor Artifact equipped still got Artifact
+  Filigree bonuses in V3. Fixed: `buildStatMapOnce` now checks whether any
+  `gearItems` entry carries the presence-only `<MinorArtifact/>` flag
+  (`'MinorArtifact' in item`, same pattern as the existing `NoPastLife`/
+  `NotHeroic` flag normalisation) and passes an empty artifact-filigree
+  slot list when none is equipped. 3 regression tests in
+  `parityPassD4ArtifactFiligree.test.ts`.
+- ✅ **D5 — Docent (Mithral/Adamantine Body) armor AC gated on the matching
+  feat** — already done (stale marker; verified fixed in `buildStats.ts`'s
+  `accumulateGear`, landed with pass 134/#178 but this TODO entry was never
+  flipped). An item with a `MithralBody` value only contributes its base
+  `ArmorBonus` when "Composite Plating" is trained and its Mithral Body
+  bonus when "Mithral Body" is trained; `AdamantineBody` similarly requires
+  "Adamantine Body" — matching V2 `Build.cpp:5779-5822` `ApplyArmorEffects`.
 - ❌ **D6 — Legendary Green Steel "Dominant" stances never auto-activate
   (48 items flagged `IsGreensteel`).** V2 `StancesPane.cpp:1053-1160`
   (`UpdateGreensteelStances`): with 2+ equipped Green Steel items, V2
