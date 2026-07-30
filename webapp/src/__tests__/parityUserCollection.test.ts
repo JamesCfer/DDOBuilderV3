@@ -15,6 +15,12 @@
 //  - DOT.DDOBuild "Purity of Heart" / "Dreadful Dimlight (Legendary)": absent
 //    from this repo's Output/DataFiles (the user's V2 install ships newer
 //    game data) — a data-sync gap, not an engine gap.
+//  - wiz dc caster.DDOBuild "Epic Spell Focus: <School>": upstream data
+//    2.0.0.82 consolidated the seven per-school Epic Spell Focus feats into
+//    a single "Epic Spell Focus" (+ new "Legendary Spell Focus"), so the old
+//    per-school names no longer exist; the dependent "Spell Specialty:
+//    <School>" prereq chains break with them. V2 loading this old build
+//    drops/red-flags the same feats — stale build data, not a V3 bug.
 
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'fs'
@@ -35,8 +41,16 @@ const have = existsSync(DATA) && existsSync(DIR)
 const CORRUPT_SAVES = new Set(['Warlocks.DDOBuild'])
 // Feats V2 itself evaluates as untrainable (missing prereqs) but keeps on
 // the build flagged red — V3 keeps them and shows them locked, same behavior.
-const V2_INVALID_TRAINED = new Set(['Mobile Spellcasting', 'Past Life: Arcane Initiate'])
-const MISSING_DATA_FEATS = new Set(['Purity of Heart'])
+const V2_INVALID_TRAINED = new Set([
+  'Mobile Spellcasting', 'Past Life: Arcane Initiate',
+  // Prereq chain broken by the 2.0.0.82 Epic Spell Focus consolidation.
+  'Spell Specialty: Illusion', 'Spell Specialty: Necromancy',
+])
+const MISSING_DATA_FEATS = new Set([
+  'Purity of Heart',
+  // Removed by the 2.0.0.82 data update (consolidated into "Epic Spell Focus").
+  'Epic Spell Focus: Necromancy', 'Epic Spell Focus: Illusion',
+])
 
 describe.skipIf(!have)('50-build user collection', () => {
   const cat = loadAllCatalogues(DATA)
