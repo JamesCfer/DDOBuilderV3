@@ -126,7 +126,10 @@ export function reaperXpRequired(totalRAPs: number): number {
 // V2 level constants (DDOBuilder/stdafx.h)
 const MAX_CLASS_LEVEL = 20   // heroic levels 1-20
 const MAX_EPIC_LEVEL = 10    // epic levels 21-30
-const BUILD_START_LEVEL = 34
+// Upstream V2 master raised this from 34 to 36 when the game's level cap
+// moved (verified against Maetrim/DDOBuilderV2 stdafx.h and V2's live
+// Destiny APs output for a level-36 build: 40 epic + 24 legendary).
+const BUILD_START_LEVEL = 36
 
 /**
  * V2 BreakdownItemDestinyAps.cpp:48-92 — total Destiny (Epic Destiny) points.

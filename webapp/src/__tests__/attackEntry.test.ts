@@ -115,23 +115,21 @@ describe('buildAttackEntry', () => {
     expect(b.critDamage).toBeCloseTo(a.critDamage + 10, 6)
   })
 
-  // ---- Gap 3: off-hand doublestrike derived from main-hand ----
-  // V2 BreakdownItemOffhandDoublestrike.cpp:58-69: off-hand doublestrike =
-  // 50% of main-hand doublestrike (65% with Perfect TWF).
-  it('derives off-hand doublestrike from main-hand doublestrike (50% / 65% PTWF)', () => {
-    // Main-hand doublestrike 100% → off-hand proc multiplier:
-    //   plain TWF: 1 + 1.00*0.50 = 1.50 ; Perfect TWF: 1 + 1.00*0.65 = 1.65
-    const stats = makeStats({ 'melee.doublestrike': 100 })
+  // ---- Gap 3: off-hand doublestrike ----
+  // V2 BreakdownItemOffhandDoublestrike.cpp:44-77: the 50%-of-main-hand
+  // (65% with Perfect TWF) derived base now lives in buildStats phase 2.5, so
+  // attackEntry consumes the `offhand.doublestrike` stat total directly.
+  it('scales off-hand DPR by the offhand.doublestrike stat total', () => {
     const noDs = buildAttackEntry(makeStats({}), falchion, 18, 20, {
       foeAC: 10, offhand: falchion, twoWeaponFightingTier: 2,
     })
-    const plain = buildAttackEntry(stats, falchion, 18, 20, {
+    const plain = buildAttackEntry(makeStats({ 'offhand.doublestrike': 50 }), falchion, 18, 20, {
       foeAC: 10, offhand: falchion, twoWeaponFightingTier: 2,
     })
-    const perfect = buildAttackEntry(stats, falchion, 18, 20, {
-      foeAC: 10, offhand: falchion, twoWeaponFightingTier: 2, perfectTwf: true,
+    const perfect = buildAttackEntry(makeStats({ 'offhand.doublestrike': 65 }), falchion, 18, 20, {
+      foeAC: 10, offhand: falchion, twoWeaponFightingTier: 2,
     })
-    // Off-hand DPR scales by the (1 + derived doublestrike) factor.
+    // Off-hand DPR scales by the (1 + off-hand doublestrike) factor.
     expect(plain.offhandDPR).toBeCloseTo(noDs.offhandDPR * 1.5, 4)
     expect(perfect.offhandDPR).toBeCloseTo(noDs.offhandDPR * 1.65, 4)
   })

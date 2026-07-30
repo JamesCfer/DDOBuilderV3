@@ -29,12 +29,6 @@ export interface AttackEntryOptions {
   oversizedTwf?: boolean
   /** Character is non-proficient with the main-hand weapon (−4 to-hit). */
   nonProficient?: boolean
-  /**
-   * Perfect Two Weapon Fighting trained. Raises the derived off-hand
-   * doublestrike from 50% to 65% of the main hand
-   * (V2 BreakdownItemOffhandDoublestrike.cpp:58-69).
-   */
-  perfectTwf?: boolean
 }
 
 export interface AttackEntryResult {
@@ -201,12 +195,11 @@ export function buildAttackEntry(
   let offhandDPR = 0
   if (opts.offhand) {
     const offhandTier = opts.twoWeaponFightingTier ?? 0
-    // V2 derives off-hand doublestrike from the main hand: 50% of the main-hand
-    // doublestrike, or 65% with Perfect Two Weapon Fighting
-    // (BreakdownItemOffhandDoublestrike.cpp:58-69). Any explicit
-    // `offhand.doublestrike` effect adds on top of that derived base.
-    const derivedOffhandDoublestrike = doublestrike * (opts.perfectTwf ? 0.65 : 0.5)
-    const offhandDoublestrikeChance = derivedOffhandDoublestrike + offhandDoublestrike
+    // `offhand.doublestrike` already carries V2's derived base — 50% of the
+    // main-hand doublestrike, or 65% with Perfect Two Weapon Fighting
+    // (BreakdownItemOffhandDoublestrike.cpp:44-77, mirrored in buildStats
+    // phase 2.5) — plus any explicit DoublestrikeOffhand effects.
+    const offhandDoublestrikeChance = offhandDoublestrike
     // Probability the off-hand swings at all (TWF tier proc + any attack bonus),
     // multiplied up by the off-hand doublestrike for the extra off-hand swing.
     const offhandChance =

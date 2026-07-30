@@ -572,7 +572,7 @@ export function importV1Build(xml: string): V1ImportResult {
     return c === 'Unknown' ? '' : c
   })
   const epicSlice = levelTrainings.slice(20, 30).map(lt => asStr((lt as AnyRec).Class))
-  const legendarySlice = levelTrainings.slice(30, 34).map(lt => asStr((lt as AnyRec).Class))
+  const legendarySlice = levelTrainings.slice(30, 40).map(lt => asStr((lt as AnyRec).Class))
 
   out.levelClasses = heroicSlice
   out.totalLevel = heroicSlice.filter(Boolean).length
