@@ -16,8 +16,10 @@
 //    remaining declared levels, and never invalidating an already-set feat.
 
 import type {
-  CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Feat, Race,
+  Ability, CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Feat, Race,
 } from '../../types/ddo'
+import { aggregateLevelClasses, HEROIC_CAP } from '../levelProgression'
+import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../gamedata'
 import {
   accessibleTrees, treeSpent, nextRankCost, itemKey, type FuzzCatalogues,
 } from '../fuzz/randomBuild'
@@ -34,12 +36,23 @@ export type Move =
   | { kind: 'destinyTree'; slot: 0 | 1 | 2; tree: string; coreName: string; coreKey: string; cost: number; selector?: string }
   | { kind: 'feat'; slotKey: string; featName: string; level: number; featType: string }
   | { kind: 'classLevel'; level: number; className: string }
+  | { kind: 'epicLevel'; toLevel: number }
+  | { kind: 'legendaryLevel'; toLevel: number }
+  | { kind: 'abilityLevelUp'; level: number; ability: Ability }
 
 export interface MoveDomains {
   enhancements: boolean
   destinies: boolean
   feats: boolean
   classLevels: boolean
+  abilityLevelUps?: boolean
+}
+
+/** True for moves that raise or assign character levels (the "level up and
+ *  go from there" moves) — applied even at zero immediate gain when the
+ *  build is below the optimizer's target level. */
+export function isLevelingMove(m: Move): boolean {
+  return m.kind === 'classLevel' || m.kind === 'epicLevel' || m.kind === 'legendaryLevel'
 }
 
 export interface MoveContext {
@@ -53,6 +66,16 @@ export interface MoveContext {
   fatePoints: number
   /** From current stats: stats.total('destinyAP'). */
   destinyApBonus: number
+  /**
+   * Character level the optimizer may level the build toward (heroic class
+   * levels first, then epic, then legendary). Defaults to the build's
+   * current character level — i.e. no leveling.
+   */
+  targetLevel?: number
+}
+
+export function characterLevel(build: CharacterBuild): number {
+  return (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
 }
 
 export function moveId(m: Move): string {
@@ -62,6 +85,9 @@ export function moveId(m: Move): string {
     case 'destinyTree': return `dt|${m.slot}|${m.tree}|${m.selector ?? ''}`
     case 'feat':        return `f|${m.slotKey}|${m.featName}`
     case 'classLevel':  return `c|${m.level}|${m.className}`
+    case 'epicLevel':      return `el|${m.toLevel}`
+    case 'legendaryLevel': return `ll|${m.toLevel}`
+    case 'abilityLevelUp': return `alu|${m.level}|${m.ability}`
   }
 }
 
@@ -76,7 +102,13 @@ export function describeMove(m: Move): string {
     case 'feat':
       return `Take feat ${m.featName} (${m.featType || 'feat'} slot, level ${m.level})`
     case 'classLevel':
-      return `Assign class level ${m.level} to ${m.className}`
+      return `Take level ${m.level} as ${m.className}`
+    case 'epicLevel':
+      return `Take epic level (character level ${m.toLevel})`
+    case 'legendaryLevel':
+      return `Take legendary level (character level ${m.toLevel})`
+    case 'abilityLevelUp':
+      return `Put the level-${m.level} ability point into ${m.ability}`
   }
 }
 
@@ -299,38 +331,87 @@ export function featMoves(ctx: MoveContext): Move[] {
   return out
 }
 
+/**
+ * Assign the next open heroic level to a class. Covers both "holes" left in
+ * an existing level plan and leveling a low-level (or brand-new) character
+ * toward the target level. Candidates follow the game's multiclass rules:
+ * at most 3 distinct classes, at most one archetype, and an archetype never
+ * with its own base class. `classes` and `totalLevel` are re-aggregated from
+ * the per-level assignment exactly like the SET_LEVEL_CLASS reducer.
+ */
 export function classLevelMoves(ctx: MoveContext): Move[] {
   const { build, allClasses, allRaces, allFeats } = ctx
-  const levels = build.levelClasses
-  if (!levels || !levels.includes('')) return []
   const race = allRaces.find(r => r.Name === build.race)
+  const target = ctx.targetLevel ?? characterLevel(build)
 
-  const declared = new Map<string, number>()
-  for (const bc of build.classes) {
-    if (bc.name && bc.levels > 0) declared.set(bc.name, bc.levels)
-  }
-  const assigned = new Map<string, number>()
-  for (const name of levels) {
-    if (name) assigned.set(name, (assigned.get(name) ?? 0) + 1)
-  }
+  const levels = [...(build.levelClasses ?? [])]
+  while (levels.length < HEROIC_CAP) levels.push('')
+  const idx = levels.findIndex(l => l === '')
+  if (idx < 0) return []
+  // Fill a hole inside the already-counted levels, or grow toward the target.
+  const hasHole = idx < (build.totalLevel ?? 0)
+  const mayGrow = (build.totalLevel ?? 0) < Math.min(HEROIC_CAP, target)
+  if (!hasHole && !mayGrow) return []
+
+  const present = [...new Set(levels.filter(Boolean))]
+  const presentClasses = present
+    .map(n => allClasses.find(c => c.Name === n))
+    .filter((c): c is DDOClass => !!c)
 
   const out: Move[] = []
-  for (let idx = 0; idx < levels.length; idx++) {
-    if (levels[idx] !== '') continue
-    for (const [name, total] of declared) {
-      if ((assigned.get(name) ?? 0) >= total) continue
-      const move: Move = { kind: 'classLevel', level: idx + 1, className: name }
-      // Reordering class levels shifts per-level snapshots, which can
-      // invalidate feats the user already picked — drop any such move.
-      const next = applyMove(build, move)
-      const nextSlots = buildSlots(next, allClasses, allRaces)
-      const stillValid = Object.entries(next.featChoices).every(([slotKey, featName]) => {
-        if (!featName) return true
-        const s = nextSlots.find(x => x.key === slotKey)
-        if (!s) return false
-        return isChosenFeatValid(s, nextSlots, featName, allFeats, next, allClasses, race, ctx.specialFeats ?? [])
-      })
-      if (stillValid) out.push(move)
+  for (const cls of allClasses) {
+    if (cls.NotHeroic || cls.Name === 'Unknown') continue
+    if (!present.includes(cls.Name)) {
+      if (present.length >= 3) continue                                  // 3-class cap
+      if (cls.BaseClass && presentClasses.some(p => p.BaseClass)) continue // one archetype max
+      if (cls.BaseClass && present.includes(cls.BaseClass)) continue       // not with its base
+      if (presentClasses.some(p => p.BaseClass === cls.Name)) continue     // base not with its archetype
+    }
+    const move: Move = { kind: 'classLevel', level: idx + 1, className: cls.Name }
+    // Changing the per-level class plan shifts per-level snapshots, which can
+    // invalidate feats the user already picked — drop any such move.
+    const next = applyMove(build, move)
+    const nextSlots = buildSlots(next, allClasses, allRaces)
+    const stillValid = Object.entries(next.featChoices).every(([slotKey, featName]) => {
+      if (!featName) return true
+      const s = nextSlots.find(x => x.key === slotKey)
+      if (!s) return false
+      return isChosenFeatValid(s, nextSlots, featName, allFeats, next, allClasses, race, ctx.specialFeats ?? [])
+    })
+    if (stillValid) out.push(move)
+  }
+  return out
+}
+
+/** Epic / legendary level progression toward the target level. */
+export function levelProgressMoves(ctx: MoveContext): Move[] {
+  const { build } = ctx
+  const charLevel = characterLevel(build)
+  const target = ctx.targetLevel ?? charLevel
+  if (charLevel >= target) return []
+  if ((build.totalLevel ?? 0) < HEROIC_CAP) return []   // heroic levels first
+  if ((build.epicLevels ?? 0) < EPIC_MAX_LEVELS) {
+    return [{ kind: 'epicLevel', toLevel: charLevel + 1 }]
+  }
+  if ((build.legendaryLevels ?? 0) < LEGENDARY_MAX_LEVELS) {
+    return [{ kind: 'legendaryLevel', toLevel: charLevel + 1 }]
+  }
+  return []
+}
+
+const ABILITY_LEVELUP_LEVELS = [4, 8, 12, 16, 20, 24, 28, 32, 36, 40] as const
+const ABILITIES: Ability[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
+
+/** Fill unset +1 ability picks at levels 4, 8, 12, … up to the current level. */
+export function abilityLevelUpMoves(ctx: MoveContext): Move[] {
+  const { build } = ctx
+  const charLevel = characterLevel(build)
+  const out: Move[] = []
+  for (const lvl of ABILITY_LEVELUP_LEVELS) {
+    if (lvl > charLevel) break
+    if (build.abilityLevelUps[lvl]) continue
+    for (const ability of ABILITIES) {
+      out.push({ kind: 'abilityLevelUp', level: lvl, ability })
     }
   }
   return out
@@ -341,7 +422,8 @@ export function generateMoves(ctx: MoveContext, domains: MoveDomains): Move[] {
   if (domains.enhancements) out.push(...enhancementMoves(ctx))
   if (domains.destinies) out.push(...destinyMoves(ctx))
   if (domains.feats) out.push(...featMoves(ctx))
-  if (domains.classLevels) out.push(...classLevelMoves(ctx))
+  if (domains.classLevels) out.push(...classLevelMoves(ctx), ...levelProgressMoves(ctx))
+  if (domains.abilityLevelUps) out.push(...abilityLevelUpMoves(ctx))
   return out
 }
 
@@ -413,10 +495,31 @@ export function applyMove(build: CharacterBuild, m: Move): CharacterBuild {
     case 'feat':
       return { ...build, featChoices: { ...build.featChoices, [m.slotKey]: m.featName } }
     case 'classLevel': {
+      // Mirror the SET_LEVEL_CLASS reducer: write the per-level entry, then
+      // re-aggregate the class slots and totalLevel from the level plan.
       const levels = [...(build.levelClasses ?? [])]
+      while (levels.length < m.level) levels.push('')
       levels[m.level - 1] = m.className
-      return { ...build, levelClasses: levels }
+      const trimmed = levels.slice(0, HEROIC_CAP)
+      return {
+        ...build,
+        levelClasses: trimmed,
+        classes: aggregateLevelClasses(trimmed),
+        totalLevel: trimmed.filter(Boolean).length,
+      }
     }
+    case 'epicLevel':
+      return { ...build, epicLevels: (build.epicLevels ?? 0) + 1 }
+    case 'legendaryLevel':
+      return { ...build, legendaryLevels: (build.legendaryLevels ?? 0) + 1 }
+    case 'abilityLevelUp':
+      return {
+        ...build,
+        abilityLevelUps: {
+          ...build.abilityLevelUps,
+          [m.level as 4 | 8 | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40]: m.ability,
+        },
+      }
   }
 }
 
