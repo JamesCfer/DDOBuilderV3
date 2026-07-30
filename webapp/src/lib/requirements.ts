@@ -214,11 +214,24 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       return build.alignment === item
     case 'Enhancement': {
       // Allow either trained (rank > 0) or trained-with-min-rank.
+      // V2 Build::IsEnhancementTrained walks ALL trained trees — heroic,
+      // epic destiny, and reaper alike. Destiny cores chain on the previous
+      // core via this type (e.g. U51FuryOfTheWildCore2 requires Core1), so
+      // searching only enhancementChoices left every destiny core past the
+      // first permanently locked.
       const minRank = value
+      const choicePools = [
+        build.enhancementChoices ?? {},
+        build.destinyChoices ?? {},
+        build.reaperChoices ?? {},
+      ]
       let trained = false
-      for (const choices of Object.values(build.enhancementChoices ?? {})) {
-        const rank = choices[item] ?? 0
-        if (rank > 0 && (minRank === 0 || rank >= minRank)) { trained = true; break }
+      outer:
+      for (const pool of choicePools) {
+        for (const choices of Object.values(pool)) {
+          const rank = choices[item] ?? 0
+          if (rank > 0 && (minRank === 0 || rank >= minRank)) { trained = true; break outer }
+        }
       }
       if (!trained) return false
       // V2 Requirement.cpp:839-855 EvaluateEnhancement: a second Item names
@@ -226,8 +239,15 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       // not "either is trained".
       const its = Array.isArray(req.Item) ? req.Item : req.Item ? [req.Item] : []
       if (its.length >= 2) {
-        for (const sels of Object.values(build.enhancementSelections ?? {})) {
-          if (sels[item] === its[1]) return true
+        const selectionPools = [
+          build.enhancementSelections ?? {},
+          build.destinySelections ?? {},
+          build.reaperSelections ?? {},
+        ]
+        for (const pool of selectionPools) {
+          for (const sels of Object.values(pool)) {
+            if (sels[item] === its[1]) return true
+          }
         }
         return false
       }
