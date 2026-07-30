@@ -28,7 +28,9 @@ import type { CharacterBuild } from '../types/ddo'
 const CLASSES = [
   { Name: 'Fighter', HitPoints: 10 },
   { Name: 'Rogue', HitPoints: 6 },
-  { Name: 'Dragon Lord', HitPoints: 10 },
+  { Name: 'Dragon Lord', HitPoints: 10, BaseClass: 'Fighter' },
+  { Name: 'Sacred Fist', HitPoints: 8, BaseClass: 'Paladin' },
+  { Name: 'Paladin', HitPoints: 10, Alignment: 'Lawful Good' },
   { Name: 'Wizard', HitPoints: 4 },
 ]
 const RACES = [
@@ -161,6 +163,90 @@ describe('ClassSelector clear buttons', () => {
     const clearAll = findButton(container, 'Clear all', 'Clear all 20 heroic level assignments')
     await act(async () => { clearAll.click() })
     expect(latestBuild!.levelClasses.filter(Boolean)).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 1b. Archetype exclusion — an archetype and its base class can't combine
+// ---------------------------------------------------------------------------
+
+describe('ClassSelector archetype exclusion', () => {
+  function fighterBuild(): CharacterBuild {
+    return {
+      ...emptyBuild(),
+      race: 'Human',
+      alignment: 'Lawful Good',
+      levelClasses: Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Fighter' : '')),
+      classes: [
+        { name: 'Fighter', levels: 4 },
+        { name: '', levels: 0 },
+        { name: '', levels: 0 },
+      ],
+      totalLevel: 4,
+    }
+  }
+
+  function pickRow(container: HTMLElement, name: string): HTMLButtonElement {
+    const rows = Array.from(container.querySelectorAll('button[class*="classRow"]'))
+    // Match the name span exactly — an archetype's "<Base> archetype" tag
+    // would otherwise make its row match its base class's name too.
+    const row = rows.find(r => r.querySelector('span[class*="classRowName"]')?.textContent === name)
+    if (!row) throw new Error(`pick-list row "${name}" not found`)
+    return row as HTMLButtonElement
+  }
+
+  it('greys the archetype in the pick list when its base class is taken', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const container = await mount(React.createElement(mod.default), fighterBuild())
+    const dragonLord = pickRow(container, 'Dragon Lord')
+    expect(dragonLord.disabled).toBe(true)
+    expect(dragonLord.title).toContain('archetype of Fighter')
+    // An unrelated archetype (Sacred Fist / Paladin) stays available.
+    expect(pickRow(container, 'Sacred Fist').disabled).toBe(false)
+  })
+
+  it('greys the base class when its archetype is taken, and blocks it in the level grid', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const build = fighterBuild()
+    build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Dragon Lord' : ''))
+    build.classes = [
+      { name: 'Dragon Lord', levels: 4 },
+      { name: '', levels: 0 },
+      { name: '', levels: 0 },
+    ]
+    const container = await mount(React.createElement(mod.default), build)
+    const fighter = pickRow(container, 'Fighter')
+    expect(fighter.disabled).toBe(true)
+    expect(fighter.title).toContain('Dragon Lord is an archetype of Fighter')
+
+    // The per-level grid dropdowns must not offer Fighter either.
+    const selects = Array.from(container.querySelectorAll('select[class*="levelSelect"]'))
+    expect(selects.length).toBe(20)
+    const emptyLevel = selects[5] as HTMLSelectElement
+    const fighterOption = Array.from(emptyLevel.options).find(o => o.value === 'Fighter')
+    expect(fighterOption?.disabled).toBe(true)
+    // Its own class stays selectable.
+    const dlOption = Array.from(emptyLevel.options).find(o => o.value === 'Dragon Lord')
+    expect(dlOption?.disabled).toBe(false)
+  })
+
+  it('allows only one archetype at a time', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const build = fighterBuild()
+    build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Sacred Fist' : ''))
+    build.classes = [
+      { name: 'Sacred Fist', levels: 4 },
+      { name: '', levels: 0 },
+      { name: '', levels: 0 },
+    ]
+    const container = await mount(React.createElement(mod.default), build)
+    const dragonLord = pickRow(container, 'Dragon Lord')
+    expect(dragonLord.disabled).toBe(true)
+    expect(dragonLord.title).toContain('Only one archetype')
+    // Paladin (Sacred Fist's base) is blocked with the pair reason.
+    const paladin = pickRow(container, 'Paladin')
+    expect(paladin.disabled).toBe(true)
+    expect(paladin.title).toContain('Sacred Fist is an archetype of Paladin')
   })
 })
 
