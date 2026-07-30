@@ -40,6 +40,13 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      // Icon assets (DdoIcon) are served by the Express API server; without
+      // this proxy the dev server answers /images/* with index.html and every
+      // icon falls back to its two-letter placeholder.
+      '/images': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
   build: {

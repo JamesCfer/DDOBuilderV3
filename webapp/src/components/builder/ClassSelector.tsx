@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { DDOClass } from '../../types/ddo'
+import DdoIcon from '../DdoIcon'
 import { HEROIC_MAX_LEVEL, EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../../lib/gamedata'
 import { getLevelClasses } from '../../lib/levelProgression'
 import styles from './ClassSelector.module.css'
@@ -16,14 +17,32 @@ function classIndex(name: string, assigned: string[]): number {
   return idx >= 0 ? idx : 0
 }
 
+function toArray<T>(v: T | T[] | undefined): T[] {
+  if (v == null) return []
+  return Array.isArray(v) ? v : [v]
+}
+
+/** Alignments this class permits ([] = any). */
+function allowedAlignments(cls: DDOClass): string[] {
+  const list = toArray(cls.Alignment).map(String)
+  return list.includes('Any') ? [] : list
+}
+
+function alignmentAllows(cls: DDOClass, alignment: string): boolean {
+  const list = allowedAlignments(cls)
+  return list.length === 0 || list.includes(alignment)
+}
+
 export default function ClassSelector() {
   const { build, dispatch } = useCharacter()
   const [classes, setClasses] = useState<DDOClass[]>([])
   const [loading, setLoading] = useState(true)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   useEffect(() => {
     api.classes()
-      .then(data => setClasses(data.filter(c => !c.NotHeroic)))
+      .then(data => setClasses(data.filter(c => !c.NotHeroic && c.Name !== 'Unknown')))
       .finally(() => setLoading(false))
   }, [])
 
@@ -40,17 +59,24 @@ export default function ClassSelector() {
 
   const epicLevels = build.epicLevels ?? 10
   const legendaryLevels = build.legendaryLevels ?? 4
-  const grandTotal = levelClasses.filter(Boolean).length + epicLevels + legendaryLevels
+  const heroicAssigned = levelClasses.filter(Boolean).length
+  const grandTotal = heroicAssigned + epicLevels + legendaryLevels
+  const emptySlots = HEROIC_LEVELS - heroicAssigned
+  const classCountFull = usedClassNames.length >= 3
+
+  const heroicClasses = useMemo(
+    () => [...classes].sort((a, b) => a.Name.localeCompare(b.Name)),
+    [classes],
+  )
+  const usedClassObjs = usedClassNames
+    .map(n => classes.find(c => c.Name === n))
+    .filter((c): c is DDOClass => !!c)
 
   function setLevelClass(levelIndex: number, className: string) {
     // V2 parity: edit only the per-level slot the user clicked. The reducer
     // re-derives the `classes` aggregate from the updated array, so order
     // (e.g. Wizard at L1 then Fighter at L2) is preserved.
     dispatch({ type: 'SET_LEVEL_CLASS', level: levelIndex, name: className })
-  }
-
-  function fillAll(className: string) {
-    dispatch({ type: 'SET_LEVEL_CLASSES', levels: Array.from({ length: HEROIC_LEVELS }, () => className) })
   }
 
   function fillEmpty(className: string) {
@@ -72,9 +98,76 @@ export default function ClassSelector() {
     })
   }
 
-  const heroicClasses = classes.filter(c => !c.NotHeroic)
-  const heroicAssigned = levelClasses.filter(Boolean).length
-  const classCountFull = usedClassNames.length >= 3
+  /** Add one level of a class (first empty slot). */
+  function addLevel(className: string) {
+    const idx = levelClasses.findIndex(c => !c)
+    if (idx < 0 || idx >= HEROIC_LEVELS) return
+    setLevelClass(idx, className)
+  }
+
+  /**
+   * Set a class's total heroic levels directly: extra levels fill empty
+   * slots from the front, removed levels are blanked from the end (the same
+   * reconciliation the SET_CLASS_LEVELS reducer uses).
+   */
+  function setCount(className: string, target: number) {
+    const current = totals[className] ?? 0
+    const clamped = Math.max(0, Math.min(HEROIC_LEVELS, Math.min(target, current + emptySlots)))
+    if (clamped === current) return
+    const next = [...levelClasses].slice(0, HEROIC_LEVELS)
+    if (clamped > current) {
+      let toAdd = clamped - current
+      for (let i = 0; i < next.length && toAdd > 0; i++) {
+        if (!next[i]) { next[i] = className; toAdd-- }
+      }
+    } else {
+      let toRemove = current - clamped
+      for (let i = next.length - 1; i >= 0 && toRemove > 0; i--) {
+        if (next[i] === className) { next[i] = ''; toRemove-- }
+      }
+    }
+    dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
+  }
+
+  /**
+   * Drag-and-drop reorder of the selected classes. Order = which class is
+   * class 1/2/3 (first appearance in the level plan), so the plan is
+   * rewritten as grouped blocks in the new order.
+   */
+  function reorder(from: number, to: number) {
+    if (from === to) return
+    const order = [...usedClassNames]
+    const [moved] = order.splice(from, 1)
+    order.splice(to, 0, moved)
+    const next: string[] = []
+    for (const name of order) {
+      for (let i = 0; i < (totals[name] ?? 0); i++) next.push(name)
+    }
+    while (next.length < HEROIC_LEVELS) next.push('')
+    dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
+  }
+
+  /** Why a class row is unpickable right now (null = pickable). */
+  function disabledReason(cls: DDOClass): string | null {
+    const selected = usedClassNames.includes(cls.Name)
+    if (!alignmentAllows(cls, build.alignment)) {
+      return `Requires alignment: ${allowedAlignments(cls).join(', ')}`
+    }
+    if (!selected) {
+      if (classCountFull) return 'Already using 3 classes — clear one first'
+      if (cls.BaseClass && usedClassObjs.some(c => c.BaseClass)) {
+        return 'Only one archetype per character'
+      }
+      if (cls.BaseClass && usedClassNames.includes(cls.BaseClass)) {
+        return `${cls.Name} cannot multiclass with its base class ${cls.BaseClass}`
+      }
+      if (usedClassObjs.some(c => c.BaseClass === cls.Name)) {
+        return `Base class of the ${usedClassObjs.find(c => c.BaseClass === cls.Name)?.Name} archetype already selected`
+      }
+    }
+    if (emptySlots <= 0) return 'All 20 heroic levels are assigned'
+    return null
+  }
 
   return (
     <div className="panel">
@@ -87,34 +180,106 @@ export default function ClassSelector() {
           <span className={styles.loading}>Loading classes…</span>
         ) : (
           <>
-            {/* Summary chips + class count */}
-            <div className={styles.chips}>
-              {usedClassNames.map((name, i) => (
-                <span key={name} className={styles.chip}
-                  style={{ borderColor: CLASS_COLORS[i], color: CLASS_COLORS[i] }}>
-                  {name} {totals[name] ?? 0}
-                </span>
-              ))}
+            {/* ── Selected classes: vertical, draggable, editable at once ── */}
+            <div className={styles.selectedList}>
+              {usedClassNames.length === 0 && (
+                <div className={styles.selectedEmpty}>
+                  Pick classes from the list below — up to 3.
+                </div>
+              )}
+              {usedClassNames.map((name, i) => {
+                const cls = classes.find(c => c.Name === name)
+                const misaligned = cls && !alignmentAllows(cls, build.alignment)
+                const count = totals[name] ?? 0
+                return (
+                  <div
+                    key={name}
+                    className={`${styles.selectedRow} ${dragOverIndex === i ? styles.selectedRowDragOver : ''}`}
+                    style={{ borderLeftColor: CLASS_COLORS[i] }}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragOver={e => { e.preventDefault(); setDragOverIndex(i) }}
+                    onDragLeave={() => setDragOverIndex(cur => (cur === i ? null : cur))}
+                    onDrop={e => {
+                      e.preventDefault()
+                      if (dragIndex !== null) reorder(dragIndex, i)
+                      setDragIndex(null)
+                      setDragOverIndex(null)
+                    }}
+                    onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
+                    title="Drag to reorder classes — levels are regrouped in the new class order"
+                  >
+                    <span className={styles.dragHandle}>⠿</span>
+                    <DdoIcon category="ClassImages" name={name} size={24} />
+                    <span className={styles.selectedName} style={{ color: CLASS_COLORS[i] }}>{name}</span>
+                    {misaligned && (
+                      <span
+                        className={styles.alignWarnBadge}
+                        title={`${name} does not allow ${build.alignment} (requires: ${cls ? allowedAlignments(cls).join(', ') : ''})`}
+                      >⚠️</span>
+                    )}
+                    <button className={styles.rowBtn} disabled={count <= 0}
+                      onClick={() => setCount(name, count - 1)} title="Remove one level">−</button>
+                    <input
+                      type="number"
+                      className={styles.countInput}
+                      value={count}
+                      min={0}
+                      max={HEROIC_LEVELS}
+                      onChange={e => setCount(name, Number(e.target.value) || 0)}
+                      title={`${name} heroic levels`}
+                    />
+                    <button className={styles.rowBtn} disabled={emptySlots <= 0}
+                      onClick={() => setCount(name, count + 1)} title="Add one level">+</button>
+                    <button className={`${styles.rowBtn} ${styles.rowBtnWide}`} disabled={emptySlots <= 0}
+                      onClick={() => fillEmpty(name)} title={`Assign all remaining levels to ${name}`}>Fill</button>
+                    <button className={styles.rowBtn}
+                      onClick={() => clearClass(name)} title={`Remove ${name} (clears its levels)`}>✕</button>
+                  </div>
+                )
+              })}
               <span className={`${styles.classCountBadge} ${classCountFull ? styles.classCountFull : ''}`}>
-                {usedClassNames.length}/3 classes
+                {usedClassNames.length}/3 classes · {heroicAssigned}/20 levels
               </span>
             </div>
 
-            {/* Quick-fill */}
-            <div className={styles.quickFill}>
-              <span className={styles.quickFillLabel}>Fill all:</span>
-              {heroicClasses.slice(0, 14).map(c => (
-                <button key={c.Name} className={styles.quickFillBtn}
-                  onClick={() => fillAll(c.Name)} title={`Set all 20 heroic levels to ${c.Name}`}>
-                  {c.Name.slice(0, 3)}
-                </button>
-              ))}
+            {/* ── All classes: vertical pick list, greyed by alignment ───── */}
+            <div className={styles.classList}>
+              {heroicClasses.map(cls => {
+                const selected = usedClassNames.includes(cls.Name)
+                const reason = disabledReason(cls)
+                const aligned = alignmentAllows(cls, build.alignment)
+                return (
+                  <button
+                    key={cls.Name}
+                    className={`${styles.classRow} ${selected ? styles.classRowSelected : ''}`}
+                    disabled={!!reason}
+                    onClick={() => addLevel(cls.Name)}
+                    title={reason ?? (selected
+                      ? `Add one more ${cls.Name} level`
+                      : `Add ${cls.Name}${!aligned ? '' : ' (click to take level 1 of it)'}`)}
+                  >
+                    <DdoIcon category="ClassImages" name={cls.Name} size={24} />
+                    <span className={styles.classRowName}>{cls.Name}</span>
+                    {cls.BaseClass && <span className={styles.archetypeTag}>{cls.BaseClass} archetype</span>}
+                    {selected && <span className={styles.classRowCount}>{totals[cls.Name] ?? 0} ✓</span>}
+                  </button>
+                )
+              })}
             </div>
 
             {/* ── Heroic levels 1–20 ── */}
             <div className={styles.sectionHeader}>
               <span>Heroic</span>
-              <span className={styles.sectionCount}>{heroicAssigned}/20</span>
+              <span className={styles.sectionCount}>
+                {heroicAssigned}/20
+                {heroicAssigned > 0 && (
+                  <button className={`${styles.rowBtn} ${styles.rowBtnWide}`}
+                    style={{ display: 'inline-flex', marginLeft: 6 }}
+                    onClick={clearAll}
+                    title="Clear all 20 heroic level assignments">Clear all</button>
+                )}
+              </span>
             </div>
             <div className={styles.levelGrid}>
               {Array.from({ length: HEROIC_LEVELS }, (_, i) => {
@@ -141,37 +306,6 @@ export default function ClassSelector() {
                 )
               })}
             </div>
-
-            {/* Fill-empty */}
-            {heroicAssigned < HEROIC_LEVELS && usedClassNames.length > 0 && (
-              <div className={styles.fillEmpty}>
-                <span className={styles.quickFillLabel}>Fill empty:</span>
-                {usedClassNames.map(name => (
-                  <button key={name} className={styles.quickFillBtn} onClick={() => fillEmpty(name)}>
-                    {name.slice(0, 3)}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Clear: per-class + all */}
-            {heroicAssigned > 0 && (
-              <div className={styles.fillEmpty}>
-                <span className={styles.quickFillLabel}>Clear:</span>
-                {usedClassNames.map(name => (
-                  <button key={name} className={styles.quickFillBtn}
-                    onClick={() => clearClass(name)}
-                    title={`Clear every level assigned to ${name}`}>
-                    {name.slice(0, 3)}
-                  </button>
-                ))}
-                <button className={styles.quickFillBtn}
-                  onClick={clearAll}
-                  title="Clear all 20 heroic level assignments">
-                  All
-                </button>
-              </div>
-            )}
 
             {/* ── Epic levels 21–30 ── */}
             <div className={styles.sectionHeader}>

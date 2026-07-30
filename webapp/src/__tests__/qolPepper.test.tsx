@@ -146,7 +146,8 @@ describe('ClassSelector clear buttons', () => {
   it('per-class clear removes only that class from the heroic grid', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const container = await mount(React.createElement(mod.default), pepperBuild())
-    const clearFighter = findButton(container, 'Fig', 'Clear every level assigned to Fighter')
+    // New vertical class list: each selected row has a ✕ remove button.
+    const clearFighter = findButton(container, '✕', 'Remove Fighter')
     await act(async () => { clearFighter.click() })
     const lc = latestBuild!.levelClasses
     expect(lc.filter(c => c === 'Fighter')).toHaveLength(0)
@@ -157,7 +158,7 @@ describe('ClassSelector clear buttons', () => {
   it('Clear all empties every heroic level', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const container = await mount(React.createElement(mod.default), pepperBuild())
-    const clearAll = findButton(container, 'All', 'Clear all 20 heroic level assignments')
+    const clearAll = findButton(container, 'Clear all', 'Clear all 20 heroic level assignments')
     await act(async () => { clearAll.click() })
     expect(latestBuild!.levelClasses.filter(Boolean)).toHaveLength(0)
   })
