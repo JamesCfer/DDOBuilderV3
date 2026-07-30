@@ -18,6 +18,7 @@ import {
   compareScores, scalarGain, statForFavoriteKey, type ObjectiveSpec,
 } from '../lib/optimizer/objective'
 import { applyMove, type Move } from '../lib/optimizer/moves'
+import { emptyBuild } from '../types/ddo'
 import type { CharacterBuild, Item } from '../types/ddo'
 
 const DATA = join(__dirname, '..', '..', '..', 'Output', 'DataFiles')
@@ -185,28 +186,85 @@ describe.skipIf(!have)('optimizeBuild on real data', () => {
     }
   }, 120000)
 
-  it('assigns unset class levels without breaking chosen feats', async () => {
+  it('levels a class-less character to the target, picking classes as it goes', async () => {
+    const build = emptyBuild()
+    build.classes = [{ name: '', levels: 0 }, { name: '', levels: 0 }, { name: '', levels: 0 }]
+    build.levelClasses = []
+    build.totalLevel = 0
+    build.epicLevels = 0
+    build.legendaryLevels = 0
+
+    const input = { ...cat, gearItems: {} }
+    const result = await optimizeBuild({
+      input, build,
+      objective: MELEE_OBJECTIVE,
+      // Feats/enhancements off to keep the eval count small — this test is
+      // about leveling; the combined-domain path is covered above.
+      domains: { enhancements: false, destinies: false, feats: false, classLevels: true, abilityLevelUps: true },
+      targetLevel: 6,
+      maxEvals: 500,
+    })
+
+    // The optimizer must have taken class levels and reached the target.
+    expect(result.build.totalLevel).toBe(6)
+    expect(result.build.levelClasses?.slice(0, 6).every(Boolean)).toBe(true)
+    // classes aggregate must match the per-level plan (reducer invariant).
+    const counted: Record<string, number> = {}
+    for (const c of result.build.levelClasses ?? []) {
+      if (c) counted[c] = (counted[c] ?? 0) + 1
+    }
+    for (const bc of result.build.classes) {
+      if (bc.name) expect(bc.levels).toBe(counted[bc.name])
+    }
+    expect(validateBuild(fuzzCat(cat), result.build)).toEqual([])
+    // The level-4 ability point should have been assigned too.
+    expect(result.build.abilityLevelUps[4]).toBeTruthy()
+  }, 120000)
+
+  it('takes epic levels toward the target level', async () => {
+    const build = emptyBuild()          // Fighter 20 by default
+    build.epicLevels = 0
+    build.legendaryLevels = 0
+    const input = { ...cat, gearItems: {} }
+    const result = await optimizeBuild({
+      input, build,
+      objective: MELEE_OBJECTIVE,
+      domains: { enhancements: false, destinies: false, feats: false, classLevels: true, abilityLevelUps: false },
+      targetLevel: 24,
+      maxEvals: 200,
+    })
+    expect(result.build.epicLevels).toBe(4)
+    expect(result.build.totalLevel).toBe(20)
+  }, 60000)
+
+  it('levels a partially-leveled build back to the target without breaking it', async () => {
     const { build } = generateRandomBuild(fuzzCat(cat), { seed: 3, level: 10 })
-    // Blank the last two level assignments; drop feats so the blanking can't
-    // strand an already-chosen feat (that combination counts as user error —
-    // the generator refuses moves that would invalidate a chosen feat).
+    // Un-level the last two assignments the way the reducer would (blank the
+    // entries and re-aggregate classes/totalLevel), then ask the optimizer to
+    // level back up to 10. Feats are cleared so un-leveling can't strand an
+    // already-chosen feat.
     build.featChoices = {}
     const lc = [...(build.levelClasses ?? [])]
     lc[lc.length - 1] = ''
     lc[lc.length - 2] = ''
     build.levelClasses = lc
+    build.totalLevel = lc.filter(Boolean).length
+    const counts: Record<string, number> = {}
+    for (const c of lc) if (c) counts[c] = (counts[c] ?? 0) + 1
+    build.classes = build.classes.map(bc => ({
+      ...bc, levels: bc.name ? (counts[bc.name] ?? 0) : 0,
+    })) as CharacterBuild['classes']
 
     const input = { ...cat, gearItems: gearItemsFor(cat, build) }
     const result = await optimizeBuild({
       input, build,
       objective: { mode: 'priority', stats: [{ key: 'hp', label: 'Hit Points', weight: 1 }] },
       domains: { enhancements: false, destinies: false, feats: false, classLevels: true },
-      maxEvals: 200,
+      targetLevel: 10,
+      maxEvals: 300,
     })
 
-    // All levels assigned (moves exist for every empty slot; HP ties may
-    // legitimately leave a slot when no assignment changes anything, so only
-    // require the result to be legal and no worse).
+    expect(result.build.totalLevel).toBe(10)
     expect(validateBuild(fuzzCat(cat), result.build)).toEqual([])
     expect(compareScores(
       { mode: 'priority', stats: [{ key: 'hp', label: 'Hit Points', weight: 1 }] },

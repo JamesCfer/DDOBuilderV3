@@ -29,7 +29,8 @@ import {
   type ObjectiveSpec, type ScoreVector,
 } from './objective'
 import {
-  applyMove, describeMove, gatedTreeTargets, generateMoves, moveId,
+  applyMove, characterLevel, describeMove, gatedTreeTargets, generateMoves,
+  isLevelingMove, moveId,
   type Move, type MoveContext, type MoveDomains,
 } from './moves'
 
@@ -53,7 +54,8 @@ export interface AppliedMoveRecord {
   description: string
   /** Objective-stat movements caused by this move (zero-delta rows omitted). */
   gains: StatDelta[]
-  /** True when the move was taken to unlock a gated tree item, not for gain. */
+  /** True when the move was taken for later payoff (leveling toward the
+   *  target, or spending toward a MinSpent unlock), not for immediate gain. */
   bridge?: boolean
 }
 
@@ -77,6 +79,12 @@ export interface OptimizeOptions {
   domains: MoveDomains
   /** Hard cap on stat-engine evaluations. Default 20000. */
   maxEvals?: number
+  /**
+   * Character level to level the build toward when the class-levels domain
+   * is enabled (heroic classes first, then epic, then legendary levels).
+   * Defaults to the build's current character level — no leveling.
+   */
+  targetLevel?: number
   onProgress?: (p: OptimizeProgress) => void
   shouldCancel?: () => boolean
 }
@@ -136,6 +144,7 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
       specialFeats: input.specialFeats,
       fatePoints: Math.max(0, Math.round(stats.total('fatePoint'))),
       destinyApBonus: Math.max(0, Math.round(stats.total('destinyAP'))),
+      targetLevel: Math.max(opts.targetLevel ?? 0, characterLevel(build)),
     }
   }
 
@@ -191,6 +200,53 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
       continue
     }
     if (stopped !== 'converged') break
+
+    // ── Leveling fallback ─────────────────────────────────────────────────
+    // Below the target level, leveling is infrastructure: take the best
+    // level-up move even at zero immediate gain — new levels bring feat
+    // slots, action points, and destiny points that later rounds convert
+    // into objective gains ("pick class levels and go from there").
+    const levelMoves = moves.filter(isLevelingMove)
+    if (levelMoves.length > 0) {
+      let lm = levelMoves[0]
+      let lmScore = -Infinity
+      for (const f of levelMoves) {
+        const g = lastGain.get(moveId(f)) ?? 0
+        if (g > lmScore) { lmScore = g; lm = f }
+      }
+      const next = applyMove(current, lm)
+      const ev = await evaluate(next)
+      recordApply(lm, curVec, ev.vec, true)
+      current = next
+      curStats = ev.stats
+      curVec = ev.vec
+      report()
+      continue
+    }
+
+    // ── Ability level-up fallback ─────────────────────────────────────────
+    // A +1 that doesn't cross a modifier breakpoint scores zero, but leaving
+    // the pick unset helps nobody. Fill it anyway: best gain first, ties
+    // broken toward the highest current ability (usually the build's main
+    // stat, whose next point is closest to the next breakpoint).
+    const abilityMoves = moves.filter(m => m.kind === 'abilityLevelUp')
+    if (abilityMoves.length > 0) {
+      let am = abilityMoves[0]
+      let amScore = -Infinity
+      for (const f of abilityMoves) {
+        if (f.kind !== 'abilityLevelUp') continue
+        const score = (lastGain.get(moveId(f)) ?? 0) * 1e6 + curStats.total(`ability.${f.ability}`)
+        if (score > amScore) { amScore = score; am = f }
+      }
+      const next = applyMove(current, am)
+      const ev = await evaluate(next)
+      recordApply(am, curVec, ev.vec, true)
+      current = next
+      curStats = ev.stats
+      curVec = ev.vec
+      report()
+      continue
+    }
 
     // ── Bridge phase ──────────────────────────────────────────────────────
     // No single legal move improves the objective. Check whether a MinSpent-

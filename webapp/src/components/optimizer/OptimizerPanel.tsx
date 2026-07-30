@@ -20,7 +20,7 @@ import {
   type ObjectiveMode, type ObjectiveSpec, type ObjectiveStat,
 } from '../../lib/optimizer/objective'
 import { optimizeBuild, type OptimizeProgress, type OptimizeResult } from '../../lib/optimizer/optimizer'
-import type { MoveDomains } from '../../lib/optimizer/moves'
+import { characterLevel, type MoveDomains } from '../../lib/optimizer/moves'
 import type { CharacterBuild } from '../../types/ddo'
 import styles from './OptimizerPanel.module.css'
 
@@ -78,7 +78,18 @@ export default function OptimizerPanel() {
   const [rows, setRows] = useState<ObjectiveStat[]>(initial.stats)
   const [domains, setDomains] = useState<MoveDomains>({
     enhancements: true, destinies: true, feats: true, classLevels: true,
+    abilityLevelUps: true,
   })
+  const charLevel = characterLevel(build)
+  // Level the optimizer may build toward. Defaults to the current character
+  // level (a fresh, class-less character defaults to heroic cap 20 so
+  // "optimize" can level it up and go from there).
+  const [targetLevel, setTargetLevel] = useState<number>(() => charLevel < 2 ? 20 : charLevel)
+  const [targetBuildId, setTargetBuildId] = useState(build.id)
+  if (targetBuildId !== build.id) {
+    setTargetBuildId(build.id)
+    setTargetLevel(charLevel < 2 ? 20 : charLevel)
+  }
   const [effort, setEffort] = useState<(typeof EFFORT_LEVELS)[number]['id']>('normal')
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState<OptimizeProgress | null>(null)
@@ -136,6 +147,7 @@ export default function OptimizerPanel() {
         objective,
         domains,
         maxEvals: EFFORT_LEVELS.find(e => e.id === effort)?.maxEvals,
+        targetLevel,
         onProgress: setProgress,
         shouldCancel: () => cancelRef.current.cancelled,
       })
@@ -171,9 +183,10 @@ export default function OptimizerPanel() {
         <div className="panel-body">
           <div className={styles.help}>
             Ranks your chosen stats and fills every choice the build has left
-            open — unspent enhancement AP, unspent destiny points, empty feat
-            slots, unassigned class levels, free destiny slots. Choices you
-            have already made are never changed.
+            open — class levels up to your target level, unspent enhancement
+            AP, unspent destiny points, empty feat slots, unset ability
+            level-ups, free destiny slots. Choices you have already made are
+            never changed.
           </div>
 
           <div className={styles.modeRow}>
@@ -274,7 +287,26 @@ export default function OptimizerPanel() {
             </label>
             <label>
               <input type="checkbox" checked={domains.classLevels} onChange={e => setDomains({ ...domains, classLevels: e.target.checked })} />
-              Class levels (assign unset levels)
+              Class levels (pick classes &amp; level up to the target level)
+            </label>
+            {domains.classLevels && (
+              <label style={{ paddingLeft: '1.5rem' }}>
+                Level up to
+                <input
+                  type="number"
+                  className={styles.weightInput}
+                  min={charLevel}
+                  max={40}
+                  value={targetLevel}
+                  onChange={e => setTargetLevel(Math.max(charLevel, Math.min(40, Number(e.target.value) || charLevel)))}
+                  title="The optimizer levels the build toward this character level (heroic classes first, then epic and legendary levels), picking whichever class levels score best"
+                />
+                <span style={{ opacity: 0.7 }}>(now {charLevel})</span>
+              </label>
+            )}
+            <label>
+              <input type="checkbox" checked={domains.abilityLevelUps ?? false} onChange={e => setDomains({ ...domains, abilityLevelUps: e.target.checked })} />
+              Ability level-ups (assign unset +1s at levels 4, 8, 12…)
             </label>
           </div>
 
@@ -370,7 +402,7 @@ export default function OptimizerPanel() {
                             {a.gains.map(g => `${g.after - g.before > 0 ? '+' : ''}${Math.round((g.after - g.before) * 10) / 10} ${g.label}`).join(', ')}
                           </span>
                         )}
-                        {a.bridge && <span className={styles.stepBridge}>(spent to unlock higher tiers)</span>}
+                        {a.bridge && <span className={styles.stepBridge}>(taken for later payoff)</span>}
                       </li>
                     ))}
                   </ol>
