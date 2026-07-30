@@ -215,3 +215,184 @@
 .pipFilled:hover {
   background: var(--color-gold);
 }
+
+/* ── Selected classes (vertical, draggable) ──────────────────────────── */
+.selectedList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.selectedRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+  cursor: grab;
+}
+
+.selectedRow:active {
+  cursor: grabbing;
+}
+
+.selectedRowDragOver {
+  outline: 1px dashed var(--color-gold-dark);
+  outline-offset: 1px;
+}
+
+.dragHandle {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.selectedName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alignWarnBadge {
+  font-size: 11px;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+.countInput {
+  width: 2.6rem;
+  font-size: 11px;
+  text-align: center;
+  padding: 2px 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.countInput::-webkit-outer-spin-button,
+.countInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rowBtn {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.rowBtn:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.rowBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rowBtnWide {
+  width: auto;
+  padding: 0 6px;
+  font-size: 10px;
+}
+
+.selectedEmpty {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  padding: 4px 2px;
+}
+
+/* ── All-classes pick list (vertical, icon + name) ───────────────────── */
+.classList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 264px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  background: rgba(0,0,0,0.15);
+}
+
+.classRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  transition: background 0.1s, color 0.1s;
+  width: 100%;
+}
+
+.classRow:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.classRowSelected {
+  border-color: var(--color-gold-dark);
+  background: rgba(200,136,42,0.10);
+  color: var(--color-text-primary);
+}
+
+.classRow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+
+.classRowName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archetypeTag {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.classRowCount {
+  font-size: 10px;
+  color: var(--color-gold);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
