@@ -16,10 +16,15 @@ function readVersion(): string {
     const m = subjects.match(/\(#(\d+)\)/)
     if (m) return `#${m[1]}`
   } catch { /* not a git checkout — fall through */ }
-  try {
-    const v = fs.readFileSync(path.resolve(__dirname, '..', 'VERSION'), 'utf-8').trim()
-    if (v) return v
-  } catch { /* no VERSION file either */ }
+  // webapp/VERSION is COMMITTED and updated with each PR, so deployments
+  // without git metadata (zip downloads, Docker contexts that exclude .git,
+  // standalone webapp/ deploys) still get a real version.
+  for (const file of [path.resolve(__dirname, 'VERSION'), path.resolve(__dirname, '..', 'VERSION')]) {
+    try {
+      const v = fs.readFileSync(file, 'utf-8').trim()
+      if (v) return v
+    } catch { /* try next */ }
+  }
   return 'unknown'
 }
 
