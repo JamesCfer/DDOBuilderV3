@@ -147,24 +147,38 @@ export default function ClassSelector() {
     dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
   }
 
-  /** Why a class row is unpickable right now (null = pickable). */
-  function disabledReason(cls: DDOClass): string | null {
-    const selected = usedClassNames.includes(cls.Name)
+  /**
+   * Why a class NOT yet in the build can't join it (null = allowed, and
+   * always null for classes already in the build). Shared by the pick list
+   * and the per-level grid so an illegal combo (e.g. Dragon Lord + Fighter,
+   * Sacred Fist + Paladin) can't sneak in through either path.
+   */
+  function joinBlockReason(cls: DDOClass): string | null {
+    if (usedClassNames.includes(cls.Name)) return null
     if (!alignmentAllows(cls, build.alignment)) {
       return `Requires alignment: ${allowedAlignments(cls).join(', ')}`
     }
-    if (!selected) {
-      if (classCountFull) return 'Already using 3 classes — clear one first'
-      if (cls.BaseClass && usedClassObjs.some(c => c.BaseClass)) {
-        return 'Only one archetype per character'
-      }
-      if (cls.BaseClass && usedClassNames.includes(cls.BaseClass)) {
-        return `${cls.Name} cannot multiclass with its base class ${cls.BaseClass}`
-      }
-      if (usedClassObjs.some(c => c.BaseClass === cls.Name)) {
-        return `Base class of the ${usedClassObjs.find(c => c.BaseClass === cls.Name)?.Name} archetype already selected`
-      }
+    if (classCountFull) return 'Already using 3 classes — clear one first'
+    if (cls.BaseClass && usedClassNames.includes(cls.BaseClass)) {
+      return `${cls.Name} is an archetype of ${cls.BaseClass} — you cannot take both`
     }
+    const archOfThis = usedClassObjs.find(c => c.BaseClass === cls.Name)
+    if (archOfThis) {
+      return `${archOfThis.Name} is an archetype of ${cls.Name} — you cannot take both`
+    }
+    if (cls.BaseClass && usedClassObjs.some(c => c.BaseClass)) {
+      return 'Only one archetype per character'
+    }
+    return null
+  }
+
+  /** Why a pick-list row is unpickable right now (null = pickable). */
+  function disabledReason(cls: DDOClass): string | null {
+    if (!alignmentAllows(cls, build.alignment)) {
+      return `Requires alignment: ${allowedAlignments(cls).join(', ')}`
+    }
+    const join = joinBlockReason(cls)
+    if (join) return join
     if (emptySlots <= 0) return 'All 20 heroic levels are assigned'
     return null
   }
@@ -296,11 +310,15 @@ export default function ClassSelector() {
                       style={cls ? { borderColor: CLASS_COLORS[clsIdx], color: CLASS_COLORS[clsIdx] } : {}}
                     >
                       <option value="">—</option>
-                      {heroicClasses
-                        .filter(c => usedClassNames.includes(c.Name) || !classCountFull || c.Name === cls)
-                        .map(c => (
-                          <option key={c.Name} value={c.Name}>{c.Name}</option>
-                        ))}
+                      {heroicClasses.map(c => {
+                        // Same join rules as the pick list — a class that
+                        // can't legally join the build is disabled here too
+                        // (the level's current value always stays enabled).
+                        const blocked = c.Name !== cls && joinBlockReason(c) !== null
+                        return (
+                          <option key={c.Name} value={c.Name} disabled={blocked}>{c.Name}</option>
+                        )
+                      })}
                     </select>
                   </div>
                 )
