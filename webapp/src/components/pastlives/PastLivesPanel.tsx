@@ -10,7 +10,10 @@ import styles from './PastLivesPanel.module.css'
 
 const CLASS_PL_MAX = 3
 const RACIAL_PL_MAX = 3
-const ICONIC_PL_MAX = 1
+// Iconic past lives stack 3× like heroic/racial ones — the race-file feats
+// carry <MaxTimesAcquire>3</MaxTimesAcquire> (e.g. Bladeforged.race.xml
+// "Past Life: Bladeforged": +[10/20/30] per-stack stance bonuses).
+const ICONIC_PL_MAX = 3
 const EPIC_PL_MAX_DEFAULT = 3
 const ACQUIRE_MAX_DEFAULT = 1
 
@@ -34,6 +37,7 @@ export default function PastLivesPanel() {
   const [epicFeats, setEpicFeats] = useState<Feat[]>([])
   const [specialFeatsData, setSpecialFeatsData] = useState<Feat[]>([])
   const [favorFeatsData, setFavorFeatsData] = useState<Feat[]>([])
+  const [destinyClaimFeats, setDestinyClaimFeats] = useState<Feat[]>([])
 
   useEffect(() => {
     api.classes().then(setAllClasses)
@@ -41,6 +45,7 @@ export default function PastLivesPanel() {
     api.feats({ acquire: 'EpicPastLife' }).then(setEpicFeats).catch(() => setEpicFeats([]))
     api.feats({ acquire: 'Special' }).then(setSpecialFeatsData).catch(() => setSpecialFeatsData([]))
     api.feats({ acquire: 'Favor' }).then(setFavorFeatsData).catch(() => setFavorFeatsData([]))
+    api.feats({ acquire: 'EpicDestinyTree' }).then(setDestinyClaimFeats).catch(() => setDestinyClaimFeats([]))
   }, [])
 
   const heroicClasses = allClasses.filter(c => !c.NotHeroic)
@@ -59,11 +64,23 @@ export default function PastLivesPanel() {
       bulk: true,
     },
     {
-      title: 'Iconic Past Lives (max 1 each)',
+      title: 'Iconic Past Lives (max 3 each)',
       entries: iconicRaces.map(r => ({ name: r.Name, max: ICONIC_PL_MAX })),
       bulk: true,
     },
   ]
+
+  // U51 Destiny Tree claim feats (Feats.xml Acquire=EpicDestinyTree): one per
+  // epic destiny — "You have claimed the <Destiny> Epic Destiny tree. Also
+  // grants 3 Fate points when claimed". Every 3 Fate Points = +1 destiny
+  // point, so each claimed destiny grows the shared destiny-point pool.
+  if (destinyClaimFeats.length > 0) {
+    groups.push({
+      title: 'Epic Destinies Claimed (+3 Fate Points each → +1 Destiny Point)',
+      entries: destinyClaimFeats.map(f => ({ name: f.Name, max: f.MaxTimesAcquire ?? 1 })),
+      bulk: true,
+    })
+  }
 
   // V2 ForumExportDlg.cpp:431 emits "Epic Past Lives" via FeatAcquisition_EpicPastLife.
   // Group by Sphere so the panel mirrors V2's SpecialFeatsPane layout.

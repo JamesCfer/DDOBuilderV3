@@ -201,16 +201,19 @@ describe('PastLivesPanel "+1 all" completionist buttons', () => {
     }
   })
 
-  it('iconic group caps at 1 and Clear resets the group', async () => {
+  it('iconic group caps at 3 and Clear resets the group', async () => {
+    // Iconic past lives stack ×3 like heroic/racial ones (race-file feats
+    // carry MaxTimesAcquire 3 — e.g. "Past Life: Morninglord").
     const mod = await import('../components/pastlives/PastLivesPanel')
     const container = await mount(React.createElement(mod.default), { ...emptyBuild() })
     const iconicSection = Array.from(container.querySelectorAll('section'))
       .find(s => s.textContent?.includes('Iconic Past Lives'))!
     const plusAll = Array.from(iconicSection.querySelectorAll('button'))
       .find(b => b.textContent === '+1 all') as HTMLButtonElement
-    await act(async () => { plusAll.click() })
-    await act(async () => { plusAll.click() })
-    expect(latestBuild!.pastLives['Morninglord']).toBe(1)
+    for (let i = 0; i < 4; i++) {
+      await act(async () => { plusAll.click() })
+    }
+    expect(latestBuild!.pastLives['Morninglord']).toBe(3)
     const clear = Array.from(iconicSection.querySelectorAll('button'))
       .find(b => b.textContent === 'Clear') as HTMLButtonElement
     await act(async () => { clear.click() })

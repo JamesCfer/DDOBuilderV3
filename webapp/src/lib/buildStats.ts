@@ -1786,10 +1786,14 @@ function buildStatMapOnce(
     }
 
     // ── Past lives ────────────────────────────────────────────────────────
+    // Prefer the "Past Life: X" form: iconic races whose racial auto-feat
+    // shares the race name (Bladeforged, Razorclaw Shifter) were matching the
+    // plain race feat first and silently dropping the past-life bonuses.
     for (const [source, count] of Object.entries(build.pastLives)) {
       if (!count) continue
-      const feat = allFeats.find(f =>
-        f.Name === source || f.Name === `Past Life: ${source}` || f.Name === `Racial Past Life: ${source}`)
+      const feat = allFeats.find(f => f.Name === `Past Life: ${source}`)
+        ?? allFeats.find(f => f.Name === `Racial Past Life: ${source}`)
+        ?? allFeats.find(f => f.Name === source)
       if (feat) accumulateFeat(map, feat, count, `Past life: ${source} ×${count}`, charLevelTotal, ctx)
     }
 

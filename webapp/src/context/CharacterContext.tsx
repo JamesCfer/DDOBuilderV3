@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useReducer } from 'react
 import type { CharacterBuild, Ability, FiligreeSlot, QuestDifficulty } from '../types/ddo'
 import { emptyBuild, migrateSentientGem } from '../types/ddo'
 import { aggregateLevelClasses, getLevelClasses, HEROIC_CAP } from '../lib/levelProgression'
+import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../lib/gamedata'
 import { useBuildLog } from './BuildLogContext'
 import { trainSpecialFeat, revokeSpecialFeat, trainFavorFeat, revokeFavorFeat } from '../lib/specialFeats'
 
@@ -168,7 +169,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
   }
 }
 
-function reducer(state: CharacterBuild, action: Action): CharacterBuild {
+export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
   switch (action.type) {
     case 'SET_NAME':
       return { ...state, name: action.name }
@@ -240,9 +241,11 @@ function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       return { ...state, levelClasses: lc, classes, totalLevel }
     }
     case 'SET_EPIC_LEVELS':
-      return { ...state, epicLevels: Math.max(0, Math.min(10, action.levels)) }
+      return { ...state, epicLevels: Math.max(0, Math.min(EPIC_MAX_LEVELS, action.levels)) }
     case 'SET_LEGENDARY_LEVELS':
-      return { ...state, legendaryLevels: Math.max(0, Math.min(4, action.levels)) }
+      // Was hard-clamped at 4 (level 34) — the game cap is 36 and the data
+      // files define legendary class levels through 40 (V2 MAX_BUILDER_LEVEL).
+      return { ...state, legendaryLevels: Math.max(0, Math.min(LEGENDARY_MAX_LEVELS, action.levels)) }
     case 'SET_ABILITY':
       return { ...state, baseAbilities: { ...state.baseAbilities, [action.ability]: action.score } }
     case 'SET_ABILITY_LEVELUP':
