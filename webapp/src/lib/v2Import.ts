@@ -467,8 +467,11 @@ function parseFiligreeSlots(parent: AnyRec, tag: 'Filigree' | 'ArtifactFiligree'
       rare: 'Rare' in fr || 'IsRare' in fr,
     })
   }
-  while (slots.length < count) slots.push({ name: '', rare: false })
-  return slots.slice(0, count)
+  // Never truncate real entries: a file can carry more filigrees than the
+  // requested default (V2 MAX_FILIGREE is 20 for both weapon and artifact).
+  const effective = Math.max(count, slots.length)
+  while (slots.length < effective) slots.push({ name: '', rare: false })
+  return slots
 }
 
 // ---------------------------------------------------------------------------
