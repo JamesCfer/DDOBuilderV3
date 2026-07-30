@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './TopNav.module.css'
 import { useCharacter } from '../../context/CharacterContext'
 import { api } from '../../api'
+import ParityBadge from './ParityBadge'
 
 // ---------------------------------------------------------------------------
 // Update button (moved from the old Sidebar)
@@ -191,6 +192,7 @@ export default function TopNav({
         </nav>
 
         <div className={styles.rightCluster}>
+          <ParityBadge />
           <Dropdown label="File">
             <div className={styles.fileMenu}>
               {fileMenu}

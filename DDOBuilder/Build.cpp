@@ -420,7 +420,14 @@ void Build::BuildNowActive()
     UpdateTotalChanged(NULL, Breakdown_Constitution);
     UpdateTotalChanged(NULL, Breakdown_Charisma);
     SetModifiedFlag(FALSE);
+#ifndef V2CALC_LINUX
+    // v2calc: headless UI stubs make IsFeatTrainable() spuriously fail for
+    // some trained feats (style feats, stance-gated slots), so this re-verify
+    // pass revoked feats real V2 keeps — 81/151 corpus builds drifted (HP,
+    // style bonus feats, tumble charges, …). The oracle only ever loads
+    // already-valid builds; skip the stale-build cleanup headless.
     VerifyTrainedFeats();
+#endif
 }
 
 void Build::SetLevel(size_t level)
