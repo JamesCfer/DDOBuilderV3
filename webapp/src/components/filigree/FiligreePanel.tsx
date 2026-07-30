@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
-import { useCharacter } from '../../context/CharacterContext'
+import { useCharacter, MAX_FILIGREE_SLOTS } from '../../context/CharacterContext'
 import type { Filigree, FiligreeSetBonus, FiligreeSetBuff, FiligreeSlot, SentientGem } from '../../types/ddo'
 import styles from './FiligreePanel.module.css'
 
+// Defaults when a build has no stored slot arrays; the rendered counts follow
+// the arrays' lengths, adjustable 1..MAX_FILIGREE_SLOTS via the Slots selects.
 const WEAPON_SLOT_COUNT = 6
 const ARTIFACT_SLOT_COUNT = 10
 
@@ -177,15 +179,29 @@ export default function FiligreePanel() {
               />
             </div>
 
-            {/* Weapon Filigree Slots */}
-            <div className={styles.sectionHeader}>Weapon Filigrees</div>
+            {/* Weapon Filigree Slots — count select mirrors V2's EquipmentPane
+                "Num Filigrees" combo (1..MAX_FILIGREE=20). */}
+            <div className={styles.sectionHeader}>
+              Weapon Filigrees
+              <label className={styles.slotCount}>
+                Slots:{' '}
+                <select
+                  value={weaponSlots.length}
+                  onChange={e => dispatch({ type: 'SET_FILIGREE_COUNT', count: Number(e.target.value) })}
+                >
+                  {Array.from({ length: MAX_FILIGREE_SLOTS }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className={styles.slotsSection}>
-              {Array.from({ length: WEAPON_SLOT_COUNT }, (_, i) => (
+              {weaponSlots.map((slot, i) => (
                 <FiligreeSlotRow
                   key={i}
                   index={i}
                   label="Slot"
-                  slot={weaponSlots[i] ?? { name: '', rare: false }}
+                  slot={slot}
                   groups={groups}
                   menuNames={menuNames}
                   onNameChange={name => dispatch({ type: 'SET_FILIGREE', slotIndex: i, name })}
@@ -195,14 +211,27 @@ export default function FiligreePanel() {
             </div>
 
             {/* Artifact Filigree Slots */}
-            <div className={styles.sectionHeader}>Artifact Filigrees</div>
+            <div className={styles.sectionHeader}>
+              Artifact Filigrees
+              <label className={styles.slotCount}>
+                Slots:{' '}
+                <select
+                  value={artifactSlots.length}
+                  onChange={e => dispatch({ type: 'SET_ARTIFACT_FILIGREE_COUNT', count: Number(e.target.value) })}
+                >
+                  {Array.from({ length: MAX_FILIGREE_SLOTS }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className={styles.slotsSection}>
-              {Array.from({ length: ARTIFACT_SLOT_COUNT }, (_, i) => (
+              {artifactSlots.map((slot, i) => (
                 <FiligreeSlotRow
                   key={i}
                   index={i}
                   label="Artifact"
-                  slot={artifactSlots[i] ?? { name: '', rare: false }}
+                  slot={slot}
                   groups={groups}
                   menuNames={menuNames}
                   onNameChange={name => dispatch({ type: 'SET_ARTIFACT_FILIGREE', slotIndex: i, name })}

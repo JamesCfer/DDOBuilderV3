@@ -32,6 +32,8 @@ type Action =
   | { type: 'TRAIN_FAVOR_FEAT'; featName: string }
   | { type: 'REVOKE_FAVOR_FEAT'; featName: string }
   | { type: 'SET_FILIGREE'; slotIndex: number; name: string }
+  | { type: 'SET_FILIGREE_COUNT'; count: number }
+  | { type: 'SET_ARTIFACT_FILIGREE_COUNT'; count: number }
   | { type: 'SET_FILIGREE_RARE'; slotIndex: number; rare: boolean }
   | { type: 'SET_ARTIFACT_FILIGREE'; slotIndex: number; name: string }
   | { type: 'SET_ARTIFACT_FILIGREE_RARE'; slotIndex: number; rare: boolean }
@@ -167,6 +169,18 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     activeAttackChain: (raw as unknown as { activeAttackChain?: string }).activeAttackChain ?? '',
     favorFeats: raw.favorFeats ?? [],
   }
+}
+
+/** V2 MAX_FILIGREE (stdafx.h:61) — both weapon and artifact slot counts. */
+export const MAX_FILIGREE_SLOTS = 20
+
+function resizeFiligreeSlots(
+  slots: ReadonlyArray<{ name: string; rare: boolean }>,
+  count: number,
+): { name: string; rare: boolean }[] {
+  const next = slots.slice(0, count).map(s => ({ ...s }))
+  while (next.length < count) next.push({ name: '', rare: false })
+  return next
 }
 
 export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
@@ -330,6 +344,19 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     case 'SET_ARTIFACT_FILIGREE_RARE': {
       const artifactFiligreeSlots = [...(state.artifactFiligreeSlots ?? [])] as CharacterBuild['artifactFiligreeSlots']
       artifactFiligreeSlots[action.slotIndex] = { ...(artifactFiligreeSlots[action.slotIndex] ?? { name: '', rare: false }), rare: action.rare }
+      return { ...state, artifactFiligreeSlots }
+    }
+    // V2 EquipmentPane "Num Filigrees" combo (0..MAX_FILIGREE=20, stdafx.h):
+    // the slot arrays resize in place — existing selections are kept, slots
+    // past the new count are dropped.
+    case 'SET_FILIGREE_COUNT': {
+      const count = Math.max(1, Math.min(MAX_FILIGREE_SLOTS, action.count))
+      const filigreeSlots = resizeFiligreeSlots(state.filigreeSlots ?? [], count)
+      return { ...state, filigreeSlots }
+    }
+    case 'SET_ARTIFACT_FILIGREE_COUNT': {
+      const count = Math.max(1, Math.min(MAX_FILIGREE_SLOTS, action.count))
+      const artifactFiligreeSlots = resizeFiligreeSlots(state.artifactFiligreeSlots ?? [], count)
       return { ...state, artifactFiligreeSlots }
     }
     case 'SET_DESTINY_CHOICE': {
