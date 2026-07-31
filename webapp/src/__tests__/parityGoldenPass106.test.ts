@@ -88,4 +88,19 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   it('all 10 weapon filigrees import (NumFiligrees honored)', () => {
     expect(build.filigreeSlots.filter(f => f.name).length).toBe(10)
   })
+
+  it('saves are exact against the real V2 export (Oracle-derived bug list "saves" bucket, stale since #165)', () => {
+    // PARITY_TODO.md's "Oracle-derived mechanical bug list" still carried a
+    // 🟡 "saves: Reflex 37→18 / Fort 30→8 / Will 6 (#159)" entry claiming a
+    // residual of Reflex 0 / Fort 1 / Will 1 "as of #165" — but passes
+    // 119-133 (guild-buff TotalLevel fix, feat TotalLevel + selector
+    // requirements + SliderValue, oracle slider default, stale trained
+    // spells) closed the rest without the bullet ever being marked ✅. This
+    // pins all three base saves down directly against the real export.
+    for (const key of ['save.Fort', 'save.Reflex', 'save.Will']) {
+      const v2 = parsed.stats[key]
+      expect(v2, `expected '${key}' in the parsed export`).toBeDefined()
+      expect(composed(key), key).toBe(v2)
+    }
+  })
 })
