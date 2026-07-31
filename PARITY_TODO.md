@@ -153,6 +153,7 @@ the PR number, so this file doubles as a changelog.
 | 130 | **Maetrim MP/RP −2/−2 CLOSED — `EnterValue` augments (e.g. "Mythic Power Boost") never read the player-entered `ItemAugment::Value`** — confirmed directly against the real V2 dump (temporary `AllActiveEffects()`/`IsActive()` debug hook added to `DDOBuilder/BreakdownItem.h` + `v2calc/shim/BreakdownHostLinux.cpp`/`v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix). V2 `Build::ApplyAugment` (`Build.cpp:4948-4966`) checks `augment.HasEnterValue()` and, when set, replaces EVERY effect's `Amount` with `itemAugment.Value()` — the mechanic behind "Mythic Power Boost" (the Mythic-slot augment the player reforges to raise its rank), completely independent of the already-implemented `ChooseLevel`/`LevelValue` mechanic. `webapp/src/lib/buildStats.ts`'s `accumulateAugments` never read `EnterValue`/`Value` at all, so every such augment always contributed its catalogue placeholder Amount (`1`) regardless of what the player actually entered. On `Maetrim_EndGameHandwrapsMonk.DDOBuild`'s ACTIVE gear set (selected via `<ActiveGear>`, itself already correct in `v2Import.ts`) three "Mythic Power Boost" augments are slotted with `Value` 3/1/1 (Dinosaur Bone Cloak/Waistwrap/Karissa's Goggles); V2 sums all three (Mythic bonus type stacks `Always`) for 5, V3 summed 1+1+1=3 — a flat −2 on both `melee.power` and `ranged.power` (both effects on the same augment), matching the observed diff exactly and closing the corpus's last remaining oracle mismatch. Fix: `v2Import.ts` now captures `<Value>` into a new `build.augmentValueChoices` map (parallel to the existing `augmentLevelChoices`); `accumulateAugments` accepts it and, when the resolved augment has `EnterValue`, overrides every effect's Amount with the stored value before parsing (mirroring the ChooseLevel override path); `v2Export.ts` round-trips `<Value>` back out for `.DDOBuild` re-export. `oracleDiff.ts`: **rangedPower/meleePower 1→0 — 0 of 53 builds mismatch** (down from 46 pre-pass-119). 3 regression tests in `parityPass130EnterValueAugment.test.ts` (synthetic builds, oracle-independent). | #173 |
 | 133 | **G-MRR / G-PRR / G-AC golden-build residue CLOSED — closed as a side effect of passes 127-132, just never re-verified** — the "Golden-build residue" section tracked a bounded (not exact) PRR/MRR/AC gap against the real V2 forum export `exampledps.cc1.v2export.txt`, guarded by `parityGoldenPass106.test.ts`'s `KNOWN_OPEN` set + a `gaps: { ac: -4, mrr: -8, prr: -4 }` tolerance test. Re-running the diff directly against that real export (not just the `oracleDiff.ts` synthetic corpus) shows all three now match V2 exactly (diff 0) — the corpus-wide PRR/MRR/armor-stance root causes fixed in passes 121, 127, and 131-132 (Attack-feat per-shield PRR/MRR, `featCounts` wiring, shield/weapon `<Weapon>`-tag naming, tracked + auto-derived armor stances) closed this specific build's residue too, but nobody had re-run this particular test's bounds since #165 to notice they'd hit zero. `KNOWN_OPEN` is now empty; `parityGoldenPass106.test.ts`'s loose bounds check replaced with an exact-match assertion on `ac`/`mrr`/`prr` so a future regression fails immediately instead of silently reopening up to the old bound. No production code changed — this closes stale tracking + tightens regression coverage. | this PR |
 | 134 | **D4 — Artifact Filigree slots gate on an equipped Minor Artifact item** — V2 `Build::ApplyGearEffects`/`RevokeGearEffects` (`Build.cpp:4776-4783`, `4852-4859`) only apply/revoke the 10 "Artifact Filigree" slot effects when `gear.HasMinorArtifact()` — some equipped item carries the presence-only `<MinorArtifact/>` flag (`EquippedGear::HasMinorArtifact`, `EquippedGear.cpp:424-435`). `buildStats.ts`'s call to `accumulateFiligrees` always applied `build.artifactFiligreeSlots` unconditionally, so a build with no Minor Artifact equipped still received Artifact Filigree bonuses in V3. Fixed by checking `'MinorArtifact' in item` across `gearItems` (same presence-only-flag pattern as `NoPastLife`/`NotHeroic`) and passing an empty artifact-filigree slot list when no Minor Artifact is equipped. Also corrected a stale D5 marker discovered during this pass — Docent armor-AC feat gating had already shipped (pass 134/#178) but the TODO entry was never flipped to done. 3 regression tests in `parityPassD4ArtifactFiligree.test.ts`. | this PR |
+| 135 | **Stale-tracking close: "saves" and "prr/mrr" Oracle-derived-bug-list entries** — both bullets under "High-priority remaining → Oracle-derived mechanical bug list" were still marked 🟡 with residual mismatches (Reflex/Fort/Will; prr/mrr "mixed signs, round-2 diagnosis in flight") describing gaps that passes 119-133 had already closed — the bullets were simply never flipped. No production code change. Verified directly: the real-V2-export golden test (`parityGoldenPass106.test.ts`) already asserts `ac`/`mrr`/`prr` exact (pass 133); added a matching pinned assertion for `save.Fort`/`save.Reflex`/`save.Will` (previously only covered by the generic "every stat" loop check) so a future regression in any of the six values fails loudly and specifically instead of silently or via an undifferentiated failure list. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -674,7 +675,7 @@ the scoreboard wins.
   Durability's 5/10/15 milestones. The old "percent-HP residue" theory is
   RETIRED — pass 120's reconciliation proved the percent engine exact; the
   exampledps golden HP residue is 0 and exact-checked.
-- 🟡 **saves: Reflex 37→18 / Fort 30→8 / Will 6 (#159)** — root cause #1 fixed:
+- ✅ **saves: Reflex 37→18 / Fort 30→8 / Will 6 — CLOSED (this PR)** — root cause #1 fixed:
   `accumulateGuildBuffs` hardcoded the `classLevels` param passed to
   `parseEffect` to `0`, so every Guild Buff effect with `AType="TotalLevel"`
   (V2 `Effect.cpp:1205-1219`, indexed by `m_pBuild->Level()` — the total
@@ -690,8 +691,13 @@ the scoreboard wins.
   `build.totalLevel + epicLevels + legendaryLevels` through as the
   `classLevels` arg. 2 regression tests in `parityGuildBuffTotalLevel.test.ts`.
   Residual: closed by passes 119 (feat TotalLevel + selector requirements +
-  SliderValue), 122 (oracle slider default) and 123 (stale trained spells) —
-  Reflex 0 / Fort 1 / Will 1 as of #165.
+  SliderValue), 122 (oracle slider default) and 123 (stale trained spells).
+  This bullet was left marked 🟡 after #165 even though the residual it
+  described was already gone; re-verified against the real
+  `exampledps.cc1.v2export.txt` export (`parityGoldenPass106.test.ts`) —
+  `save.Fort`/`save.Reflex`/`save.Will` are exact. New pinned assertion
+  added directly to that test so a future regression fails loudly instead
+  of silently reopening.
 - ✅ **dodge (35→16 by #122's diagnosis, →1 after #164)** — the long-standing
   "armor-MDB secondary cap" hypothesis was STALE/WRONG (the cap never bound
   on the reconciled builds; `v2Formulas.ts` already applied it correctly).
@@ -752,12 +758,16 @@ the scoreboard wins.
   independent Guild-bonus-type sources is the correct, V2-exact total. New
   regression test in `parityCompletionist.test.ts` asserts the three
   per-ability Guild Buff bonus lines directly.
-- 🟡 **prr 22→14 / mrr 19→12 (rounds 121-122); mrrCap 4→0 and
+- ✅ **prr 22→14 / mrr 19→12 (rounds 121-122); mrrCap 4→0 and
   fortification 28→0 CLOSED (#163); rangedPower 15→3 / meleePower 10→1
-  (#163/#164/#165).** Selector own-effects + tracked armor stances (#163),
-  auto-feat dedup + oracle slider (#164), trained-spell carry-over +
-  truncation (#165). Remaining prr/mrr have mixed signs (healer-cluster
-  unders, small equal overs) — round-2 diagnosis in flight.
+  (#163/#164/#165) — CLOSED (this PR).** Selector own-effects + tracked
+  armor stances (#163), auto-feat dedup + oracle slider (#164),
+  trained-spell carry-over + truncation (#165). The "round-2 diagnosis in
+  flight" note was stale: pass 133's full-analytics oracle widening
+  (151/151 builds, 0 mismatches) and the real-export golden test
+  (`parityGoldenPass106.test.ts`'s `ac`/`mrr`/`prr` exact-match assertion,
+  already passing since #177) already closed the mixed-sign residue this
+  bullet described; nobody had flipped its marker.
 
 Workflow: `make -C v2calc` once, then `cd webapp && npx tsx scripts/oracleDiff.ts`
 prints the live list; fix, re-run, repeat. `oracleDiff.ts <file>` targets one build.
