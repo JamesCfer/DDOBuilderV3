@@ -154,6 +154,7 @@ the PR number, so this file doubles as a changelog.
 | 133 | **G-MRR / G-PRR / G-AC golden-build residue CLOSED — closed as a side effect of passes 127-132, just never re-verified** — the "Golden-build residue" section tracked a bounded (not exact) PRR/MRR/AC gap against the real V2 forum export `exampledps.cc1.v2export.txt`, guarded by `parityGoldenPass106.test.ts`'s `KNOWN_OPEN` set + a `gaps: { ac: -4, mrr: -8, prr: -4 }` tolerance test. Re-running the diff directly against that real export (not just the `oracleDiff.ts` synthetic corpus) shows all three now match V2 exactly (diff 0) — the corpus-wide PRR/MRR/armor-stance root causes fixed in passes 121, 127, and 131-132 (Attack-feat per-shield PRR/MRR, `featCounts` wiring, shield/weapon `<Weapon>`-tag naming, tracked + auto-derived armor stances) closed this specific build's residue too, but nobody had re-run this particular test's bounds since #165 to notice they'd hit zero. `KNOWN_OPEN` is now empty; `parityGoldenPass106.test.ts`'s loose bounds check replaced with an exact-match assertion on `ac`/`mrr`/`prr` so a future regression fails immediately instead of silently reopening up to the old bound. No production code changed — this closes stale tracking + tightens regression coverage. | this PR |
 | 134 | **D4 — Artifact Filigree slots gate on an equipped Minor Artifact item** — V2 `Build::ApplyGearEffects`/`RevokeGearEffects` (`Build.cpp:4776-4783`, `4852-4859`) only apply/revoke the 10 "Artifact Filigree" slot effects when `gear.HasMinorArtifact()` — some equipped item carries the presence-only `<MinorArtifact/>` flag (`EquippedGear::HasMinorArtifact`, `EquippedGear.cpp:424-435`). `buildStats.ts`'s call to `accumulateFiligrees` always applied `build.artifactFiligreeSlots` unconditionally, so a build with no Minor Artifact equipped still received Artifact Filigree bonuses in V3. Fixed by checking `'MinorArtifact' in item` across `gearItems` (same presence-only-flag pattern as `NoPastLife`/`NotHeroic`) and passing an empty artifact-filigree slot list when no Minor Artifact is equipped. Also corrected a stale D5 marker discovered during this pass — Docent armor-AC feat gating had already shipped (pass 134/#178) but the TODO entry was never flipped to done. 3 regression tests in `parityPassD4ArtifactFiligree.test.ts`. | this PR |
 | 135 | **Stale-tracking close: "saves" and "prr/mrr" Oracle-derived-bug-list entries** — both bullets under "High-priority remaining → Oracle-derived mechanical bug list" were still marked 🟡 with residual mismatches (Reflex/Fort/Will; prr/mrr "mixed signs, round-2 diagnosis in flight") describing gaps that passes 119-133 had already closed — the bullets were simply never flipped. No production code change. Verified directly: the real-V2-export golden test (`parityGoldenPass106.test.ts`) already asserts `ac`/`mrr`/`prr` exact (pass 133); added a matching pinned assertion for `save.Fort`/`save.Reflex`/`save.Will` (previously only covered by the generic "every stat" loop check) so a future regression in any of the six values fails loudly and specifically instead of silently or via an undifferentiated failure list. | this PR |
+| 136 | **D3 — Minor Artifact single-equip restriction enforced** — V2 `EquippedGear::SetItem` (`EquippedGear.cpp:352-372`) auto-revokes every OTHER item flagged `<MinorArtifact/>` the instant a new one is equipped (`EquippedGear::HasMinorArtifact`), so at most one Minor Artifact can ever be equipped at once. `Item.h:100`'s `MinorArtifact` flag was absent from V3's `Item` interface and nothing enforced the restriction — a build could equip multiple Minor Artifacts and count all of their effects. Added `Item.MinorArtifact?: string` to `types/ddo.ts`; `buildStats.ts` now scans `gearItems` for the presence-only flag (same pattern as the existing D4 check) and, when more than one is equipped, keeps the item in the earliest V2 canonical inventory slot and strips the rest through the existing `gearSlotsRemovedByV2` mechanism (the same one the off-hand two-handed-weapon rule uses), so a revoked artifact's augments and set-bonus contributions die with it too. A static gear snapshot has no equip-order history, so the canonical-slot-order tiebreak is a deterministic approximation of V2's "most-recently-equipped wins" rule. 3 regression tests in `parityPassD3MinorArtifact.test.ts`. | this PR |
 
 ### Known approximation — RESOLVED (#93)
 
@@ -852,15 +853,13 @@ occurrences confirmed), so no change is needed there.
 - ✅ **Filigree set bonuses with conditional triggers** — done (#71).
 - ✅ **D1 — Legacy enhancement trees filtered from the picker** — done (#97).
 - ✅ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades)** — done (#98).
-- ❌ **D3 — Minor Artifact single-equip restriction not enforced (93 items
-  in current catalogue).** V2 `EquippedGear.cpp:353-386` (`SetItem`)
-  auto-revokes (with a warning) a second item flagged `<MinorArtifact/>`
-  when one is already equipped anywhere in the gear set
-  (`EquippedGear::HasMinorArtifact`, `Build.cpp:4767`/`4843`). `Item.h:100`'s
-  `MinorArtifact` flag isn't declared on V3's `Item` interface
-  (`types/ddo.ts`) and nothing in the reducer/`buildStats.ts` checks it — a
-  V3 build can equip multiple Minor Artifacts simultaneously, which V2
-  forbids.
+- ✅ **D3 — Minor Artifact single-equip restriction enforced** — done (#136,
+  this pass). `Item.MinorArtifact?: string` added to `types/ddo.ts`;
+  `buildStats.ts` strips every equipped Minor Artifact past the first
+  (V2 canonical slot order tiebreak, no equip-order history in a static
+  snapshot) through the existing `gearSlotsRemovedByV2` off-hand-rule
+  mechanism, so augments/set-bonus contributions of the revoked item(s)
+  are dropped too (V2 `EquippedGear::SetItem`, `EquippedGear.cpp:352-372`).
 - ✅ **D4 — Artifact Filigree slots now gate on an equipped Minor Artifact
   item** — done (#134, this pass). V2 `Build.cpp:4767-4771`/`4843-4849`
   only applies/revokes the 10 "Artifact Filigree" slot effects when
