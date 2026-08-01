@@ -252,6 +252,9 @@ export interface Item {
   SlotUpgrade?: SlotUpgrade | SlotUpgrade[]
   SetBonus?: string | string[]
   Requirements?: Requirements
+  /** V2 `Item.h:100` presence-only flag — parses as `""`; check with `'MinorArtifact' in item`.
+   *  At most one Minor Artifact may be equipped at a time (`EquippedGear::SetItem`). */
+  MinorArtifact?: string
   // Weapon-specific
   Weapon?: string
   AttackModifier?: string | string[]

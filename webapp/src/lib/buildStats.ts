@@ -1308,6 +1308,33 @@ function buildStatMapOnce(
         }
       }
     }
+    // ── V2 EquippedGear::SetItem Minor Artifact rule (EquippedGear.cpp:352-372) ─
+    // At most one Minor Artifact (<MinorArtifact/> presence flag, Item.h:100)
+    // may be equipped at a time — V2 revokes every other Minor Artifact the
+    // instant a new one is equipped, with the just-equipped item always
+    // winning. A static gear snapshot carries no equip-order history, so pick
+    // a single deterministic winner (V2's canonical inventory slot order,
+    // same order used by the forum-export gear section) and strip the rest
+    // through the same gearSlotsRemovedByV2 mechanism as the off-hand rule
+    // above (so their augments/set-bonus contributions die with them too).
+    {
+      const SLOT_ORDER = [
+        'Arrow', 'Armor', 'Belt', 'Boots', 'Bracers', 'Cloak', 'Gloves',
+        'Goggles', 'Helmet', 'Necklace', 'Quiver', 'Ring', 'Ring2', 'Trinket',
+        'Main Hand', 'Off Hand',
+      ]
+      const slotRank = (slot: string) => {
+        const idx = SLOT_ORDER.indexOf(slot)
+        return idx === -1 ? SLOT_ORDER.length : idx
+      }
+      const minorArtifactSlots = Object.keys(gearItems)
+        .filter(slot => 'MinorArtifact' in gearItems[slot])
+        .sort((a, b) => slotRank(a) - slotRank(b))
+      for (const slot of minorArtifactSlots.slice(1)) {
+        delete gearItems[slot]
+        gearSlotsRemovedByV2.add(slot)
+      }
+    }
 
     const ctxStances = deriveArmorStances(gearItems, ctxFeats)
     // V2 parity: alignment stances are auto-controlled too (Stances.xml
