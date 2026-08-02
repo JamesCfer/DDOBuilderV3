@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 137 | **Golden-export Weapon Damage section parsed + pinned** — `parseV2Export.ts` never parsed V2's "Weapon Damage" forum-export block (`ForumExportDlg.cpp::AddWeaponDamage`: Melee/Ranged Power, Doublestrike, Strikethrough, Off-Hand attack Chance, Fortification Bypass, Dodge Bypass, Helpless Damage bonus, Doubleshot Chance), so none of those 8 values were ever regression-checked against the real V2 export, and the "2026-07-19 user cc1-gearset export diff" todo item (Fortification Bypass 84 vs V2 71, unexplained MP/PRR/MRR delta) stayed 🟡 with no way to re-verify it. Added label→V3-stat-key maps and parsing for the section's plain `Label: value`/`Label: value%` lines. Re-running the golden test against the committed `exampledps.DDOBuild`/`exampledps.cc1.v2export.txt` fixture (the same save the 🟡 item described) shows all 8 values now match V2 exactly — the underlying bugs were already closed by #117 (fortBypass Highest-Only) and the pass 121-133 stance/PRR/MRR work; the diff item just never got a regression test to confirm it. New pinned assertion in `parityGoldenPass106.test.ts`; item closed below. | this PR |
 | 1 | Per-level class progression (`build.levelClasses`, V2 `m_Levels`) | #53 |
 | 24 | BonusTypes stacking rules driven by `BonusTypes.xml` — `initBonusTypes()` replaces hard-coded `EXCLUSIVE` set; `useStaticBundle` and CLI wire it at startup | #56 |
 | 2 | Feat-slot prerequisite snapshot uses exact per-level state | #53 |
@@ -348,21 +349,25 @@ mismatches, largest first — each needs a source-by-source V2 trace:
   "Legendary Bulwark" (Legendary +10) that V3 never applies at all).
   5 new regression tests in `parityPassEpicLegendaryHP.test.ts` (synthetic
   builds, oracle-independent) cover bugs 1-4 directly.
-- 🟡 **2026-07-19 user cc1-gearset export diff** (fresh V2 vs V3 forum
-  exports, different save than the repo fixture — V2's file has 4 gear
-  sets, repo fixture only 2, so not directly reproducible here): Will +11
-  OVER (biggest single unexplained), Fort +1/Reflex +2 over, ✅ Fortification
-  Bypass 84 vs 71 (+13 OVER — root-caused as one instance of set/filigree/
-  self-buff/guild-buff sources bypassing Highest-Only stacking against gear
-  of the same bonus type, e.g. Enhancement/Legendary/Insightful — see #117
-  in Done table; this specific diff session's exact sources unverified since
-  its fixture isn't reproducible here, but the systematic bug is fixed),
-  Unconscious Range −350 vs −360 (−10; possibly the inactive Enhanced
-  Bloodrage toggle), Dodge 21 vs V2 "18/25" (V3 +3 over AND the export
-  never renders the V2 `dodge/cap` form). Much of the MP/PRR/MRR delta in
-  that session is stance-state: V2 had Power Attack / Enhanced Bloodrage /
-  Mantle of Fury / Fallen Bond active; V3's export lists them inactive —
-  verify V3 restores ActiveStances from import into the live session.
+- ✅ **2026-07-19 user cc1-gearset export diff — CLOSED (pass 137)**: this
+  bullet's Will/Fort/Reflex/Fortification-Bypass/Dodge/Unconscious-Range
+  claims were never re-verifiable because (a) `parseV2Export.ts` didn't parse
+  the export's "Weapon Damage" section at all (no `fortBypass`/`melee.power`/
+  etc. keys ever reached the golden test) and (b) the file was assumed
+  unreproducible. The committed `exampledps.DDOBuild` +
+  `exampledps.cc1.v2export.txt` fixture turns out to BE this exact save —
+  its `<ActiveStances>` list contains Power Attack / Enhanced Bloodrage /
+  Mantle of Fury and its export text has the same HP 2797 / Unc Rng −360 /
+  Dodge 18/25 / Fort 75 / Will 53 / Fortification-Bypass-71 numbers quoted
+  above. `saves are exact` (added in pass 135) already pins Will/Fort/Reflex
+  as exact; pass 137 parses the Weapon Damage section and pins
+  meleePower/rangedPower/doublestrike/doubleshot/strikethrough/
+  offhandAttack/fortBypass/helpless as exact too — all 8 match V2 with zero
+  diff. So the stance-restoration-from-import concern was unfounded (it
+  already works — `v2Import.ts` reads `<ActiveStances>` into
+  `build.activeBuffs`, and `buildStats.ts`'s persisted-stance merge applies
+  them), and every numeric claim in this bullet is now regression-pinned
+  and V2-exact. No remaining residue.
 - ✅ **Display gaps vs V2 export — closed (#111)**: Epic/Legendary auto-feat
   rows and half-rank skill totals done (#107). (1) AutomaticAcquisition
   feats (Attack, Sneak, Heroic Durability, Defensive Fighting, Sunder,

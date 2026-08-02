@@ -103,4 +103,25 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
       expect(composed(key), key).toBe(v2)
     }
   })
+
+  it('Weapon Damage section (melee/ranged power, doublestrike/doubleshot, ' +
+     'strikethrough, off-hand attack, fortification bypass, helpless damage) ' +
+     'is exact against the real V2 export (PARITY_TODO.md "2026-07-19 user ' +
+     'cc1-gearset export diff" — closed)', () => {
+    // The todo's "cc1-gearset export diff" flagged Fortification Bypass 84
+    // vs V2's 71 (+13 OVER) and unexplained MP/PRR/MRR delta on this exact
+    // save. parseV2Export never parsed the "Weapon Damage" block
+    // (ForumExportDlg.cpp::AddWeaponDamage), so none of these eight values
+    // were ever regression-checked. #117 (fortBypass Highest-Only fix) and
+    // the pass 121-133 stance/PRR/MRR work already closed the underlying
+    // bugs; this pins the full section down directly.
+    for (const key of [
+      'melee.power', 'ranged.power', 'melee.doublestrike', 'ranged.doubleshot',
+      'melee.strikethrough', 'offhand.attack', 'fortBypass', 'helpless',
+    ]) {
+      const v2 = parsed.stats[key]
+      expect(v2, `expected '${key}' in the parsed export`).toBeDefined()
+      expect(composed(key), key).toBe(v2)
+    }
+  })
 })
