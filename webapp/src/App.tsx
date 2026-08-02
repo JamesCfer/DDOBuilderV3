@@ -43,6 +43,7 @@ import Dashboard from './components/layout/Dashboard'
 import OptimizerPanel from './components/optimizer/OptimizerPanel'
 import LifeBuildBar from './components/layout/LifeBuildBar'
 import { findActiveBuild } from './lib/multiLife'
+import { readSession } from './lib/sessionStore'
 import type { CharacterDocument } from './types/ddo'
 import styles from './App.module.css'
 
@@ -114,6 +115,19 @@ function AppInner() {
   // Analysis — has the complete dataset ready instead of each tab fetching
   // its own copy on first visit.
   useEffect(() => { preloadStaticBundle() }, [])
+
+  // Restore the document that was open last time. Opening the app on an empty
+  // level-1 character when you spent yesterday on a 34-life build — with the
+  // real one sitting in localStorage the whole time — is a needless loss.
+  useEffect(() => {
+    const restored = readSession()
+    if (!restored) return
+    setDoc(restored)
+    const build = findActiveBuild(restored)
+    if (build) dispatch({ type: 'LOAD_BUILD', build })
+    // Once, on mount, before any edit can overwrite the snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [tabs, setTabs] = useState<Record<Page, string>>(() => (
     Object.fromEntries(PAGES.map(p => [p, PAGE_TABS[p][0]])) as Record<Page, string>
   ))

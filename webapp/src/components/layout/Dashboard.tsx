@@ -9,7 +9,8 @@
 // outward, so a wide monitor is fully usable ("Reset Layout" matches V2's
 // View → Reset Screen Layout).
 
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import styles from './Dashboard.module.css'
 
 // Lazy panel registry — same components the nav routes render.
@@ -61,7 +62,15 @@ interface Win {
   prev?: { x: number; y: number; w: number; h: number }
 }
 
+// Layouts are per-account: signing in on a shared browser should not inherit
+// (or overwrite) somebody else's arrangement. Signed-out work stays under the
+// bare key, and a freshly signed-in account inherits it once as its starting
+// point rather than being dropped onto the default layout.
 const LAYOUT_KEY = 'ddo-builder-dashboard'
+
+function layoutKey(userId: string | null): string {
+  return userId ? `${LAYOUT_KEY}:${userId}` : LAYOUT_KEY
+}
 
 const DEFAULT_LAYOUT: Win[] = [
   { id: 'w1', panel: 'Character Info', x: 8, y: 8, w: 340, h: 260, zoom: 'auto' },
@@ -72,20 +81,33 @@ const DEFAULT_LAYOUT: Win[] = [
   { id: 'w6', panel: 'Breakdowns', x: 924, y: 8, w: 420, h: 440, zoom: 'auto' },
 ]
 
-function readLayout(): Win[] {
+function parseLayout(raw: string | null): Win[] | null {
+  if (!raw) return null
   try {
-    const raw = localStorage.getItem(LAYOUT_KEY)
-    if (!raw) return DEFAULT_LAYOUT
     const parsed = JSON.parse(raw)
+    // An empty array is a REAL layout — the user closed every window. Treat it
+    // as such instead of falling through to the default, which is how closing
+    // the last window used to bring six of them back.
     if (Array.isArray(parsed) && parsed.every(w => w && typeof w.panel === 'string')) {
       return (parsed as Win[]).map(w => ({ ...w, zoom: w.zoom ?? 'auto' }))
     }
-  } catch { /* fall through */ }
+  } catch { /* not usable */ }
+  return null
+}
+
+function readLayout(userId: string | null): Win[] {
+  const own = parseLayout(localStorage.getItem(layoutKey(userId)))
+  if (own) return own
+  // First run for this account: adopt whatever was arranged while signed out.
+  if (userId) {
+    const anon = parseLayout(localStorage.getItem(LAYOUT_KEY))
+    if (anon) return anon
+  }
   return DEFAULT_LAYOUT
 }
 
-function writeLayout(wins: Win[]) {
-  try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(wins)) } catch { /* ignore */ }
+function writeLayout(userId: string | null, wins: Win[]) {
+  try { localStorage.setItem(layoutKey(userId), JSON.stringify(wins)) } catch { /* ignore */ }
 }
 
 let nextId = Date.now()
@@ -224,45 +246,74 @@ function DashboardWindow({
 }
 
 export default function Dashboard() {
-  const [wins, setWins] = useState<Win[]>(() => readLayout())
-  const [order, setOrder] = useState<string[]>(() => readLayout().map(w => w.id))
+  const { user } = useAuth()
+  const userId = user?.id ?? null
+
+  const [wins, setWins] = useState<Win[]>(() => readLayout(userId))
+  const [order, setOrder] = useState<string[]>(() => readLayout(userId).map(w => w.id))
   const [adding, setAdding] = useState('')
   const viewportRef = useRef<HTMLDivElement>(null)
 
-  function update(next: Win[]) {
-    setWins(next)
-    writeLayout(next)
-  }
+  // Every mutation goes through a FUNCTIONAL update. The handlers passed to a
+  // window (drag, resize, zoom) are created during a render and can fire after
+  // that render is stale — a ResizeObserver callback in particular arrives
+  // asynchronously, and one from a window that has since been closed used to
+  // write its whole captured `wins` array back, resurrecting the closed
+  // window and undoing anything else since. Reading `prev` makes that
+  // impossible.
+  const update = useCallback((fn: (prev: Win[]) => Win[]) => {
+    setWins(prev => {
+      const next = fn(prev)
+      writeLayout(userId, next)
+      return next
+    })
+  }, [userId])
 
-  function patch(id: string, p: Partial<Win>) {
-    update(wins.map(w => (w.id === id ? { ...w, ...p } : w)))
-  }
+  // Signing in or out swaps which layout is in play.
+  const loadedFor = useRef(userId)
+  useEffect(() => {
+    if (loadedFor.current === userId) return
+    loadedFor.current = userId
+    const next = readLayout(userId)
+    setWins(next)
+    setOrder(next.map(w => w.id))
+  }, [userId])
+
+  const patch = useCallback((id: string, p: Partial<Win>) => {
+    update(prev => {
+      // A patch for a window that no longer exists is a late event from a
+      // closed one — drop it rather than re-adding the window.
+      if (!prev.some(w => w.id === id)) return prev
+      return prev.map(w => (w.id === id ? { ...w, ...p } : w))
+    })
+  }, [update])
 
   function addWindow(panel: string) {
     if (!panel) return
     const id = `w${nextId++}`
-    update([...wins, { id, panel, x: 40 + (wins.length % 5) * 30, y: 40 + (wins.length % 5) * 30, w: 480, h: 380, zoom: 'auto' }])
+    update(prev => [...prev, {
+      id, panel,
+      x: 40 + (prev.length % 5) * 30, y: 40 + (prev.length % 5) * 30,
+      w: 480, h: 380, zoom: 'auto',
+    }])
     setOrder(o => [...o, id])
   }
 
   function toggleMaximize(id: string) {
-    const w = wins.find(x => x.id === id)
     const vp = viewportRef.current
-    if (!w) return
-    if (w.prev) {
-      update(wins.map(x => (x.id === id ? { ...x, ...w.prev, prev: undefined } : x)))
-    } else if (vp) {
-      update(wins.map(x => (x.id === id
-        ? {
-            ...x,
-            prev: { x: x.x, y: x.y, w: x.w, h: x.h },
-            x: vp.scrollLeft + 4,
-            y: vp.scrollTop + 4,
-            w: vp.clientWidth - 12,
-            h: vp.clientHeight - 12,
-          }
-        : x)))
-    }
+    update(prev => prev.map(x => {
+      if (x.id !== id) return x
+      if (x.prev) return { ...x, ...x.prev, prev: undefined }
+      if (!vp) return x
+      return {
+        ...x,
+        prev: { x: x.x, y: x.y, w: x.w, h: x.h },
+        x: vp.scrollLeft + 4,
+        y: vp.scrollTop + 4,
+        w: vp.clientWidth - 12,
+        h: vp.clientHeight - 12,
+      }
+    }))
     setOrder(o => [...o.filter(x => x !== id), id])
   }
 
@@ -288,7 +339,7 @@ export default function Dashboard() {
         <button
           type="button"
           title="Restore the default window layout (V2 View → Reset Screen Layout)"
-          onClick={() => { update(DEFAULT_LAYOUT); setOrder(DEFAULT_LAYOUT.map(w => w.id)) }}
+          onClick={() => { update(() => DEFAULT_LAYOUT); setOrder(DEFAULT_LAYOUT.map(w => w.id)) }}
         >
           Reset Layout
         </button>
@@ -309,7 +360,10 @@ export default function Dashboard() {
               onResize={(wd, h) => patch(w.id, { w: wd, h })}
               onZoom={zoom => patch(w.id, { zoom })}
               onMaximize={() => toggleMaximize(w.id)}
-              onClose={() => { update(wins.filter(x => x.id !== w.id)); setOrder(o => o.filter(x => x !== w.id)) }}
+              onClose={() => {
+                update(prev => prev.filter(x => x.id !== w.id))
+                setOrder(o => o.filter(x => x !== w.id))
+              }}
               onFocus={() => focus(w.id)}
             />
           ))}

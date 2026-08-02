@@ -225,7 +225,15 @@ const PANELS: Array<[string, () => Promise<{ default: React.ComponentType<any> }
   ['ContentPanel', () => import('../components/layout/ContentPanel')],
   ['HelpPanel', () => import('../components/layout/HelpPanel')],
   ['LifeBuildBar', () => import('../components/layout/LifeBuildBar')],
-  ['Dashboard', () => import('../components/layout/Dashboard')],
+  // Dashboard keys its window layout by account, so it needs AuthProvider —
+  // the same wrapper the app always renders it inside.
+  ['Dashboard', () => Promise.all([
+    import('../components/layout/Dashboard'),
+    import('../context/AuthContext'),
+  ]).then(([m, auth]) => ({
+    default: () => React.createElement(auth.AuthProvider, null,
+      React.createElement(m.default)),
+  }))],
   // Community panels need AuthProvider and an onLoad prop — shim them in.
   ['CommunityPanel', () => Promise.all([
     import('../components/community/CommunityPanel'),
