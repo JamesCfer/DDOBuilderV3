@@ -23,16 +23,14 @@ import GearPanel from './components/items/GearPanel'
 import ClickiesPanel from './components/items/ClickiesPanel'
 import BreakdownsPanel from './components/breakdowns/BreakdownsPanel'
 import FavoritesDock from './components/breakdowns/FavoritesDock'
+import StanceBuffDock from './components/layout/StanceBuffDock'
 import CombatPanel from './components/combat/CombatPanel'
 import BuildCompare from './components/layout/BuildCompare'
 import PastLivesPanel from './components/pastlives/PastLivesPanel'
-import GuildBuffsPanel from './components/guildbuffs/GuildBuffsPanel'
 import SetBonusesPanel from './components/setbonuses/SetBonusesPanel'
-import StancesPanel from './components/stances/StancesPanel'
 import FiligreePanel from './components/filigree/FiligreePanel'
 import DCPanel from './components/dc/DCPanel'
 import TomesPanel from './components/builder/TomesPanel'
-import SelfBuffsPanel from './components/buffs/SelfBuffsPanel'
 import BonusesPanel from './components/bonuses/BonusesPanel'
 import FavorPanel from './components/favor/FavorPanel'
 import NotesPanel from './components/notes/NotesPanel'
@@ -66,7 +64,9 @@ const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
   Progression: ['Enhancements', 'Epic Destinies', 'Reaper', 'Past Lives', 'Favor'],
   Equipment:   ['Gear', 'Filigrees', 'Set Bonuses', 'Clickies'],
-  Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Stances', 'Bonuses', 'Buffs', 'Compare'],
+  // Stances and Buffs are not tabs: they are always on the left rail
+  // (StanceBuffDock), so they can be toggled while reading any page.
+  Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Bonuses', 'Compare'],
   Community:   ['Browse', 'My Builds'],
   Custom:      ['Windows', 'Optimizer', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
 }
@@ -188,15 +188,7 @@ function AppInner() {
       case 'Analysis/Breakdowns':   return <BreakdownsPanel />
       case 'Analysis/Combat':       return <CombatPanel />
       case 'Analysis/DCs':          return <DCPanel />
-      case 'Analysis/Stances':      return <StancesPanel />
       case 'Analysis/Bonuses':      return <BonusesPanel />
-      case 'Analysis/Buffs':
-        return (
-          <div className={styles.twoCol}>
-            <SelfBuffsPanel />
-            <GuildBuffsPanel />
-          </div>
-        )
       case 'Analysis/Compare':      return <BuildCompare />
 
       // ── Community ────────────────────────────────────────────────────────
@@ -233,6 +225,7 @@ function AppInner() {
         livesBar={<LifeBuildBar />}
       >
         <div className={styles.contentRow}>
+          <StanceBuffDock />
           <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
             {renderTab()}
           </div>

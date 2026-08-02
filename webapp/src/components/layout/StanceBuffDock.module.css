@@ -1,0 +1,103 @@
+/* StanceBuffDock — sticky LEFT rail for stances and buffs.
+   Mirrors FavoritesDock on the right so the two rails frame the page. */
+
+.dock {
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+  order: -1;                 /* first in .contentRow regardless of DOM order */
+  width: 290px;
+  flex-shrink: 0;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.dockHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(212, 152, 42, 0.08);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(2px);
+}
+
+.dockTitle {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-gold);
+}
+
+.collapseBtn {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.collapseBtn:hover {
+  color: var(--color-gold);
+}
+
+/* Stances first, buffs directly below. The hosted panels bring their own
+   .panel chrome; drop their outer border so the rail reads as one column
+   of sections rather than three floating cards. */
+.dockBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.dockBody :global(.panel) {
+  border-radius: var(--radius-sm);
+}
+
+/* Collapsed state — slim reopen tab that stays put on the left. */
+.collapsedBtn {
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+  order: -1;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-panel);
+  color: var(--color-gold);
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px 9px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.collapsedBtn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-gold-dark);
+}
+
+/* On narrow viewports the rail would crush the main content. Collapse it to
+   the reopen tab rather than hiding it outright — unlike favourites, these
+   are the only always-on route to a stance now that the tabs are gone. */
+@media (max-width: 1100px) {
+  .dock {
+    position: static;
+    width: 100%;
+    max-height: none;
+    order: -1;
+  }
+}
