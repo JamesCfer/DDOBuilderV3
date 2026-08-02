@@ -12,7 +12,7 @@ import {
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
 import { runBackgroundParityCheck } from '../lib/parityClient'
-import { useStaticBundle } from './useStaticBundle'
+import { preloadStaticBundle, useStaticBundle } from './useStaticBundle'
 import { importV1Build, isV1CharacterXml } from '../lib/v1Import'
 import { exportV2DocumentModel } from '../lib/v2Export'
 import type { ItemCatalogue } from '../lib/v2Export'
@@ -112,6 +112,20 @@ export interface PersistenceAPI {
   exportDDOBuild: (doc: CharacterDocument, itemCatalogue?: ItemCatalogue | Item[]) => void
   /** Parses a V3 JSON (document or single build) or V2 .DDOBuild file. */
   importFile: (file: File) => Promise<CharacterDocument>
+}
+
+/**
+ * Warnings from the most recent `importFile` (V2 tree revocations and the
+ * like). Kept module-level rather than threaded through the return type,
+ * which every caller would otherwise have to change.
+ */
+let lastImportWarnings: string[] = []
+
+/** Warnings produced by the last import, if any. */
+export function takeLastImportWarnings(): string[] {
+  const w = lastImportWarnings
+  lastImportWarnings = []
+  return w
 }
 
 export function usePersistence(): PersistenceAPI {
@@ -225,7 +239,7 @@ export function usePersistence(): PersistenceAPI {
   const importFile = useCallback((file: File): Promise<CharacterDocument> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
           const text = reader.result as string
           // V1 .ddocp XML support — detect by file extension or the V1 root
@@ -233,6 +247,7 @@ export function usePersistence(): PersistenceAPI {
           // with that expected root, DDOBuilder.cpp:294-325). Must be checked
           // before the generic V2 XML branch below, which would otherwise
           // swallow any '<'-prefixed text.
+          lastImportWarnings = []
           const isV1 = file.name.toLowerCase().endsWith('.ddocp') ||
                        isV1CharacterXml(text)
           if (isV1) {
@@ -248,11 +263,23 @@ export function usePersistence(): PersistenceAPI {
           const isXml = file.name.toLowerCase().endsWith('.ddobuild') ||
                         text.trim().startsWith('<')
           if (isXml) {
-            const result = importV2Build(text, { allTrees })
+            // The version gate needs the real catalogue. `allTrees` from the
+            // hook can still be empty here (first render, or the bundle is
+            // mid-flight), and importing against an empty catalogue used to
+            // revoke every tree spend in the file — so wait for the bundle
+            // rather than judging the build against nothing.
+            const trees = allTrees.length > 0
+              ? allTrees
+              : await preloadStaticBundle().then(b => b.allTrees).catch(() => [])
+            const result = importV2Build(text, { allTrees: trees })
             if (result.document.lives.length === 0) {
               reject(new Error('V2 file contained no lives'))
               return
             }
+            // Revoking a tree's spends is a real, invisible loss — the build
+            // simply arrives with points unspent. Report it rather than
+            // leaving the user to notice a 0/75 destiny bar on their own.
+            lastImportWarnings = result.warnings
             // Background math verification: the server re-computes this build
             // with V2's own compiled C++ (v2calc oracle) and diffs every stat
             // against V3. Fire-and-forget — the result surfaces in the TopNav
@@ -287,7 +314,10 @@ export function usePersistence(): PersistenceAPI {
       reader.onerror = () => reject(new Error('Could not read file'))
       reader.readAsText(file)
     })
-  }, [])
+    // `allTrees` MUST be a dependency: with an empty dep list the callback
+    // captured the first render's (empty) catalogue for the lifetime of the
+    // component, so the version gate never saw a single tree.
+  }, [allTrees])
 
   return { docs, saves, saveDocument, deleteDocument, loadBackup, exportJSON, exportDDOBuild, importFile }
 }

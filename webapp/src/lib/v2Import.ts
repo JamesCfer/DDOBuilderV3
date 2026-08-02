@@ -1019,8 +1019,13 @@ export function importV2Document(xml: string, opts?: {
   // V2 never trims tree names, and legacy trees are distinguished by a
   // leading space (" Ninja Spy V1"); our XML parser trims, so recover which
   // spend TreeNames were spaced from the raw text (see spendVersionMatchesV2).
+  // An EMPTY catalogue is not "every tree is out of date" — it means the
+  // catalogue has not loaded yet. Gating on it revoked every enhancement,
+  // destiny and reaper spend in the file, silently, which is what importing
+  // during startup used to do. With no data to judge against, keep the
+  // spends: a stale spend surviving is recoverable, a wiped build is not.
   let versionPolicy: V2TreeVersionPolicy | undefined
-  if (opts?.allTrees) {
+  if (opts?.allTrees && opts.allTrees.length > 0) {
     const spacedTreeNames = new Set<string>()
     for (const m of xml.matchAll(/<TreeName>(\s[^<]*)<\/TreeName>/g)) {
       spacedTreeNames.add(m[1].trim())
