@@ -21,26 +21,23 @@
 // The loop yields to the event loop every few evaluations so the UI stays
 // live, reports progress, and honors cancellation.
 
-import type { CharacterBuild, Item } from '../../types/ddo'
-import { computeBuildStats, type BuildStatsInput } from '../buildStats'
+import type { CharacterBuild } from '../../types/ddo'
 import { treeSpent } from '../fuzz/randomBuild'
 import {
   compareScores, scalarGain, scoreVector,
   type ObjectiveSpec, type ScoreVector,
 } from './objective'
 import {
-  applyMove, characterLevel, describeMove, gatedTreeTargets, generateMoves,
+  applyMove, describeMove, gatedTreeTargets, generateMoves,
   isLevelingMove, moveId,
-  type Move, type MoveContext, type MoveDomains,
+  type Move,
 } from './moves'
+import {
+  createEngine,
+  type Evaluation, type OptimizeProgress, type SearchOptions, type Stats, type StopReason,
+} from './engine'
 
-export interface OptimizeProgress {
-  evals: number
-  maxEvals: number
-  applied: number
-  /** Description of the most recently applied move, if any. */
-  lastApplied?: string
-}
+export type { OptimizeProgress, StopReason } from './engine'
 
 export interface StatDelta {
   key: string
@@ -59,8 +56,6 @@ export interface AppliedMoveRecord {
   bridge?: boolean
 }
 
-export type StopReason = 'converged' | 'evalBudget' | 'cancelled'
-
 export interface OptimizeResult {
   build: CharacterBuild
   applied: AppliedMoveRecord[]
@@ -72,75 +67,16 @@ export interface OptimizeResult {
   unchanged: boolean
 }
 
-export interface OptimizeOptions {
-  input: BuildStatsInput
-  build: CharacterBuild
-  objective: ObjectiveSpec
-  domains: MoveDomains
-  /** Hard cap on stat-engine evaluations. Default 20000. */
-  maxEvals?: number
-  /**
-   * Shortlisted items per empty display gear slot for the gear domain (see
-   * lib/optimizer/gearCandidates). Ignored unless `domains.gear` is set.
-   */
-  gearCandidates?: Record<string, Item[]>
-  /**
-   * Character level to level the build toward when the class-levels domain
-   * is enabled (heroic classes first, then epic, then legendary levels).
-   * Defaults to the build's current character level — no leveling.
-   */
-  targetLevel?: number
-  onProgress?: (p: OptimizeProgress) => void
-  shouldCancel?: () => boolean
-}
-
-interface StaticCatalogues {
-  allClasses: BuildStatsInput['allClasses']
-  allRaces: BuildStatsInput['allRaces']
-  allFeats: BuildStatsInput['allFeats']
-  allTrees: BuildStatsInput['allTrees']
-}
-
-const YIELD_EVERY = 4
-
-function tick(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 0))
-}
+export type OptimizeOptions = SearchOptions
 
 export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResult> {
-  const { input, objective, domains } = opts
-  const maxEvals = opts.maxEvals ?? 20000
-  const cats: StaticCatalogues = {
-    allClasses: input.allClasses, allRaces: input.allRaces,
-    allFeats: input.allFeats, allTrees: input.allTrees,
-  }
+  const { objective, domains } = opts
+  const engine = createEngine(opts, 'greedy')
 
-  // Gear moves change which items are equipped, so the stat input's
-  // `gearItems` has to follow the candidate build rather than staying pinned
-  // to the user's current equipment.
-  const itemByName = new Map<string, Item>()
-  for (const list of Object.values(opts.gearCandidates ?? {})) {
-    for (const it of list) itemByName.set(it.Name, it)
-  }
-
-  function inputFor(b: CharacterBuild): BuildStatsInput {
-    if (!domains.gear) return input
-    const base = input.gearItems ?? {}
-    let gearItems = base
-    for (const [slot, name] of Object.entries(b.gear ?? {})) {
-      if (!name || base[slot]?.Name === name) continue
-      const item = itemByName.get(name)
-      if (!item) continue
-      if (gearItems === base) gearItems = { ...base }
-      gearItems[slot] = item
-    }
-    return gearItems === base ? input : { ...input, gearItems }
-  }
-
-  let evals = 0
   let current = opts.build
-  let curStats = computeBuildStats(inputFor(current), current)
-  let curVec = scoreVector(objective, k => curStats.total(k))
+  let start: Evaluation = engine.evaluateSync(current)
+  let curStats = start.stats
+  let curVec = start.vec
   const startTotals: StatDelta[] = objective.stats.map((s, i) => ({
     key: s.key, label: s.label, before: curVec[i], after: curVec[i],
   }))
@@ -149,32 +85,11 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
   const lastGain = new Map<string, number>()
   let stopped: StopReason = 'converged'
 
-  const report = () => opts.onProgress?.({
-    evals, maxEvals, applied: applied.length,
-    lastApplied: applied[applied.length - 1]?.description,
-  })
+  const report = () => engine.report(applied.length, applied[applied.length - 1]?.description)
 
-  /** Evaluate one candidate build; returns null when the budget is exhausted. */
-  async function evaluate(candidate: CharacterBuild) {
-    const stats = computeBuildStats(inputFor(candidate), candidate)
-    evals++
-    if (evals % YIELD_EVERY === 0) {
-      report()
-      await tick()
-    }
-    return { stats, vec: scoreVector(objective, k => stats.total(k)) }
-  }
+  const evaluate = (candidate: CharacterBuild) => engine.evaluate(candidate)
 
-  function ctxFor(build: CharacterBuild, stats: ReturnType<typeof computeBuildStats>): MoveContext {
-    return {
-      build, ...cats,
-      specialFeats: input.specialFeats,
-      fatePoints: Math.max(0, Math.round(stats.total('fatePoint'))),
-      destinyApBonus: Math.max(0, Math.round(stats.total('destinyAP'))),
-      targetLevel: Math.max(opts.targetLevel ?? 0, characterLevel(build)),
-      gearCandidates: opts.gearCandidates,
-    }
-  }
+  const ctxFor = engine.ctxFor
 
   function recordApply(move: Move, beforeVec: ScoreVector, afterVec: ScoreVector, bridge = false) {
     applied.push({
@@ -189,8 +104,8 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
 
   outer:
   while (true) {
-    if (opts.shouldCancel?.()) { stopped = 'cancelled'; break }
-    if (evals >= maxEvals) { stopped = 'evalBudget'; break }
+    if (engine.cancelled()) { stopped = 'cancelled'; break }
+    if (engine.outOfBudget()) { stopped = 'evalBudget'; break }
 
     const ctx = ctxFor(current, curStats)
     const moves = generateMoves(ctx, domains)
@@ -201,12 +116,12 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
       .map(m => ({ m, id: moveId(m), stale: lastGain.get(moveId(m)) }))
       .sort((a, b) => (b.stale ?? Infinity) - (a.stale ?? Infinity))
 
-    let best: { move: Move; build: CharacterBuild; stats: ReturnType<typeof computeBuildStats>; vec: ScoreVector; scalar: number } | null = null
+    let best: { move: Move; build: CharacterBuild; stats: Stats; vec: ScoreVector; scalar: number } | null = null
 
     for (const cand of ordered) {
       if (best && cand.stale !== undefined && cand.stale <= best.scalar) break
-      if (evals >= maxEvals) { stopped = 'evalBudget'; break }
-      if (opts.shouldCancel?.()) { stopped = 'cancelled'; break }
+      if (engine.outOfBudget()) { stopped = 'evalBudget'; break }
+      if (engine.cancelled()) { stopped = 'cancelled'; break }
 
       const next = applyMove(current, cand.m)
       const ev = await evaluate(next)
@@ -283,8 +198,8 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
     const targets = gatedTreeTargets(ctx, domains)
     let bestTarget: { move: Move; scalar: number } | null = null
     for (const t of targets) {
-      if (evals >= maxEvals) { stopped = 'evalBudget'; break outer }
-      if (opts.shouldCancel?.()) { stopped = 'cancelled'; break outer }
+      if (engine.outOfBudget()) { stopped = 'evalBudget'; break outer }
+      if (engine.cancelled()) { stopped = 'cancelled'; break outer }
       const ev = await evaluate(applyMove(current, t))    // hypothetical: gate waived
       if (compareScores(objective, ev.vec, curVec) <= 0) continue
       const scalar = scalarGain(objective, curVec, ev.vec)
@@ -296,14 +211,14 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
     // cheapest) legal purchase in the target's tree until the gated item's
     // MinSpent is reached, then rejoin the main loop, which will train it.
     const targetMove = bestTarget.move as Extract<Move, { kind: 'enhancement' | 'destiny' }>
-    const targetTree = cats.allTrees.find(t => t.Name === targetMove.tree)
+    const targetTree = opts.input.allTrees.find(t => t.Name === targetMove.tree)
     const targetItem = (targetTree?.EnhancementTreeItem ?? [])
       .find(it => (it.InternalName ?? it.Name) === targetMove.key || it.Name === targetMove.key)
     const targetMinSpent = targetItem?.MinSpent ?? 0
     let progressed = false
     for (let guard = 0; guard < 60; guard++) {
-      if (evals >= maxEvals) { stopped = 'evalBudget'; break outer }
-      if (opts.shouldCancel?.()) { stopped = 'cancelled'; break outer }
+      if (engine.outOfBudget()) { stopped = 'evalBudget'; break outer }
+      if (engine.cancelled()) { stopped = 'cancelled'; break outer }
       const bridgeCtx = ctxFor(current, curStats)
       const treeMoves = generateMoves(bridgeCtx, {
         enhancements: targetMove.kind === 'enhancement',
@@ -340,7 +255,7 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
   return {
     build: current,
     applied,
-    evals,
+    evals: engine.evals(),
     stopped,
     before: startTotals.map((s, i) => ({ ...s, after: curVec[i] })),
     unchanged: applied.length === 0,

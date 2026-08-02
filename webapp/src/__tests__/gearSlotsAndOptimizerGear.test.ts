@@ -196,7 +196,7 @@ describe.skipIf(!have)('optimizer runs the gear domain end to end', () => {
     const build: CharacterBuild = {
       ...emptyBuild(),
       race: 'Human',
-      classes: [{ name: 'Fighter', levels: 20 }],
+      classes: [{ name: 'Fighter', levels: 20 }] as unknown as CharacterBuild['classes'],
       levelClasses: Array.from({ length: 20 }, () => 'Fighter'),
       totalLevel: 20,
       gear: {},
@@ -239,7 +239,7 @@ describe.skipIf(!have)('optimizer runs the gear domain end to end', () => {
     const build: CharacterBuild = {
       ...emptyBuild(),
       race: 'Human',
-      classes: [{ name: 'Fighter', levels: 20 }],
+      classes: [{ name: 'Fighter', levels: 20 }] as unknown as CharacterBuild['classes'],
       levelClasses: Array.from({ length: 20 }, () => 'Fighter'),
       totalLevel: 20,
       gear: { Trinket: chosen.Name },

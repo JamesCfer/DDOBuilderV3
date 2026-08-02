@@ -1,11 +1,18 @@
 // Custom › Optimizer — "take what I have and maximize my chosen stats".
 //
 // The user ranks (or weights) a list of breakdown stats, picks which build
-// domains the search may fill in, and runs the greedy optimizer
-// (lib/optimizer). The optimizer only ADDS to the build — unspent action
-// points, unspent destiny points, empty feat slots, unassigned class levels,
-// unused destiny slots — it never revokes or swaps a choice the user already
-// made. Results are previewed with per-step deltas before being applied.
+// domains the search may fill in, and runs BOTH search strategies
+// (lib/optimizer/plan): the greedy one, which always takes the best move
+// available right now, and the long-term one, which scans the gated items at
+// the tops of the accessible trees and branches toward them. Neither
+// dominates the other, so both plans are shown with a comparison table and
+// the user applies whichever they prefer.
+//
+// Either way the search only ADDS to the build — unspent action points,
+// unspent destiny points, empty feat slots, unassigned class levels, unused
+// destiny slots, empty gear / augment / filigree slots — it never revokes or
+// swaps a choice the user already made. Results are previewed with per-step
+// deltas before being applied.
 
 import { useMemo, useRef, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
@@ -19,9 +26,15 @@ import {
   OPTIMIZER_STATS, statForFavoriteKey,
   type ObjectiveMode, type ObjectiveSpec, type ObjectiveStat,
 } from '../../lib/optimizer/objective'
-import { optimizeBuild, type OptimizeProgress, type OptimizeResult } from '../../lib/optimizer/optimizer'
+import type { OptimizeProgress } from '../../lib/optimizer/engine'
+import type { OptimizeResult } from '../../lib/optimizer/optimizer'
+import { planBuild, type PlanResult, type StrategyId } from '../../lib/optimizer/plan'
+import type { LongTermResult } from '../../lib/optimizer/longTerm'
 import { characterLevel, type MoveDomains } from '../../lib/optimizer/moves'
-import { shortlistCandidates } from '../../lib/optimizer/gearCandidates'
+import {
+  shortlistAugments, shortlistCandidates, shortlistFiligrees,
+} from '../../lib/optimizer/gearCandidates'
+import type { CandidatePools } from '../../lib/optimizer/candidatePools'
 import { itemSlotKey } from '../../lib/gearSlots'
 import { api } from '../../api'
 import type { CharacterBuild, Item } from '../../types/ddo'
@@ -69,6 +82,41 @@ const OPTIMIZABLE_GEAR_SLOTS = [
   'Gloves', 'Bracers', 'Boots', 'Goggles', 'Main Hand', 'Off Hand', 'Quiver', 'Arrow',
 ]
 
+/**
+ * Fetch and shortlist everything the content domains may choose from.
+ *
+ * Augments and slot upgrades share one pool: a slot upgrade only ever opens a
+ * new augment slot, which is useless without augments to put in it, so the
+ * augment catalogue is loaded whenever either domain is on.
+ */
+async function loadCandidatePools(
+  build: CharacterBuild,
+  domains: MoveDomains,
+  objective: ObjectiveSpec,
+  maxLevel: number,
+): Promise<CandidatePools> {
+  const pools: CandidatePools = {}
+  const jobs: Array<Promise<void>> = []
+
+  if (domains.gear) {
+    jobs.push(loadEmptySlotItems(build.gear, maxLevel).then(bySlot => {
+      pools.gearCandidates = shortlistCandidates(bySlot, objective, { maxLevel })
+    }))
+  }
+  if (domains.augments || domains.slotUpgrades) {
+    jobs.push(api.augments().then(all => {
+      pools.augmentCandidates = shortlistAugments(all, objective, { maxLevel })
+    }).catch(() => { /* leave the pool empty */ }))
+  }
+  if (domains.filigrees) {
+    jobs.push(api.filigree().then(all => {
+      pools.filigreeCandidates = shortlistFiligrees(all, objective)
+    }).catch(() => { /* leave the pool empty */ }))
+  }
+  await Promise.all(jobs)
+  return pools
+}
+
 /** Fetch the equippable catalogue for every gear slot the build has left empty. */
 async function loadEmptySlotItems(
   gear: Record<string, string>,
@@ -81,6 +129,94 @@ async function loadEmptySlotItems(
       .catch(() => [slot, [] as Item[]] as [string, Item[]]),
   ))
   return Object.fromEntries(lists.filter(([, items]) => items.length > 0))
+}
+
+interface PlanSectionProps {
+  title: string
+  subtitle: string
+  plan: OptimizeResult | LongTermResult
+  isWinner: boolean
+  applied: boolean
+  canApply: boolean
+  onApply: () => void
+  onRevert: () => void
+  stoppedLabel: Record<string, string>
+}
+
+/** One strategy's plan: why it stopped, what it is aiming at, and its steps. */
+function PlanSection({
+  title, subtitle, plan, isWinner, applied, canApply, onApply, onRevert, stoppedLabel,
+}: PlanSectionProps) {
+  const goals = 'goals' in plan ? plan.goals : []
+  return (
+    <section className={`${styles.planSection} ${isWinner ? styles.planWinner : ''}`}>
+      <h3 className={styles.planTitle}>
+        {title}
+        {isWinner && <span className={styles.planBadge}>best</span>}
+        <span className={styles.planEvals}>{plan.evals} evaluations</span>
+      </h3>
+      <div className={styles.help}>{subtitle}</div>
+
+      {goals.length > 0 && (
+        <div className={styles.goals}>
+          Working toward:
+          <ul>
+            {goals.map(g => (
+              <li key={g.description}>
+                {g.description}
+                <span className={styles.stepGains}>
+                  +{Math.round(g.gain * 10) / 10} once unlocked
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className={styles.help}>{stoppedLabel[plan.stopped]}</div>
+
+      {plan.unchanged ? (
+        <div className={styles.help}>
+          No open choice improves the objective — the build has no headroom
+          left in the selected domains.
+        </div>
+      ) : (
+        <>
+          <ol className={styles.steps}>
+            {plan.applied.map((a, i) => (
+              <li key={i}>
+                {a.description}
+                {a.gains.length > 0 && (
+                  <span className={styles.stepGains}>
+                    {a.gains.map(g => `${g.after - g.before > 0 ? '+' : ''}${Math.round((g.after - g.before) * 10) / 10} ${g.label}`).join(', ')}
+                  </span>
+                )}
+                {a.bridge && <span className={styles.stepBridge}>(taken for later payoff)</span>}
+              </li>
+            ))}
+          </ol>
+          <div className={styles.actionRow}>
+            {applied ? (
+              <>
+                <span>Applied ✓</span>
+                <button type="button" className={styles.iconBtn} onClick={onRevert}>Revert</button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={styles.runBtn}
+                onClick={onApply}
+                disabled={!canApply}
+                title={canApply ? undefined : 'Revert the applied plan first'}
+              >
+                Apply {plan.applied.length} step{plan.applied.length === 1 ? '' : 's'} to build
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  )
 }
 
 export default function OptimizerPanel() {
@@ -102,7 +238,8 @@ export default function OptimizerPanel() {
   const [rows, setRows] = useState<ObjectiveStat[]>(initial.stats)
   const [domains, setDomains] = useState<MoveDomains>({
     enhancements: true, destinies: true, feats: true, classLevels: true,
-    abilityLevelUps: true, gear: false,
+    abilityLevelUps: true, gear: false, augments: false, slotUpgrades: false,
+    filigrees: false,
   })
   const charLevel = characterLevel(build)
   // Level the optimizer may build toward. Defaults to the current character
@@ -116,9 +253,10 @@ export default function OptimizerPanel() {
   }
   const [effort, setEffort] = useState<(typeof EFFORT_LEVELS)[number]['id']>('normal')
   const [running, setRunning] = useState(false)
-  const [loadingGear, setLoadingGear] = useState(false)
+  const [loadingContent, setLoadingContent] = useState(false)
   const [progress, setProgress] = useState<OptimizeProgress | null>(null)
-  const [result, setResult] = useState<OptimizeResult | null>(null)
+  const [result, setResult] = useState<PlanResult | null>(null)
+  const [appliedStrategy, setAppliedStrategy] = useState<StrategyId | null>(null)
   const [appliedSnapshot, setAppliedSnapshot] = useState<CharacterBuild | null>(null)
   const cancelRef = useRef({ cancelled: false })
 
@@ -166,24 +304,23 @@ export default function OptimizerPanel() {
     setAppliedSnapshot(null)
     setProgress(null)
     try {
-      // Gear is fetched per run rather than up front: the catalogue is large
-      // and most runs do not ask for it.
-      let gearCandidates: Record<string, Item[]> | undefined
-      if (domains.gear) {
-        setLoadingGear(true)
+      // Content catalogues are fetched per run rather than up front: they are
+      // large and most runs do not ask for them.
+      let pools: CandidatePools = {}
+      if (domains.gear || domains.augments || domains.slotUpgrades || domains.filigrees) {
+        setLoadingContent(true)
         try {
-          const bySlot = await loadEmptySlotItems(build.gear, targetLevel)
-          gearCandidates = shortlistCandidates(bySlot, objective, { maxLevel: targetLevel })
+          pools = await loadCandidatePools(build, domains, objective, targetLevel)
         } finally {
-          setLoadingGear(false)
+          setLoadingContent(false)
         }
       }
-      const res = await optimizeBuild({
+      const res = await planBuild({
         input: statsInput,
         build,
         objective,
         domains,
-        gearCandidates,
+        ...pools,
         maxEvals: EFFORT_LEVELS.find(e => e.id === effort)?.maxEvals,
         targetLevel,
         onProgress: setProgress,
@@ -195,16 +332,18 @@ export default function OptimizerPanel() {
     }
   }
 
-  function apply() {
+  function apply(strategy: StrategyId) {
     if (!result) return
     setAppliedSnapshot(build)
-    dispatch({ type: 'LOAD_BUILD', build: result.build })
+    setAppliedStrategy(strategy)
+    dispatch({ type: 'LOAD_BUILD', build: result[strategy].build })
   }
 
   function revert() {
     if (!appliedSnapshot) return
     dispatch({ type: 'LOAD_BUILD', build: appliedSnapshot })
     setAppliedSnapshot(null)
+    setAppliedStrategy(null)
   }
 
   const stoppedLabel: Record<string, string> = {
@@ -350,12 +489,26 @@ export default function OptimizerPanel() {
               <input type="checkbox" checked={domains.gear ?? false} onChange={e => setDomains({ ...domains, gear: e.target.checked })} />
               Gear (equip items into empty slots)
             </label>
-            {domains.gear && (
+            <label>
+              <input type="checkbox" checked={domains.augments ?? false} onChange={e => setDomains({ ...domains, augments: e.target.checked })} />
+              Augments (fill empty augment slots on equipped items)
+            </label>
+            <label>
+              <input type="checkbox" checked={domains.slotUpgrades ?? false} onChange={e => setDomains({ ...domains, slotUpgrades: e.target.checked })} />
+              Gear upgrades (pick a colour for an item's one-time slot upgrade)
+            </label>
+            <label>
+              <input type="checkbox" checked={domains.filigrees ?? false} onChange={e => setDomains({ ...domains, filigrees: e.target.checked })} />
+              Filigrees (fill empty weapon &amp; artifact filigree slots)
+            </label>
+            {(domains.gear || domains.augments || domains.slotUpgrades || domains.filigrees) && (
               <span className={styles.help} style={{ paddingLeft: '1.5rem' }}>
-                Only empty slots are filled — an item you have already equipped
-                is never swapped out. Each empty slot offers the items whose
-                own buffs touch your chosen stats, so a run costs more
-                evaluations; raise the effort if it stops at the budget.
+                Only empty slots are filled — gear, augments and filigrees you
+                have already chosen are never swapped out. Each slot offers the
+                content whose own effects touch your chosen stats, so a run
+                costs more evaluations; raise the effort if it stops at the
+                budget. A gear upgrade colour is permanent once picked, exactly
+                as in V2.
               </span>
             )}
           </div>
@@ -395,9 +548,10 @@ export default function OptimizerPanel() {
           <div className={styles.note}>
             The search is greedy: it repeatedly takes the single legal choice
             that most improves your top-ranked stat (ties broken by the next
-            stat down). Filigrees and augments are not searched yet — use
-            Equipment › Filigrees and the augment pickers in Equipment › Gear
-            for those.
+            stat down). The long-term search additionally scans the gated
+            items at the tops of your accessible trees, keeps the few that
+            would pay off, and steers spending toward them across several
+            branches at once — then both plans are shown side by side.
           </div>
         </div>
       </div>
@@ -414,70 +568,74 @@ export default function OptimizerPanel() {
           )}
           {running && (
             <div className={styles.help}>
-              {loadingGear ? 'Loading the gear catalogue…' : 'Searching…'}
+              {loadingContent
+                ? 'Loading the gear / augment / filigree catalogues…'
+                : `Searching… (${progress?.strategy === 'longTerm' ? 'long-term plan' : 'greedy plan'})`}
             </div>
           )}
           {result && (
             <>
-              <div className={styles.help}>{stoppedLabel[result.stopped]}</div>
+              <div className={styles.winner}>
+                {result.winner === 'tie'
+                  ? 'Both plans reach the same result — take the shorter one.'
+                  : result.winner === 'greedy'
+                    ? 'The greedy plan wins on your objective.'
+                    : 'The long-term plan wins on your objective — it pays for something greedy would not reach.'}
+              </div>
+
               <table className={styles.resultTable}>
                 <thead>
-                  <tr><th>Stat</th><th>Now</th><th>Optimized</th><th>Δ</th></tr>
+                  <tr><th>Stat</th><th>Now</th><th>Greedy</th><th>Long-term</th></tr>
                 </thead>
                 <tbody>
-                  {result.before.map(s => {
-                    const d = s.after - s.before
-                    return (
-                      <tr key={s.key}>
-                        <td>{s.label}</td>
-                        <td>{s.before}</td>
-                        <td>{s.after}</td>
-                        <td className={d > 0 ? styles.deltaPos : styles.deltaZero}>
-                          {d > 0 ? `+${d}` : d}
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {result.comparison.map(row => (
+                    <tr key={row.key}>
+                      <td>{row.label}</td>
+                      <td>{row.before}</td>
+                      <td className={row.greedy > row.before ? styles.deltaPos : styles.deltaZero}>
+                        {row.greedy}
+                      </td>
+                      <td className={row.longTerm > row.before ? styles.deltaPos : styles.deltaZero}>
+                        {row.longTerm}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
 
-              {result.unchanged ? (
-                <div className={styles.help}>
-                  No open choice improves the objective — the build has no
-                  headroom left in the selected domains.
-                </div>
-              ) : (
-                <>
-                  <ol className={styles.steps}>
-                    {result.applied.map((a, i) => (
-                      <li key={i}>
-                        {a.description}
-                        {a.gains.length > 0 && (
-                          <span className={styles.stepGains}>
-                            {a.gains.map(g => `${g.after - g.before > 0 ? '+' : ''}${Math.round((g.after - g.before) * 10) / 10} ${g.label}`).join(', ')}
-                          </span>
-                        )}
-                        {a.bridge && <span className={styles.stepBridge}>(taken for later payoff)</span>}
-                      </li>
-                    ))}
-                  </ol>
-                  <div className={styles.actionRow}>
-                    {!appliedSnapshot ? (
-                      <button type="button" className={styles.runBtn} onClick={apply}>
-                        Apply {result.applied.length} step{result.applied.length === 1 ? '' : 's'} to build
-                      </button>
-                    ) : (
-                      <>
-                        <span>Applied ✓</span>
-                        <button type="button" className={styles.iconBtn} onClick={revert}>Revert</button>
-                      </>
-                    )}
-                    <button type="button" className={styles.iconBtn} onClick={() => { setResult(null); setAppliedSnapshot(null) }}>
-                      Discard
-                    </button>
-                  </div>
-                </>
-              )}
+              <PlanSection
+                title="Greedy plan"
+                subtitle="Always takes the single best move available right now."
+                plan={result.greedy}
+                isWinner={result.winner === 'greedy'}
+                applied={appliedStrategy === 'greedy'}
+                canApply={appliedStrategy === null}
+                onApply={() => apply('greedy')}
+                onRevert={revert}
+                stoppedLabel={stoppedLabel}
+              />
+
+              <PlanSection
+                title="Long-term plan"
+                subtitle="Branches, and spends toward gated items at the tops of trees."
+                plan={result.longTerm}
+                isWinner={result.winner === 'longTerm'}
+                applied={appliedStrategy === 'longTerm'}
+                canApply={appliedStrategy === null}
+                onApply={() => apply('longTerm')}
+                onRevert={revert}
+                stoppedLabel={stoppedLabel}
+              />
+
+              <div className={styles.actionRow}>
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  onClick={() => { setResult(null); setAppliedSnapshot(null); setAppliedStrategy(null) }}
+                >
+                  Discard both
+                </button>
+              </div>
             </>
           )}
         </div>
