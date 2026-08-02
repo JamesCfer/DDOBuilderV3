@@ -1,7 +1,7 @@
 {
   "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
-  "lastSyncedCommit": "4dcd87286e9db2863e7e61ef2a975b926049cc2c",
-  "lastChecked": "2026-07-30T04:51:52.479Z",
+  "lastSyncedCommit": "f91af4e65d72e62b54984e1bd0dc7a6c0449970b",
+  "lastChecked": "2026-08-02T16:41:45.427Z",
   "dataPathUpstream": "Output/DataFiles",
-  "notes": "Full tree synced @ 4dcd8728 (2.0.0.82, 2026-07): DataFiles (351 changed + 25 new: U72 balance pass — Greater Spell Focus +2, Epic Spell Focus consolidated into one feat + new Legendary Spell Focus, 330 items' Spell Focus values, new Underdark/Mindcleaver items) + C++ source (27 files via git apply --3way preserving local V2CALC_LINUX shim patches; BUILD_START_LEVEL 34→36, Enhanced Bloodrage item dedup)."
+  "notes": "Full tree synced @ f91af4e (2.0.0.83, 2026-08): DataFiles (73 changed + 268 new: Underdark/Gauntlgrym/demon-lord item wave, augment + filigree-set reworks, enhancement-tree percent-effect retyping) + 37 changed images + C++ source (16 files via git apply --3way preserving local V2CALC_LINUX shim patches; new Effect_HitpointsPercent/Effect_ACPercent with their own Breakdown_HitpointsPercent/Breakdown_TotalACPercent sub-breakdowns, DoAllPercentsAtOnce removed, percent contributions now round half-up). Issues.txt, ChangeHistory.txt, BuildInfo.h and Output/Example Builds/Maetrim_EndGameHandwrapsMonk.DDOBuild had diverged locally and were taken wholesale from upstream."
 }

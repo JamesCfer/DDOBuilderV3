@@ -80,21 +80,26 @@ describe.skipIf(!have)('N12/N13 — Rank gate, percent flag, and item-effect poo
   })
 
   it('rank 3 gives +5% of base HP, once (not x3, not flat)', () => {
-    // Bug (pre-fix): +15 flat (5 x 3 ranks). Correct: trunc(baseHp * 5%).
-    expect(hpAt(3)).toBe(baseHp + Math.trunc(baseHp * 5 / 100))
+    // Bug (pre-fix): +15 flat (5 x 3 ranks). Correct: half-up rounding of
+    // baseHp * 5% (V2 2.0.0.83 DoPercentageEffects rounds with `+ 0.5`).
+    expect(hpAt(3)).toBe(baseHp + Math.trunc(baseHp * 5 / 100 + 0.5))
   })
 
   it('ApplyAsItemEffect: a same-bonus-type gear item suppresses the smaller (Highest Only)', () => {
-    // A gear item granting a larger Quality % HP bonus: V2 puts both in the
-    // item-effect pool where Quality is Highest-Only — only the larger fires.
+    // A gear item granting a larger Quality % HP bonus. V2 2.0.0.83 moved
+    // percent HP onto its own Effect_HitpointsPercent /
+    // Breakdown_HitpointsPercent (Dwarf.tree.xml's "Child of the Mountain"
+    // rank-3 effect is now HitpointsPercent), so the gear buff has to use the
+    // same effect type to land in the same pool — where Quality is
+    // Highest-Only and only the larger fires.
     const qualityHpItem = {
       Name: 'Test Quality HP Item',
       EquipmentSlot: { Trinket: '' },
-      Buff: { Type: 'Hitpoints', BonusType: 'Quality', Value1: 10, Percent: '' },
+      Buff: { Type: 'HitpointsPercent', BonusType: 'Quality', Value1: 10 },
     } as unknown as Item
     const withBoth = hpAt(3, { Trinket: qualityHpItem })
-    // Highest Only within the item pool: 10% wins, 5% suppressed.
-    // Per-effect truncation (N10): contribution = trunc(baseHp * 10%).
-    expect(withBoth).toBe(baseHp + Math.trunc(baseHp * 10 / 100))
+    // Highest Only within the item pool: 10% wins, 5% suppressed. The
+    // aggregated Breakdown_HitpointsPercent total rounds once, half-up.
+    expect(withBoth).toBe(baseHp + Math.trunc(baseHp * 10 / 100 + 0.5))
   })
 })

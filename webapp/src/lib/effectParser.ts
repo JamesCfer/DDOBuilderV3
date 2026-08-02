@@ -998,8 +998,21 @@ export function parseEffect(
     case 'Hitpoints':
       return [make('hp')]
 
+    // V2 2.0.0.83 (BreakdownsPane.cpp:662-675, BreakdownItemHitpoints.cpp:195-206):
+    // Effect_HitpointsPercent feeds its own Breakdown_HitpointsPercent, whose
+    // TOTAL is then applied to hitpoints as a single percent other-effect
+    // ("Total Hitpoints % Bonus"). Bonus types stack inside the sub-breakdown.
+    case 'HitpointsPercent':
+      return [make('hp.percent')]
+
     case 'ACBonus':
       return [make('ac')]
+
+    // V2 2.0.0.83 (BreakdownsPane.cpp:858-871, BreakdownItemAC.cpp:170-182):
+    // Effect_ACPercent → Breakdown_TotalACPercent → one "Total AC % Bonus"
+    // percent other-effect on AC.
+    case 'ACPercent':
+      return [make('ac.percent')]
 
     case 'NaturalArmor':
     case 'NaturalArmorBonus':
@@ -2032,8 +2045,16 @@ export function parseItemBuff(
     case 'HitPoints':
       return [make('hp')]
 
+    // See the parseEffect cases — V2's Breakdown_HitpointsPercent /
+    // Breakdown_TotalACPercent sub-breakdowns (2.0.0.83).
+    case 'HitpointsPercent':
+      return [make('hp.percent')]
+
     case 'ACBonus':
       return [make('ac')]
+
+    case 'ACPercent':
+      return [make('ac.percent')]
 
     case 'NaturalArmor':
       // See the parseEffect case — V2's separate NaturalArmor breakdown.

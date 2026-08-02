@@ -30,6 +30,19 @@ const have = existsSync(DATA) && existsSync(FIXTURE) && existsSync(EXPORT)
 // real V2 export) — every tracked stat is now exact-checked.
 const KNOWN_OPEN = new Set<string>([])
 
+// Values the committed export text is STALE for. It was captured from V2
+// 2.0.0.81 against the pre-U73 data set; the upstream sync to V2 2.0.0.83
+// (Build 83 + 341 data files) moved two of the stats it printed. The v2calc
+// oracle — which compiles V2 2.0.0.83's own calculation core against the
+// current Output/DataFiles — is the authority for these:
+//   hp         2797 -> 2798  Effect_HitpointsPercent moved percent HP into its
+//                            own Breakdown_HitpointsPercent, and percent
+//                            contributions now round half-up
+//                            (BreakdownItem.cpp DoPercentageEffects, `+ 0.5`).
+//   fortBypass   71 -> 85    U73 item-data pass on this save's gear.
+// Everything else in the export still matches exactly.
+const STALE_EXPORT: Record<string, number> = { hp: 2798, fortBypass: 85 }
+
 describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   const cat = loadAllCatalogues(DATA)
   initBonusTypes(cat.allBonusTypes)
@@ -59,14 +72,20 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
     return stats.total(key)
   }
 
+  // The export's printed value, corrected where the text file is stale
+  // relative to the synced V2/data (see STALE_EXPORT).
+  const expected = (key: string): number | undefined =>
+    STALE_EXPORT[key] ?? parsed.stats[key]
+
   it('parses a meaningful number of stats from the export', () => {
     expect(Object.keys(parsed.stats).length).toBeGreaterThan(40)
   })
 
   it('every V2-printed stat matches V3 (excluding documented open residues)', () => {
     const failures: string[] = []
-    for (const [key, v2] of Object.entries(parsed.stats)) {
+    for (const key of Object.keys(parsed.stats)) {
       if (KNOWN_OPEN.has(key)) continue
+      const v2 = expected(key) as number
       const v3 = composed(key)
       if (Math.abs(v3 - v2) > 0.5) failures.push(`${key}: V2=${v2} V3=${v3}`)
     }
@@ -119,7 +138,7 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
       'melee.power', 'ranged.power', 'melee.doublestrike', 'ranged.doubleshot',
       'melee.strikethrough', 'offhand.attack', 'fortBypass', 'helpless',
     ]) {
-      const v2 = parsed.stats[key]
+      const v2 = expected(key)
       expect(v2, `expected '${key}' in the parsed export`).toBeDefined()
       expect(composed(key), key).toBe(v2)
     }

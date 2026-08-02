@@ -302,12 +302,14 @@ namespace
         Simple(Breakdown_NegativeLevels,       Effect_NegativeLevel,          "Negative Levels");
         Simple(Breakdown_FatePoints,           Effect_FatePoint,              "Fate Points");
         Simple(Breakdown_StyleBonusFeats,      Effect_HitpointsStyleBonus,    "Style Bonus Feats");
+        Simple(Breakdown_HitpointsPercent,     Effect_HitpointsPercent,       "Hitpoints % Bonus");
         Simple(Breakdown_UnconsciousRange,     Effect_UnconsciousRange,       "Unconscious Range");
         Simple(Breakdown_FalseLife,            Effect_FalseLife,              "False Life");
         Simple(Breakdown_ReaperHitpoints,      Effect_HitpointsReaper,        "Reaper Hitpoints");
         Simple(Breakdown_NaturalArmor,         Effect_NaturalArmor,           "Natural Armor");
-        Simple(Breakdown_BonusArmorAC,         Effect_ArmorACBonus,           "Armor % Bonus");
+        Simple(Breakdown_BonusArmorAC,         Effect_ArmorACBonus,           "Armor AC % Bonus");
         Simple(Breakdown_BonusShieldAC,        Effect_ACBonusShield,          "Shield % Bonus");
+        Simple(Breakdown_TotalACPercent,       Effect_ACPercent,              "Total AC % Bonus");
         Simple(Breakdown_MaxDexBonusShields,   Effect_MaxDexBonusTowerShield, "Tower Shield MDB");
         Simple(Breakdown_DodgeCap,             Effect_DodgeCapBonus,          "Dodge Cap");
         Simple(Breakdown_OverrideBAB,          Effect_OverrideBAB,            "Override BAB");
