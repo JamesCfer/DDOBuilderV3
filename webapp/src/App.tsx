@@ -148,9 +148,14 @@ function AppInner() {
             <div className={styles.overviewCol}>
               <AbilityScores />
               <AbilityLevelUps />
+              {/* Tomes and past lives feed the ability/stat numbers shown on
+                  this page, so both editors are reachable here as folded
+                  cards instead of only from their own tabs. */}
+              <TomesPanel collapsible />
             </div>
             <div className={styles.overviewCol}>
               <StatsPanel />
+              <PastLivesPanel collapsible />
             </div>
           </div>
         )

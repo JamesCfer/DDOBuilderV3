@@ -6,6 +6,7 @@ import {
   specialFeatTrainedCount, canTrainSpecialFeat, canRevokeSpecialFeat,
   favorFeatTrainedCount, canTrainFavorFeat, canRevokeFavorFeat,
 } from '../../lib/specialFeats'
+import CollapsibleCard from '../common/CollapsibleCard'
 import styles from './PastLivesPanel.module.css'
 
 const CLASS_PL_MAX = 3
@@ -30,7 +31,47 @@ interface PLGroup {
   bulk?: boolean
 }
 
-export default function PastLivesPanel() {
+interface Props {
+  /**
+   * Render as a folded card with a state summary in the header instead of an
+   * always-open panel — used to host the editor on the Character Overview.
+   * The body (and therefore its catalogue fetches) stays unmounted until the
+   * card is first opened.
+   */
+  collapsible?: boolean
+}
+
+export default function PastLivesPanel({ collapsible = false }: Props = {}) {
+  const { build } = useCharacter()
+  const totalPLs = Object.values(build.pastLives).reduce((s, n) => s + n, 0)
+
+  if (collapsible) {
+    return (
+      <CollapsibleCard
+        title="Past Lives"
+        summary={totalPLs > 0 ? `${totalPLs} total` : 'none trained'}
+      >
+        <PastLivesBody />
+      </CollapsibleCard>
+    )
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        Past Lives
+        {totalPLs > 0 && (
+          <span className={styles.totalBadge}>{totalPLs} total</span>
+        )}
+      </div>
+      <div className="panel-body">
+        <PastLivesBody />
+      </div>
+    </div>
+  )
+}
+
+function PastLivesBody() {
   const { build, dispatch } = useCharacter()
   const [allClasses, setAllClasses] = useState<DDOClass[]>([])
   const [allRaces, setAllRaces] = useState<Race[]>([])
@@ -135,8 +176,6 @@ export default function PastLivesPanel() {
     })
   }
 
-  const totalPLs = Object.values(build.pastLives).reduce((s, n) => s + n, 0)
-
   function setCount(name: string, count: number) {
     dispatch({ type: 'SET_PAST_LIFE', source: name, count })
   }
@@ -157,14 +196,7 @@ export default function PastLivesPanel() {
   }
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        Past Lives
-        {totalPLs > 0 && (
-          <span className={styles.totalBadge}>{totalPLs} total</span>
-        )}
-      </div>
-      <div className="panel-body">
+    <>
         {groups.map(group => (
           <section key={group.title} className={styles.section}>
             <div className={styles.sectionTitle}>
@@ -231,7 +263,6 @@ export default function PastLivesPanel() {
         <p className={styles.note}>
           Past lives affect build point totals (via racial completionist) and grant stacking passive bonuses.
         </p>
-      </div>
-    </div>
+    </>
   )
 }
