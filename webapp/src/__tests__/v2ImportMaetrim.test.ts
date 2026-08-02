@@ -18,7 +18,7 @@ function load(name: string): string {
   return readFileSync(join(FIXTURE_DIR, name), 'utf-8')
 }
 
-describe('V2 importer — Maetrim End-Game Handwraps Monk (Aasimar 20 Monk / 10 Epic / 4 Legendary)', () => {
+describe('V2 importer — Maetrim End-Game Handwraps Monk (Aasimar 20 Monk / 10 Epic / 6 Legendary)', () => {
   const xml = load('Maetrim_EndGameHandwrapsMonk.DDOBuild')
   const { build, warnings } = importV2Build(xml)
 
@@ -32,7 +32,9 @@ describe('V2 importer — Maetrim End-Game Handwraps Monk (Aasimar 20 Monk / 10 
     // it would load an early progression build with far fewer levels.
     expect(build.totalLevel).toBe(20)
     expect(build.epicLevels).toBe(10)
-    expect(build.legendaryLevels).toBe(4)
+    // 6 legendary levels since the V2 2.0.0.83 sync refreshed this example
+    // save (V2's BUILD_START_LEVEL went 34 -> 36).
+    expect(build.legendaryLevels).toBe(6)
   })
 
   it('imports race + alignment', () => {
@@ -59,7 +61,9 @@ describe('V2 importer — Maetrim End-Game Handwraps Monk (Aasimar 20 Monk / 10 
   })
 
   it('imports multiple named gear sets and sets the active one', () => {
-    expect(build.activeGearSetName).toBe('New artifact')
+    // Active set renamed to 'Changed Again' by the V2 2.0.0.83 refresh of
+    // this example save.
+    expect(build.activeGearSetName).toBe('Changed Again')
     expect(build.gear['Helmet']).toContain('Skullcap')
     expect(build.gear['Main Hand']).toBeTruthy()
   })

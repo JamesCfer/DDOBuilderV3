@@ -66,9 +66,9 @@ The base class holds three effect buckets and the math that turns them into a nu
 **`Total()` — `BreakdownItem.cpp:200`** (the heart of stat math):
 1. `total = SumItems(m_otherEffects,false) + SumItems(m_effects,false)`.
 2. Copies `m_itemEffects`, then strips inactive (`RemoveInactive`), non-stacking duplicates (`RemoveNonStacking`), and "Temporary"-bonus effects (`RemoveTemporary`); adds `SumItems(itemEffects, true)` **with the multiplier applied**. Saves this as `baseTotal`.
-3. Applies percentage effects against `baseTotal`: `DoPercentageEffects` on other/feat/item buckets (`:227-232`). Percentages do **not** stack — each is `int(baseTotal × pct/100)` and added.
-4. Adds back the temporary effects (`:233`) after percentages.
-5. If `m_bAllPercentsAtOnce` (HP only, set via `DoAllPercentsAtOnce()`), adds a rounding `m_discrepancy` so multiple % bonuses round once instead of per-effect (`:234-237`).
+3. Applies percentage effects against `baseTotal`: `DoPercentageEffects` on other/feat/item buckets (`:215-222`). Percentages do **not** stack — each is `int(baseTotal × pct/100 + 0.5)` (half-up since 2.0.0.83) and added.
+4. Adds back the temporary effects (`:223`) after percentages.
+5. *(Removed in 2.0.0.83)* the HP-only `m_bAllPercentsAtOnce` / `m_discrepancy` path that rounded multiple % bonuses once instead of per-effect. Percent HP now arrives pre-combined as a single effect from `Breakdown_HitpointsPercent`.
 
 **`SumItems()` — `:436`**: iterates a bucket, skipping effects whose `IsActive(char, slot, mainWeapon, offWeapon)` is false and skipping percent effects. Normal stat: straight addition; `StacksByMultiplication()` (overridden by absorption) instead does fractional product `total *= (100-amount)/100`. `bApplyMultiplier` multiplies each item-bucket amount by `Multiplier()`.
 
@@ -113,9 +113,9 @@ The base class holds three effect buckets and the math that turns them into a nu
 - **V3**: skill keys in `useBuildStats.ts`.
 
 ## BreakdownItemHitpoints.cpp
-- **Owns**: total Hitpoints. Calls `DoAllPercentsAtOnce()` so % HP bonuses round once.
+- **Owns**: total Hitpoints. Adds a single `"Total Hitpoints % Bonus"` percent other-effect fed by `Breakdown_HitpointsPercent` (`Effect_HitpointsPercent`, 2.0.0.83), so the whole % HP stack rounds once.
 - **Formula** (`:47`): Σ over classes of `classLevels × Class.HitPoints()` (Epic/Legendary count half toward the *style-bonus base* only); + Fate-Points×2 at L20+; − negative-levels×5; + CON-mod × character level; + Combat-Style bonus = `0.25 × min(4, styleFeats) × classHitpoints` (25% per style feat, max 100%, heroic HP only); + False Life total; + Reaper HP (level-gated cap 50/100/200/400/800, requires Reaper stance).
-- **Data source**: `Effect_Hitpoints`, `Effect_FalseLife`, `Effect_HitpointsStyleBonus`; observes Constitution, FatePoints, NegativeLevels, StyleBonusFeats, FalseLife, ReaperHitpoints.
+- **Data source**: `Effect_Hitpoints`, `Effect_HitpointsPercent`, `Effect_FalseLife`, `Effect_HitpointsStyleBonus`; observes Constitution, FatePoints, NegativeLevels, StyleBonusFeats, FalseLife, ReaperHitpoints, HitpointsPercent.
 - **V3**: hp in `useBuildStats.ts` (cites `BreakdownItemHitpoints.cpp:74-83` for the Epic/Legendary half rule).
 
 ## BreakdownItemSpellPoints.cpp

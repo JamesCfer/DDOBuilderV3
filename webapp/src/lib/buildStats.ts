@@ -2251,7 +2251,7 @@ function buildStatMapOnce(
       const armorPct = resolveBonus(map.get('armorACPercent') ?? []).total
       if (armorPct !== 0) {
         const base = armorBaseAC + armorEnhAC
-        const amount = Math.trunc((base * armorPct) / 100)
+        const amount = Math.trunc((base * armorPct) / 100 + 0.5)
         if (amount !== 0) {
           add(map, 'ac', { value: amount, type: 'Stacking', source: `Armor ${armorPct}% of ${base}` })
         }
@@ -2268,7 +2268,7 @@ function buildStatMapOnce(
         const shieldBaseAC = resolveBonus(acBonuses.filter(b => b.type === 'Shield')).total
         const shieldPct = resolveBonus(map.get('shieldACPercent') ?? []).total
         if (shieldPct > 0) {
-          const amount = Math.trunc((shieldBaseAC * shieldPct) / 100)
+          const amount = Math.trunc((shieldBaseAC * shieldPct) / 100 + 0.5)
           if (amount !== 0) {
             add(map, 'ac', { value: amount, type: 'Stacking', source: `Shield ${shieldPct}% of ${shieldBaseAC}` })
           }
@@ -3051,17 +3051,38 @@ function buildStatMapOnce(
       }
     }
 
+    // ── Aggregated percent sub-breakdowns (V2 2.0.0.83) ───────────────────
+    // Effect_HitpointsPercent / Effect_ACPercent do NOT carry <Percent/>; each
+    // feeds its own BreakdownItemSimple (Breakdown_HitpointsPercent /
+    // Breakdown_TotalACPercent) where bonus types stack normally. The
+    // resulting TOTAL is then handed to hitpoints / AC as ONE percent
+    // other-effect (BreakdownItemHitpoints.cpp:195-206,
+    // BreakdownItemAC.cpp:170-182) — so the whole stack rounds once, not
+    // per contributing effect.
+    for (const [pctKey, target] of [['hp.percent', 'hp'], ['ac.percent', 'ac']] as const) {
+      const pct = resolveBonus(map.get(pctKey) ?? []).total
+      if (pct !== 0) {
+        add(map, target, {
+          value: pct,
+          type: 'Stacking',
+          source: target === 'hp' ? 'Total Hitpoints % Bonus' : 'Total AC % Bonus',
+          percent: true,
+        })
+      }
+    }
+
     // ── Percentage effects (V2 BreakdownItem::DoPercentageEffects) ────────
     // Effects tagged <Percent/> add (base × percent / 100) of the stat's own
     // base total rather than a flat amount (e.g. Frenzied Berserker +25% HP).
     // V2 truncates EACH active percent effect's contribution individually and
-    // sums the already-truncated amounts (BreakdownItem.cpp:474-503). Only
-    // BreakdownItemHitpoints opts into the alternate "combine all percents
-    // first, truncate once" path (DoAllPercentsAtOnce(), :498-501) — every
-    // other percent-tagged stat truncates per-effect. Gear percents still obey
-    // Highest-Only via the fromGear split in resolveBonus. Rewrite each
-    // affected stat's bonus list: drop the raw percent markers and append the
-    // computed contribution(s).
+    // sums the already-truncated amounts (BreakdownItem.cpp:454-478). As of
+    // 2.0.0.83 the rounding is half-up (`+ 0.5` before the int cast) and the
+    // old hitpoints-only "combine all percents first, truncate once" path
+    // (DoAllPercentsAtOnce) is gone — HP percent stacking now arrives
+    // pre-combined via the Breakdown_HitpointsPercent line above. Gear
+    // percents still obey Highest-Only via the fromGear split in resolveBonus.
+    // Rewrite each affected stat's bonus list: drop the raw percent markers
+    // and append the computed contribution(s).
     for (const [key, bonuses] of map) {
       const pctBonuses = bonuses.filter(b => b.percent)
       if (pctBonuses.length === 0) continue
@@ -3074,27 +3095,15 @@ function buildStatMapOnce(
       const base = resolveBonus(flatBonuses.filter(b => b.type !== 'Temporary')).total
       const resolvedPct = resolveBonus(pctBonuses.map(b => ({ ...b, percent: false })))
       const rebuilt = flatBonuses
-      if (key === 'hp') {
-        const percentSum = resolvedPct.total
-        const contribution = Math.trunc((base * percentSum) / 100)
+      for (const b of resolvedPct.bonuses) {
+        if (!b.active) continue
+        const contribution = Math.trunc((base * b.value) / 100 + 0.5)
         if (contribution !== 0) {
           rebuilt.push({
             value: contribution,
             type: 'Stacking',
-            source: `${percentSum}% of ${base}`,
+            source: `${b.value}% of ${base} (${b.source})`,
           })
-        }
-      } else {
-        for (const b of resolvedPct.bonuses) {
-          if (!b.active) continue
-          const contribution = Math.trunc((base * b.value) / 100)
-          if (contribution !== 0) {
-            rebuilt.push({
-              value: contribution,
-              type: 'Stacking',
-              source: `${b.value}% of ${base} (${b.source})`,
-            })
-          }
         }
       }
       map.set(key, rebuilt)
