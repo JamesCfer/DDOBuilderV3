@@ -2,6 +2,7 @@ import { useState, useEffect, useId } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { findGearByEffect } from '../../lib/findGear'
+import { displaySlotsForItemKey } from '../../lib/gearSlots'
 import { useDocument } from '../../context/DocumentContext'
 import type { Item, ItemBuff } from '../../types/ddo'
 import styles from './FindGearDialog.module.css'
@@ -9,12 +10,6 @@ import styles from './FindGearDialog.module.css'
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
   return Array.isArray(val) ? val : [val]
-}
-
-/** Map API slot keys to the GearPanel internal slot names (handles Ring→Ring/Ring2). */
-function equipSlots(apiSlot: string): string[] {
-  if (apiSlot === 'Ring') return ['Ring', 'Ring2']
-  return [apiSlot]
 }
 
 interface EquipCellProps {
@@ -25,7 +20,7 @@ interface EquipCellProps {
 }
 
 function EquipCell({ item, apiSlot, currentGear, onEquip }: EquipCellProps) {
-  const slots = equipSlots(apiSlot)
+  const slots = displaySlotsForItemKey(apiSlot)
   const isEquipped = slots.some(s => currentGear[s] === item.Name)
 
   if (slots.length === 1) {
