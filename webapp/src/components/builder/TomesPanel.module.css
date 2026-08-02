@@ -15,7 +15,9 @@
 
 .abilityGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* auto-fit, not a fixed 1fr 1fr: the panel is also embedded in the narrow
+     Character Overview column, where two columns would clip the selects. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.4rem 1rem;
 }
 
@@ -33,7 +35,7 @@
 
 .skillGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.4rem 1rem;
 }
 
