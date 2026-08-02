@@ -14,10 +14,17 @@
 //  - feats: lib/featEligibility — only prereq-met options for empty slots.
 //  - class levels: only unassigned levelClasses entries, only classes with
 //    remaining declared levels, and never invalidating an already-set feat.
+//  - gear / augments / slot upgrades / filigrees: only slots that are EMPTY,
+//    from the caller's shortlisted pools (lib/optimizer/gearCandidates). An
+//    augment slot opened by a slot upgrade becomes fillable on a later round;
+//    artifact filigree slots need an equipped Minor Artifact; a filigree
+//    already slotted elsewhere is never offered twice.
 
 import type {
-  Ability, CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Feat, Item, Race,
+  Ability, Augment, CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem,
+  Feat, Filigree, Item, Race,
 } from '../../types/ddo'
+import { resolveAugmentSlots, pendingSlotUpgrades, slotUpgradeKey } from '../gearSlotUpgrades'
 import { aggregateLevelClasses, HEROIC_CAP } from '../levelProgression'
 import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../gamedata'
 import {
@@ -40,6 +47,9 @@ export type Move =
   | { kind: 'legendaryLevel'; toLevel: number }
   | { kind: 'abilityLevelUp'; level: number; ability: Ability }
   | { kind: 'gear'; slot: string; itemName: string }
+  | { kind: 'augment'; slot: string; augType: string; index: number; augmentName: string }
+  | { kind: 'slotUpgrade'; slot: string; upgradeType: string; index: number; color: string }
+  | { kind: 'filigree'; artifact: boolean; slotIndex: number; filigreeName: string }
 
 export interface MoveDomains {
   enhancements: boolean
@@ -48,6 +58,9 @@ export interface MoveDomains {
   classLevels: boolean
   abilityLevelUps?: boolean
   gear?: boolean
+  augments?: boolean
+  slotUpgrades?: boolean
+  filigrees?: boolean
 }
 
 /** True for moves that raise or assign character levels (the "level up and
@@ -80,6 +93,16 @@ export interface MoveContext {
    * catalogue is thousands of items; the optimizer evaluates a shortlist.
    */
   gearCandidates?: Record<string, Item[]>
+  /**
+   * Equipped items by display slot — the same map the stat engine is given.
+   * Augment and slot-upgrade moves read the equipped item's augment slots
+   * from it, so those domains do nothing without it.
+   */
+  gearItems?: Record<string, Item>
+  /** Shortlisted augments per augment colour (Blue, Red, Colourless, …). */
+  augmentCandidates?: Record<string, Augment[]>
+  /** Shortlisted filigrees, offered to every empty filigree slot. */
+  filigreeCandidates?: Filigree[]
 }
 
 export function characterLevel(build: CharacterBuild): number {
@@ -97,6 +120,9 @@ export function moveId(m: Move): string {
     case 'legendaryLevel': return `ll|${m.toLevel}`
     case 'abilityLevelUp': return `alu|${m.level}|${m.ability}`
     case 'gear':        return `g|${m.slot}|${m.itemName}`
+    case 'augment':     return `a|${m.slot}|${m.augType}|${m.index}|${m.augmentName}`
+    case 'slotUpgrade': return `su|${m.slot}|${m.upgradeType}|${m.index}|${m.color}`
+    case 'filigree':    return `fi|${m.artifact ? 'art' : 'wpn'}|${m.slotIndex}|${m.filigreeName}`
   }
 }
 
@@ -120,6 +146,12 @@ export function describeMove(m: Move): string {
       return `Put the level-${m.level} ability point into ${m.ability}`
     case 'gear':
       return `Equip ${m.itemName} in ${m.slot}`
+    case 'augment':
+      return `Slot augment ${m.augmentName} in the ${m.augType} slot on ${m.slot}`
+    case 'slotUpgrade':
+      return `Upgrade ${m.slot}'s ${m.upgradeType} slot to ${m.color}`
+    case 'filigree':
+      return `Slot filigree ${m.filigreeName} in ${m.artifact ? 'artifact' : 'weapon'} slot ${m.slotIndex + 1}`
   }
 }
 
@@ -448,6 +480,97 @@ export function gearMoves(ctx: MoveContext): Move[] {
   return out
 }
 
+/** Augment colours the item's own slots ask for, keyed the way the UI keys them. */
+function augmentKey(slot: string, augType: string, index: number): string {
+  return `${slot}:${augType}:${index}`
+}
+
+/**
+ * Slot an augment into an EMPTY augment slot on an equipped item.
+ *
+ * Slots whose augment is fixed by the item (`ItemAugment.Augment`) are not
+ * choices and are skipped, as are slots the user has already filled.
+ * Candidates are capped to the host item's level, mirroring the gear panel's
+ * own picker (GearPanel `maxItemLevel`).
+ */
+export function augmentMoves(ctx: MoveContext): Move[] {
+  const { build } = ctx
+  const out: Move[] = []
+  for (const [slot, item] of Object.entries(ctx.gearItems ?? {})) {
+    if (!item) continue
+    const itemLevel = Number(item.MinLevel ?? 0)
+    for (const { augment, index } of resolveAugmentSlots(item, slot, build.slotUpgradeChoices ?? {})) {
+      if (augment.Augment) continue                              // fixed by the item
+      const key = augmentKey(slot, augment.Type, index)
+      if (build.augmentChoices?.[key]) continue                  // already chosen
+      for (const cand of ctx.augmentCandidates?.[augment.Type] ?? []) {
+        if (Number(cand.MinLevel ?? 1) > itemLevel) continue
+        out.push({ kind: 'augment', slot, augType: augment.Type, index, augmentName: cand.Name })
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * Choose the colour of an item's one-time augment-slot upgrade.
+ *
+ * V2 makes this irreversible the moment it is picked (SET_SLOT_UPGRADE
+ * mirrors that), so it is a genuine addition: it can only ever open a slot
+ * that was not there before. The augment domain fills the new slot on a
+ * later round.
+ */
+export function slotUpgradeMoves(ctx: MoveContext): Move[] {
+  const { build } = ctx
+  const out: Move[] = []
+  for (const [slot, item] of Object.entries(ctx.gearItems ?? {})) {
+    if (!item) continue
+    for (const pending of pendingSlotUpgrades(item, slot, build.slotUpgradeChoices ?? {})) {
+      for (const color of pending.options) {
+        out.push({
+          kind: 'slotUpgrade', slot, upgradeType: pending.upgrade.Type,
+          index: pending.index, color,
+        })
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * Slot a filigree into an EMPTY filigree slot.
+ *
+ * A filigree already slotted elsewhere is not offered again: the same
+ * filigree in several slots would multiply its set-bonus count, which no
+ * real sentient weapon can do. Artifact slots are only offered when the
+ * build has a Minor Artifact equipped — without one the stat engine ignores
+ * them entirely (EquippedGear::HasMinorArtifact).
+ */
+export function filigreeMoves(ctx: MoveContext): Move[] {
+  const { build } = ctx
+  const candidates = ctx.filigreeCandidates ?? []
+  if (candidates.length === 0) return []
+  const used = new Set<string>()
+  for (const s of [...(build.filigreeSlots ?? []), ...(build.artifactFiligreeSlots ?? [])]) {
+    if (s?.name) used.add(s.name)
+  }
+  const hasMinorArtifact = Object.values(ctx.gearItems ?? {}).some(i => i && 'MinorArtifact' in i)
+
+  const out: Move[] = []
+  const offer = (artifact: boolean, slots: CharacterBuild['filigreeSlots']) => {
+    slots?.forEach((slotEntry, slotIndex) => {
+      if (slotEntry?.name) return
+      for (const f of candidates) {
+        if (used.has(f.Name)) continue
+        out.push({ kind: 'filigree', artifact, slotIndex, filigreeName: f.Name })
+      }
+    })
+  }
+  offer(false, build.filigreeSlots)
+  if (hasMinorArtifact) offer(true, build.artifactFiligreeSlots)
+  return out
+}
+
 export function generateMoves(ctx: MoveContext, domains: MoveDomains): Move[] {
   const out: Move[] = []
   if (domains.enhancements) out.push(...enhancementMoves(ctx))
@@ -456,6 +579,9 @@ export function generateMoves(ctx: MoveContext, domains: MoveDomains): Move[] {
   if (domains.classLevels) out.push(...classLevelMoves(ctx), ...levelProgressMoves(ctx))
   if (domains.abilityLevelUps) out.push(...abilityLevelUpMoves(ctx))
   if (domains.gear) out.push(...gearMoves(ctx))
+  if (domains.augments) out.push(...augmentMoves(ctx))
+  if (domains.slotUpgrades) out.push(...slotUpgradeMoves(ctx))
+  if (domains.filigrees) out.push(...filigreeMoves(ctx))
   return out
 }
 
@@ -554,6 +680,28 @@ export function applyMove(build: CharacterBuild, m: Move): CharacterBuild {
       }
     case 'gear':
       return { ...build, gear: { ...build.gear, [m.slot]: m.itemName } }
+    case 'augment':
+      return {
+        ...build,
+        augmentChoices: {
+          ...build.augmentChoices,
+          [augmentKey(m.slot, m.augType, m.index)]: m.augmentName,
+        },
+      }
+    case 'slotUpgrade':
+      return {
+        ...build,
+        slotUpgradeChoices: {
+          ...build.slotUpgradeChoices,
+          [slotUpgradeKey(m.slot, m.upgradeType, m.index)]: m.color,
+        },
+      }
+    case 'filigree': {
+      const field = m.artifact ? 'artifactFiligreeSlots' : 'filigreeSlots'
+      const slots = [...(build[field] ?? [])]
+      slots[m.slotIndex] = { ...(slots[m.slotIndex] ?? { name: '', rare: false }), name: m.filigreeName }
+      return { ...build, [field]: slots } as CharacterBuild
+    }
   }
 }
 
