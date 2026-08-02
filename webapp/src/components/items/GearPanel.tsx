@@ -9,6 +9,7 @@ import { exportGearSetXml } from '../../lib/v2Export'
 import { importGearSetXml } from '../../lib/v2Import'
 import { useDocument } from '../../context/DocumentContext'
 import { resolveAugmentSlots, pendingSlotUpgrades } from '../../lib/gearSlotUpgrades'
+import { itemSlotKey } from '../../lib/gearSlots'
 import styles from './GearPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -21,21 +22,6 @@ const RIGHT_SLOTS = ['Gloves', 'Bracers', 'Boots', 'Goggles', 'Main Hand', 'Off 
 // round-trip through save/load.
 const COSMETIC_SLOTS = ['Cosmetic Helmet', 'Cosmetic Armor', 'Cosmetic Cloak', 'Cosmetic Weapon', 'Cosmetic Off Hand']
 const ALL_SLOTS = [...LEFT_SLOTS, ...RIGHT_SLOTS, ...COSMETIC_SLOTS]
-
-// Display slot → <EquipmentSlot> key used in the item XML (V2
-// InventorySlotTypes.h enum names, e.g. <CosmeticHelm/>).
-const API_SLOT_NAME: Record<string, string> = {
-  Ring2: 'Ring',
-  'Cosmetic Helmet': 'CosmeticHelm',
-  'Cosmetic Armor': 'CosmeticArmor',
-  'Cosmetic Cloak': 'CosmeticCloak',
-  'Cosmetic Weapon': 'CosmeticWeapon1',
-  'Cosmetic Off Hand': 'CosmeticWeapon2',
-}
-
-function apiSlotName(slot: string): string {
-  return API_SLOT_NAME[slot] ?? slot
-}
 
 function slotLabel(slot: string): string {
   if (slot === 'Ring') return 'Ring (1)'
@@ -315,7 +301,7 @@ export default function GearPanel() {
   function ensureItemsLoaded(slot: string) {
     if (slotItems[slot] !== undefined) return
     setSlotItems(prev => ({ ...prev, [slot]: null }))
-    api.items({ slot: apiSlotName(slot) })
+    api.items({ slot: itemSlotKey(slot) })
       .then(items => setSlotItems(prev => ({ ...prev, [slot]: items })))
       .catch(() => setSlotItems(prev => ({ ...prev, [slot]: [] })))
   }

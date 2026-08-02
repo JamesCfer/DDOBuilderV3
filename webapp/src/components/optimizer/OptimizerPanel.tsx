@@ -21,7 +21,10 @@ import {
 } from '../../lib/optimizer/objective'
 import { optimizeBuild, type OptimizeProgress, type OptimizeResult } from '../../lib/optimizer/optimizer'
 import { characterLevel, type MoveDomains } from '../../lib/optimizer/moves'
-import type { CharacterBuild } from '../../types/ddo'
+import { shortlistCandidates } from '../../lib/optimizer/gearCandidates'
+import { itemSlotKey } from '../../lib/gearSlots'
+import { api } from '../../api'
+import type { CharacterBuild, Item } from '../../types/ddo'
 import styles from './OptimizerPanel.module.css'
 
 const OBJECTIVE_STORAGE_KEY = 'ddo-optimizer-objective'
@@ -59,6 +62,27 @@ function storeObjective(o: StoredObjective): void {
 
 const STAT_GROUPS = [...new Set(OPTIMIZER_STATS.map(s => s.group))]
 
+// Slots the gear domain may fill. Cosmetic slots are excluded — they carry no
+// stats, so equipping one could never improve an objective.
+const OPTIMIZABLE_GEAR_SLOTS = [
+  'Helmet', 'Necklace', 'Trinket', 'Armor', 'Cloak', 'Belt', 'Ring', 'Ring2',
+  'Gloves', 'Bracers', 'Boots', 'Goggles', 'Main Hand', 'Off Hand', 'Quiver', 'Arrow',
+]
+
+/** Fetch the equippable catalogue for every gear slot the build has left empty. */
+async function loadEmptySlotItems(
+  gear: Record<string, string>,
+  maxLevel: number,
+): Promise<Record<string, Item[]>> {
+  const empty = OPTIMIZABLE_GEAR_SLOTS.filter(slot => !gear[slot])
+  const lists = await Promise.all(empty.map(slot =>
+    api.items({ slot: itemSlotKey(slot), maxLevel })
+      .then(items => [slot, items] as [string, Item[]])
+      .catch(() => [slot, [] as Item[]] as [string, Item[]]),
+  ))
+  return Object.fromEntries(lists.filter(([, items]) => items.length > 0))
+}
+
 export default function OptimizerPanel() {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
@@ -78,7 +102,7 @@ export default function OptimizerPanel() {
   const [rows, setRows] = useState<ObjectiveStat[]>(initial.stats)
   const [domains, setDomains] = useState<MoveDomains>({
     enhancements: true, destinies: true, feats: true, classLevels: true,
-    abilityLevelUps: true,
+    abilityLevelUps: true, gear: false,
   })
   const charLevel = characterLevel(build)
   // Level the optimizer may build toward. Defaults to the current character
@@ -92,6 +116,7 @@ export default function OptimizerPanel() {
   }
   const [effort, setEffort] = useState<(typeof EFFORT_LEVELS)[number]['id']>('normal')
   const [running, setRunning] = useState(false)
+  const [loadingGear, setLoadingGear] = useState(false)
   const [progress, setProgress] = useState<OptimizeProgress | null>(null)
   const [result, setResult] = useState<OptimizeResult | null>(null)
   const [appliedSnapshot, setAppliedSnapshot] = useState<CharacterBuild | null>(null)
@@ -141,11 +166,24 @@ export default function OptimizerPanel() {
     setAppliedSnapshot(null)
     setProgress(null)
     try {
+      // Gear is fetched per run rather than up front: the catalogue is large
+      // and most runs do not ask for it.
+      let gearCandidates: Record<string, Item[]> | undefined
+      if (domains.gear) {
+        setLoadingGear(true)
+        try {
+          const bySlot = await loadEmptySlotItems(build.gear, targetLevel)
+          gearCandidates = shortlistCandidates(bySlot, objective, { maxLevel: targetLevel })
+        } finally {
+          setLoadingGear(false)
+        }
+      }
       const res = await optimizeBuild({
         input: statsInput,
         build,
         objective,
         domains,
+        gearCandidates,
         maxEvals: EFFORT_LEVELS.find(e => e.id === effort)?.maxEvals,
         targetLevel,
         onProgress: setProgress,
@@ -185,8 +223,8 @@ export default function OptimizerPanel() {
             Ranks your chosen stats and fills every choice the build has left
             open — class levels up to your target level, unspent enhancement
             AP, unspent destiny points, empty feat slots, unset ability
-            level-ups, free destiny slots. Choices you have already made are
-            never changed.
+            level-ups, free destiny slots, and empty gear slots. Choices you
+            have already made are never changed.
           </div>
 
           <div className={styles.modeRow}>
@@ -308,6 +346,18 @@ export default function OptimizerPanel() {
               <input type="checkbox" checked={domains.abilityLevelUps ?? false} onChange={e => setDomains({ ...domains, abilityLevelUps: e.target.checked })} />
               Ability level-ups (assign unset +1s at levels 4, 8, 12…)
             </label>
+            <label>
+              <input type="checkbox" checked={domains.gear ?? false} onChange={e => setDomains({ ...domains, gear: e.target.checked })} />
+              Gear (equip items into empty slots)
+            </label>
+            {domains.gear && (
+              <span className={styles.help} style={{ paddingLeft: '1.5rem' }}>
+                Only empty slots are filled — an item you have already equipped
+                is never swapped out. Each empty slot offers the items whose
+                own buffs touch your chosen stats, so a run costs more
+                evaluations; raise the effort if it stops at the budget.
+              </span>
+            )}
           </div>
 
           <div className={styles.runRow}>
@@ -345,8 +395,9 @@ export default function OptimizerPanel() {
           <div className={styles.note}>
             The search is greedy: it repeatedly takes the single legal choice
             that most improves your top-ranked stat (ties broken by the next
-            stat down). Gear, filigrees, and augments are not searched yet —
-            use Equipment › Gear &amp; the Find Gear dialog for those.
+            stat down). Filigrees and augments are not searched yet — use
+            Equipment › Filigrees and the augment pickers in Equipment › Gear
+            for those.
           </div>
         </div>
       </div>
@@ -361,7 +412,11 @@ export default function OptimizerPanel() {
               changed until you press Apply.
             </div>
           )}
-          {running && <div className={styles.help}>Searching…</div>}
+          {running && (
+            <div className={styles.help}>
+              {loadingGear ? 'Loading the gear catalogue…' : 'Searching…'}
+            </div>
+          )}
           {result && (
             <>
               <div className={styles.help}>{stoppedLabel[result.stopped]}</div>

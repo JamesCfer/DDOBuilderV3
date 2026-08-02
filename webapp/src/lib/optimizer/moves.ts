@@ -16,7 +16,7 @@
 //    remaining declared levels, and never invalidating an already-set feat.
 
 import type {
-  Ability, CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Feat, Race,
+  Ability, CharacterBuild, DDOClass, EnhancementTree, EnhancementTreeItem, Feat, Item, Race,
 } from '../../types/ddo'
 import { aggregateLevelClasses, HEROIC_CAP } from '../levelProgression'
 import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../gamedata'
@@ -39,6 +39,7 @@ export type Move =
   | { kind: 'epicLevel'; toLevel: number }
   | { kind: 'legendaryLevel'; toLevel: number }
   | { kind: 'abilityLevelUp'; level: number; ability: Ability }
+  | { kind: 'gear'; slot: string; itemName: string }
 
 export interface MoveDomains {
   enhancements: boolean
@@ -46,6 +47,7 @@ export interface MoveDomains {
   feats: boolean
   classLevels: boolean
   abilityLevelUps?: boolean
+  gear?: boolean
 }
 
 /** True for moves that raise or assign character levels (the "level up and
@@ -72,6 +74,12 @@ export interface MoveContext {
    * current character level — i.e. no leveling.
    */
   targetLevel?: number
+  /**
+   * Shortlisted equippable items per EMPTY display gear slot, already level-
+   * and relevance-filtered by the caller (lib/optimizer/gearCandidates). The
+   * catalogue is thousands of items; the optimizer evaluates a shortlist.
+   */
+  gearCandidates?: Record<string, Item[]>
 }
 
 export function characterLevel(build: CharacterBuild): number {
@@ -88,6 +96,7 @@ export function moveId(m: Move): string {
     case 'epicLevel':      return `el|${m.toLevel}`
     case 'legendaryLevel': return `ll|${m.toLevel}`
     case 'abilityLevelUp': return `alu|${m.level}|${m.ability}`
+    case 'gear':        return `g|${m.slot}|${m.itemName}`
   }
 }
 
@@ -109,6 +118,8 @@ export function describeMove(m: Move): string {
       return `Take legendary level (character level ${m.toLevel})`
     case 'abilityLevelUp':
       return `Put the level-${m.level} ability point into ${m.ability}`
+    case 'gear':
+      return `Equip ${m.itemName} in ${m.slot}`
   }
 }
 
@@ -417,6 +428,26 @@ export function abilityLevelUpMoves(ctx: MoveContext): Move[] {
   return out
 }
 
+/**
+ * Equip a shortlisted item into an EMPTY gear slot.
+ *
+ * Same contract as every other domain: additions only. A slot the user has
+ * already filled is never re-equipped, so the optimizer cannot quietly throw
+ * away a chosen item.
+ *
+ * The off-hand needs no special-casing here — the stat engine applies V2's
+ * `EquippedGear::SetItem` rule and ignores an off-hand item whenever the
+ * main-hand weapon forbids one, so such a move simply scores no gain.
+ */
+export function gearMoves(ctx: MoveContext): Move[] {
+  const out: Move[] = []
+  for (const [slot, items] of Object.entries(ctx.gearCandidates ?? {})) {
+    if (ctx.build.gear?.[slot]) continue
+    for (const item of items) out.push({ kind: 'gear', slot, itemName: item.Name })
+  }
+  return out
+}
+
 export function generateMoves(ctx: MoveContext, domains: MoveDomains): Move[] {
   const out: Move[] = []
   if (domains.enhancements) out.push(...enhancementMoves(ctx))
@@ -424,6 +455,7 @@ export function generateMoves(ctx: MoveContext, domains: MoveDomains): Move[] {
   if (domains.feats) out.push(...featMoves(ctx))
   if (domains.classLevels) out.push(...classLevelMoves(ctx), ...levelProgressMoves(ctx))
   if (domains.abilityLevelUps) out.push(...abilityLevelUpMoves(ctx))
+  if (domains.gear) out.push(...gearMoves(ctx))
   return out
 }
 
@@ -520,6 +552,8 @@ export function applyMove(build: CharacterBuild, m: Move): CharacterBuild {
           [m.level as 4 | 8 | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40]: m.ability,
         },
       }
+    case 'gear':
+      return { ...build, gear: { ...build.gear, [m.slot]: m.itemName } }
   }
 }
 

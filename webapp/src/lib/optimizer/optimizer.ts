@@ -21,7 +21,7 @@
 // The loop yields to the event loop every few evaluations so the UI stays
 // live, reports progress, and honors cancellation.
 
-import type { CharacterBuild } from '../../types/ddo'
+import type { CharacterBuild, Item } from '../../types/ddo'
 import { computeBuildStats, type BuildStatsInput } from '../buildStats'
 import { treeSpent } from '../fuzz/randomBuild'
 import {
@@ -80,6 +80,11 @@ export interface OptimizeOptions {
   /** Hard cap on stat-engine evaluations. Default 20000. */
   maxEvals?: number
   /**
+   * Shortlisted items per empty display gear slot for the gear domain (see
+   * lib/optimizer/gearCandidates). Ignored unless `domains.gear` is set.
+   */
+  gearCandidates?: Record<string, Item[]>
+  /**
    * Character level to level the build toward when the class-levels domain
    * is enabled (heroic classes first, then epic, then legendary levels).
    * Defaults to the build's current character level — no leveling.
@@ -110,9 +115,31 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
     allFeats: input.allFeats, allTrees: input.allTrees,
   }
 
+  // Gear moves change which items are equipped, so the stat input's
+  // `gearItems` has to follow the candidate build rather than staying pinned
+  // to the user's current equipment.
+  const itemByName = new Map<string, Item>()
+  for (const list of Object.values(opts.gearCandidates ?? {})) {
+    for (const it of list) itemByName.set(it.Name, it)
+  }
+
+  function inputFor(b: CharacterBuild): BuildStatsInput {
+    if (!domains.gear) return input
+    const base = input.gearItems ?? {}
+    let gearItems = base
+    for (const [slot, name] of Object.entries(b.gear ?? {})) {
+      if (!name || base[slot]?.Name === name) continue
+      const item = itemByName.get(name)
+      if (!item) continue
+      if (gearItems === base) gearItems = { ...base }
+      gearItems[slot] = item
+    }
+    return gearItems === base ? input : { ...input, gearItems }
+  }
+
   let evals = 0
   let current = opts.build
-  let curStats = computeBuildStats(input, current)
+  let curStats = computeBuildStats(inputFor(current), current)
   let curVec = scoreVector(objective, k => curStats.total(k))
   const startTotals: StatDelta[] = objective.stats.map((s, i) => ({
     key: s.key, label: s.label, before: curVec[i], after: curVec[i],
@@ -129,7 +156,7 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
 
   /** Evaluate one candidate build; returns null when the budget is exhausted. */
   async function evaluate(candidate: CharacterBuild) {
-    const stats = computeBuildStats(input, candidate)
+    const stats = computeBuildStats(inputFor(candidate), candidate)
     evals++
     if (evals % YIELD_EVERY === 0) {
       report()
@@ -145,6 +172,7 @@ export async function optimizeBuild(opts: OptimizeOptions): Promise<OptimizeResu
       fatePoints: Math.max(0, Math.round(stats.total('fatePoint'))),
       destinyApBonus: Math.max(0, Math.round(stats.total('destinyAP'))),
       targetLevel: Math.max(opts.targetLevel ?? 0, characterLevel(build)),
+      gearCandidates: opts.gearCandidates,
     }
   }
 
