@@ -10,7 +10,8 @@ import { useEffect, useRef } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { useSettings } from '../../context/SettingsContext'
-import { usePersistence } from '../../hooks/usePersistence'
+import { useBuildLog } from '../../context/BuildLogContext'
+import { takeLastImportWarnings, usePersistence } from '../../hooks/usePersistence'
 import { emptyDocument, findActiveBuild, syncBuildIntoDocument } from '../../lib/multiLife'
 import type { CharacterDocument } from '../../types/ddo'
 
@@ -23,6 +24,7 @@ export default function AppShortcuts({ onLoad }: AppShortcutsProps) {
   const { doc, setDoc } = useDocument()
   const { settings } = useSettings()
   const { saveDocument, importFile } = usePersistence()
+  const { addLog } = useBuildLog()
   const fileRef = useRef<HTMLInputElement>(null)
 
   // Refs so the stable window listeners always see current state.
@@ -102,7 +104,11 @@ export default function AppShortcuts({ onLoad }: AppShortcutsProps) {
         e.target.value = ''
         if (!f) return
         importFile(f)
-          .then(imported => { saveDocument(imported); onLoad(imported) })
+          .then(imported => {
+            saveDocument(imported)
+            onLoad(imported)
+            for (const w of takeLastImportWarnings()) addLog(`Import: ${w}`)
+          })
           .catch(() => { /* surfaced by SaveLoadBar's own import path */ })
       }}
     />
