@@ -6,6 +6,14 @@
   align-items: flex-start;
 }
 
+/* Below the rails' comfortable width the left rail goes full-width and the
+   row wraps, so stances/buffs sit above the page instead of squeezing it. */
+@media (max-width: 1100px) {
+  .contentRow {
+    flex-wrap: wrap;
+  }
+}
+
 .tabArea {
   flex: 1;
   min-width: 0;
@@ -46,15 +54,6 @@
   gap: 14px;
 }
 
-/* Two-column split (Buffs tab) */
-
-.twoCol {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start;
-}
-
 /* Account button in the top-right cluster */
 
 .accountBtn {
@@ -74,8 +73,7 @@
 }
 
 @media (max-width: 860px) {
-  .overviewGrid,
-  .twoCol {
+  .overviewGrid {
     grid-template-columns: 1fr;
   }
 }
