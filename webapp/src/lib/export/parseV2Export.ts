@@ -69,6 +69,23 @@ const SPELL_POWER_LABELS: Record<string, string> = {
   'Rust': 'Rust', 'Sonic': 'Sonic', 'Untyped': 'Untyped',
 }
 
+// AddWeaponDamage (ForumExportDlg.cpp:1680-1707) plain "Label: value[%]"
+// lines → V3 stat keys (the same keys buildStats.ts/oracleParityRows.ts use,
+// so no extra composed() mapping is needed).
+const WEAPON_DAMAGE_PERCENT_LABELS: Record<string, string> = {
+  'Doublestrike': 'melee.doublestrike',
+  'Strikethrough': 'melee.strikethrough',
+  'Off-Hand attack Chance': 'offhand.attack',
+  'Fortification Bypass': 'fortBypass',
+  'Dodge Bypass': 'dodgeBypass',
+  'Helpless Damage bonus': 'helpless',
+  'Doubleshot Chance': 'ranged.doubleshot',
+}
+const WEAPON_DAMAGE_VALUE_LABELS: Record<string, string> = {
+  'Melee Power': 'melee.power',
+  'Ranged Power': 'ranged.power',
+}
+
 type TableContext = 'none' | 'saves' | 'energy' | 'spellpower' | 'tactical' | 'ignored' | 'unknown'
 
 function stripBBCode(cell: string): string {
@@ -189,6 +206,21 @@ export function parseV2Export(text: string): ParsedV2Export {
         warnings.push(`Ability row "${short}" had unrecognised trailing stats: "${rest.trim()}"`)
       }
       continue
+    }
+
+    // "Weapon Damage" block (AddWeaponDamage): one "Label: value" or
+    // "Label: value%" per line, not inside any [TABLE].
+    {
+      const pct = /^([A-Za-z][A-Za-z /-]*?):\s*(-?\d+)%\s*$/.exec(trimmed)
+      if (pct && WEAPON_DAMAGE_PERCENT_LABELS[pct[1]]) {
+        set(WEAPON_DAMAGE_PERCENT_LABELS[pct[1]], parseInt(pct[2], 10))
+        continue
+      }
+      const val = /^([A-Za-z][A-Za-z /-]*?):\s*(-?[\d.]+)\s*$/.exec(trimmed)
+      if (val && WEAPON_DAMAGE_VALUE_LABELS[val[1]]) {
+        set(WEAPON_DAMAGE_VALUE_LABELS[val[1]], parseFloat(val[2]))
+        continue
+      }
     }
 
     // -----------------------------------------------------------------
