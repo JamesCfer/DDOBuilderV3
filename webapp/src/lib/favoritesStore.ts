@@ -1,9 +1,9 @@
 // favoritesStore — shared, app-wide store for the starred ("favorited")
-// breakdown rows. Both the Breakdowns panel and the always-visible
-// FavoritesDock read and write the same list, so a star toggled in one
-// place updates everywhere immediately. Persisted per-browser (not
-// per-build) in localStorage under the same key the Breakdowns panel has
-// always used, so existing favorites carry over.
+// breakdown rows. Every host that shows them (the Breakdowns panel's own
+// ★ Favorites section, and anything else that adopts it) reads and writes the
+// same list, so a star toggled in one place updates everywhere immediately.
+// Persisted per-browser (not per-build) in localStorage under the same key the
+// Breakdowns panel has always used, so existing favorites carry over.
 
 import { useSyncExternalStore, useCallback } from 'react'
 

@@ -294,6 +294,31 @@
   word-break: break-word;
 }
 
+/* Name + unlock marker stack in the space left of the icon, so adding the
+   marker does not squeeze the name into one word per line. */
+.pickerTreeText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .pickerTreeOn .pickerTreeName {
   color: var(--color-gold-light, #f0c060);
+}
+
+/* Favor-unlock marker in the tree picker: these trees are listed on the
+   assumption the account has the patron favor that grants them. */
+.pickerUnlock {
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-gold-dark);
+}
+
+.pickerNote {
+  margin: 10px 2px 0;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-text-muted);
 }

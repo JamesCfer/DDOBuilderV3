@@ -6,7 +6,7 @@
 // choices, they lived on their own Analysis tabs — so checking what a stance
 // did to a breakdown, a DC or a weapon meant leaving the page you were
 // reading. They belong beside the numbers instead of one navigation away,
-// which is what this rail is for. It mirrors the FavoritesDock on the right:
+// which is what this rail is for. It mirrors the AnalysisDock on the right:
 // sticky, collapsible, remembered across sessions.
 //
 // The panels themselves are the same components the Custom › Windows

@@ -1,5 +1,5 @@
 // statRows — presentational pieces shared by BreakdownsPanel and the
-// always-visible FavoritesDock: the hover tooltip, collapsible section
+// panel's ★ Favorites section: the hover tooltip, collapsible section
 // wrapper, and a single stat row with its favorite star.
 
 import { useState } from 'react'

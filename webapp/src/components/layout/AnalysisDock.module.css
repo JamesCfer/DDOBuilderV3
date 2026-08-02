@@ -1,12 +1,11 @@
-/* StanceBuffDock — sticky LEFT rail for stances and buffs.
-   Mirrors AnalysisDock on the right so the two rails frame the page. */
+/* AnalysisDock — sticky RIGHT rail. Mirrors StanceBuffDock on the left. */
 
 .dock {
   position: sticky;
   top: 12px;
   align-self: flex-start;
-  order: -1;                 /* first in .contentRow regardless of DOM order */
-  width: 290px;
+  order: 99;                 /* last in .contentRow regardless of DOM order */
+  width: 380px;
   flex-shrink: 0;
   max-height: calc(100vh - 24px);
   overflow-y: auto;
@@ -15,13 +14,18 @@
   border-radius: var(--radius-md);
 }
 
+/* Combat and Compare are real tables; squeezing them into a 380px rail makes
+   them unreadable, so the rail can take the space instead. */
+.dockWide {
+  width: 720px;
+}
+
 .dockHeader {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
   padding: 6px 8px;
   background: rgba(212, 152, 42, 0.08);
@@ -30,6 +34,7 @@
 }
 
 .dockTitle {
+  flex: 1;
   font-family: var(--font-heading);
   font-size: 10px;
   font-weight: 700;
@@ -38,7 +43,7 @@
   color: var(--color-gold);
 }
 
-.collapseBtn {
+.iconBtn {
   border: none;
   background: none;
   padding: 0 2px;
@@ -49,30 +54,62 @@
   transition: color 0.1s;
 }
 
-.collapseBtn:hover {
+.iconBtn:hover {
   color: var(--color-gold);
 }
 
-/* Stances first, buffs directly below. The hosted panels bring their own
-   .panel chrome; drop their outer border so the rail reads as one column
-   of sections rather than three floating cards. */
-.dockBody {
+.sections {
+  position: sticky;
+  top: 29px;
+  z-index: 1;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 5px 6px;
+  background: var(--color-bg-panel);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionBtn {
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.1s, background 0.1s, border-color 0.1s;
+}
+
+.sectionBtn:hover {
+  color: var(--color-gold);
+}
+
+.sectionBtnOn {
+  border-color: var(--color-gold-dark);
+  background: rgba(212, 152, 42, 0.12);
+  color: var(--color-gold);
+}
+
+.dockBody {
   padding: 8px;
 }
 
+/* Hosted panels bring their own .panel chrome; keep the corners tight and let
+   anything genuinely too wide scroll inside the rail rather than out of it. */
 .dockBody :global(.panel) {
   border-radius: var(--radius-sm);
 }
 
-/* Collapsed state — slim reopen tab that stays put on the left. */
+.dockBody :global(table) {
+  max-width: 100%;
+}
+
 .collapsedBtn {
   position: sticky;
   top: 12px;
   align-self: flex-start;
-  order: -1;
+  order: 99;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -90,14 +127,13 @@
   border-color: var(--color-gold-dark);
 }
 
-/* On narrow viewports the rail would crush the main content. Collapse it to
-   the reopen tab rather than hiding it outright — unlike favourites, these
-   are the only always-on route to a stance now that the tabs are gone. */
+/* Narrow viewports: the row wraps (App.module.css), so the rail goes
+   full-width below the page content rather than crushing it. */
 @media (max-width: 1100px) {
-  .dock {
+  .dock,
+  .dockWide {
     position: static;
     width: 100%;
     max-height: none;
-    order: -1;
   }
 }
