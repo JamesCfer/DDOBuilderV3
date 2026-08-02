@@ -205,8 +205,10 @@ export default function TopNav({
 
       {/* Row 2 — sub-tabs + character name + lives toggle */}
       <div className={styles.subRow}>
+        {/* A page with a single section has nothing to switch between —
+            showing one lone tab just adds a row of chrome. */}
         <nav className={styles.subTabs} aria-label="Page sections">
-          {subTabs.map(t => (
+          {(subTabs.length > 1 ? subTabs : []).map(t => (
             <button
               key={t}
               type="button"

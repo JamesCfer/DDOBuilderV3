@@ -22,7 +22,9 @@
 // user-submitted .DDOBuild files.
 
 import { describe, expect, it } from 'vitest'
-import { availableEnhancementTrees, buildFeatCountMap } from '../lib/treeAvailability'
+import {
+  availableEnhancementTrees, buildFeatCountMap, isUnlockGatedTree, treeUnlockFeats,
+} from '../lib/treeAvailability'
 import { emptyBuild } from '../types/ddo'
 import type { CharacterBuild, DDOClass, EnhancementTree, Race } from '../types/ddo'
 
@@ -109,24 +111,28 @@ describe('availableEnhancementTrees (V2 DetermineTrees parity)', () => {
     expect(names(avail)).toEqual(['Aasimar: Scourge of the Undead'])
   })
 
+  // The strict flag reproduces V2's DetermineTrees exactly; the default now
+  // assumes account unlocks (see the "favor-unlocked trees" block below).
+  const STRICT = { assumeUnlockFeats: false }
+
   it('universal tree unlocks via a Life-level special feat', () => {
     const build = makeBuild({ totalLevel: 10 })
-    const without = availableEnhancementTrees([harperTree], build, allClasses, undefined, [], [])
+    const without = availableEnhancementTrees([harperTree], build, allClasses, undefined, [], [], STRICT)
     expect(names(without)).not.toContain('Harper Agent')
     const withFeat = availableEnhancementTrees(
-      [harperTree], build, allClasses, undefined, [], ['Harper Agent Tree'])
+      [harperTree], build, allClasses, undefined, [], ['Harper Agent Tree'], STRICT)
     expect(names(withFeat)).toContain('Harper Agent')
   })
 
   it('Feat requirement with Value counts favor-feat acquisitions', () => {
     const twoFavor = makeBuild({ totalLevel: 10, favorFeats: ['The Harpers Favor Rewards', 'The Harpers Favor Rewards'] })
-    expect(names(availableEnhancementTrees([harperTree], twoFavor, allClasses, undefined, [], [])))
+    expect(names(availableEnhancementTrees([harperTree], twoFavor, allClasses, undefined, [], [], STRICT)))
       .not.toContain('Harper Agent')
     const threeFavor = makeBuild({
       totalLevel: 10,
       favorFeats: ['The Harpers Favor Rewards', 'The Harpers Favor Rewards', 'The Harpers Favor Rewards'],
     })
-    expect(names(availableEnhancementTrees([harperTree], threeFavor, allClasses, undefined, [], [])))
+    expect(names(availableEnhancementTrees([harperTree], threeFavor, allClasses, undefined, [], [], STRICT)))
       .toContain('Harper Agent')
   })
 
@@ -153,5 +159,57 @@ describe('buildFeatCountMap', () => {
     expect(counts['Monk']).toBe(3)
     expect(counts['Reward A']).toBe(2)
     expect(counts['Harper Agent Tree']).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Favor-unlocked trees are listed by default
+// ---------------------------------------------------------------------------
+//
+// Feydark Illusionist, Falconry, Harper Agent, Horizon Walker, Inquisitive and
+// Vistani Knife Fighter gate on an ACCOUNT unlock (a patron favor reward, or
+// the tree-access feat it grants) rather than on anything about the build.
+// V2 hides them until the build records that favor; a planner listing nothing
+// until the user does bookkeeping means they are never seen at all.
+
+describe('favor-unlocked trees', () => {
+  const harper = harperTree
+  const allClasses: DDOClass[] = []
+
+  it('reads the unlock feats out of a tree\'s requirements', () => {
+    expect(treeUnlockFeats(harper).sort())
+      .toEqual(['Harper Agent Tree', 'The Harpers Favor Rewards'])
+  })
+
+  it('lists the tree without the unlock, and flags it as assumed', () => {
+    const build = makeBuild({ totalLevel: 10 })
+    expect(names(availableEnhancementTrees([harper], build, allClasses, undefined, [], [])))
+      .toContain('Harper Agent')
+    expect(isUnlockGatedTree(harper, build, allClasses, undefined, [])).toBe(true)
+  })
+
+  it('stops flagging it once the build actually has the unlock', () => {
+    const build = makeBuild({ totalLevel: 10 })
+    expect(isUnlockGatedTree(harper, build, allClasses, undefined, ['Harper Agent Tree'])).toBe(false)
+  })
+
+  it('does not waive class or race gating — only the tree\'s own Feat requirements', () => {
+    // A class tree stays hidden: its requirement is about the build, not the
+    // account, and nothing in it is a Feat requirement to waive.
+    const classTree = {
+      Name: 'Kensei',
+      Requirements: { Requirement: [{ Type: 'Class', Item: ['Fighter'] }] },
+    } as unknown as EnhancementTree
+    const wizard = makeBuild({ totalLevel: 10, classes: [{ name: 'Wizard', levels: 10 }] as never })
+    expect(names(availableEnhancementTrees([classTree], wizard, allClasses, undefined, [])))
+      .toEqual([])
+    expect(treeUnlockFeats(classTree)).toEqual([])
+  })
+
+  it('strict mode still reproduces V2 exactly', () => {
+    const build = makeBuild({ totalLevel: 10 })
+    expect(names(availableEnhancementTrees(
+      [harper], build, allClasses, undefined, [], [], { assumeUnlockFeats: false })))
+      .toEqual([])
   })
 })

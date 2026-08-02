@@ -34,6 +34,47 @@ body {
   line-height: 1.5;
 }
 
+/* ---------------------------------------------------------------------------
+ * Scrollbars
+ * -------------------------------------------------------------------------
+ * The default OS scrollbar is a bright grey slab against a navy UI — it reads
+ * as a rendering artefact rather than part of the app, and it shows up on
+ * every panel that scrolls (the stance rail, breakdown lists, item pickers).
+ * Style it once, globally, for both the standards track (Firefox) and the
+ * WebKit pseudo-elements (Chrome/Safari/Edge).
+ * ------------------------------------------------------------------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-light) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+  border-radius: 6px;
+  /* Inset the thumb so it reads as a slim pill, not a full-width bar. */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-dark);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 button {
   font-family: inherit;
   font-size: inherit;

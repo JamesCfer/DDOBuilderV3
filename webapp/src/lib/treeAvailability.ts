@@ -57,9 +57,92 @@ export function buildFeatCountMap(
 }
 
 /**
- * The enhancement trees this build can see (V2 DetermineTrees parity):
- * requirement-engine evaluation of each tree's <Requirements>, minus
- * reaper/destiny trees, minus Legacy trees the build hasn't pinned.
+ * Every feat named by a `Feat` requirement anywhere in a tree's
+ * `<Requirements>` block.
+ *
+ * For enhancement trees these are, without exception, ACCOUNT UNLOCKS rather
+ * than build choices: the tree-access feat ("Feydark Illusionist Tree") or
+ * the patron favor reward that grants it ("Summer Court Favor Rewards" ≥ 3).
+ * No enhancement tree gates on a feat you pick in a feat slot — the
+ * destiny-claim feats that look like it (Fatesinger, Shadowdancer, …) belong
+ * to epic destiny trees, which `isEnhancementTree` already excludes.
+ */
+export function treeUnlockFeats(tree: EnhancementTree): string[] {
+  const found: string[] = []
+  const walk = (node: unknown): void => {
+    if (node == null || typeof node !== 'object') return
+    for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+      if (key === 'Requirement') {
+        for (const req of (Array.isArray(value) ? value : [value]) as Array<Record<string, unknown>>) {
+          if (req?.Type !== 'Feat') continue
+          const item = req.Item
+          for (const name of (Array.isArray(item) ? item : [item]) as string[]) {
+            if (typeof name === 'string' && name) found.push(name)
+          }
+        }
+      } else {
+        walk(value)
+      }
+    }
+  }
+  walk(tree.Requirements)
+  return [...new Set(found)]
+}
+
+/** True when the only thing standing between the build and this tree is an unlock feat. */
+export function isUnlockGatedTree(
+  tree: EnhancementTree,
+  build: CharacterBuild,
+  allClasses: DDOClass[],
+  race: Race | undefined,
+  specialFeats: string[] = [],
+): boolean {
+  if (!isEnhancementTree(tree)) return false
+  const featCounts = buildFeatCountMap(build, specialFeats)
+  const strict = meetsRequirements(tree.Requirements, {
+    build, allClasses, race, feats: new Set(Object.keys(featCounts)), featCounts,
+  })
+  if (strict) return false
+  return treeUnlockFeats(tree).length > 0
+    && meetsRequirements(tree.Requirements, withUnlocks(tree, featCounts, build, allClasses, race))
+}
+
+function withUnlocks(
+  tree: EnhancementTree,
+  featCounts: Record<string, number>,
+  build: CharacterBuild,
+  allClasses: DDOClass[],
+  race: Race | undefined,
+) {
+  const counts = { ...featCounts }
+  // A large count so `Value`-thresholded favor requirements ("… ≥ 3") pass too.
+  for (const name of treeUnlockFeats(tree)) counts[name] = Math.max(counts[name] ?? 0, 999)
+  return { build, allClasses, race, feats: new Set(Object.keys(counts)), featCounts: counts }
+}
+
+export interface TreeAvailabilityOptions {
+  /**
+   * Treat a tree's own unlock feats as already earned (default true).
+   *
+   * V2 hides Feydark Illusionist, Falconry, Harper Agent, Horizon Walker,
+   * Inquisitive and Vistani Knife Fighter until the build records the favor
+   * reward that grants them. A planner is not the game client: the person
+   * planning a build knows what their account has unlocked, and hiding six
+   * universal trees behind bookkeeping they have to do first means they never
+   * appear at all. So they are listed, and the picker labels them as favor
+   * unlocks. Class, race and level gating is untouched — only `Feat`
+   * requirements are waived, and only the tree's own.
+   *
+   * Pass false for strict V2 parity (oracle comparisons).
+   */
+  assumeUnlockFeats?: boolean
+}
+
+/**
+ * The enhancement trees this build can see: requirement-engine evaluation of
+ * each tree's <Requirements>, minus reaper/destiny trees, minus Legacy trees
+ * the build hasn't pinned — with account-unlock feats assumed unless the
+ * caller opts out (see TreeAvailabilityOptions).
  */
 export function availableEnhancementTrees(
   trees: EnhancementTree[],
@@ -68,11 +151,15 @@ export function availableEnhancementTrees(
   race: Race | undefined,
   pinned: string[],
   specialFeats: string[] = [],
+  options: TreeAvailabilityOptions = {},
 ): EnhancementTree[] {
+  const assumeUnlockFeats = options.assumeUnlockFeats !== false
   const featCounts = buildFeatCountMap(build, specialFeats)
   const feats = new Set(Object.keys(featCounts))
-  return trees.filter(tree =>
-    isEnhancementTree(tree) &&
-    isLegacyTreeVisible(tree, pinned) &&
-    meetsRequirements(tree.Requirements, { build, allClasses, race, feats, featCounts }))
+  return trees.filter(tree => {
+    if (!isEnhancementTree(tree) || !isLegacyTreeVisible(tree, pinned)) return false
+    if (meetsRequirements(tree.Requirements, { build, allClasses, race, feats, featCounts })) return true
+    if (!assumeUnlockFeats || treeUnlockFeats(tree).length === 0) return false
+    return meetsRequirements(tree.Requirements, withUnlocks(tree, featCounts, build, allClasses, race))
+  })
 }

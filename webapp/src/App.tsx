@@ -21,17 +21,12 @@ import EpicDestiniesPanel from './components/epicdestinies/EpicDestiniesPanel'
 import ReaperPanel from './components/reaper/ReaperPanel'
 import GearPanel from './components/items/GearPanel'
 import ClickiesPanel from './components/items/ClickiesPanel'
-import BreakdownsPanel from './components/breakdowns/BreakdownsPanel'
-import FavoritesDock from './components/breakdowns/FavoritesDock'
 import StanceBuffDock from './components/layout/StanceBuffDock'
-import CombatPanel from './components/combat/CombatPanel'
-import BuildCompare from './components/layout/BuildCompare'
+import AnalysisDock from './components/layout/AnalysisDock'
 import PastLivesPanel from './components/pastlives/PastLivesPanel'
 import SetBonusesPanel from './components/setbonuses/SetBonusesPanel'
 import FiligreePanel from './components/filigree/FiligreePanel'
-import DCPanel from './components/dc/DCPanel'
 import TomesPanel from './components/builder/TomesPanel'
-import BonusesPanel from './components/bonuses/BonusesPanel'
 import FavorPanel from './components/favor/FavorPanel'
 import NotesPanel from './components/notes/NotesPanel'
 import ForumExportPanel from './components/export/ForumExportPanel'
@@ -56,26 +51,28 @@ import styles from './App.module.css'
 // (HeroForge-style consolidation of the old 30-item sidebar).
 // ---------------------------------------------------------------------------
 
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Analysis' | 'Community' | 'Custom'
+// Analysis is not a page: it is the right-hand rail (AnalysisDock), visible
+// on every page, because every choice made here is only interesting for what
+// it does to those numbers.
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Community' | 'Custom'
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Analysis', 'Community', 'Custom']
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Community', 'Custom']
 
 const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
   Progression: ['Enhancements', 'Epic Destinies', 'Reaper', 'Past Lives', 'Favor'],
-  Equipment:   ['Gear', 'Filigrees', 'Set Bonuses', 'Clickies'],
-  // Stances and Buffs are not tabs: they are always on the left rail
-  // (StanceBuffDock), so they can be toggled while reading any page.
-  Analysis:    ['Breakdowns', 'Combat', 'DCs', 'Bonuses', 'Compare'],
+  // Equipment is one page: gear, filigrees, set bonuses and clickies are all
+  // the same decision ("what am I wearing"), and set bonuses in particular
+  // only make sense next to the gear that grants them.
+  Equipment:   ['Gear'],
   Community:   ['Browse', 'My Builds'],
   Custom:      ['Windows', 'Optimizer', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
 }
 
 /** Tabs whose content wants the full viewport width (trees, tables). */
 const WIDE_TABS = new Set([
-  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Combat',
-  'Breakdowns', 'Compare', 'Windows', 'Level Plan', 'Filigrees',
-  'Optimizer',
+  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows',
+  'Level Plan', 'Optimizer',
 ])
 
 export default function App() {
@@ -179,17 +176,15 @@ function AppInner() {
       case 'Progression/Favor':          return <FavorPanel />
 
       // ── Equipment ────────────────────────────────────────────────────────
-      case 'Equipment/Gear':        return <GearPanel />
-      case 'Equipment/Filigrees':   return <FiligreePanel />
-      case 'Equipment/Set Bonuses': return <SetBonusesPanel />
-      case 'Equipment/Clickies':    return <ClickiesPanel />
-
-      // ── Analysis ─────────────────────────────────────────────────────────
-      case 'Analysis/Breakdowns':   return <BreakdownsPanel />
-      case 'Analysis/Combat':       return <CombatPanel />
-      case 'Analysis/DCs':          return <DCPanel />
-      case 'Analysis/Bonuses':      return <BonusesPanel />
-      case 'Analysis/Compare':      return <BuildCompare />
+      case 'Equipment/Gear':
+        return (
+          <div className={styles.stack}>
+            <GearPanel />
+            <FiligreePanel />
+            <SetBonusesPanel />
+            <ClickiesPanel />
+          </div>
+        )
 
       // ── Community ────────────────────────────────────────────────────────
       case 'Community/Browse':      return <CommunityPanel onLoad={handleLoad} />
@@ -229,7 +224,7 @@ function AppInner() {
           <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
             {renderTab()}
           </div>
-          <FavoritesDock />
+          <AnalysisDock />
         </div>
       </Layout>
     </>

@@ -106,16 +106,32 @@ describe('StanceBuffDock', () => {
   })
 })
 
-describe('Analysis tabs', () => {
-  it('no longer lists Stances or Buffs — the rail owns them now', async () => {
-    // Guards against the rail and a duplicate tab both existing: two places
-    // to toggle the same stance is exactly the confusion this change removes.
+describe('page model', () => {
+  // Guards against a rail and a duplicate tab both existing: two places to
+  // toggle the same stance, or to read the same breakdown, is exactly the
+  // confusion the rails remove.
+  const appSource = async () => {
     const { readFileSync } = await import('fs')
     const { join } = await import('path')
-    const src = readFileSync(join(__dirname, '..', 'App.tsx'), 'utf-8')
-    const analysis = src.match(/Analysis:\s*\[(.*?)\]/s)?.[1] ?? ''
-    expect(analysis).not.toContain("'Stances'")
-    expect(analysis).not.toContain("'Buffs'")
-    expect(analysis).toContain("'Breakdowns'")
+    return readFileSync(join(__dirname, '..', 'App.tsx'), 'utf-8')
+  }
+
+  it('has no Stances or Buffs tab — the left rail owns them', async () => {
+    const src = await appSource()
+    expect(src).not.toMatch(/case 'Analysis\/Stances'/)
+    expect(src).not.toMatch(/case '\w+\/Buffs'/)
+  })
+
+  it('has no Analysis page at all — the right rail owns it', async () => {
+    const src = await appSource()
+    const pages = src.match(/const PAGES: Page\[\] = \[(.*?)\]/s)?.[1] ?? ''
+    expect(pages).not.toContain("'Analysis'")
+    expect(pages).toContain("'Character'")
+  })
+
+  it('keeps equipment on a single page', async () => {
+    const src = await appSource()
+    const equipment = src.match(/Equipment:\s*\[(.*?)\]/s)?.[1] ?? ''
+    expect(equipment.split(',').filter(x => x.trim()).length).toBe(1)
   })
 })

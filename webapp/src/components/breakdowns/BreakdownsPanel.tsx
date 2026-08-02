@@ -10,7 +10,7 @@ import { buildBreakdownSections, indexSectionRows } from './breakdownSections'
 import { Tooltip, Section, StatRow, sign, type TipState, type StatRowData } from './statRows'
 import styles from './BreakdownsPanel.module.css'
 
-// Row construction lives in ./breakdownSections (shared with FavoritesDock);
+// Row construction lives in ./breakdownSections;
 // the presentational pieces (Tooltip / Section / StatRow) in ./statRows.
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ export default function BreakdownsPanel() {
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Favorite (starred) stat rows, pinned in a section at the top and mirrored
-  // in the app-wide FavoritesDock. Keys are "Section/Label"; shared store,
+  // in this panel's own ★ Favorites section. Keys are "Section/Label"; shared store,
   // persisted per-browser (not per-build) in localStorage.
   const [favorites, toggleFavorite] = useFavorites()
 

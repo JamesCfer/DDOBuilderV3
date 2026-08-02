@@ -4,7 +4,7 @@ import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { findActiveLife } from '../../lib/multiLife'
 import { enhancementAPBudget } from '../../lib/actionPoints'
-import { availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible } from '../../lib/treeAvailability'
+import { availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible, isUnlockGatedTree } from '../../lib/treeAvailability'
 import type { DDOClass, EnhancementTree, EnhancementTreeItem, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
@@ -66,11 +66,13 @@ export { isEnhancementTree, isLegacyTreeVisible }
 interface TreePickerProps {
   allTrees: EnhancementTree[]
   selected: string[]
+  /** Trees listed on the assumption that their account unlock is earned. */
+  unlockGated: Set<string>
   onToggle: (name: string) => void
   onClose: () => void
 }
 
-function TreePicker({ allTrees, selected, onToggle, onClose }: TreePickerProps) {
+function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: TreePickerProps) {
   const racial: EnhancementTree[] = []
   const classTrees: EnhancementTree[] = []
   const universal: EnhancementTree[] = []
@@ -92,10 +94,11 @@ function TreePicker({ allTrees, selected, onToggle, onClose }: TreePickerProps) 
         <div className={styles.pickerSectionLabel}>{label}</div>
         <div className={styles.pickerTreeGrid}>
           {trees.map(tree => {
-            // Every tree offered here already passed the V2 requirement-engine
+            // Every tree offered here already passed the requirement-engine
             // availability filter (availableEnhancementTrees) — no per-tree
             // name heuristics needed.
             const on = selected.includes(tree.Name)
+            const needsUnlock = unlockGated.has(tree.Name)
             const full = !on && selected.length >= MAX_VISIBLE
             return (
               <button
@@ -107,10 +110,15 @@ function TreePicker({ allTrees, selected, onToggle, onClose }: TreePickerProps) 
                 ].join(' ')}
                 disabled={full && !on}
                 onClick={() => onToggle(tree.Name)}
-                title={tree.Name}
+                title={needsUnlock
+                  ? `${tree.Name} — unlocked in game by favor or the tree-access feat`
+                  : tree.Name}
               >
                 <DdoIcon category="EnhancementImages" name={tree.Icon ?? tree.Name} size={32} />
-                <span className={styles.pickerTreeName}>{tree.Name}</span>
+                <span className={styles.pickerTreeText}>
+                  <span className={styles.pickerTreeName}>{tree.Name}</span>
+                  {needsUnlock && <span className={styles.pickerUnlock}>favor unlock</span>}
+                </span>
               </button>
             )
           })}
@@ -130,6 +138,11 @@ function TreePicker({ allTrees, selected, onToggle, onClose }: TreePickerProps) 
           <Section label="Racial" trees={racial} />
           <Section label="Class" trees={classTrees} />
           <Section label="Universal" trees={universal} />
+          <p className={styles.pickerNote}>
+            Trees marked <em>favor unlock</em> are listed for planning; in game
+            they need the patron favor (or the tree-access feat) that grants
+            them.
+          </p>
         </div>
       </div>
     </div>
@@ -188,6 +201,14 @@ export default function EnhancementTreePanel() {
   const availableTrees = useMemo<EnhancementTree[]>(
     () => availableEnhancementTrees(enhTrees, build, allClasses, currentRace, pinned, specialFeats),
     [enhTrees, build, allClasses, currentRace, pinned, specialFeats])
+
+  // Of those, the ones listed only because their account unlock is assumed —
+  // labelled in the picker so the plan is honest about what it presumes.
+  const unlockGatedTrees = useMemo(
+    () => new Set(availableTrees
+      .filter(t => isUnlockGatedTree(t, build, allClasses, currentRace, specialFeats))
+      .map(t => t.Name)),
+    [availableTrees, build, allClasses, currentRace, specialFeats])
 
   // Auto-pin racial tree when build changes.
   useEffect(() => {
@@ -349,6 +370,7 @@ export default function EnhancementTreePanel() {
         <TreePicker
           allTrees={availableTrees}
           selected={pinned}
+          unlockGated={unlockGatedTrees}
           onToggle={toggleTree}
           onClose={() => setPickerOpen(false)}
         />

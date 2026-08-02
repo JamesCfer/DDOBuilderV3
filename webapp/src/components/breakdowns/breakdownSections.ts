@@ -1,5 +1,5 @@
 // breakdownSections — pure builder for every starrable stat-row section in
-// the Breakdowns panel. Extracted from BreakdownsPanel so the FavoritesDock
+// the Breakdowns panel. Extracted from BreakdownsPanel so other hosts
 // (visible on every page) computes exactly the same rows the panel shows,
 // keyed identically ("Section/Label") for the shared favorites list.
 
