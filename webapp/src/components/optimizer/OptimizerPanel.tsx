@@ -23,7 +23,7 @@ import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import { useFavorites } from '../../lib/favoritesStore'
 import {
-  OPTIMIZER_STATS, statForFavoriteKey,
+  OPTIMIZER_STATS, optimizerStatsFromSections, statForFavoriteKey,
   type ObjectiveMode, type ObjectiveSpec, type ObjectiveStat,
 } from '../../lib/optimizer/objective'
 import type { OptimizeProgress } from '../../lib/optimizer/engine'
@@ -36,6 +36,7 @@ import {
 } from '../../lib/optimizer/gearCandidates'
 import type { CandidatePools } from '../../lib/optimizer/candidatePools'
 import { itemSlotKey } from '../../lib/gearSlots'
+import { buildBreakdownSections } from '../breakdowns/breakdownSections'
 import { api } from '../../api'
 import type { CharacterBuild, Item } from '../../types/ddo'
 import styles from './OptimizerPanel.module.css'
@@ -58,7 +59,10 @@ function loadStoredObjective(): StoredObjective {
       if (parsed && Array.isArray(parsed.stats)) {
         return {
           mode: parsed.mode === 'weighted' ? 'weighted' : 'priority',
-          stats: parsed.stats.filter(s => OPTIMIZER_STATS.some(o => o.key === s.key)),
+          // Stored objectives keep their key even if the row is not currently
+          // in the breakdowns (a class-specific caster stat, say) — dropping
+          // them here silently reset the user's saved objective.
+          stats: parsed.stats.filter(s => typeof s.key === 'string' && s.key),
         }
       }
     }
@@ -72,8 +76,6 @@ function loadStoredObjective(): StoredObjective {
 function storeObjective(o: StoredObjective): void {
   try { localStorage.setItem(OBJECTIVE_STORAGE_KEY, JSON.stringify(o)) } catch { /* ignore */ }
 }
-
-const STAT_GROUPS = [...new Set(OPTIMIZER_STATS.map(s => s.group))]
 
 // Slots the gear domain may fill. Cosmetic slots are excluded — they carry no
 // stats, so equipping one could never improve an objective.
@@ -233,6 +235,16 @@ export default function OptimizerPanel() {
   )
   const currentStats = useBuildStats(statsInput)
 
+  // Objectives come from the Analysis breakdowns themselves, so anything you
+  // can read there is something you can optimize for — the curated list alone
+  // covered barely a quarter of the rows.
+  const allStats = useMemo(
+    () => optimizerStatsFromSections(
+      buildBreakdownSections(currentStats, build, bundle.allClasses)),
+    [currentStats, build, bundle.allClasses],
+  )
+  const statGroups = useMemo(() => [...new Set(allStats.map(s => s.group))], [allStats])
+
   const initial = useMemo(loadStoredObjective, [])
   const [mode, setMode] = useState<ObjectiveMode>(initial.mode)
   const [rows, setRows] = useState<ObjectiveStat[]>(initial.stats)
@@ -271,7 +283,7 @@ export default function OptimizerPanel() {
   }
 
   function addStat(key: string) {
-    const def = OPTIMIZER_STATS.find(s => s.key === key)
+    const def = allStats.find(s => s.key === key)
     if (!def || rows.some(r => r.key === key)) return
     updateRows([...rows, { key: def.key, label: def.label, weight: 1 }])
   }
@@ -384,16 +396,16 @@ export default function OptimizerPanel() {
                 <select
                   value={row.key}
                   onChange={e => {
-                    const def = OPTIMIZER_STATS.find(s => s.key === e.target.value)
+                    const def = allStats.find(s => s.key === e.target.value)
                     if (!def || rows.some((r, i) => i !== idx && r.key === def.key)) return
                     const next = [...rows]
                     next[idx] = { ...next[idx], key: def.key, label: def.label }
                     updateRows(next)
                   }}
                 >
-                  {STAT_GROUPS.map(g => (
+                  {statGroups.map(g => (
                     <optgroup key={g} label={g}>
-                      {OPTIMIZER_STATS.filter(s => s.group === g).map(s => (
+                      {allStats.filter(s => s.group === g).map(s => (
                         <option key={s.key} value={s.key}>{s.label}</option>
                       ))}
                     </optgroup>
@@ -428,9 +440,9 @@ export default function OptimizerPanel() {
           <div className={styles.addRow}>
             <select value="" onChange={e => { if (e.target.value) addStat(e.target.value) }}>
               <option value="">+ Add stat…</option>
-              {STAT_GROUPS.map(g => (
+              {statGroups.map(g => (
                 <optgroup key={g} label={g}>
-                  {OPTIMIZER_STATS.filter(s => s.group === g && !rows.some(r => r.key === s.key)).map(s => (
+                  {allStats.filter(s => s.group === g && !rows.some(r => r.key === s.key)).map(s => (
                     <option key={s.key} value={s.key}>{s.label}</option>
                   ))}
                 </optgroup>

@@ -39,7 +39,7 @@ export function buildBreakdownSections(
     const resolved = stats.resolve(key)
     const total = resolved.total
     return {
-      label, total,
+      label, statKey: key, total,
       display: fmt ? fmt(total) : sign(total),
       bonuses: resolved.bonuses,
       indent,

@@ -13,6 +13,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { useBuildLog } from '../../context/BuildLogContext'
 import { takeLastImportWarnings, usePersistence } from '../../hooks/usePersistence'
 import { emptyDocument, findActiveBuild, syncBuildIntoDocument } from '../../lib/multiLife'
+import { clearSession, saveSession } from '../../lib/sessionStore'
 import type { CharacterDocument } from '../../types/ddo'
 
 interface AppShortcutsProps {
@@ -51,6 +52,7 @@ export default function AppShortcuts({ onLoad }: AppShortcutsProps) {
         e.preventDefault()
         if (window.confirm('Start a new character? Unsaved changes will be lost.')) {
           const fresh = emptyDocument()
+          clearSession()
           setDoc(fresh)
           const b = findActiveBuild(fresh)
           if (b) dispatch({ type: 'LOAD_BUILD', build: b })
@@ -84,14 +86,26 @@ export default function AppShortcuts({ onLoad }: AppShortcutsProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Auto-save: persist the (synced) document whenever the build changes,
-  // debounced. Off by default like V2 (explicit Save / backup model).
+  // Auto-save: persist the (synced) document to the SAVES list whenever the
+  // build changes, debounced. Off by default like V2 (explicit Save / backup
+  // model).
   useEffect(() => {
     if (!settings.autoSave) return
     const t = setTimeout(save, 1500)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [build, settings.autoSave])
+
+  // Session restore: snapshot the working document on every edit, regardless
+  // of the auto-save setting. This is not the saves list — it is the single
+  // "what I had open" record the app reloads into on next visit, so a refresh
+  // never costs unsaved work.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      saveSession(syncBuildIntoDocument(state.current.doc, state.current.build))
+    }, 800)
+    return () => clearTimeout(t)
+  }, [build, doc])
 
   return (
     <input
