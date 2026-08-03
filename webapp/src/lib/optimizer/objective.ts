@@ -118,6 +118,30 @@ export const OPTIMIZER_STATS: OptimizerStatDef[] = [
 ]
 
 /**
+ * Every stat the Analysis breakdowns expose, as optimizer objectives.
+ *
+ * The curated OPTIMIZER_STATS list above is the fallback (and fixes the group
+ * names people expect for the common ones); this adds every other keyed row
+ * the Breakdowns panel shows, so anything you can read in Analysis is
+ * something you can optimize for. Rows without a single stat key behind them
+ * — a base save plus its sub-save, fixed display values — are skipped: there
+ * is nothing for the search to move.
+ */
+export function optimizerStatsFromSections(
+  sections: Array<{ title: string; rows: Array<{ label: string; statKey?: string }> }>,
+): OptimizerStatDef[] {
+  const byKey = new Map<string, OptimizerStatDef>()
+  for (const stat of OPTIMIZER_STATS) byKey.set(stat.key, stat)
+  for (const section of sections) {
+    for (const row of section.rows) {
+      if (!row.statKey || byKey.has(row.statKey)) continue
+      byKey.set(row.statKey, { key: row.statKey, label: row.label, group: section.title })
+    }
+  }
+  return [...byKey.values()]
+}
+
+/**
  * Map a favorites-list key ("Section/Label", as stored by favoritesStore) to
  * a registry stat by label. The row label alone is ambiguous across sections
  * ("Damage Bonus" exists under both Melee and Ranged), so "Section Label" is

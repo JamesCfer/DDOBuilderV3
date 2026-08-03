@@ -195,13 +195,17 @@
   z-index: 9999;
   min-width: 200px;
   max-width: 340px;
+
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-dropdown);
   padding: 0;
   pointer-events: none;
-  overflow: hidden;
+  /* A long bonus list scrolls inside the box rather than running off the
+     bottom of the screen; the height cap is set at measure time. */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .tipTitle {

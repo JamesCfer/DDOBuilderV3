@@ -23,6 +23,7 @@ import GearPanel from './components/items/GearPanel'
 import ClickiesPanel from './components/items/ClickiesPanel'
 import StanceBuffDock from './components/layout/StanceBuffDock'
 import AnalysisDock from './components/layout/AnalysisDock'
+import PluginsPanel from './components/plugins/PluginsPanel'
 import PastLivesPanel from './components/pastlives/PastLivesPanel'
 import SetBonusesPanel from './components/setbonuses/SetBonusesPanel'
 import FiligreePanel from './components/filigree/FiligreePanel'
@@ -55,9 +56,9 @@ import styles from './App.module.css'
 // Analysis is not a page: it is the right-hand rail (AnalysisDock), visible
 // on every page, because every choice made here is only interesting for what
 // it does to those numbers.
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Community' | 'Custom'
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Community' | 'Plugins' | 'Custom'
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Community', 'Custom']
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Community', 'Plugins', 'Custom']
 
 const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
@@ -67,6 +68,9 @@ const PAGE_TABS: Record<Page, string[]> = {
   // only make sense next to the gear that grants them.
   Equipment:   ['Gear'],
   Community:   ['Browse', 'My Builds'],
+  // Our in-game dungeon-help plugins — a destination of its own so people can
+  // actually find them.
+  Plugins:     ['Dungeon Help'],
   Custom:      ['Windows', 'Optimizer', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
 }
 
@@ -199,6 +203,9 @@ function AppInner() {
             <ClickiesPanel />
           </div>
         )
+
+      // ── Plugins ──────────────────────────────────────────────────────────
+      case 'Plugins/Dungeon Help': return <PluginsPanel />
 
       // ── Community ────────────────────────────────────────────────────────
       case 'Community/Browse':      return <CommunityPanel onLoad={handleLoad} />
