@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 145 | **D7 — item-level `RestrictedSlots` slot exclusion** — an equipped item can force other inventory slots empty while it's worn (V2 `Item.h:73`/`Build::SetGear`/`EquippedGear::IsSlotRestricted`) — e.g. Shining Crescents clears the off hand, Platinum Knuckles clear Gloves. V3 had no such enforcement; the restricted slot's item (and its augments/set bonuses) kept contributing. Added `Item.RestrictedSlots`, wired into `buildStats.ts` through the existing `gearSlotsRemovedByV2` mechanism (same pattern as the D3 Minor Artifact / off-hand two-handed-weapon rules). 4 regression tests in `parityPassD7RestrictedSlots.test.ts`. | this PR |
 | 144 | **Optimizer targets every Analysis stat; tooltips stay on screen; Plugins tab** — (a) the optimizer's objective picker offered a hand-written list of 41 stats while Analysis showed far more. Breakdown rows now carry the engine key behind them (`StatRowData.statKey`) and `optimizerStatsFromSections` turns the live sections into objectives, so anything readable in Analysis is targetable — 99 options against the previous 41, and the two cannot drift apart. Composite rows (a base save plus its sub-save, fixed display values) have no single key and are correctly skipped. (b) The breakdown hover tooltip was pinned at cursor + 14px with no regard for the viewport, so every row in the right-hand Analysis rail opened its tooltip off the right edge. It now measures itself, flips side when the preferred one does not fit, slides up off the bottom edge, and caps its height so a long bonus list scrolls inside the box. (c) New top-level **Plugins** page for the dungeon-help plugins, rendering from a data catalogue (`pluginCatalogue.ts`) so adding one is a single entry — shipped empty, since inventing plugin names and download links would be worse than an honest empty state. | this PR |
 | 143 | **Session restore, and Custom › Windows layout stops resurrecting closed windows** — (a) the working document is now snapshotted to `localStorage` on every edit (`lib/sessionStore`, debounced, independent of the auto-save setting) and restored on startup, so a refresh no longer drops you onto a fresh level-1 character. It is deliberately separate from the saves list: this is the one "what I had open" record, saved or not. localStorage rather than a cookie — a document with gear is tens of kilobytes, well past the ~4 KB cookie cap, and cookies would ride along on every request. (b) The dashboard rebuilt its window list from the `wins` array captured by the render that created each handler; a `ResizeObserver` callback belonging to a closed window then wrote that stale array back, resurrecting the window and discarding everything since — and three quick closes in a row would undo each other. Every mutation is a functional update now, and a patch for a window that no longer exists is dropped. Also: an empty stored layout is honoured instead of falling through to the six defaults (closing every window used to bring them all back on reload), and layouts are keyed per signed-in account, a fresh account inheriting the signed-out arrangement once as its starting point. | this PR |
 | 142 | **V2 import silently revoked every enhancement, destiny and reaper point** — `importFile` is memoised, and its dependency array was empty, so it captured the FIRST render's `allTrees` — the still-loading, empty catalogue — for the lifetime of the component. V2's tree-version gate counts a missing tree as version 0, so with an empty catalogue every tree in every imported file looked missing, every spend version-mismatched, and all three spend pools were revoked. The build arrived with its gear, feats and levels intact and not one point spent anywhere (a 34-life Warlock imported as 0/75 destiny points). Three fixes: `v2Import` refuses to gate on an empty catalogue at all (with no data to judge against, keeping a stale spend is recoverable and wiping a build is not); `importFile` lists `allTrees` as a dependency and awaits `preloadStaticBundle()` when the hook's copy is still empty; and the importer's warnings — which the V2 path had been discarding — now reach the build log, so a genuine revocation is visible instead of silent. Verified against 24 user-supplied V2 saves. | this PR |
@@ -901,12 +902,19 @@ occurrences confirmed), so no change is needed there.
   `webapp/src/lib` (only referenced in `v1Import.ts`'s name-migration
   tables) — a build with 2+ Green Steel items never gets these auto-
   stances or their downstream effects in V3.
-- ❌ **D7 — `RestrictedSlots` item-level slot exclusion not modeled
-  (minor, 3 items in current catalogue, e.g. "Shining Crescents").** V2
-  `Item.h:73` + `Build.cpp:4674-4692` + `EquippedGear.cpp:308-309`: an item
-  can declare arbitrary *other* inventory slots that must be cleared when
-  it's equipped (distinct from the already-ported two-handed/off-hand
-  check). Absent from V3's `Item` interface entirely.
+- ✅ **D7 — `RestrictedSlots` item-level slot exclusion** — done (#145,
+  this pass). V2 `Item.h:73` + `Build::SetGear` (`Build.cpp:4674-4692`) +
+  `EquippedGear::IsSlotRestricted` (`EquippedGear.cpp:308-309`): an
+  equipped item can declare arbitrary *other* inventory slots that must be
+  cleared while it's worn (distinct from the already-ported two-handed/
+  off-hand check) — e.g. "Shining Crescents" (Weapon1) restricts Weapon2,
+  "Platinum Knuckles"/"Legendary Platinum Knuckles" (Weapon1) restrict
+  Gloves. Added `Item.RestrictedSlots?: Record<string, boolean>` (same
+  shape/parsing as the existing `EquipmentSlot` field); `buildStats.ts`
+  now scans `gearItems` for it and clears every restricted display slot
+  (via `gearSlots.ts`'s `displaySlotsForItemKey`) through the existing
+  `gearSlotsRemovedByV2` mechanism, so a cleared slot's augments/set-bonus
+  contributions die with it too — same pattern as D3/D4.
 
 Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
 Crafting-style systems don't exist in V2's data model (no crafting XML

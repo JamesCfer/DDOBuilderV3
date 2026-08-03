@@ -35,6 +35,7 @@ import {
 } from './v2Formulas'
 import { getLevelClasses, tomeCapAtLevel } from './levelProgression'
 import { buildFeatCountMap } from './treeAvailability'
+import { displaySlotsForItemKey } from './gearSlots'
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -1333,6 +1334,26 @@ function buildStatMapOnce(
       for (const slot of minorArtifactSlots.slice(1)) {
         delete gearItems[slot]
         gearSlotsRemovedByV2.add(slot)
+      }
+    }
+    // ── V2 item-level RestrictedSlots (Item.h:73, Build::SetGear Build.cpp:4674-4692) ─
+    // An equipped item can declare arbitrary OTHER inventory slots that must be
+    // cleared while it is worn (distinct from the off-hand two-handed-weapon
+    // rule above) — e.g. Shining Crescents restricts the off hand, Platinum
+    // Knuckles restrict Gloves. V2 clears those slots (augments included) the
+    // instant the restricting item is equipped.
+    {
+      for (const item of Object.values(gearItems)) {
+        const restricted = item?.RestrictedSlots
+        if (!restricted) continue
+        for (const itemKey of Object.keys(restricted)) {
+          for (const slot of displaySlotsForItemKey(itemKey)) {
+            if (gearItems[slot]) {
+              delete gearItems[slot]
+              gearSlotsRemovedByV2.add(slot)
+            }
+          }
+        }
       }
     }
 
