@@ -255,6 +255,10 @@ export interface Item {
   /** V2 `Item.h:100` presence-only flag — parses as `""`; check with `'MinorArtifact' in item`.
    *  At most one Minor Artifact may be equipped at a time (`EquippedGear::SetItem`). */
   MinorArtifact?: string
+  /** V2 `Item.h:73` — other inventory slots this item forces empty while equipped
+   *  (`Build::SetGear`/`EquippedGear::IsSlotRestricted`), e.g. Shining Crescents
+   *  restricting the off hand. Same shape/parsing as `EquipmentSlot`. */
+  RestrictedSlots?: Record<string, boolean>
   // Weapon-specific
   Weapon?: string
   AttackModifier?: string | string[]
