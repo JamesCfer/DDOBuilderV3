@@ -124,13 +124,15 @@ describe('Parity pass 5 — forum export sections (V2 ForumExportDlg parity)', (
     } as unknown as BuildStats
   }
 
-  it('emits a SpecialFeats section when the build has special feats', () => {
-    const build = {
-      ...baseBuild,
-      // legacy build-level field still recognised for compat
-      ...({ specialFeats: ['Iconic: Bonus Feat', 'Past Life: Wizard'] } as object),
-    }
-    const out = emitForumExport({ build, allClasses: [], allRaces: [], stats: fakeStats({}) }, DEFAULT_SECTIONS)
+  it('emits a SpecialFeats section when the active Life has special feats', () => {
+    // V2 parity pass X10: Life-level special feats (V2 Life::AllSpecialFeats(),
+    // past lives aside) are resolved by the caller and passed via
+    // SectionContext.specialFeats — CharacterBuild itself has no such field.
+    const build = { ...baseBuild }
+    const out = emitForumExport({
+      build, allClasses: [], allRaces: [], stats: fakeStats({}),
+      specialFeats: ['Iconic: Bonus Feat', 'Past Life: Wizard'],
+    }, DEFAULT_SECTIONS)
     expect(out).toContain('Special Feats')
     expect(out).toContain('Past Life: Wizard')
   })

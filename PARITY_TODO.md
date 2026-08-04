@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 146 | **X10 — forum-export "Special Feats"/"Favor Feats" section was dead code** — it read a `specialFeats` field that only exists on `Life`, cast off `CharacterBuild` (always `undefined`), so it emitted nothing for every real build; `build.favorFeats` was never read either. `SectionContext` gains a `specialFeats?: string[]` field resolved by the caller from the active `Life` (mirrors `useBuildStats`'s existing pattern); `ForumExportPanel.tsx` wires it via `useDocument()`/`findActiveLife`. Section now emits "Special Feats" (from `ctx.specialFeats`) and "Favor Feats" (from `build.favorFeats`) as two headed blocks with V2's `Name(N)` duplicate-count suffix. 4 regression tests in `parityPassX10SpecialFeats.test.ts`. | this PR |
 | 145 | **D7 — item-level `RestrictedSlots` slot exclusion** — an equipped item can force other inventory slots empty while it's worn (V2 `Item.h:73`/`Build::SetGear`/`EquippedGear::IsSlotRestricted`) — e.g. Shining Crescents clears the off hand, Platinum Knuckles clear Gloves. V3 had no such enforcement; the restricted slot's item (and its augments/set bonuses) kept contributing. Added `Item.RestrictedSlots`, wired into `buildStats.ts` through the existing `gearSlotsRemovedByV2` mechanism (same pattern as the D3 Minor Artifact / off-hand two-handed-weapon rules). 4 regression tests in `parityPassD7RestrictedSlots.test.ts`. | this PR |
 | 144 | **Optimizer targets every Analysis stat; tooltips stay on screen; Plugins tab** — (a) the optimizer's objective picker offered a hand-written list of 41 stats while Analysis showed far more. Breakdown rows now carry the engine key behind them (`StatRowData.statKey`) and `optimizerStatsFromSections` turns the live sections into objectives, so anything readable in Analysis is targetable — 99 options against the previous 41, and the two cannot drift apart. Composite rows (a base save plus its sub-save, fixed display values) have no single key and are correctly skipped. (b) The breakdown hover tooltip was pinned at cursor + 14px with no regard for the viewport, so every row in the right-hand Analysis rail opened its tooltip off the right edge. It now measures itself, flips side when the preferred one does not fit, slides up off the bottom edge, and caps its height so a long bonus list scrolls inside the box. (c) New top-level **Plugins** page for the dungeon-help plugins, rendering from a data catalogue (`pluginCatalogue.ts`) so adding one is a single entry — shipped empty, since inventing plugin names and download links would be worse than an honest empty state. | this PR |
 | 143 | **Session restore, and Custom › Windows layout stops resurrecting closed windows** — (a) the working document is now snapshotted to `localStorage` on every edit (`lib/sessionStore`, debounced, independent of the auto-save setting) and restored on startup, so a refresh no longer drops you onto a fresh level-1 character. It is deliberately separate from the saves list: this is the one "what I had open" record, saved or not. localStorage rather than a cookie — a document with gear is tens of kilobytes, well past the ~4 KB cookie cap, and cookies would ride along on every request. (b) The dashboard rebuilt its window list from the `wins` array captured by the render that created each handler; a `ResizeObserver` callback belonging to a closed window then wrote that stale array back, resurrecting the window and discarding everything since — and three quick closes in a row would undo each other. Every mutation is a functional update now, and a patch for a window that no longer exists is dropped. Also: an empty stored layout is honoured instead of falling through to the six defaults (closing every window used to bring them all back on reload), and layouts are keyed per signed-in account, a fresh account inheriting the signed-out arrangement once as its starting point. | this PR |
@@ -949,16 +950,30 @@ Fifth review pass diffed every `Add*` method in `DDOBuilder/ForumExportDlg.cpp`
 against `webapp/src/lib/export/sections.ts`. X1–X9 (see Done table) are
 already closed; these are new, some content gaps (not just formatting):
 
-- ❌ **X10 — `specialFeats` forum-export section is dead code.** V2
-  `AddSpecialFeats` (`ForumExportDlg.cpp:435-473`) filters
-  `Build::SpecialFeats()` by `Type=="Special"`/`"Favor"`. V3's
-  `specialFeats` (`sections.ts:639-650`) reads `(build as
-  any).specialFeats` — but `specialFeats: string[]` only exists on the
-  `Life` type (`types/ddo.ts:631`), not `CharacterBuild`, and
-  `ForumExportPanel.tsx`'s `SectionContext` never passes `Life` or
-  `build.favorFeats`. The cast is always `undefined`; this section emits
-  nothing for every real build (U11's Special/Favor Feats training UI
-  writes to the right fields — this is purely an export-plumbing miss).
+- ✅ **X10 — `specialFeats` forum-export section is dead code — done (#146,
+  this pass).** V2 `AddSpecialFeats` (`ForumExportDlg.cpp:435-473`) filters
+  `Build::SpecialFeats()` (Life+Character `<SpecialFeats>` plus the Build's
+  own `<FavorFeats>`) by `Type=="Special"`/`"Favor"` into two headed blocks.
+  V3's `specialFeats` section read `(build as any).specialFeats` — but
+  `specialFeats: string[]` only exists on the `Life` type (`types/ddo.ts`),
+  not `CharacterBuild`, and `ForumExportPanel.tsx`'s `SectionContext` never
+  passed `Life` or `build.favorFeats`; the cast was always `undefined`, so
+  this section emitted nothing for every real build (U11's Special/Favor
+  Feats training UI writes to the right fields — this was purely an
+  export-plumbing miss). Fixed: `SectionContext` gains a `specialFeats?:
+  string[]` field (mirroring `useBuildStats`'s existing per-call resolution
+  of `Life.specialFeats` from the active Life); `ForumExportPanel.tsx` now
+  reads `useDocument()` + `findActiveLife(doc)?.specialFeats` and passes it
+  through. The section emits two `[b]Heading[/b]:` blocks — "Special Feats"
+  from `ctx.specialFeats`, "Favor Feats" from `build.favorFeats` — each with
+  V2's duplicate-count suffix (`Name(N)`). V3 keeps the two pools separate
+  by data-model source rather than re-deriving a per-entry `Type` string, a
+  reasonable approximation of V2's Type-based filter since real V2 saves
+  populate the `<SpecialFeats>` node with Type="Special" entries and the
+  `<FavorFeats>` node with Type="Favor" entries. 4 regression tests in
+  `parityPassX10SpecialFeats.test.ts`; `parityPass5.test.ts`'s stale
+  assertion (which forced the dead legacy cast to exercise the section)
+  updated to pass `specialFeats` via context instead.
 - ❌ **X11 — `AddSkills` has no V3 equivalent.** V2
   (`ForumExportDlg.cpp:889-1027`) emits a `[code]` monospace grid: skill
   points available per level, per-skill per-level ranks (½ for
