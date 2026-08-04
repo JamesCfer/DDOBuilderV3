@@ -40,6 +40,14 @@ export interface SectionContext {
    *  entries (Attack/Sneak/Sunder/Trip/Defensive Fighting/Heroic Durability)
    *  in the automaticFeats section. */
   allFeats?: Feat[]
+  /**
+   * Life-level special feats (V2 `Life::AllSpecialFeats()` — the active
+   * Life's own `<SpecialFeats>` plus the Character-level ones), past lives
+   * excluded. Not owned by `CharacterBuild`, so callers must resolve it from
+   * the active `Life` themselves (see `useBuildStats`'s equivalent
+   * resolution for stats).
+   */
+  specialFeats?: string[]
 }
 
 export interface SectionDef {
@@ -644,21 +652,32 @@ const simpleGear: SectionDef = {
 }
 
 /**
- * V2 ForumExportDlg.cpp FES_SpecialFeats — feats acquired through past lives,
- * favor, etc. (V2 stores them on Life::specialFeats). V3 keeps them in
- * `Life.specialFeats`; for backwards compatibility this section also reads
- * the legacy build-level `specialFeats` field if it ever existed.
+ * V2 ForumExportDlg.cpp:435-471 FES_SpecialFeats (AddSpecialFeats/AddFeats) —
+ * combines the Life+Character `<SpecialFeats>` list with the Build's own
+ * `<FavorFeats>` list, counts duplicate entries, and emits two headed blocks
+ * filtered by each entry's `Type` ("Special" / "Favor"). V3 keeps the two
+ * pools separate at the data-model level (`ctx.specialFeats`, resolved by the
+ * caller from the active `Life`, vs `build.favorFeats`) rather than a
+ * per-entry Type string, so each pool is emitted under its own heading
+ * directly instead of re-deriving Type from one merged list.
  */
 const specialFeats: SectionDef = {
   id: 'SpecialFeats',
   label: 'Special feats',
-  emit: ({ build }) => {
-    const list = (build as unknown as { specialFeats?: string[] }).specialFeats ?? []
-    if (list.length === 0) return []
-    return [
-      '[b]Special Feats[/b]:',
-      ...list.sort().map(f => `  ${f}`),
-    ]
+  emit: ({ build, specialFeats: lifeSpecialFeats }) => {
+    const out: string[] = []
+    const block = (heading: string, names: string[]) => {
+      if (names.length === 0) return
+      const counts = new Map<string, number>()
+      for (const n of names) counts.set(n, (counts.get(n) ?? 0) + 1)
+      out.push(`[b]${heading}[/b]:`)
+      Array.from(counts.entries()).sort(([a], [b]) => a.localeCompare(b)).forEach(([n, c]) => {
+        out.push(`  ${n}${c > 1 ? `(${c})` : ''}`)
+      })
+    }
+    block('Special Feats', lifeSpecialFeats ?? [])
+    block('Favor Feats', build.favorFeats ?? [])
+    return out
   },
 }
 

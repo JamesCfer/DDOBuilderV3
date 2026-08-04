@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
+import { useDocument } from '../../context/DocumentContext'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
+import { findActiveLife } from '../../lib/multiLife'
 import { DEFAULT_SECTIONS, emitForumExport, type SectionDef } from '../../lib/export/sections'
 import type { Feat, Stance } from '../../types/ddo'
 import styles from './ForumExportPanel.module.css'
 
 export default function ForumExportPanel() {
   const { build } = useCharacter()
+  const { doc } = useDocument()
   const [copied, setCopied] = useState(false)
   const [enabled, setEnabled] = useState<Set<string>>(() => new Set(DEFAULT_SECTIONS.map(s => s.id)))
 
@@ -28,6 +31,7 @@ export default function ForumExportPanel() {
 
   const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
+  const specialFeats = findActiveLife(doc)?.specialFeats
 
   const sections: SectionDef[] = useMemo(
     () => DEFAULT_SECTIONS.filter(s => enabled.has(s.id)),
@@ -35,10 +39,10 @@ export default function ForumExportPanel() {
   )
   const exportText = useMemo(
     () => emitForumExport(
-      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats },
+      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats },
       sections,
     ),
-    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats],
+    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats],
   )
 
   async function handleCopy() {
