@@ -709,6 +709,91 @@ function deriveArmorStances(gearItems: Record<string, Item>, feats?: Set<string>
 }
 
 /**
+ * V2 `Build::SetBonusCount` — the number of equipped items/augments
+ * contributing a given named Set Bonus (`Item::HasSetBonus`, Item.cpp:
+ * 508-548 / `Augment::SetBonus`). Shared by `accumulateSetBonuses` (applies
+ * the Set Bonus's own effects once `EquippedCount` is met) and
+ * `deriveGreensteelStances` (V2 queries the same counts independently from
+ * `StancesPane::UpdateGreensteelStances`).
+ */
+function computeSetBonusCounts(
+  gearItems: Record<string, Item>,
+  augmentChoices: Record<string, string>,
+  allAugments: Augment[],
+): Map<string, number> {
+  const augmentsBySlot = new Map<string, Augment[]>()
+  for (const [key, augName] of Object.entries(augmentChoices)) {
+    if (!augName) continue
+    const slot = key.split(':')[0]
+    const aug = resolveAugment(key, augName, gearItems, allAugments)
+    if (!aug) continue
+    const arr = augmentsBySlot.get(slot) ?? []
+    arr.push(aug)
+    augmentsBySlot.set(slot, arr)
+  }
+  const counts = new Map<string, number>()
+  const bump = (name: string) => counts.set(name, (counts.get(name) ?? 0) + 1)
+  for (const [slot, item] of Object.entries(gearItems)) {
+    const slotAugs = augmentsBySlot.get(slot) ?? []
+    let suppressNative = false
+    for (const aug of slotAugs) {
+      if ('SuppressSetBonus' in aug && aug.SuppressSetBonus !== undefined) suppressNative = true
+      for (const name of toArray(aug.SetBonus)) bump(name)
+    }
+    if (!suppressNative) {
+      for (const name of toArray(item.SetBonus)) bump(name)
+    }
+  }
+  for (const [slot, augs] of augmentsBySlot) {
+    if (gearItems[slot]) continue
+    for (const aug of augs) {
+      for (const name of toArray(aug.SetBonus)) bump(name)
+    }
+  }
+  return counts
+}
+
+const GREENSTEEL_WEAPON_SLOTS = new Set(['Main Hand', 'Weapon1', 'MainHand', 'Off Hand', 'Weapon2', 'OffHand'])
+
+/**
+ * V2 `StancesPane.cpp:1053-1160 UpdateGreensteelStances` — with 2+ equipped
+ * Legendary Green Steel items (`Item.h IsGreensteel`, any slot but the two
+ * weapon hands), the highest-stacked of the Dominion/Escalation/Opposition
+ * Set Bonus Counts auto-activates as a mutually-exclusive stance gating that
+ * Set Bonus's `<Requirements><Requirement Type="Stance">` effects (compare
+ * `SetBonuses.xml`'s Dominion/Escalation/Opposition/Ethereal/Material
+ * blocks). Ethereal/Material additionally need 4+ items. Opposition's
+ * "only when Dominion and Escalation are tied" clause is V2's own logic
+ * (its comment: "only occurs when ALL augments are Opposition type"),
+ * reproduced verbatim rather than second-guessed.
+ */
+function deriveGreensteelStances(
+  gearItems: Record<string, Item>,
+  setBonusCounts: Map<string, number>,
+): Set<string> {
+  const stances = new Set<string>()
+  const greensteelItemCount = Object.entries(gearItems)
+    .filter(([slot, item]) => !GREENSTEEL_WEAPON_SLOTS.has(slot) && 'IsGreensteel' in item)
+    .length
+  if (greensteelItemCount < 2) return stances
+  const dominionCount = setBonusCounts.get('Dominion') ?? 0
+  const escalationCount = setBonusCounts.get('Escalation') ?? 0
+  const oppositionCount = setBonusCounts.get('Opposition') ?? 0
+  const etherealCount = setBonusCounts.get('Ethereal') ?? 0
+  const materialCount = setBonusCounts.get('Material') ?? 0
+  if (dominionCount > Math.max(escalationCount, oppositionCount)) stances.add('Dominion')
+  if (escalationCount > Math.max(dominionCount, oppositionCount)) stances.add('Escalation')
+  if (oppositionCount > Math.max(dominionCount, escalationCount) && dominionCount === escalationCount) {
+    stances.add('Opposition')
+  }
+  if (greensteelItemCount >= 4) {
+    if (etherealCount > 0 && etherealCount > materialCount) stances.add('Ethereal')
+    if (materialCount > 0 && materialCount > etherealCount) stances.add('Material')
+  }
+  return stances
+}
+
+/**
  * Resolve a selected augment name against its host item's own embedded
  * augment options FIRST, falling back to the global Augments catalogue.
  * V2 parity: `ItemAugment::GetSelectedAugment()` (ItemAugment.cpp:66-79)
@@ -811,45 +896,11 @@ function accumulateSetBonuses(
   allAugments: Augment[],
   ctx?: EffectContext,
 ): void {
-  // Group selected augments by their host gear slot. The augment key is
-  // "slot:augmentType:index" (GearPanel augmentKey), so the slot is the
-  // first ":"-delimited segment.
-  const augmentsBySlot = new Map<string, Augment[]>()
-  for (const [key, augName] of Object.entries(augmentChoices)) {
-    if (!augName) continue
-    const slot = key.split(':')[0]
-    const aug = resolveAugment(key, augName, gearItems, allAugments)
-    if (!aug) continue
-    const arr = augmentsBySlot.get(slot) ?? []
-    arr.push(aug)
-    augmentsBySlot.set(slot, arr)
-  }
-
   // Count equipped items per set-bonus name. V2 Build::ApplyItem (Build.cpp:
   // 4905-4922) + Item::HasSetBonus (Item.cpp:508-548): augment-granted set
   // bonuses always count; the item's NATIVE set bonuses count only when no
   // augment on that item has SuppressSetBonus.
-  const counts = new Map<string, number>()
-  const bump = (name: string) => counts.set(name, (counts.get(name) ?? 0) + 1)
-
-  for (const [slot, item] of Object.entries(gearItems)) {
-    const slotAugs = augmentsBySlot.get(slot) ?? []
-    let suppressNative = false
-    for (const aug of slotAugs) {
-      if ('SuppressSetBonus' in aug && aug.SuppressSetBonus !== undefined) suppressNative = true
-      for (const name of toArray(aug.SetBonus)) bump(name)
-    }
-    if (!suppressNative) {
-      for (const name of toArray(item.SetBonus)) bump(name)
-    }
-  }
-  // Set-bonus augments slotted in the sentient jewel (no host item) still count.
-  for (const [slot, augs] of augmentsBySlot) {
-    if (gearItems[slot]) continue
-    for (const aug of augs) {
-      for (const name of toArray(aug.SetBonus)) bump(name)
-    }
-  }
+  const counts = computeSetBonusCounts(gearItems, augmentChoices, allAugments)
 
   for (const [bonusName, count] of counts) {
     const sb = allSetBonuses.find(s => s.Type === bonusName)
@@ -1357,7 +1408,31 @@ function buildStatMapOnce(
       }
     }
 
+    // Merged augment choices (regular slots + sentient gem, cosmetic/removed
+    // slots dropped) — needed both for the Greensteel dominance-stance
+    // derivation below and for accumulateAugments/accumulateSetBonuses later.
+    const allAugmentChoices = {} as Record<string, string>
+    for (const [key, name] of Object.entries(build.augmentChoices)) {
+      if (key.startsWith('Cosmetic')) continue
+      // host item stripped by V2's off-hand rule → its augments die with it
+      if (gearSlotsRemovedByV2.has(key.split(':')[0])) continue
+      allAugmentChoices[key] = name
+    }
+    if (build.sentientGem.majorAugment) {
+      allAugmentChoices['SentientMajor'] = build.sentientGem.majorAugment
+    }
+    if (build.sentientGem.minorAugment) {
+      allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
+    }
+
     const ctxStances = deriveArmorStances(gearItems, ctxFeats)
+    // V2 parity: StancesPane::UpdateGreensteelStances auto-activates one of
+    // five mutually-exclusive Legendary Green Steel dominance stances from
+    // equipped Greensteel item counts + Set Bonus stack counts (D6).
+    {
+      const setBonusCounts = computeSetBonusCounts(gearItems, allAugmentChoices, allAugments)
+      for (const s of deriveGreensteelStances(gearItems, setBonusCounts)) ctxStances.add(s)
+    }
     // V2 parity: alignment stances are auto-controlled too (Stances.xml
     // "Good"/"Lawful"/... gated on Requirement Type=Alignment) — derive from
     // the build's alignment so alignment-stance-gated effects fire.
@@ -1517,6 +1592,7 @@ function buildStatMapOnce(
         'Two Handed Fighting', 'Two Weapon Fighting', 'Single Weapon Fighting',
         'Ranged Combat', 'Centered',
         'Lawful', 'Chaotic', 'Good', 'Evil', 'Neutral', 'True',
+        'Dominion', 'Escalation', 'Opposition', 'Ethereal', 'Material',
       ])
       // Only the CURRENT race's auto stance is filtered (it is re-derived
       // above). Other race names must NOT be blanket-filtered: V2's iconic
@@ -2008,19 +2084,8 @@ function buildStatMapOnce(
     // Augments slotted into cosmetic-slot items are dropped: V2 never calls
     // ApplyItem for cosmetic slots, so their augments (and set-bonus
     // contributions) are ignored along with the host item.
-    const allAugmentChoices = {} as Record<string, string>
-    for (const [key, name] of Object.entries(build.augmentChoices)) {
-      if (key.startsWith('Cosmetic')) continue
-      // host item stripped by V2's off-hand rule → its augments die with it
-      if (gearSlotsRemovedByV2.has(key.split(':')[0])) continue
-      allAugmentChoices[key] = name
-    }
-    if (build.sentientGem.majorAugment) {
-      allAugmentChoices['SentientMajor'] = build.sentientGem.majorAugment
-    }
-    if (build.sentientGem.minorAugment) {
-      allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
-    }
+    // (allAugmentChoices is computed earlier, alongside the Greensteel
+    // dominance stance derivation, which needs the same merged choices.)
     accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices, build.augmentValueChoices)
 
     // ── Gear set bonuses ──────────────────────────────────────────────────

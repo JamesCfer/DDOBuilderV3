@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 147 | **D6 — Legendary Green Steel "Dominant" stances never auto-activate** — `StancesPane.cpp:1053-1160 UpdateGreensteelStances` parity: with 2+ equipped Green Steel items, the highest Dominion/Escalation/Opposition Set Bonus stack count (or Ethereal/Material at 4+ items) auto-activates as a mutually-exclusive stance, gating `SetBonuses.xml`'s already-`Requirement Type="Stance"`-gated effects. Added `Item.IsGreensteel`, `deriveGreensteelStances` + shared `computeSetBonusCounts` in `buildStats.ts`, merged into `ctxStances` ahead of gear/set-bonus resolution. 9 regression tests in `parityPassD6Greensteel.test.ts`. | this PR |
 | 146 | **X10 — forum-export "Special Feats"/"Favor Feats" section was dead code** — it read a `specialFeats` field that only exists on `Life`, cast off `CharacterBuild` (always `undefined`), so it emitted nothing for every real build; `build.favorFeats` was never read either. `SectionContext` gains a `specialFeats?: string[]` field resolved by the caller from the active `Life` (mirrors `useBuildStats`'s existing pattern); `ForumExportPanel.tsx` wires it via `useDocument()`/`findActiveLife`. Section now emits "Special Feats" (from `ctx.specialFeats`) and "Favor Feats" (from `build.favorFeats`) as two headed blocks with V2's `Name(N)` duplicate-count suffix. 4 regression tests in `parityPassX10SpecialFeats.test.ts`. | this PR |
 | 145 | **D7 — item-level `RestrictedSlots` slot exclusion** — an equipped item can force other inventory slots empty while it's worn (V2 `Item.h:73`/`Build::SetGear`/`EquippedGear::IsSlotRestricted`) — e.g. Shining Crescents clears the off hand, Platinum Knuckles clear Gloves. V3 had no such enforcement; the restricted slot's item (and its augments/set bonuses) kept contributing. Added `Item.RestrictedSlots`, wired into `buildStats.ts` through the existing `gearSlotsRemovedByV2` mechanism (same pattern as the D3 Minor Artifact / off-hand two-handed-weapon rules). 4 regression tests in `parityPassD7RestrictedSlots.test.ts`. | this PR |
 | 144 | **Optimizer targets every Analysis stat; tooltips stay on screen; Plugins tab** — (a) the optimizer's objective picker offered a hand-written list of 41 stats while Analysis showed far more. Breakdown rows now carry the engine key behind them (`StatRowData.statKey`) and `optimizerStatsFromSections` turns the live sections into objectives, so anything readable in Analysis is targetable — 99 options against the previous 41, and the two cannot drift apart. Composite rows (a base save plus its sub-save, fixed display values) have no single key and are correctly skipped. (b) The breakdown hover tooltip was pinned at cursor + 14px with no regard for the viewport, so every row in the right-hand Analysis rail opened its tooltip off the right edge. It now measures itself, flips side when the preferred one does not fit, slides up off the bottom edge, and caps its height so a long bonus list scrolls inside the box. (c) New top-level **Plugins** page for the dungeon-help plugins, rendering from a data catalogue (`pluginCatalogue.ts`) so adding one is a single entry — shipped empty, since inventing plugin names and download links would be worse than an honest empty state. | this PR |
@@ -893,16 +894,26 @@ occurrences confirmed), so no change is needed there.
   `ArmorBonus` when "Composite Plating" is trained and its Mithral Body
   bonus when "Mithral Body" is trained; `AdamantineBody` similarly requires
   "Adamantine Body" — matching V2 `Build.cpp:5779-5822` `ApplyArmorEffects`.
-- ❌ **D6 — Legendary Green Steel "Dominant" stances never auto-activate
-  (48 items flagged `IsGreensteel`).** V2 `StancesPane.cpp:1053-1160`
+- ✅ **D6 — Legendary Green Steel "Dominant" stances never auto-activate —
+  done (#147, this pass).** V2 `StancesPane.cpp:1053-1160`
   (`UpdateGreensteelStances`): with 2+ equipped Green Steel items, V2
   compares each item's Dominion/Escalation/Opposition set-bonus stack
   counts and auto-activates one of 5 mutually-exclusive stances
   (Dominion/Escalation/Opposition/Ethereal(4+)/Material(4+)), gating
-  further set-bonus effects. `Item.h`'s `IsGreensteel` flag is unused in
+  further set-bonus effects. `Item.h`'s `IsGreensteel` flag was unused in
   `webapp/src/lib` (only referenced in `v1Import.ts`'s name-migration
-  tables) — a build with 2+ Green Steel items never gets these auto-
-  stances or their downstream effects in V3.
+  tables) — a build with 2+ Green Steel items never got these auto-
+  stances or their downstream effects in V3. Added `Item.IsGreensteel`
+  (presence-only flag, mirrors `MinorArtifact`); `buildStats.ts` gains
+  `deriveGreensteelStances` (counts non-weapon-slot `IsGreensteel` items,
+  applies V2's exact dominance rules including Opposition's odd
+  "only when Dominion and Escalation are tied" clause) and a shared
+  `computeSetBonusCounts` helper (extracted from `accumulateSetBonuses` so
+  both consult the same Set Bonus stack counts); the derived stances merge
+  into `ctxStances` before gear/set-bonus effects resolve, so the existing
+  `SetBonuses.xml` Dominion/Escalation/Opposition/Ethereal/Material blocks
+  (already `Requirement Type="Stance"`-gated) fire correctly for the first
+  time. 9 regression tests in `parityPassD6Greensteel.test.ts`.
 - ✅ **D7 — `RestrictedSlots` item-level slot exclusion** — done (#145,
   this pass). V2 `Item.h:73` + `Build::SetGear` (`Build.cpp:4674-4692`) +
   `EquippedGear::IsSlotRestricted` (`EquippedGear.cpp:308-309`): an
