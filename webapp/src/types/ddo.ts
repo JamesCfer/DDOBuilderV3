@@ -259,6 +259,10 @@ export interface Item {
    *  (`Build::SetGear`/`EquippedGear::IsSlotRestricted`), e.g. Shining Crescents
    *  restricting the off hand. Same shape/parsing as `EquipmentSlot`. */
   RestrictedSlots?: Record<string, boolean>
+  /** V2 `Item.h` presence-only flag — parses as `""`; check with `'IsGreensteel' in item`.
+   *  Marks Legendary Green Steel gear for `StancesPane::UpdateGreensteelStances`'s
+   *  Dominion/Escalation/Opposition/Ethereal/Material dominance stances. */
+  IsGreensteel?: string
   // Weapon-specific
   Weapon?: string
   AttackModifier?: string | string[]
