@@ -12,6 +12,7 @@ import {
   loadAttackRates, loadBonusTypes, loadAdventurePacks, loadChallenges, loadIgnoredList, loadItemBuffs, loadItemClickies,
   loadAllCatalogues,
 } from './src/server/dataLoaders'
+import { augmentMatchesSlotType } from './src/lib/gearSlotUpgrades'
 import { CommunityStore } from './src/server/communityStore'
 import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
 import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
@@ -175,8 +176,12 @@ app.get('/api/items', (_req, res) => {
 app.get('/api/augments', (_req, res) => {
   const allAugments = cached('augments', augments) as unknown as Array<Record<string, unknown>>
   const { type } = _req.query
-  if (type) {
-    res.json(allAugments.filter(a => a['Type'] === type))
+  if (type && typeof type === 'string') {
+    // V2 Augment::IsCompatibleWithSlot (Augment.cpp:63-89): an augment's
+    // <Type> list enumerates EVERY slot type it fits (a blue augment also
+    // lists Green/Purple; colorless augments list every color). One entry
+    // parses to a scalar, several to an array — match against the whole list.
+    res.json(allAugments.filter(a => augmentMatchesSlotType(a['Type'] as string | string[] | undefined, type)))
   } else {
     res.json(allAugments)
   }

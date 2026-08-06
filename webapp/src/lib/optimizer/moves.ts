@@ -378,8 +378,8 @@ export function featMoves(ctx: MoveContext): Move[] {
  * Assign the next open heroic level to a class. Covers both "holes" left in
  * an existing level plan and leveling a low-level (or brand-new) character
  * toward the target level. Candidates follow the game's multiclass rules:
- * at most 3 distinct classes, at most one archetype, and an archetype never
- * with its own base class. `classes` and `totalLevel` are re-aggregated from
+ * at most 3 distinct classes, and an archetype never with its own base class
+ * or another archetype of the same base. `classes` and `totalLevel` are re-aggregated from
  * the per-level assignment exactly like the SET_LEVEL_CLASS reducer.
  */
 export function classLevelMoves(ctx: MoveContext): Move[] {
@@ -406,8 +406,8 @@ export function classLevelMoves(ctx: MoveContext): Move[] {
     if (cls.NotHeroic || cls.Name === 'Unknown') continue
     if (!present.includes(cls.Name)) {
       if (present.length >= 3) continue                                  // 3-class cap
-      if (cls.BaseClass && presentClasses.some(p => p.BaseClass)) continue // one archetype max
       if (cls.BaseClass && present.includes(cls.BaseClass)) continue       // not with its base
+      if (cls.BaseClass && presentClasses.some(p => p.BaseClass === cls.BaseClass)) continue // no same-base pair
       if (presentClasses.some(p => p.BaseClass === cls.Name)) continue     // base not with its archetype
     }
     const move: Move = { kind: 'classLevel', level: idx + 1, className: cls.Name }
@@ -500,7 +500,7 @@ export function augmentMoves(ctx: MoveContext): Move[] {
     if (!item) continue
     const itemLevel = Number(item.MinLevel ?? 0)
     for (const { augment, index } of resolveAugmentSlots(item, slot, build.slotUpgradeChoices ?? {})) {
-      if (augment.Augment) continue                              // fixed by the item
+      if (augment.Augment) continue           // item-specific options — not searched by the optimizer
       const key = augmentKey(slot, augment.Type, index)
       if (build.augmentChoices?.[key]) continue                  // already chosen
       for (const cand of ctx.augmentCandidates?.[augment.Type] ?? []) {

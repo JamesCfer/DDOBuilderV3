@@ -29,6 +29,8 @@ const CLASSES = [
   { Name: 'Fighter', HitPoints: 10 },
   { Name: 'Rogue', HitPoints: 6 },
   { Name: 'Dragon Lord', HitPoints: 10, BaseClass: 'Fighter' },
+  // Hypothetical second Fighter archetype — exercises the same-base-pair rule.
+  { Name: 'Iron Vanguard', HitPoints: 10, BaseClass: 'Fighter' },
   { Name: 'Sacred Fist', HitPoints: 8, BaseClass: 'Paladin' },
   { Name: 'Paladin', HitPoints: 10, Alignment: 'Lawful Good' },
   { Name: 'Wizard', HitPoints: 4 },
@@ -230,7 +232,7 @@ describe('ClassSelector archetype exclusion', () => {
     expect(dlOption?.disabled).toBe(false)
   })
 
-  it('allows only one archetype at a time', async () => {
+  it('allows multiple archetypes of different base classes', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const build = fighterBuild()
     build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Sacred Fist' : ''))
@@ -240,13 +242,28 @@ describe('ClassSelector archetype exclusion', () => {
       { name: '', levels: 0 },
     ]
     const container = await mount(React.createElement(mod.default), build)
-    const dragonLord = pickRow(container, 'Dragon Lord')
-    expect(dragonLord.disabled).toBe(true)
-    expect(dragonLord.title).toContain('Only one archetype')
+    // Dragon Lord (Fighter archetype) can join a Sacred Fist (Paladin
+    // archetype) build — each counts as one of the 3 classes.
+    expect(pickRow(container, 'Dragon Lord').disabled).toBe(false)
     // Paladin (Sacred Fist's base) is blocked with the pair reason.
     const paladin = pickRow(container, 'Paladin')
     expect(paladin.disabled).toBe(true)
     expect(paladin.title).toContain('Sacred Fist is an archetype of Paladin')
+  })
+
+  it('blocks a second archetype of the same base class', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const build = fighterBuild()
+    build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Dragon Lord' : ''))
+    build.classes = [
+      { name: 'Dragon Lord', levels: 4 },
+      { name: '', levels: 0 },
+      { name: '', levels: 0 },
+    ]
+    const container = await mount(React.createElement(mod.default), build)
+    const ironVanguard = pickRow(container, 'Iron Vanguard')
+    expect(ironVanguard.disabled).toBe(true)
+    expect(ironVanguard.title).toContain('Dragon Lord is also a Fighter archetype')
   })
 })
 

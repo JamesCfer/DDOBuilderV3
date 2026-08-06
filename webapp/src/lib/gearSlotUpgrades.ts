@@ -28,6 +28,33 @@ function toArray<T>(val: T | T[] | undefined): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
+/**
+ * V2 `Augment::IsCompatibleWithSlot` (Augment.cpp:63-89): an augment's
+ * `<Type>` list enumerates every slot type it fits — a blue augment also
+ * lists Green and Purple, colorless augments list every color, set augments
+ * list all seven. One `<Type>` entry parses to a scalar, several to an
+ * array; a slot matches when its type appears anywhere in the list.
+ */
+export function augmentMatchesSlotType(augType: string | string[] | undefined, slotType: string): boolean {
+  if (augType == null) return false
+  return Array.isArray(augType) ? augType.includes(slotType) : augType === slotType
+}
+
+/**
+ * The augment occupying a slot: an explicit player choice always wins —
+ * including the explicit '' stored when the player clears a pre-filled
+ * slot — otherwise the item's `SelectedAugment` default applies (V2 ships
+ * some items with an augment pre-slotted, e.g. Kindling's "Sealed in Fire").
+ */
+export function effectiveAugmentChoice(
+  choices: Record<string, string>,
+  key: string,
+  augment: ItemAugment,
+): string {
+  if (key in choices) return choices[key]
+  return augment.SelectedAugment ?? ''
+}
+
 export function slotUpgrades(item: Item | undefined): SlotUpgrade[] {
   return toArray(item?.SlotUpgrade)
 }

@@ -211,6 +211,14 @@ export interface ItemBuff {
 export interface ItemAugment {
   Type: string
   /**
+   * V2 `ItemAugment::SelectedAugment` — on a CATALOGUE item this is the
+   * augment the item ships pre-slotted with (e.g. Kindling's "Sealed in
+   * Fire"); the player may replace it with any other same-type augment.
+   * (In saved .DDOBuild files the same element records the player's pick —
+   * that path is handled by v2Import, which copies it into augmentChoices.)
+   */
+  SelectedAugment?: string
+  /**
    * V2 `ItemAugment::ItemSpecificAugments` (ItemAugment.h) — some items (e.g.
    * "Gem of Many Facets") define their own per-slot augment options inline
    * instead of drawing from the global Augments catalogue. V2's

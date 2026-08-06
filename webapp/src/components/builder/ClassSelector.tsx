@@ -166,8 +166,11 @@ export default function ClassSelector() {
     if (archOfThis) {
       return `${archOfThis.Name} is an archetype of ${cls.Name} — you cannot take both`
     }
-    if (cls.BaseClass && usedClassObjs.some(c => c.BaseClass)) {
-      return 'Only one archetype per character'
+    // Archetypes of *different* base classes multiclass freely (each counts
+    // as one of the 3 classes); only two archetypes sharing a base conflict.
+    const sameBase = cls.BaseClass && usedClassObjs.find(c => c.BaseClass === cls.BaseClass)
+    if (sameBase) {
+      return `${sameBase.Name} is also a ${cls.BaseClass} archetype — you cannot take both`
     }
     return null
   }
