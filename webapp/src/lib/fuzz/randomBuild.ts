@@ -194,16 +194,17 @@ export function generateRandomBuild(cat: FuzzCatalogues, opts: FuzzOptions): Fuz
   log.push(`race ${race.Name}`)
 
   // ── Classes: 1–3 heroic classes, random split, random per-level order ───
-  // Excludes the V2 "Unknown" placeholder. DDO archetype rules: at most ONE
-  // archetype (class with <BaseClass>) per character, and an archetype cannot
-  // multiclass with its own base class.
+  // Excludes the V2 "Unknown" placeholder. DDO archetype rules: an archetype
+  // (class with <BaseClass>) cannot multiclass with its own base class or
+  // another archetype of the same base — archetypes of different bases mix
+  // freely, each counting as one of the 3 classes.
   const heroicClasses = cat.allClasses.filter(c => !c.NotHeroic && c.Name !== 'Unknown')
   const classCount = 1 + Math.floor(rng() * 3)
   const chosen: DDOClass[] = []
   for (const c of shuffle(rng, heroicClasses)) {
     if (chosen.length >= classCount) break
-    if (c.BaseClass && chosen.some(x => x.BaseClass)) continue          // one archetype max
     if (c.BaseClass && chosen.some(x => x.Name === c.BaseClass)) continue // not with its base
+    if (c.BaseClass && chosen.some(x => x.BaseClass === c.BaseClass)) continue // no same-base pair
     if (chosen.some(x => x.BaseClass === c.Name)) continue               // base not with its archetype
     chosen.push(c)
   }
@@ -352,8 +353,8 @@ export function validateBuild(cat: FuzzCatalogues, build: CharacterBuild): strin
   const problems: string[] = []
   const race = cat.allRaces.find(r => r.Name === build.race)
 
-  // Class legality: no Unknown, at most one archetype, archetype never with
-  // its own base class.
+  // Class legality: no Unknown, archetype never with its own base class or
+  // with another archetype of the same base (different bases mix freely).
   const chosenClasses = build.classes
     .filter(c => c.name && c.levels > 0)
     .map(c => cat.allClasses.find(x => x.Name === c.name))
@@ -361,8 +362,15 @@ export function validateBuild(cat: FuzzCatalogues, build: CharacterBuild): strin
     problems.push('class "Unknown" trained')
   }
   const archetypes = chosenClasses.filter(c => c?.BaseClass)
-  if (archetypes.length > 1) {
-    problems.push(`multiple archetypes: ${archetypes.map(a => a?.Name).join(', ')}`)
+  const byBase = new Map<string, string[]>()
+  for (const a of archetypes) {
+    if (!a?.BaseClass) continue
+    byBase.set(a.BaseClass, [...(byBase.get(a.BaseClass) ?? []), a.Name])
+  }
+  for (const [base, names] of byBase) {
+    if (names.length > 1) {
+      problems.push(`multiple archetypes of ${base}: ${names.join(', ')}`)
+    }
   }
   for (const a of archetypes) {
     if (chosenClasses.some(c => c?.Name === a?.BaseClass)) {
