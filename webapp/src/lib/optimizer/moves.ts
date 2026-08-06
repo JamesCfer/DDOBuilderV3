@@ -500,7 +500,7 @@ export function augmentMoves(ctx: MoveContext): Move[] {
     if (!item) continue
     const itemLevel = Number(item.MinLevel ?? 0)
     for (const { augment, index } of resolveAugmentSlots(item, slot, build.slotUpgradeChoices ?? {})) {
-      if (augment.Augment) continue                              // fixed by the item
+      if (augment.Augment) continue           // item-specific options — not searched by the optimizer
       const key = augmentKey(slot, augment.Type, index)
       if (build.augmentChoices?.[key]) continue                  // already chosen
       for (const cand of ctx.augmentCandidates?.[augment.Type] ?? []) {

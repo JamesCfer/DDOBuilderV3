@@ -1418,6 +1418,19 @@ function buildStatMapOnce(
       if (gearSlotsRemovedByV2.has(key.split(':')[0])) continue
       allAugmentChoices[key] = name
     }
+    // V2 `ItemAugment::SelectedAugment` on the CATALOGUE item — some items
+    // ship with an augment pre-slotted (e.g. Kindling's "Sealed in Fire").
+    // The default applies unless the player stored ANY choice for that slot;
+    // the explicit '' written when clearing a pre-filled slot counts as an
+    // override, so `in` (key presence), not truthiness.
+    for (const [slot, item] of Object.entries(gearItems)) {
+      if (slot.startsWith('Cosmetic')) continue
+      toArray(item.ItemAugment).forEach((ia, index) => {
+        if (!ia?.SelectedAugment) return
+        const key = `${slot}:${ia.Type}:${index}`
+        if (!(key in build.augmentChoices)) allAugmentChoices[key] = ia.SelectedAugment
+      })
+    }
     if (build.sentientGem.majorAugment) {
       allAugmentChoices['SentientMajor'] = build.sentientGem.majorAugment
     }

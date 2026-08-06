@@ -8,7 +8,7 @@ import GearImportDialog from './GearImportDialog'
 import { exportGearSetXml } from '../../lib/v2Export'
 import { importGearSetXml } from '../../lib/v2Import'
 import { useDocument } from '../../context/DocumentContext'
-import { resolveAugmentSlots, pendingSlotUpgrades } from '../../lib/gearSlotUpgrades'
+import { resolveAugmentSlots, pendingSlotUpgrades, effectiveAugmentChoice } from '../../lib/gearSlotUpgrades'
 import { itemSlotKey } from '../../lib/gearSlots'
 import styles from './GearPanel.module.css'
 
@@ -207,26 +207,24 @@ interface AugmentSlotProps {
 }
 
 function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItemLevel }: AugmentSlotProps) {
-  const [options, setOptions] = useState<Augment[]>([])
+  const [fetched, setFetched] = useState<Augment[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const key = augmentKey(slotName, augment.Type, index)
 
-  if (augment.Augment) {
-    return (
-      <div className={styles.augRow}>
-        <span className={styles.augType}>{augment.Type}</span>
-        <span className={styles.augFixed} title={augment.Augment.Description}>{augment.Augment.Name}</span>
-      </div>
-    )
-  }
+  // V2 CompatibleAugments (GlobalSupportFunctions.cpp:2355): a slot with
+  // ItemSpecificAugments offers exactly that list — a picker, not a fixed
+  // grant, and with no level filter; every other slot draws from the global
+  // catalogue by slot type, capped to the host item's level.
+  const itemSpecific = toArray(augment.Augment)
+  const options = itemSpecific.length > 0 ? itemSpecific : fetched
 
   function handleOpen() {
-    if (!open && options.length === 0) {
+    if (!open && itemSpecific.length === 0 && fetched.length === 0) {
       setLoading(true)
       api.augments({ type: augment.Type })
-        .then(data => setOptions(data.filter(a => (a.MinLevel ?? 1) <= maxItemLevel)))
-        .catch(() => setOptions([]))
+        .then(data => setFetched(data.filter(a => (a.MinLevel ?? 1) <= maxItemLevel)))
+        .catch(() => setFetched([]))
         .finally(() => setLoading(false))
     }
     setOpen(v => !v)
@@ -411,9 +409,13 @@ export default function GearPanel() {
                 slotName={slot}
                 augment={augment}
                 index={index}
-                choice={augmentChoices[augmentKey(slot, augment.Type, index)] ?? ''}
+                choice={effectiveAugmentChoice(augmentChoices, augmentKey(slot, augment.Type, index), augment)}
                 onSet={(key, name) => dispatch({ type: 'SET_AUGMENT', key, augmentName: name })}
-                onClear={(key) => dispatch({ type: 'CLEAR_AUGMENT', key })}
+                onClear={(key) => (augment.SelectedAugment
+                  // A pre-filled slot needs an explicit '' so the item's
+                  // SelectedAugment default stays overridden after clearing.
+                  ? dispatch({ type: 'SET_AUGMENT', key, augmentName: '' })
+                  : dispatch({ type: 'CLEAR_AUGMENT', key }))}
                 maxItemLevel={detail?.MinLevel ?? maxLevel}
               />
             ))}
