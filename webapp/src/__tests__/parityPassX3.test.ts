@@ -5,6 +5,11 @@
 // effectParser.ts and shows the percentage in BreakdownsPanel using multiplicative
 // stacking (100 − Π((100−x)/100)·100).  The forum export energyResistances section
 // only emitted resist.* — absorb.* was silently absent.
+//
+// Row format updated by parity pass X14 (ForumExportDlg.cpp:1167-1214): V2 always
+// emits one [TR] per type inside a [TABLE], both Resistance and Absorbance columns
+// present (0 when absent), integer-truncated — never a conditional "Type Absorption"
+// line with a decimal percentage. Assertions below were rewritten to match.
 
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SECTIONS } from '../lib/export/sections'
@@ -39,42 +44,39 @@ describe('Forum export energyResistances section — absorbance (parity pass X3)
   const section = DEFAULT_SECTIONS.find(s => s.id === 'EnergyResistances')!
   const build = emptyBuild()
 
-  it('still emits resistance-only rows when no absorbance exists', () => {
+  it('emits a Fire row with resistance and 0% absorbance when no absorbance exists', () => {
     const stats = mockStats({ 'resist.Fire': 30 })
     const lines = section.emit({ build, stats })
     expect(lines).toContain('[b]Energy Resistances[/b]:')
-    expect(lines).toContain('  Fire: 30')
-    expect(lines.some(l => l.includes('Absorption'))).toBe(false)
+    expect(lines).toContain('[TR][TD]Fire:[/TD][TD]30[/TD][TD]0%[/TD][/TR]')
   })
 
-  it('emits an absorption row for a single absorb source (20%)', () => {
+  it('emits absorbance for a single absorb source (20%)', () => {
     const stats = mockStats(
       { 'absorb.Fire': 20 },
       { 'absorb.Fire': [makeBonus(20)] },
     )
     const lines = section.emit({ build, stats })
-    expect(lines).toContain('[b]Energy Resistances[/b]:')
-    expect(lines.some(l => l.includes('Fire Absorption') && l.includes('20.0%'))).toBe(true)
+    expect(lines).toContain('[TR][TD]Fire:[/TD][TD]0[/TD][TD]20%[/TD][/TR]')
   })
 
-  it('emits both resistance and absorption rows when both are non-zero', () => {
+  it('emits both resistance and absorbance in the same row when both are non-zero', () => {
     const stats = mockStats(
       { 'resist.Fire': 30, 'absorb.Fire': 20 },
       { 'absorb.Fire': [makeBonus(20)] },
     )
     const lines = section.emit({ build, stats })
-    expect(lines).toContain('  Fire: 30')
-    expect(lines.some(l => l.includes('Fire Absorption') && l.includes('20.0%'))).toBe(true)
+    expect(lines).toContain('[TR][TD]Fire:[/TD][TD]30[/TD][TD]20%[/TD][/TR]')
   })
 
-  it('uses multiplicative stacking for two absorb sources (36.0% = 100 − 0.8×0.8×100)', () => {
+  it('uses multiplicative stacking for two absorb sources (36% = trunc(100 − 0.8×0.8×100))', () => {
     const stats = mockStats(
       { 'absorb.Cold': 40 },
       { 'absorb.Cold': [makeBonus(20), makeBonus(20)] },
     )
     const lines = section.emit({ build, stats })
-    // 100 − (0.80 × 0.80) × 100 = 36.0
-    expect(lines.some(l => l.includes('Cold Absorption') && l.includes('36.0%'))).toBe(true)
+    // 100 − (0.80 × 0.80) × 100 = 36.0, truncated to 36
+    expect(lines).toContain('[TR][TD]Cold:[/TD][TD]0[/TD][TD]36%[/TD][/TR]')
   })
 
   it('skips suppressed (inactive) absorb bonuses in the computation', () => {
@@ -85,27 +87,17 @@ describe('Forum export energyResistances section — absorbance (parity pass X3)
       { 'absorb.Acid': [active, suppressed] },
     )
     const lines = section.emit({ build, stats })
-    // Only the 25% active bonus contributes → 25.0%
-    expect(lines.some(l => l.includes('Acid Absorption') && l.includes('25.0%'))).toBe(true)
-    expect(lines.some(l => l.includes('Acid Absorption') && l.includes('32.5%'))).toBe(false)
+    // Only the 25% active bonus contributes → 25%, not the combined 32.5%
+    expect(lines).toContain('[TR][TD]Acid:[/TD][TD]0[/TD][TD]25%[/TD][/TR]')
+    expect(lines.some(l => l.includes('32%') || l.includes('33%'))).toBe(false)
   })
 
-  it('emits absorption before resistance row when neither exists for the type', () => {
-    const stats = mockStats(
-      { 'resist.Fire': 30, 'absorb.Fire': 20 },
-      { 'absorb.Fire': [makeBonus(20)] },
-    )
-    const lines = section.emit({ build, stats })
-    const resistIdx = lines.findIndex(l => l.includes('Fire: 30'))
-    const absorbIdx = lines.findIndex(l => l.includes('Fire Absorption'))
-    expect(resistIdx).toBeGreaterThanOrEqual(0)
-    expect(absorbIdx).toBeGreaterThan(resistIdx)
-  })
-
-  it('returns empty array when all resistances and absorbances are zero', () => {
+  it('always emits the full 13-type table, even when all resistances/absorbances are zero', () => {
     const stats = mockStats({})
     const lines = section.emit({ build, stats })
-    expect(lines).toHaveLength(0)
+    expect(lines).toContain('[TR][TD]Fire:[/TD][TD]0[/TD][TD]0%[/TD][/TR]')
+    expect(lines).toContain('[TABLE]')
+    expect(lines).toContain('[/TABLE]')
   })
 
   it('section header only appears once even with multiple energy types', () => {
