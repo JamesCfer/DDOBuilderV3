@@ -222,25 +222,26 @@ const saves: SectionDef = {
 const energyResistances: SectionDef = {
   id: 'EnergyResistances',
   label: 'Energy resistances',
-  // V2 ForumExportDlg.cpp:1183-1200 exports both Resistance and Absorbance.
-  // Absorbance uses multiplicative stacking: 100 − Π((100−x)/100)·100
-  // matching BreakdownsPanel.tsx:400-404 and BreakdownItemEnergyAbsorbance.
+  // V2 ForumExportDlg.cpp:1167-1214 (AddEnergyResistances) always emits a
+  // [TABLE] with one row per type, Resistance and Absorbance columns shown
+  // even when both are 0. Positive/Repair/Rust are deliberately commented
+  // out in V2 and never appear.
   emit: ({ stats }) => {
     if (!stats) return []
-    const types = ['Fire', 'Cold', 'Acid', 'Electric', 'Sonic', 'Force', 'Light', 'Negative', 'Positive', 'Poison', 'Repair']
-    const rows: string[] = []
-    for (const t of types) {
-      const resist = stats.total(`resist.${t}`)
-      if (resist) rows.push(`  ${t}: ${resist}`)
-
-      const abs = stats.resolve(`absorb.${t}`).bonuses
-      if (abs.some(b => b.active)) {
-        // Multiplicative absorption with V2's identical-effect merge
-        const pct = absorptionTotal(abs)
-        if (pct > 0) rows.push(`    ${t} Absorption: ${pct.toFixed(1)}%`)
-      }
-    }
-    return rows.length > 0 ? ['[b]Energy Resistances[/b]:', ...rows] : []
+    const types = ['Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force',
+      'Good', 'Lawful', 'Light', 'Negative', 'Poison', 'Sonic']
+    const rows = types.map(t => {
+      const resist = Math.trunc(stats.total(`resist.${t}`))
+      const abs = Math.trunc(absorptionTotal(stats.resolve(`absorb.${t}`).bonuses))
+      return `[TR][TD]${t}:[/TD][TD]${resist}[/TD][TD]${abs}%[/TD][/TR]`
+    })
+    return [
+      '[b]Energy Resistances[/b]:',
+      '[TABLE]',
+      '[TR][TD]Energy[/TD][TD]Resistance[/TD][TD]Absorbance[/TD][/TR]',
+      ...rows,
+      '[/TABLE]',
+    ]
   },
 }
 

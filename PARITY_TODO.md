@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 148 | **X14 — forum-export "Energy Resistances" section used the wrong type list and no table wrapping** — `ForumExportDlg.cpp:1167-1214 AddEnergyResistances` always emits a `[TABLE]` with fixed rows for Acid/Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust deliberately excluded), Resistance + Absorbance shown for every row even at 0; V3's `energyResistances` section used an 11-type list missing Chaos/Evil/Good/Lawful and wrongly including Positive/Repair, only printed non-zero rows as free text, and dropped the table entirely. Rewrote to emit V2's exact 13-row table. 6 new tests in `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts` updated to match the corrected row format. | this PR |
 | 147 | **D6 — Legendary Green Steel "Dominant" stances never auto-activate** — `StancesPane.cpp:1053-1160 UpdateGreensteelStances` parity: with 2+ equipped Green Steel items, the highest Dominion/Escalation/Opposition Set Bonus stack count (or Ethereal/Material at 4+ items) auto-activates as a mutually-exclusive stance, gating `SetBonuses.xml`'s already-`Requirement Type="Stance"`-gated effects. Added `Item.IsGreensteel`, `deriveGreensteelStances` + shared `computeSetBonusCounts` in `buildStats.ts`, merged into `ctxStances` ahead of gear/set-bonus resolution. 9 regression tests in `parityPassD6Greensteel.test.ts`. | this PR |
 | 146 | **X10 — forum-export "Special Feats"/"Favor Feats" section was dead code** — it read a `specialFeats` field that only exists on `Life`, cast off `CharacterBuild` (always `undefined`), so it emitted nothing for every real build; `build.favorFeats` was never read either. `SectionContext` gains a `specialFeats?: string[]` field resolved by the caller from the active `Life` (mirrors `useBuildStats`'s existing pattern); `ForumExportPanel.tsx` wires it via `useDocument()`/`findActiveLife`. Section now emits "Special Feats" (from `ctx.specialFeats`) and "Favor Feats" (from `build.favorFeats`) as two headed blocks with V2's `Name(N)` duplicate-count suffix. 4 regression tests in `parityPassX10SpecialFeats.test.ts`. | this PR |
 | 145 | **D7 — item-level `RestrictedSlots` slot exclusion** — an equipped item can force other inventory slots empty while it's worn (V2 `Item.h:73`/`Build::SetGear`/`EquippedGear::IsSlotRestricted`) — e.g. Shining Crescents clears the off hand, Platinum Knuckles clear Gloves. V3 had no such enforcement; the restricted slot's item (and its augments/set bonuses) kept contributing. Added `Item.RestrictedSlots`, wired into `buildStats.ts` through the existing `gearSlotsRemovedByV2` mechanism (same pattern as the D3 Minor Artifact / off-hand two-handed-weapon rules). 4 regression tests in `parityPassD7RestrictedSlots.test.ts`. | this PR |
@@ -1007,14 +1008,24 @@ already closed; these are new, some content gaps (not just formatting):
   Power, Doubleshot Chance%, Sneak Attack attack/damage, plus a per-weapon
   effects breakdown. V3's `weaponDamage` (`sections.ts:477-491`) only shows
   dice/crit, to-hit, damage, doublestrike% — roughly 10 fields missing.
-- ❌ **X14 — `AddEnergyResistances` wrong type list + no `[TABLE]`.** V2
-  (`ForumExportDlg.cpp:1167-1214`) lists Acid/Chaos/Cold/Electric/Evil/
-  Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust
-  are deliberately commented out), wrapped in `[TABLE]` with one row per
-  type always. V3's `energyResistances` (`sections.ts:209-233`) uses
-  Fire/Cold/Acid/Electric/Sonic/Force/Light/Negative/Positive/Poison/Repair
-  — missing Chaos/Evil/Good/Lawful, wrongly includes Positive/Repair, and
-  has no `[TABLE]` wrapping.
+- ✅ **X14 — `AddEnergyResistances` wrong type list + no `[TABLE]` — done
+  (#148, this pass).** V2 (`ForumExportDlg.cpp:1167-1214`) always emits a
+  `[TABLE]` with a header row and exactly 13 fixed type rows — Acid, Chaos,
+  Cold, Electric, Evil, Fire, Force, Good, Lawful, Light, Negative, Poison,
+  Sonic (Positive/Repair/Rust are deliberately commented out in the C++) —
+  each row showing both Resistance and Absorbance (truncated to int,
+  `%`-suffixed) even when both are 0. V3's `energyResistances`
+  (`sections.ts`) used a different 11-type list (missing Chaos/Evil/Good/
+  Lawful, wrongly including Positive/Repair), only emitted a row when
+  non-zero, used a "Type Absorption: NN.N%" free-text line instead of a
+  table row, and returned an empty section when every value was 0. Rewrote
+  the section to always emit the full 13-row `[TABLE]`/`[TR][TD]…[/TD][/TR]`
+  in V2's exact type order, with `Math.trunc` on both resistance and
+  absorbance (absorbance still computed via the existing multiplicative
+  `absorptionTotal` helper). 6 new regression tests in
+  `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts`'s stale
+  assertions (written against the old conditional-row, decimal-percentage
+  format) updated to match the corrected V2-parity row format.
 - ❌ **X15 — `AddSpellPowers` missing Critical Multiplier column + table
   wrap.** V2 (`ForumExportDlg.cpp:1453-1520`) wraps `[SIZE=3][TABLE]` with
   4 columns (Spell Power/Base/Critical Chance/Critical Multiplier). V3's
