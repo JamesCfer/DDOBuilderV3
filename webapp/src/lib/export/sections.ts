@@ -10,7 +10,6 @@ import type {
 import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
 import { absorptionTotal } from '../bonus'
-import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../gamedata'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
 import { buildSlots } from '../levelTraining'
 
@@ -457,21 +456,57 @@ const reaperTrees: SectionDef = {
   },
 }
 
+// V2 ForumExportDlg.cpp:1453-1520 (AddSpellPowers/AddSpellPowerToTable): fixed
+// set of 16 rows, always emitted regardless of value, 15-char-padded labels.
+// Deliberately has NO Lawful row (BreakdownsPane tracks a Lawful spell power
+// breakdown, but the export table never reads it) and "Force/Untyped" reads
+// the Force breakdown, not a Force+Untyped merge — a separate "Untyped" row
+// reads the real Untyped breakdown. Both quirks reproduced verbatim.
+const V2_SPELL_POWER_ROWS: [label: string, key: string][] = [
+  ['Acid           ', 'Acid'],
+  ['Light/Alignment', 'LightAlignment'],
+  ['Chaos          ', 'Chaos'],
+  ['Cold           ', 'Cold'],
+  ['Electric       ', 'Electric'],
+  ['Evil           ', 'Evil'],
+  ['Fire           ', 'Fire'],
+  ['Force/Untyped  ', 'Force'],
+  ['Negative       ', 'Negative'],
+  ['Physical       ', 'Physical'],
+  ['Poison         ', 'Poison'],
+  ['Positive       ', 'Positive'],
+  ['Repair         ', 'Repair'],
+  ['Rust           ', 'Rust'],
+  ['Sonic          ', 'Sonic'],
+  ['Untyped        ', 'Untyped'],
+]
+
 const spellPowers: SectionDef = {
   id: 'SpellPowers',
   label: 'Spell powers',
   emit: ({ stats }) => {
     if (!stats) return []
-    const rows: string[] = []
-    for (const spKey of SPELL_POWER_TYPES) {
-      const power = stats.total(`sp.${spKey}`)
-      const crit = stats.total(`spCrit.${spKey}`)
-      if (power || crit) {
-        const label = SPELL_POWER_LABELS[spKey] ?? spKey
-        rows.push(`  ${label}: ${power}${crit ? ` / crit ${crit}%` : ''}`)
-      }
+    // V2 has no "Universal" row — BreakdownItemSpellPower::CreateOtherEffects
+    // folds the universal spell power/lore/crit-multiplier breakdowns into
+    // every concrete type's total instead.
+    const universalPower = stats.total('sp.Universal')
+    const universalCrit = stats.total('spCrit.Universal')
+    const universalMult = stats.total('spCritDmg.Universal') + stats.total('spCritDmg.All')
+    const lines: string[] = [
+      '[SIZE=3][TABLE]',
+      '[TR][TD][COLOR=rgb(65, 168, 95)]Spell Power[/COLOR][/TD]' +
+      '[TD][COLOR=rgb(65, 168, 95)]Base[/COLOR][/TD]' +
+      '[TD][COLOR=rgb(65, 168, 95)]Critical Chance[/COLOR][/TD]' +
+      '[TD][COLOR=rgb(65, 168, 95)]Critical Multiplier[/COLOR][/TD][/COLOR][/TR]',
+    ]
+    for (const [label, key] of V2_SPELL_POWER_ROWS) {
+      const power = stats.total(`sp.${key}`) + universalPower
+      const crit = Math.trunc(stats.total(`spCrit.${key}`) + universalCrit)
+      const mult = Math.trunc(stats.total(`spCritDmg.${key}`) + universalMult)
+      lines.push(`[TR][TD]${label}[/TD][TD]${power}[/TD][TD]${crit}%[/TD][TD]${mult}[/TD][/TR]`)
     }
-    return rows.length > 0 ? ['[b]Spell Powers[/b]:', ...rows] : []
+    lines.push('[/TABLE][/SIZE]')
+    return lines
   },
 }
 
