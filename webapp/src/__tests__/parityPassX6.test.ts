@@ -42,9 +42,10 @@ describe('Forum export spellPowers section — alignment/physical types (parity 
     expect(section).toBeDefined()
   })
 
-  it('returns empty when all spell powers are zero', () => {
+  it('always emits the full table, even when all spell powers are zero (pass X15)', () => {
+    // V2 ForumExportDlg.cpp:1453-1520 unconditionally emits all 16 rows.
     const stats = mockStats({})
-    expect(section.emit({ build, stats })).toHaveLength(0)
+    expect(section.emit({ build, stats }).length).toBeGreaterThan(0)
   })
 
   it('emits Chaos spell power row when non-zero', () => {
@@ -59,10 +60,12 @@ describe('Forum export spellPowers section — alignment/physical types (parity 
     expect(lines.some(l => l.includes('Evil') && l.includes('50'))).toBe(true)
   })
 
-  it('emits Lawful spell power row when non-zero', () => {
+  it('never emits a Lawful row (V2 export table omits it — pass X15)', () => {
+    // V2's AddSpellPowers table has no Lawful row even though the
+    // BreakdownsPane tracks a Lawful spell power breakdown internally.
     const stats = mockStats({ 'sp.Lawful': 75 })
     const lines = section.emit({ build, stats })
-    expect(lines.some(l => l.includes('Lawful') && l.includes('75'))).toBe(true)
+    expect(lines.some(l => l.includes('Lawful'))).toBe(false)
   })
 
   it('emits Physical spell power row when non-zero', () => {
@@ -106,22 +109,25 @@ describe('Forum export spellPowers section — alignment/physical types (parity 
     expect(fireLine!.includes('15')).toBe(true)
   })
 
-  it('does not emit a row for a type whose power and crit are both zero', () => {
+  it('still emits a row for a type whose power and crit are both zero (pass X15: V2 has no omission)', () => {
     const stats = mockStats({ 'sp.Fire': 100 })
     const lines = section.emit({ build, stats })
-    expect(lines.some(l => l.includes('Cold'))).toBe(false)
-    expect(lines.some(l => l.includes('Acid'))).toBe(false)
+    expect(lines.some(l => l.includes('Cold'))).toBe(true)
+    expect(lines.some(l => l.includes('Acid'))).toBe(true)
   })
 
-  it('emits header line when at least one type is non-zero', () => {
+  it('emits a header row containing "Spell Power" (pass X15: table-wrapped)', () => {
     const stats = mockStats({ 'sp.Fire': 100 })
     const lines = section.emit({ build, stats })
-    expect(lines[0]).toContain('Spell Power')
+    expect(lines.some(l => l.includes('Spell Power'))).toBe(true)
   })
 
-  it('emits Universal spell power row when non-zero', () => {
+  it('folds sp.Universal into every row instead of its own row (pass X15)', () => {
+    // V2 has no "Universal" row — BreakdownItemSpellPower::CreateOtherEffects
+    // adds the universal spell power breakdown into every concrete type.
     const stats = mockStats({ 'sp.Universal': 20 })
     const lines = section.emit({ build, stats })
-    expect(lines.some(l => l.includes('Universal') && l.includes('20'))).toBe(true)
+    expect(lines.some(l => l.includes('Universal'))).toBe(false)
+    expect(lines.some(l => l.includes('Acid') && l.includes('20'))).toBe(true)
   })
 })

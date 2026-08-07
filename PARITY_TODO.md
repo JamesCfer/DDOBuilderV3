@@ -19,7 +19,8 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
-| 148 | **X14 — forum-export "Energy Resistances" section used the wrong type list and no table wrapping** — `ForumExportDlg.cpp:1167-1214 AddEnergyResistances` always emits a `[TABLE]` with fixed rows for Acid/Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust deliberately excluded), Resistance + Absorbance shown for every row even at 0; V3's `energyResistances` section used an 11-type list missing Chaos/Evil/Good/Lawful and wrongly including Positive/Repair, only printed non-zero rows as free text, and dropped the table entirely. Rewrote to emit V2's exact 13-row table. 6 new tests in `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts` updated to match the corrected row format. | this PR |
+| 149 | **X15 — forum-export "Spell Powers" section had no table, no Critical Multiplier column, a spurious Universal row, and dropped 5 fixed rows' worth of always-emitted content** — `ForumExportDlg.cpp:1453-1520 AddSpellPowers`/`AddSpellPowerToTable` always emit a `[SIZE=3][TABLE]` with 16 fixed rows (no Lawful row; "Force/Untyped" reads the Force breakdown, a separate "Untyped" row reads Untyped) and 4 columns including a `(int)`-truncated Critical Multiplier; V3's `spellPowers` section only printed non-zero "Label: power / crit X%" lines with its own extra Universal row and no multiplier column. Rewrote to emit V2's exact 16-row table, folding Universal power/crit/crit-multiplier additively into every row instead of a standalone one. 8 new tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.test.ts` updated to match the corrected row format. | this PR |
+| 148 | **X14 — forum-export "Energy Resistances" section used the wrong type list and no table wrapping** — `ForumExportDlg.cpp:1167-1214 AddEnergyResistances` always emits a `[TABLE]` with fixed rows for Acid/Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust deliberately excluded), Resistance + Absorbance shown for every row even at 0; V3's `energyResistances` section used an 11-type list missing Chaos/Evil/Good/Lawful and wrongly including Positive/Repair, only printed non-zero rows as free text, and dropped the table entirely. Rewrote to emit V2's exact 13-row table. 6 new tests in `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts` updated to match the corrected row format. | #208 |
 | 147 | **D6 — Legendary Green Steel "Dominant" stances never auto-activate** — `StancesPane.cpp:1053-1160 UpdateGreensteelStances` parity: with 2+ equipped Green Steel items, the highest Dominion/Escalation/Opposition Set Bonus stack count (or Ethereal/Material at 4+ items) auto-activates as a mutually-exclusive stance, gating `SetBonuses.xml`'s already-`Requirement Type="Stance"`-gated effects. Added `Item.IsGreensteel`, `deriveGreensteelStances` + shared `computeSetBonusCounts` in `buildStats.ts`, merged into `ctxStances` ahead of gear/set-bonus resolution. 9 regression tests in `parityPassD6Greensteel.test.ts`. | this PR |
 | 146 | **X10 — forum-export "Special Feats"/"Favor Feats" section was dead code** — it read a `specialFeats` field that only exists on `Life`, cast off `CharacterBuild` (always `undefined`), so it emitted nothing for every real build; `build.favorFeats` was never read either. `SectionContext` gains a `specialFeats?: string[]` field resolved by the caller from the active `Life` (mirrors `useBuildStats`'s existing pattern); `ForumExportPanel.tsx` wires it via `useDocument()`/`findActiveLife`. Section now emits "Special Feats" (from `ctx.specialFeats`) and "Favor Feats" (from `build.favorFeats`) as two headed blocks with V2's `Name(N)` duplicate-count suffix. 4 regression tests in `parityPassX10SpecialFeats.test.ts`. | this PR |
 | 145 | **D7 — item-level `RestrictedSlots` slot exclusion** — an equipped item can force other inventory slots empty while it's worn (V2 `Item.h:73`/`Build::SetGear`/`EquippedGear::IsSlotRestricted`) — e.g. Shining Crescents clears the off hand, Platinum Knuckles clear Gloves. V3 had no such enforcement; the restricted slot's item (and its augments/set bonuses) kept contributing. Added `Item.RestrictedSlots`, wired into `buildStats.ts` through the existing `gearSlotsRemovedByV2` mechanism (same pattern as the D3 Minor Artifact / off-hand two-handed-weapon rules). 4 regression tests in `parityPassD7RestrictedSlots.test.ts`. | this PR |
@@ -1009,7 +1010,7 @@ already closed; these are new, some content gaps (not just formatting):
   effects breakdown. V3's `weaponDamage` (`sections.ts:477-491`) only shows
   dice/crit, to-hit, damage, doublestrike% — roughly 10 fields missing.
 - ✅ **X14 — `AddEnergyResistances` wrong type list + no `[TABLE]` — done
-  (#148, this pass).** V2 (`ForumExportDlg.cpp:1167-1214`) always emits a
+  (#208).** V2 (`ForumExportDlg.cpp:1167-1214`) always emits a
   `[TABLE]` with a header row and exactly 13 fixed type rows — Acid, Chaos,
   Cold, Electric, Evil, Fire, Force, Good, Lawful, Light, Negative, Poison,
   Sonic (Positive/Repair/Rust are deliberately commented out in the C++) —
@@ -1026,12 +1027,29 @@ already closed; these are new, some content gaps (not just formatting):
   `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts`'s stale
   assertions (written against the old conditional-row, decimal-percentage
   format) updated to match the corrected V2-parity row format.
-- ❌ **X15 — `AddSpellPowers` missing Critical Multiplier column + table
-  wrap.** V2 (`ForumExportDlg.cpp:1453-1520`) wraps `[SIZE=3][TABLE]` with
-  4 columns (Spell Power/Base/Critical Chance/Critical Multiplier). V3's
-  `spellPowers` (`sections.ts:438-454`) still emits flat "Label: power /
-  crit X%" lines — no table/size wrap, and Critical Multiplier is dropped
-  entirely.
+- ✅ **X15 — `AddSpellPowers` missing Critical Multiplier column + table
+  wrap — done (this pass).** V2 (`ForumExportDlg.cpp:1453-1520`) always
+  wraps `[SIZE=3][TABLE]` around 16 fixed, unconditionally-emitted rows
+  (Acid, Light/Alignment, Chaos, Cold, Electric, Evil, Fire, Force/Untyped,
+  Negative, Physical, Poison, Positive, Repair, Rust, Sonic, Untyped) with
+  4 columns (Spell Power/Base/Critical Chance/Critical Multiplier — the
+  Critical Multiplier and Critical Chance columns are `(int)`-truncated,
+  the Base/power column is not). Two verbatim V2 quirks reproduced: there
+  is no Lawful row at all (`BreakdownsPane` tracks a Lawful spell-power
+  breakdown, but the export table never reads it), and "Force/Untyped"
+  reads the Force breakdown (not a Force+Untyped merge) while a separate
+  "Untyped" row reads the real Untyped breakdown. V3's `spellPowers`
+  (`sections.ts`) emitted flat "Label: power / crit X%" lines only for
+  non-zero types, had its own extra "Universal" row (added in pass X6),
+  and had no Critical Multiplier column at all. Fixed: rewrote the section
+  to emit V2's exact 16-row `[SIZE=3][TABLE]`, folding `sp.Universal`/
+  `spCrit.Universal`/`spCritDmg.Universal`+`spCritDmg.All` additively into
+  every row instead of a standalone row (`BreakdownItemSpellPower::
+  CreateOtherEffects` parity — the same composition already verified by
+  the oracle referee's `spellCritMultiplier` check, see pass 133). 8 new
+  regression tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.
+  test.ts`'s 5 stale assertions (written against the old conditional-row,
+  no-table, Universal-has-its-own-row format) updated to match.
 - ❌ **X16 — `AddTacticalDCs` missing table wrap + Evaluation column.** V2
   (`ForumExportDlg.cpp:1734-1756`) wraps `[SIZE=3][TABLE]` with 3 columns
   (Tactical DC/Value/Evaluation — the DC formula breakdown text). V3's
