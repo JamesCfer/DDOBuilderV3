@@ -6,12 +6,15 @@
 
 import type {
   CharacterBuild, Ability, DDOClass, Race, Stance, OptionalBuff, Feat,
+  EnhancementTree, EnhancementTreeItem, EnhancementSelection,
 } from '../../types/ddo'
 import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
 import { absorptionTotal } from '../bonus'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
 import { buildSlots } from '../levelTraining'
+import { computeBonusActionPoints } from '../actionPoints'
+import { destinyPoolForBuild } from '../destiny'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -47,6 +50,10 @@ export interface SectionContext {
    * resolution for stats).
    */
   specialFeats?: string[]
+  /** Full enhancement/destiny/reaper tree catalogue — required to resolve
+   *  tier labels and Points-spent totals in the enhancements/epicDestinies/
+   *  reaperTrees sections (X17). */
+  allTrees?: EnhancementTree[]
 }
 
 export interface SectionDef {
@@ -397,19 +404,129 @@ const automaticFeats: SectionDef = {
   },
 }
 
+// V2 ForumExportDlg.cpp:1216-1451 (AddEnhancements/AddEpicDestinyTree/
+// AddReaperTrees + the shared per-tree AddEnhancementTree/AddEpicDestinyTree/
+// AddReaperTree helpers): each top-level section opens with a
+// "[COLOR=rgb(184, 49, 47)][SIZE=6]" header (AP/Destiny-Point totals) and
+// "[HR][/HR]", then one "[COLOR=rgb(65, 168, 95)][SIZE=5]TreeName - Points
+// spent: N[/SIZE][/COLOR]" block per trained tree, each enhancement prefixed
+// with its tier ("CoreN "/"Tier1".."Tier6") and (for multi-rank items)
+// suffixed " - N Ranks", terminated by its own "[HR][/HR]". V3 previously
+// emitted plain "[b]...[/b]:" headers with no AP totals, no tier labels, and
+// no Points-spent line.
+
+function itemKey(item: EnhancementTreeItem): string {
+  return item.InternalName ?? item.Name
+}
+
+function findTreeItem(tree: EnhancementTree, key: string): EnhancementTreeItem | undefined {
+  return (tree.EnhancementTreeItem ?? []).find(it => itemKey(it) === key || it.Name === key)
+}
+
+function selectorOptions(item: EnhancementTreeItem): EnhancementSelection[] {
+  if (!item.Selector || item.Selector.length === 0) return []
+  const raw = item.Selector[0].EnhancementSelection
+  return Array.isArray(raw) ? raw : raw ? [raw] : []
+}
+
+// V2 EnhancementTreeItem::YPosition(): 0 = Core row (labelled by XPosition+1),
+// 1-6 = Tier1-6.
+function tierPrefix(item: EnhancementTreeItem): string {
+  const y = item.YPosition ?? 0
+  if (y === 0) return `Core${(item.XPosition ?? 0) + 1} `
+  if (y >= 1 && y <= 6) return `Tier${y} `
+  return ''
+}
+
+// V2 DisplayName(selection) = "ItemName" or "ItemName: SelectionName"; the
+// export then strips everything up to and including the first ": " so a
+// selector item shows only its chosen selection's name.
+function enhancementLabel(item: EnhancementTreeItem, selection: string | undefined): string {
+  let name = item.Name
+  if (item.Selector && item.Selector.length > 0) {
+    const opt = selectorOptions(item).find(o => o.Name === selection)
+    name = `${item.Name}: ${opt?.Name ?? selection ?? ''}`
+  }
+  const colon = name.indexOf(':')
+  return colon === -1 ? name : name.slice(colon + 2)
+}
+
+function normalizeCostPerRank(raw: unknown): string {
+  if (raw == null) return '1'
+  if (typeof raw === 'number' && isFinite(raw)) return String(raw)
+  if (typeof raw === 'string') return raw || '1'
+  if (typeof raw === 'object' && !Array.isArray(raw) && '#text' in (raw as object)) {
+    const t = (raw as Record<string, unknown>)['#text']
+    if (t != null) return String(t) || '1'
+  }
+  return '1'
+}
+
+// Mirrors EnhancementTreePanel.tsx's costUpToRank/computeTreeSpent (V2
+// EnhancementTreeItem::Cost / SpendInTree::Spent parity) — duplicated here
+// rather than imported since that module is component-scoped.
+function costUpToRank(item: EnhancementTreeItem, rank: number): number {
+  if (rank <= 0) return 0
+  const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
+  const str = normalizeCostPerRank(item.CostPerRank)
+  const parts = str.trim().split(/\s+/).map(Number).filter(isFinite)
+  const costs = parts.length === 0
+    ? Array(maxRanks).fill(1)
+    : parts.length === 1
+    ? Array(maxRanks).fill(parts[0])
+    : Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
+  return costs.slice(0, rank).reduce((a: number, b: number) => a + b, 0)
+}
+
+function treeSpent(tree: EnhancementTree, choices: Record<string, number>): number {
+  return (tree.EnhancementTreeItem ?? []).reduce((sum, item) => {
+    const rank = choices[itemKey(item)] ?? choices[item.Name] ?? 0
+    return sum + costUpToRank(item, rank)
+  }, 0)
+}
+
+// V2's Reaper-tree emitter has one genuine quirk vs the Enhancement/Epic
+// Destiny emitters: the Ranks suffix reads the ITEM's max Ranks() instead of
+// the trained rank ((*it).Ranks()) — `rankUsesMax` reproduces it verbatim.
+function emitTreeBlock(
+  lines: string[],
+  tree: EnhancementTree,
+  choices: Record<string, number>,
+  selections: Record<string, string> | undefined,
+  rankUsesMax = false,
+): void {
+  lines.push(`[COLOR=rgb(65, 168, 95)][SIZE=5]${tree.Name} - Points spent: ${treeSpent(tree, choices)}[/SIZE][/COLOR]`)
+  for (const [key, rank] of Object.entries(choices)) {
+    if (rank <= 0) continue
+    const item = findTreeItem(tree, key)
+    if (!item) { lines.push('Error - Unknown enhancement'); continue }
+    const selection = selections?.[key] ?? selections?.[item.Name]
+    let label = tierPrefix(item) + enhancementLabel(item, selection)
+    const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
+    if (maxRanks > 1) label += ` - ${rankUsesMax ? maxRanks : rank} Ranks`
+    lines.push(label)
+  }
+  lines.push('[HR][/HR]')
+}
+
 const enhancements: SectionDef = {
   id: 'Enhancements',
   label: 'Enhancements',
-  emit: ({ build }) => {
+  emit: ({ build, allTrees, allFeats, specialFeats }) => {
     const trees = Object.entries(build.enhancementChoices).filter(([, items]) =>
       Object.values(items).some(r => r > 0))
     if (trees.length === 0) return []
-    const lines = ['[b]Enhancement Trees[/b]:']
-    for (const [tree, items] of trees) {
-      lines.push(`  ${tree}:`)
-      for (const [name, rank] of Object.entries(items)) {
-        if (rank > 0) lines.push(`    ${name} (${rank})`)
-      }
+    let header = 'Enhancements: 80 APs'
+    if (allFeats) {
+      const bonus = computeBonusActionPoints(build, allFeats, specialFeats ?? [])
+      if (bonus.racial > 0) header += `, Racial ${bonus.racial}`
+      if (bonus.universal > 0) header += `, Universal ${bonus.universal}`
+    }
+    const lines = [`[COLOR=rgb(184, 49, 47)][SIZE=6]${header}[/SIZE][/COLOR]`, '[HR][/HR]']
+    for (const [treeName, choices] of trees) {
+      const tree = allTrees?.find(t => t.Name === treeName)
+      if (!tree) continue
+      emitTreeBlock(lines, tree, choices, build.enhancementSelections[treeName])
     }
     return lines
   },
@@ -418,18 +535,22 @@ const enhancements: SectionDef = {
 const epicDestinies: SectionDef = {
   id: 'EpicDestinyTree',
   label: 'Epic destinies',
-  emit: ({ build }) => {
+  emit: ({ build, stats, allTrees }) => {
     const trees = Object.entries(build.destinyChoices).filter(([, items]) =>
       Object.values(items).some(r => r > 0))
     if (trees.length === 0) return []
-    const lines: string[] = []
+    const fatePoints = stats ? Math.max(0, Math.round(stats.total('fatePoint'))) : 0
+    const destinyApBonus = stats ? Math.max(0, Math.round(stats.total('destinyAP'))) : 0
+    const destinyPoints = destinyPoolForBuild(build, fatePoints, destinyApBonus)
+    const lines = [
+      `[COLOR=rgb(184, 49, 47)][SIZE=6]Epic Destinies: ${destinyPoints} Destiny Points[/SIZE][/COLOR]`,
+      '[HR][/HR]',
+    ]
     if (build.activeEpicDestiny) lines.push(`[b]Active Destiny[/b]: ${build.activeEpicDestiny}`)
-    lines.push('[b]Epic Destiny Trees[/b]:')
-    for (const [tree, items] of trees) {
-      lines.push(`  ${tree}:`)
-      for (const [name, rank] of Object.entries(items)) {
-        if (rank > 0) lines.push(`    ${name} (${rank})`)
-      }
+    for (const [treeName, choices] of trees) {
+      const tree = allTrees?.find(t => t.Name === treeName)
+      if (!tree) continue
+      emitTreeBlock(lines, tree, choices, build.destinySelections[treeName])
     }
     if (build.twistChoices.some(t => t)) {
       lines.push(`[b]Twists of Fate[/b]: ${build.twistChoices.filter(Boolean).join(', ')}`)
@@ -441,16 +562,16 @@ const epicDestinies: SectionDef = {
 const reaperTrees: SectionDef = {
   id: 'ReaperTrees',
   label: 'Reaper trees',
-  emit: ({ build }) => {
+  emit: ({ build, allTrees }) => {
     const trees = Object.entries(build.reaperChoices).filter(([, items]) =>
       Object.values(items).some(r => r > 0))
     if (trees.length === 0) return []
-    const lines = ['[b]Reaper Trees[/b]:']
-    for (const [tree, items] of trees) {
-      lines.push(`  ${tree}:`)
-      for (const [name, rank] of Object.entries(items)) {
-        if (rank > 0) lines.push(`    ${name} (${rank})`)
-      }
+    const lines = ['[COLOR=rgb(184, 49, 47)][SIZE=6]Reaper trees:[/SIZE][/COLOR]']
+    for (const [treeName, choices] of trees) {
+      const tree = allTrees?.find(t => t.Name === treeName)
+      if (!tree) continue
+      emitTreeBlock(lines, tree, choices, build.reaperSelections?.[treeName], /* rankUsesMax */ true)
+      lines.push('')
     }
     return lines
   },
