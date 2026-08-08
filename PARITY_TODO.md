@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 150 | **X17 — Enhancement/Destiny/Reaper tree export sections had plain "[b]...[/b]:" headers, no AP/Destiny-Point totals, no tier labels, no Points-spent line** — `ForumExportDlg.cpp:1216-1451` (`AddEnhancements`/`AddEpicDestinyTree`/`AddReaperTrees` + their per-tree `AddEnhancementTree`/`AddEpicDestinyTree`/`AddReaperTree` helpers) wrap each section in a `[COLOR=rgb(184, 49, 47)][SIZE=6]` header (Enhancements: hardcoded "80 APs" plus Racial/Universal bonus AP when present; Epic Destinies: the Destiny Point total; Reaper: no total), then one `[COLOR=rgb(65, 168, 95)][SIZE=5]TreeName - Points spent: N[/SIZE][/COLOR]` block per trained tree terminated by `[HR][/HR]`, prefixing each enhancement with its tier ("Core1 ".."Core6 " / "Tier1 ".."Tier6 ", from `YPosition`/`XPosition`) and a " - N Ranks" suffix for multi-rank items. V3's `enhancements`/`epicDestinies`/`reaperTrees` sections (`sections.ts`) printed flat `[b]…[/b]:`/`  tree:`/`    name (rank)` lines with no coloring, AP totals, tier labels or spent totals. Rewrote all three to emit V2's exact headers and per-tree blocks, reusing the existing `computeBonusActionPoints` (racial/universal AP) and `destinyPoolForBuild` (Destiny Points) helpers and a tree-cost calculation mirrored from `EnhancementTreePanel.tsx`'s `costUpToRank`. Also reproduces a verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max `Ranks()`, not the trained rank, unlike the Enhancement/Epic Destiny emitters. `SectionContext` gains an `allTrees?: EnhancementTree[]` field, wired from `ForumExportPanel.tsx`'s existing `useStaticBundle()` bundle. 7 new regression tests in `parityPassX17TreeHeaders.test.ts`. | this PR |
 | 149 | **X15 — forum-export "Spell Powers" section had no table, no Critical Multiplier column, a spurious Universal row, and dropped 5 fixed rows' worth of always-emitted content** — `ForumExportDlg.cpp:1453-1520 AddSpellPowers`/`AddSpellPowerToTable` always emit a `[SIZE=3][TABLE]` with 16 fixed rows (no Lawful row; "Force/Untyped" reads the Force breakdown, a separate "Untyped" row reads Untyped) and 4 columns including a `(int)`-truncated Critical Multiplier; V3's `spellPowers` section only printed non-zero "Label: power / crit X%" lines with its own extra Universal row and no multiplier column. Rewrote to emit V2's exact 16-row table, folding Universal power/crit/crit-multiplier additively into every row instead of a standalone one. 8 new tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.test.ts` updated to match the corrected row format. | this PR |
 | 148 | **X14 — forum-export "Energy Resistances" section used the wrong type list and no table wrapping** — `ForumExportDlg.cpp:1167-1214 AddEnergyResistances` always emits a `[TABLE]` with fixed rows for Acid/Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust deliberately excluded), Resistance + Absorbance shown for every row even at 0; V3's `energyResistances` section used an 11-type list missing Chaos/Evil/Good/Lawful and wrongly including Positive/Repair, only printed non-zero rows as free text, and dropped the table entirely. Rewrote to emit V2's exact 13-row table. 6 new tests in `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts` updated to match the corrected row format. | #208 |
 | 147 | **D6 — Legendary Green Steel "Dominant" stances never auto-activate** — `StancesPane.cpp:1053-1160 UpdateGreensteelStances` parity: with 2+ equipped Green Steel items, the highest Dominion/Escalation/Opposition Set Bonus stack count (or Ethereal/Material at 4+ items) auto-activates as a mutually-exclusive stance, gating `SetBonuses.xml`'s already-`Requirement Type="Stance"`-gated effects. Added `Item.IsGreensteel`, `deriveGreensteelStances` + shared `computeSetBonusCounts` in `buildStats.ts`, merged into `ctxStances` ahead of gear/set-bonus resolution. 9 regression tests in `parityPassD6Greensteel.test.ts`. | this PR |
@@ -1055,15 +1056,21 @@ already closed; these are new, some content gaps (not just formatting):
   (Tactical DC/Value/Evaluation — the DC formula breakdown text). V3's
   `tacticalDCs` (`sections.ts:509-523`) still emits flat "  Label: +N"
   lines — no table, no breakdown text.
-- ❌ **X17 — Enhancement/Destiny/Reaper tree export sections missing
-  headers + tier labels.** V2 (`ForumExportDlg.cpp:1216-1451`) wraps each
-  in a colored `[COLOR][SIZE=6]` header with AP totals ("Enhancements: 80
+- ✅ **X17 — Enhancement/Destiny/Reaper tree export sections missing
+  headers + tier labels — done (#150, this pass).** V2 (`ForumExportDlg.cpp:1216-1451`)
+  wraps each in a colored `[COLOR][SIZE=6]` header with AP totals ("Enhancements: 80
   APs, Racial N, Universal N" / "Epic Destinies: N Destiny Points"), then
   per-tree `[COLOR][SIZE=5]` "TreeName - Points spent: N" with `[HR][/HR]`
   separators, and prefixes each enhancement with its tier ("Core1 "/
   "Tier1".."Tier6") plus "- N Ranks". V3's `enhancements`/`epicDestinies`/
   `reaperTrees` (`sections.ts:379-436`) use plain "[b]…[/b]:" headers — no
-  AP totals, tier labels, coloring, or "Points spent" line.
+  AP totals, tier labels, coloring, or "Points spent" line. Rewrote all
+  three to emit V2's exact headers/tier labels/Points-spent totals,
+  reusing `computeBonusActionPoints`/`destinyPoolForBuild` and a tree-cost
+  calculation mirrored from `EnhancementTreePanel.tsx`. Also reproduces a
+  verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max
+  `Ranks()` instead of the trained rank. 7 new regression tests in
+  `parityPassX17TreeHeaders.test.ts`.
 
 Noted but not itemized above (lower confidence / same shape as X13/X15):
 `AddSpells` (`ForumExportDlg.cpp:1522-1645`) has School/CL-MCL/DC/
