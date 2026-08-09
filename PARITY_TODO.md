@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 151 | **X11 — forum-export "Skills" section had no per-level breakdown, only whole-build totals** — `ForumExportDlg.cpp:889-1027 AddSkills` always emits a `[code]`-wrapped monospace grid: a per-level "Skill Points" budget row, a level-number header, one row per V2 skill (raw per-level trained count for class skills, ½-rank multiples for cross-class — reading `LevelTraining::TrainedSkills()`), trailing Ranks/Tome/Buffed columns, and an "Available Points" row. V3's `skills` section only printed non-zero "skill: N ranks (+M)" free-text lines with no per-level data at all. Rewrote to emit V2's exact grid, sourcing per-level data from the existing `getLevelTrainingEntries` helper (Done item U7/#62) and the Ranks/Tome/Buffed columns straight from the already-V2-exact `skill.<Name>` stat (items #21/#64/#106) — no new stat computation needed. 11 new regression tests in `parityPassX11Skills.test.ts`. | this PR |
 | 150 | **X17 — Enhancement/Destiny/Reaper tree export sections had plain "[b]...[/b]:" headers, no AP/Destiny-Point totals, no tier labels, no Points-spent line** — `ForumExportDlg.cpp:1216-1451` (`AddEnhancements`/`AddEpicDestinyTree`/`AddReaperTrees` + their per-tree `AddEnhancementTree`/`AddEpicDestinyTree`/`AddReaperTree` helpers) wrap each section in a `[COLOR=rgb(184, 49, 47)][SIZE=6]` header (Enhancements: hardcoded "80 APs" plus Racial/Universal bonus AP when present; Epic Destinies: the Destiny Point total; Reaper: no total), then one `[COLOR=rgb(65, 168, 95)][SIZE=5]TreeName - Points spent: N[/SIZE][/COLOR]` block per trained tree terminated by `[HR][/HR]`, prefixing each enhancement with its tier ("Core1 ".."Core6 " / "Tier1 ".."Tier6 ", from `YPosition`/`XPosition`) and a " - N Ranks" suffix for multi-rank items. V3's `enhancements`/`epicDestinies`/`reaperTrees` sections (`sections.ts`) printed flat `[b]…[/b]:`/`  tree:`/`    name (rank)` lines with no coloring, AP totals, tier labels or spent totals. Rewrote all three to emit V2's exact headers and per-tree blocks, reusing the existing `computeBonusActionPoints` (racial/universal AP) and `destinyPoolForBuild` (Destiny Points) helpers and a tree-cost calculation mirrored from `EnhancementTreePanel.tsx`'s `costUpToRank`. Also reproduces a verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max `Ranks()`, not the trained rank, unlike the Enhancement/Epic Destiny emitters. `SectionContext` gains an `allTrees?: EnhancementTree[]` field, wired from `ForumExportPanel.tsx`'s existing `useStaticBundle()` bundle. 7 new regression tests in `parityPassX17TreeHeaders.test.ts`. | this PR |
 | 149 | **X15 — forum-export "Spell Powers" section had no table, no Critical Multiplier column, a spurious Universal row, and dropped 5 fixed rows' worth of always-emitted content** — `ForumExportDlg.cpp:1453-1520 AddSpellPowers`/`AddSpellPowerToTable` always emit a `[SIZE=3][TABLE]` with 16 fixed rows (no Lawful row; "Force/Untyped" reads the Force breakdown, a separate "Untyped" row reads Untyped) and 4 columns including a `(int)`-truncated Critical Multiplier; V3's `spellPowers` section only printed non-zero "Label: power / crit X%" lines with its own extra Universal row and no multiplier column. Rewrote to emit V2's exact 16-row table, folding Universal power/crit/crit-multiplier additively into every row instead of a standalone one. 8 new tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.test.ts` updated to match the corrected row format. | this PR |
 | 148 | **X14 — forum-export "Energy Resistances" section used the wrong type list and no table wrapping** — `ForumExportDlg.cpp:1167-1214 AddEnergyResistances` always emits a `[TABLE]` with fixed rows for Acid/Chaos/Cold/Electric/Evil/Fire/Force/Good/Lawful/Light/Negative/Poison/Sonic (Positive/Repair/Rust deliberately excluded), Resistance + Absorbance shown for every row even at 0; V3's `energyResistances` section used an 11-type list missing Chaos/Evil/Good/Lawful and wrongly including Positive/Repair, only printed non-zero rows as free text, and dropped the table entirely. Rewrote to emit V2's exact 13-row table. 6 new tests in `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts` updated to match the corrected row format. | #208 |
@@ -988,12 +989,23 @@ already closed; these are new, some content gaps (not just formatting):
   `parityPassX10SpecialFeats.test.ts`; `parityPass5.test.ts`'s stale
   assertion (which forced the dead legacy cast to exercise the section)
   updated to pass `specialFeats` via context instead.
-- ❌ **X11 — `AddSkills` has no V3 equivalent.** V2
+- ✅ **X11 — `AddSkills` has no V3 equivalent — done (#209, this pass).** V2
   (`ForumExportDlg.cpp:889-1027`) emits a `[code]` monospace grid: skill
   points available per level, per-skill per-level ranks (½ for
   cross-class), Ranks/Tome/Buffed-total columns, and an "Available Points"
-  row. V3's `skills` (`sections.ts:312-325`) only prints total ranks + stat
-  bonus per skill — the whole per-level breakdown is missing.
+  row. V3's `skills` (`sections.ts:312-325`) only printed total ranks + stat
+  bonus per skill — the whole per-level breakdown was missing. Rewrote the
+  section to emit V2's exact `[code]` grid: a "Skill Points" row (per-level
+  budget from `getLevelTrainingEntries`), a zero-padded level-number header
+  (byte-identical to V2's misaligned "Skill Name       " label + " Ranks
+  Tome Buffed" suffix), all 21 `SKILL_NAMES` rows in V2 enum order (raw
+  per-level trained count for class skills, `floor(raw/2)` + a literal "½"
+  — V2's 0xBD byte — for cross-class, reusing `build.skillRanksByLevel` via
+  `getLevelTrainingEntries`), Ranks/Tome/Buffed columns read straight off
+  the existing `skill.<Name>` stat's `Ranks`/`Tome` bonus rows and
+  `stats.total()` (already V2-exact per items #21/#64/#106 — no new stat
+  computation needed), and a trailing "Available Points" row. 11 regression
+  tests in `parityPassX11Skills.test.ts`.
 - ❌ **X12 — `AddConsolidatedFeats` has different semantics, not just
   formatting.** V2 (`ForumExportDlg.cpp:735-844`) renders a per-level
   `[TABLE]` (Level | Class | Feats) with color-coded slot labels,
