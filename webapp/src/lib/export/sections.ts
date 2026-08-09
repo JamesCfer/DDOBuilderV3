@@ -12,9 +12,10 @@ import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
 import { absorptionTotal } from '../bonus'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
-import { buildSlots } from '../levelTraining'
+import { buildSlots, getLevelTrainingEntries } from '../levelTraining'
 import { computeBonusActionPoints } from '../actionPoints'
 import { destinyPoolForBuild } from '../destiny'
+import { SKILL_NAMES } from '../gamedata'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -328,21 +329,74 @@ const featSelections: SectionDef = {
   emit: ctx => featSelectionsTable(ctx, true),
 }
 
+// V2 ForumExportDlg.cpp:889-1027 (AddSkills) — a `[code]` monospace grid: a
+// "Skill Points" row (points available per character level), a level-number
+// header, one row per skill (ranks trained at each level — cross-class shown
+// in ½-rank multiples of the raw per-level spend, V2 `skillRanks[skill]/2` —
+// followed by Ranks/Tome/Buffed totals at the build's final level), and a
+// trailing "Available Points" row. V3 previously printed only whole-build
+// totals ("skill: N ranks (+M)") with no per-level breakdown at all.
 const skills: SectionDef = {
   id: 'Skills',
   label: 'Skills',
-  emit: ({ build, stats }) => {
-    const entries = Object.entries(build.skillRanks).filter(([, r]) => r > 0)
-    if (entries.length === 0) return []
-    const lines = ['[b]Skills[/b]:']
-    entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([s, r]) => {
-      const total = stats ? stats.total(`skill.${s}`) : 0
-      // V2 prints the effective rank total (cross-class spends count 0.5) —
-      // the stats engine's 'Ranks' row carries exactly that value.
-      const rankRow = stats?.resolve(`skill.${s}`).bonuses.find(b => b.type === 'Ranks')
-      const ranks = rankRow ? rankRow.value : r
-      lines.push(`  ${s}: ${ranks} ranks (${sign(total)})`)
-    })
+  emit: ({ build, stats, allClasses, allRaces }) => {
+    if (!stats || !allClasses || !allRaces) return []
+    const entries = getLevelTrainingEntries(build, allClasses, allRaces)
+    const maxHeroicLevel = entries.length
+    if (maxHeroicLevel === 0) return []
+
+    const border = '-'.repeat(35) + '---'.repeat(maxHeroicLevel)
+    const lines: string[] = ['[code]', border]
+
+    let row = 'Skill Points    '
+    for (const e of entries) row += String(e.skillPointsAvailable).padStart(3)
+    lines.push(row)
+
+    row = 'Skill Name       '
+    for (let li = 0; li < maxHeroicLevel; li++) row += String(li + 1).padStart(2, '0') + ' '
+    row += ' Ranks Tome Buffed'
+    lines.push(row, border)
+
+    const classSkillSets = new Map<string, Set<string>>()
+    const classSkillsFor = (className: string): Set<string> => {
+      let s = classSkillSets.get(className)
+      if (!s) {
+        s = new Set(toArray(allClasses.find(c => c.Name === className)?.ClassSkill))
+        classSkillSets.set(className, s)
+      }
+      return s
+    }
+
+    for (const skill of SKILL_NAMES) {
+      row = skill.padEnd(16)
+      for (const e of entries) {
+        const raw = e.skillRanks[skill] ?? 0
+        if (raw > 0) {
+          let text: string
+          if (classSkillsFor(e.className).has(skill)) {
+            text = String(raw)
+          } else {
+            // cross-class: shown in ½-rank multiples of the raw spend
+            const fullRanks = Math.floor(raw / 2)
+            text = (fullRanks > 0 ? String(fullRanks) : '') + (raw % 2 !== 0 ? '½' : '')
+          }
+          row += text.padStart(3)
+        } else {
+          row += '   '
+        }
+      }
+      const bonuses = stats.resolve(`skill.${skill}`).bonuses
+      const ranks = bonuses.find(b => b.type === 'Ranks')?.value ?? 0
+      const tome = bonuses.find(b => b.type === 'Tome')?.value ?? 0
+      const buffed = stats.total(`skill.${skill}`)
+      row += ranks.toFixed(1).padStart(7) + String(Math.trunc(tome)).padStart(5) + buffed.toFixed(1).padStart(7)
+      lines.push(row)
+    }
+
+    lines.push(border)
+    row = 'Available Points'
+    for (const e of entries) row += String(e.skillPointsAvailable - e.skillPointsSpent).padStart(3)
+    lines.push(row, border, '[/code]')
     return lines
   },
 }
