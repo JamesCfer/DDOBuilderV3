@@ -706,18 +706,32 @@ const spells: SectionDef = {
   },
 }
 
+// V2 AddWeaponDamage (ForumExportDlg.cpp:1680-1732) always emits this fixed
+// scalar block (unconditional — not gated on gear being equipped), followed
+// by a per-weapon effects breakdown (BreakdownItemWeaponEffects::
+// AddForumExportData) that V3 does not yet model and omits here.
 const weaponDamage: SectionDef = {
   id: 'WeaponDamage',
   label: 'Weapon damage',
   emit: ({ stats }) => {
-    if (!stats || !stats.weapon) return []
-    const w = stats.weapon
+    if (!stats) return []
     return [
-      '[b]Weapon[/b]:',
-      `  ${w.name}: ${w.diceNum}d${w.diceSides} crit ${21 - w.critThreatRange}-20 ×${w.critMultiplier}`,
-      `  To-hit ${sign(stats.total('melee.toHit') + stats.total('melee.attack'))} ` +
-      `Damage ${sign(stats.total('melee.damage'))} ` +
-      `Doublestrike ${stats.total('melee.doublestrike')}%`,
+      'Weapon Damage',
+      '[HR][/HR]',
+      `Melee Power:  ${stats.total('melee.power')}`,
+      `Doublestrike: ${Math.trunc(stats.total('melee.doublestrike'))}%`,
+      `Strikethrough: ${Math.trunc(stats.total('melee.strikethrough'))}%`,
+      `Mainhand damage ability multiplier: ${Math.trunc(stats.total('melee.damageAbilityMult'))}`,
+      `Offhand damage ability multiplier: ${Math.trunc(stats.total('offhand.damageAbilityMult'))}`,
+      `Off-Hand attack Chance: ${Math.trunc(stats.total('offhand.attack'))}%`,
+      `Fortification Bypass: ${Math.trunc(stats.total('fortBypass'))}%`,
+      `Dodge Bypass: ${Math.trunc(stats.total('dodgeBypass'))}%`,
+      `Helpless Damage bonus: ${Math.trunc(stats.total('helpless'))}%`,
+      `Ranged Power: ${stats.total('ranged.power')}`,
+      `Doubleshot Chance: ${Math.trunc(stats.total('ranged.doubleshot'))}%`,
+      '',
+      `Sneak Attack Attack bonus: ${Math.trunc(stats.total('melee.sneakAttack'))}`,
+      `Sneak Attack Damage: ${Math.trunc(stats.total('melee.sneakDice'))}d6+${Math.trunc(stats.total('melee.sneakDamage'))}`,
     ]
   },
 }

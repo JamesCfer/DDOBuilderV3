@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 152 | **X13 — forum-export "Weapon Damage" section dropped ~10 of its fields, keeping only a V3-invented dice/crit/to-hit/damage/doublestrike summary that has no V2 equivalent** — `ForumExportDlg.cpp:1680-1732 AddWeaponDamage` always emits a fixed scalar block (Melee Power, Doublestrike%, Strikethrough%, Mainhand/Offhand damage-ability multiplier, Off-Hand attack Chance%, Fortification Bypass%, Dodge Bypass%, Helpless Damage bonus%, Ranged Power, Doubleshot Chance%, Sneak Attack Attack bonus, Sneak Attack Damage `Nd6+M`), each numeric/percent field truncated to a whole number via `AddBreakdown`. Rewrote V3's `weaponDamage` section to emit V2's exact block, reusing the already oracle/golden-verified stat keys (`melee.power`, `ranged.power`, `melee.doublestrike`, `melee.strikethrough`, `offhand.attack`, `fortBypass`, `helpless`, `ranged.doubleshot` — items #106/#137) plus three previously-parsed-but-unsurfaced keys (`melee.damageAbilityMult`, `offhand.damageAbilityMult`, `dodgeBypass`) and the sneak-attack triad (`melee.sneakAttack`, `melee.sneakDice`, `melee.sneakDamage`) — no new stat computation needed. The per-weapon effects breakdown (On Hit/Critical damage lines, DR Bypass, Ghost Touch/True Seeing) has no V3 stat model yet and is left for a future pass. 6 new regression tests in `parityPassX13WeaponDamage.test.ts`. | this PR |
 | 151 | **X11 — forum-export "Skills" section had no per-level breakdown, only whole-build totals** — `ForumExportDlg.cpp:889-1027 AddSkills` always emits a `[code]`-wrapped monospace grid: a per-level "Skill Points" budget row, a level-number header, one row per V2 skill (raw per-level trained count for class skills, ½-rank multiples for cross-class — reading `LevelTraining::TrainedSkills()`), trailing Ranks/Tome/Buffed columns, and an "Available Points" row. V3's `skills` section only printed non-zero "skill: N ranks (+M)" free-text lines with no per-level data at all. Rewrote to emit V2's exact grid, sourcing per-level data from the existing `getLevelTrainingEntries` helper (Done item U7/#62) and the Ranks/Tome/Buffed columns straight from the already-V2-exact `skill.<Name>` stat (items #21/#64/#106) — no new stat computation needed. 11 new regression tests in `parityPassX11Skills.test.ts`. | this PR |
 | 150 | **X17 — Enhancement/Destiny/Reaper tree export sections had plain "[b]...[/b]:" headers, no AP/Destiny-Point totals, no tier labels, no Points-spent line** — `ForumExportDlg.cpp:1216-1451` (`AddEnhancements`/`AddEpicDestinyTree`/`AddReaperTrees` + their per-tree `AddEnhancementTree`/`AddEpicDestinyTree`/`AddReaperTree` helpers) wrap each section in a `[COLOR=rgb(184, 49, 47)][SIZE=6]` header (Enhancements: hardcoded "80 APs" plus Racial/Universal bonus AP when present; Epic Destinies: the Destiny Point total; Reaper: no total), then one `[COLOR=rgb(65, 168, 95)][SIZE=5]TreeName - Points spent: N[/SIZE][/COLOR]` block per trained tree terminated by `[HR][/HR]`, prefixing each enhancement with its tier ("Core1 ".."Core6 " / "Tier1 ".."Tier6 ", from `YPosition`/`XPosition`) and a " - N Ranks" suffix for multi-rank items. V3's `enhancements`/`epicDestinies`/`reaperTrees` sections (`sections.ts`) printed flat `[b]…[/b]:`/`  tree:`/`    name (rank)` lines with no coloring, AP totals, tier labels or spent totals. Rewrote all three to emit V2's exact headers and per-tree blocks, reusing the existing `computeBonusActionPoints` (racial/universal AP) and `destinyPoolForBuild` (Destiny Points) helpers and a tree-cost calculation mirrored from `EnhancementTreePanel.tsx`'s `costUpToRank`. Also reproduces a verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max `Ranks()`, not the trained rank, unlike the Enhancement/Epic Destiny emitters. `SectionContext` gains an `allTrees?: EnhancementTree[]` field, wired from `ForumExportPanel.tsx`'s existing `useStaticBundle()` bundle. 7 new regression tests in `parityPassX17TreeHeaders.test.ts`. | this PR |
 | 149 | **X15 — forum-export "Spell Powers" section had no table, no Critical Multiplier column, a spurious Universal row, and dropped 5 fixed rows' worth of always-emitted content** — `ForumExportDlg.cpp:1453-1520 AddSpellPowers`/`AddSpellPowerToTable` always emit a `[SIZE=3][TABLE]` with 16 fixed rows (no Lawful row; "Force/Untyped" reads the Force breakdown, a separate "Untyped" row reads Untyped) and 4 columns including a `(int)`-truncated Critical Multiplier; V3's `spellPowers` section only printed non-zero "Label: power / crit X%" lines with its own extra Universal row and no multiplier column. Rewrote to emit V2's exact 16-row table, folding Universal power/crit/crit-multiplier additively into every row instead of a standalone one. 8 new tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.test.ts` updated to match the corrected row format. | this PR |
@@ -1015,13 +1016,29 @@ already closed; these are new, some content gaps (not just formatting):
   (`sections.ts:578-594`) just tallies how many times each distinct
   feat-choice value appears build-wide ("FeatName xN") — different content,
   not a formatting gap.
-- ❌ **X13 — `AddWeaponDamage` drops most fields.** V2
-  (`ForumExportDlg.cpp:1680-1732`) exports Melee Power, Doublestrike%,
-  Strikethrough%, main/off-hand damage-ability multiplier, Off-Hand attack
-  chance%, Fortification Bypass%, Dodge Bypass%, Helpless Damage%, Ranged
-  Power, Doubleshot Chance%, Sneak Attack attack/damage, plus a per-weapon
-  effects breakdown. V3's `weaponDamage` (`sections.ts:477-491`) only shows
-  dice/crit, to-hit, damage, doublestrike% — roughly 10 fields missing.
+- ✅ **X13 — `AddWeaponDamage` drops most fields — done (#152, this pass).**
+  V2 (`ForumExportDlg.cpp:1680-1732`) always emits a fixed scalar block: Melee
+  Power, Doublestrike%, Strikethrough%, Mainhand/Offhand damage-ability
+  multiplier, Off-Hand attack Chance%, Fortification Bypass%, Dodge Bypass%,
+  Helpless Damage bonus%, Ranged Power, Doubleshot Chance%, then (after a
+  blank line) Sneak Attack Attack bonus and Sneak Attack Damage (`Nd6+M`) —
+  each numeric/percent field via `AddBreakdown`, which truncates to a whole
+  number. V3's `weaponDamage` (`sections.ts`) only showed a V3-invented
+  dice/crit/to-hit/damage/doublestrike% summary that has no V2 equivalent in
+  this section at all, and dropped every field above. Rewrote the section to
+  emit V2's exact block, reading the already oracle/golden-verified stat keys
+  `melee.power`/`ranged.power`/`melee.doublestrike`/`melee.strikethrough`/
+  `offhand.attack`/`fortBypass`/`helpless`/`ranged.doubleshot` (Done items
+  #106/#137) plus the previously-parsed-but-unsurfaced
+  `melee.damageAbilityMult`/`offhand.damageAbilityMult`/`dodgeBypass`/
+  `melee.sneakAttack`/`melee.sneakDice`/`melee.sneakDamage` keys — no new
+  stat computation needed. Remaining gap, not closed in this pass: the
+  per-weapon effects breakdown (`BreakdownItemWeaponEffects::
+  AddForumExportData` — On Hit/Critical/Critical 19-20 damage lines, DR
+  Bypass, Ghost Touch/True Seeing notes) has no V3 stat model yet (per-weapon
+  DR bypass, ghost touch and true seeing flags aren't tracked at all) and is
+  intentionally left out; a future pass should add it as its own item if
+  needed. 6 new regression tests in `parityPassX13WeaponDamage.test.ts`.
 - ✅ **X14 — `AddEnergyResistances` wrong type list + no `[TABLE]` — done
   (#208).** V2 (`ForumExportDlg.cpp:1167-1214`) always emits a
   `[TABLE]` with a header row and exactly 13 fixed type rows — Acid, Chaos,
