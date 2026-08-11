@@ -5,6 +5,7 @@ import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import type { ResolvedBonus } from '../../lib/bonus'
 import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../../lib/gamedata'
+import { spellPowerRowValues } from '../../lib/spellPowerRow'
 import { useFavorites } from '../../lib/favoritesStore'
 import { buildBreakdownSections, indexSectionRows } from './breakdownSections'
 import { Tooltip, Section, StatRow, sign, type TipState, type StatRowData } from './statRows'
@@ -30,7 +31,7 @@ const AB3: Record<Ab, string> = {
 
 function abMod(score: number) { return Math.floor((score - 10) / 2) }
 function pct(n: number)       { return n + '%' }
-function mult(n: number)      { return '×' + n.toFixed(1).replace(/\.0$/, '') }
+function mult(n: number)      { return '×' + n.toFixed(2).replace(/\.?0+$/, '') }
 
 // ---------------------------------------------------------------------------
 // Spell power grid row
@@ -42,22 +43,13 @@ function SpellPowerRow({ name, spKey, stats, onTip }: {
   stats: ReturnType<typeof useBuildStats>
   onTip: (t: TipState | null) => void
 }) {
-  const power    = stats.total(`sp.${spKey}`) + stats.total('sp.Universal')
-  const critPct  = 5 + stats.total(`spCrit.${spKey}`) + stats.total('spCrit.Universal')
-  const critMult = 1.5  // base; no data yet for crit mult enhancers
-
-  const spBonuses = [
-    ...stats.resolve(`sp.${spKey}`).bonuses,
-    ...stats.resolve('sp.Universal').bonuses,
-  ]
-  const critBonuses: ResolvedBonus[] = [
-    { value: 5, type: 'Base', source: 'Base threat (20)', active: true },
-    ...stats.resolve(`spCrit.${spKey}`).bonuses,
-    ...stats.resolve('spCrit.Universal').bonuses,
-  ]
-  const multBonuses: ResolvedBonus[] = [
-    { value: 1.5, type: 'Base', source: 'Base critical multiplier', active: true },
-  ]
+  // Row math (and its V2 parity notes) lives in lib/spellPowerRow.
+  const {
+    power, critChance, critMultiplier,
+    powerBonuses: spBonuses,
+    critChanceBonuses: critBonuses,
+    critMultiplierBonuses: multBonuses,
+  } = spellPowerRowValues(stats, spKey)
 
   function cell(display: string, label: string, bonuses: ResolvedBonus[]) {
     return (
@@ -78,8 +70,8 @@ function SpellPowerRow({ name, spKey, stats, onTip }: {
     <tr className={styles.spRow}>
       <td className={styles.spName}>{name}</td>
       {cell(String(power),      'Power',       spBonuses)}
-      {cell(pct(critPct),       'Crit Chance', critBonuses)}
-      {cell(mult(critMult),     'Crit Mult',   multBonuses)}
+      {cell(pct(critChance),    'Crit Chance', critBonuses)}
+      {cell(mult(critMultiplier), 'Crit Mult',  multBonuses)}
     </tr>
   )
 }
