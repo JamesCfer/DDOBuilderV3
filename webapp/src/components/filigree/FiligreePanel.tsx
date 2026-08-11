@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter, MAX_FILIGREE_SLOTS } from '../../context/CharacterContext'
 import type { Filigree, FiligreeSetBonus, FiligreeSetBuff, FiligreeSlot, SentientGem } from '../../types/ddo'
+import DdoIcon from '../DdoIcon'
+import HoverCard, { useHoverCard } from '../common/HoverCard'
+import { FiligreeCardContent, type SetCount } from './FiligreeHoverCard'
 import styles from './FiligreePanel.module.css'
 
 // Defaults when a build has no stored slot arrays; the rendered counts follow
@@ -47,31 +50,126 @@ interface SlotRowProps {
   slot: FiligreeSlot
   groups: Map<string, Filigree[]>
   menuNames: string[]
+  byName: Map<string, Filigree>
+  setBonusByType: Map<string, FiligreeSetBonus>
+  /** Pieces per set currently slotted across the whole build. */
+  equippedCounts: Map<string, number>
   onNameChange: (name: string) => void
   onRareToggle: (rare: boolean) => void
 }
 
-function FiligreeSlotRow({ index, label, slot, groups, menuNames, onNameChange, onRareToggle }: SlotRowProps) {
+function FiligreeSlotRow({
+  index, label, slot, groups, menuNames, byName, setBonusByType, equippedCounts,
+  onNameChange, onRareToggle,
+}: SlotRowProps) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const { hover, show, hide } = useHoverCard<Filigree>()
+
+  const equipped = slot.name ? byName.get(slot.name) : undefined
+
+  // How many pieces of a set the build has now, and how many it would have
+  // with the hovered filigree in THIS slot — the piece already here stops
+  // counting once it is replaced.
+  function countFor(setName: string): SetCount {
+    const current = equippedCounts.get(setName) ?? 0
+    const displaced = toArray(equipped?.SetBonus).includes(setName) ? 1 : 0
+    return { current, projected: current - displaced + 1 }
+  }
+
+  const needle = search.trim().toLowerCase()
+  const matches = (f: Filigree) => !needle
+    || f.Name.toLowerCase().includes(needle)
+    || toArray(f.SetBonus).some(s => s.toLowerCase().includes(needle))
+
+  function choose(name: string) {
+    onNameChange(name)
+    setOpen(false)
+    setSearch('')
+    hide()
+  }
+
   return (
     <div className={styles.slotRow}>
       <span className={styles.slotLabel}>{label} {index + 1}</span>
-      <select
-        className={styles.slotSelect}
-        value={slot.name}
-        onChange={e => onNameChange(e.target.value)}
-      >
-        <option value="">— Empty —</option>
-        {menuNames.map(menu => (
-          <optgroup key={menu} label={menu}>
-            {(groups.get(menu) ?? [])
-              .slice()
-              .sort((a, b) => a.Name.localeCompare(b.Name))
-              .map(f => (
-                <option key={f.Name} value={f.Name}>{f.Name}</option>
-              ))}
-          </optgroup>
-        ))}
-      </select>
+      <div className={styles.slotPickerWrap}>
+        <button
+          type="button"
+          className={`${styles.slotSelect} ${slot.name ? styles.slotSelectFilled : ''}`}
+          onClick={() => setOpen(o => !o)}
+          onMouseEnter={equipped ? show(equipped) : undefined}
+          onMouseLeave={hide}
+        >
+          {slot.name ? (
+            <>
+              <DdoIcon
+                category="FiligreeImages"
+                name={equipped?.Icon ?? slot.name}
+                size={16}
+                className={styles.slotIcon}
+              />
+              <span className={styles.slotName}>{slot.name}</span>
+            </>
+          ) : (
+            <span className={styles.slotName}>— Empty —</span>
+          )}
+        </button>
+
+        {open && (
+          <div className={styles.picker}>
+            <input
+              className={styles.pickerSearch}
+              placeholder="Search filigrees or sets…"
+              value={search}
+              autoFocus
+              onChange={e => setSearch(e.target.value)}
+            />
+            <div className={styles.pickerList} role="listbox" aria-label={`${label} ${index + 1} filigree`}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={!slot.name}
+                className={`${styles.pickerOption} ${!slot.name ? styles.pickerOptionActive : ''}`}
+                onClick={() => choose('')}
+              >
+                — Empty —
+              </button>
+              {menuNames.map(menu => {
+                const items = (groups.get(menu) ?? [])
+                  .filter(matches)
+                  .sort((a, b) => a.Name.localeCompare(b.Name))
+                if (items.length === 0) return null
+                return (
+                  <div key={menu}>
+                    <div className={styles.pickerGroup}>{menu}</div>
+                    {items.map(f => (
+                      <button
+                        key={f.Name}
+                        type="button"
+                        role="option"
+                        aria-selected={f.Name === slot.name}
+                        className={`${styles.pickerOption} ${f.Name === slot.name ? styles.pickerOptionActive : ''}`}
+                        onMouseEnter={show(f)}
+                        onMouseLeave={hide}
+                        onClick={() => choose(f.Name)}
+                      >
+                        <DdoIcon
+                          category="FiligreeImages"
+                          name={f.Icon ?? f.Name}
+                          size={16}
+                          className={styles.slotIcon}
+                        />
+                        <span className={styles.slotName}>{f.Name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
       {slot.name && (
         <label className={`${styles.rareToggle} ${slot.rare ? styles.rareToggleOn : ''}`} title="Rare variant — applies rare effects">
           <input
@@ -81,6 +179,17 @@ function FiligreeSlotRow({ index, label, slot, groups, menuNames, onNameChange, 
           />
           Rare
         </label>
+      )}
+
+      {hover && (
+        <HoverCard x={hover.x} y={hover.y} openLeft={hover.openLeft}>
+          <FiligreeCardContent
+            filigree={hover.data}
+            setBonuses={setBonusByType}
+            countFor={countFor}
+            rare={slot.rare}
+          />
+        </HoverCard>
       )}
     </div>
   )
@@ -114,6 +223,7 @@ export default function FiligreePanel() {
 
   const groups = groupByMenu(filigrees)
   const menuNames = Array.from(groups.keys()).sort()
+  const byName = new Map<string, Filigree>(filigrees.map(f => [f.Name, f]))
 
   const allSlots = [...weaponSlots, ...artifactSlots]
   const equippedCounts = countSetBonuses(allSlots, filigrees)
@@ -204,6 +314,9 @@ export default function FiligreePanel() {
                   slot={slot}
                   groups={groups}
                   menuNames={menuNames}
+                  byName={byName}
+                  setBonusByType={setBonusByType}
+                  equippedCounts={equippedCounts}
                   onNameChange={name => dispatch({ type: 'SET_FILIGREE', slotIndex: i, name })}
                   onRareToggle={rare => dispatch({ type: 'SET_FILIGREE_RARE', slotIndex: i, rare })}
                 />
@@ -234,6 +347,9 @@ export default function FiligreePanel() {
                   slot={slot}
                   groups={groups}
                   menuNames={menuNames}
+                  byName={byName}
+                  setBonusByType={setBonusByType}
+                  equippedCounts={equippedCounts}
                   onNameChange={name => dispatch({ type: 'SET_ARTIFACT_FILIGREE', slotIndex: i, name })}
                   onRareToggle={rare => dispatch({ type: 'SET_ARTIFACT_FILIGREE_RARE', slotIndex: i, rare })}
                 />

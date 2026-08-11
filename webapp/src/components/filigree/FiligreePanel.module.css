@@ -96,27 +96,222 @@
   text-align: right;
 }
 
-.slotSelect {
+/* The slot is a picker button rather than a <select> so each entry can raise
+   a hover card previewing its set-bonus ladder. */
+.slotPickerWrap {
+  position: relative;
   flex: 1;
+  min-width: 0;
+}
+
+.slotSelect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
   min-width: 0;
   height: 28px;
   padding: 0 6px;
   background: var(--color-bg-input);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  color: var(--color-text-primary);
+  color: var(--color-text-muted);
   font-size: 12px;
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.12s;
+  transition: border-color 0.12s, background 0.12s;
 }
 
 .slotSelect:hover {
   border-color: var(--color-border-light);
+  background: var(--color-bg-hover);
 }
 
 .slotSelect:focus {
   outline: none;
   border-color: var(--color-border-focus);
+}
+
+.slotSelectFilled {
+  color: var(--color-text-primary);
+  border-color: var(--color-gold-dark);
+}
+
+.slotIcon {
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.slotName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Filigree picker dropdown ── */
+.picker {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+  overflow: hidden;
+}
+
+.pickerSearch {
+  width: 100%;
+  padding: 5px 8px;
+  background: var(--color-bg-input);
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  outline: none;
+}
+
+.pickerSearch::placeholder {
+  color: var(--color-text-muted);
+}
+
+.pickerList {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.pickerGroup {
+  padding: 4px 8px 2px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-panel);
+  position: sticky;
+  top: 0;
+}
+
+.pickerOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.pickerOption:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  border-left-color: var(--color-gold);
+}
+
+.pickerOptionActive {
+  background: var(--color-bg-active);
+  color: var(--color-text-primary);
+  border-left-color: var(--color-gold-light);
+}
+
+/* ── Hover-card pieces (set bonus ladder) ── */
+.rareLine,
+.rareLineOn {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.rareLineOn {
+  color: var(--color-text-primary);
+}
+
+.rareTag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 1px solid var(--color-purple);
+  color: var(--color-purple);
+}
+
+.rareLineOn .rareTag {
+  background: var(--color-purple);
+  color: var(--color-text-primary);
+}
+
+.setCountLine {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-bottom: 3px;
+}
+
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tierRow {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  column-gap: 6px;
+  align-items: baseline;
+  font-size: 11px;
+}
+
+.tierCount {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.tierText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tierActive {
+  color: var(--color-text-primary);
+}
+
+.tierActive .tierCount {
+  color: var(--color-gold);
+}
+
+.tierUnlocks {
+  color: var(--color-text-primary);
+}
+
+.tierUnlocks .tierCount {
+  color: #3fbf72;
+}
+
+.tierLocked {
+  color: var(--color-text-muted);
+}
+
+.tierBadge {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 1px solid #3fbf72;
+  color: #3fbf72;
+  white-space: nowrap;
 }
 
 /* ── Section header ─────────────────────────────────────────────────── */
