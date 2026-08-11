@@ -197,14 +197,71 @@ export function augmentTypeColor(type: string | undefined): string {
 // Augment descriptions
 // ---------------------------------------------------------------------------
 
-/** V2 Augment::LevelValue — a space-separated per-level table. */
-export function augmentLevelValues(aug: Augment): number[] {
-  const raw = aug.LevelValue as unknown
+/** Parses V2's space-separated numeric tables (`<Levels>`, `<LevelValue>`). */
+function numberTable(raw: unknown): number[] {
   if (raw == null) return []
   const text = typeof raw === 'object' && raw !== null && '#text' in (raw as Record<string, unknown>)
     ? String((raw as Record<string, unknown>)['#text'] ?? '')
     : String(raw)
   return text.trim().split(/\s+/).map(Number).filter(n => !isNaN(n))
+}
+
+/** V2 Augment::LevelValue — a space-separated per-level table. */
+export function augmentLevelValues(aug: Augment): number[] {
+  return numberTable(aug.LevelValue)
+}
+
+/**
+ * V2 Augment::Levels — the item level each LevelValue entry belongs to. Only
+ * the gem augments carry it; those are the ones the player picks a tier for.
+ */
+export function augmentLevels(aug: Augment): number[] {
+  return numberTable(aug.Levels)
+}
+
+/** True when this augment's tier is the player's choice rather than the item's
+ *  level (V2: PopulateAugmentList shows the level combo only for HasLevels). */
+export function hasSelectableLevels(aug: Augment): boolean {
+  return augmentLevels(aug).length > 0 && augmentLevelValues(aug).length > 0
+}
+
+export interface AugmentLevelOption {
+  /** Index into LevelValue — what V2 stores as ItemAugment::SelectedLevelIndex. */
+  index: number
+  /** The item level this tier requires. */
+  level: number
+  /** The effect amount at this tier. */
+  value: number
+}
+
+/**
+ * Selectable tiers, capped to what the character can actually use — V2 only
+ * lists levels <= the build level (ItemSelectDialog.cpp:573).
+ */
+export function augmentLevelOptions(aug: Augment, maxLevel?: number): AugmentLevelOption[] {
+  const levels = augmentLevels(aug)
+  const values = augmentLevelValues(aug)
+  const out: AugmentLevelOption[] = []
+  for (let i = 0; i < levels.length && i < values.length; i++) {
+    if (maxLevel != null && levels[i] > maxLevel) continue
+    out.push({ index: i, level: levels[i], value: values[i] })
+  }
+  return out
+}
+
+/** The best tier usable at a level — the default when the player picks one. */
+export function bestAugmentLevelIndex(aug: Augment, maxLevel?: number): number {
+  const options = augmentLevelOptions(aug, maxLevel)
+  if (options.length > 0) return options[options.length - 1].index
+  // Nothing is usable at this level; fall back to the lowest tier.
+  return 0
+}
+
+/** The effect amount at a stored SelectedLevelIndex. */
+export function augmentValueAtIndex(aug: Augment, index: number): number | undefined {
+  const values = augmentLevelValues(aug)
+  if (values.length === 0) return undefined
+  return values[Math.min(Math.max(0, index), values.length - 1)]
 }
 
 /**

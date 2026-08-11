@@ -382,10 +382,27 @@
 
 .augRow {
   display: grid;
-  grid-template-columns: 80px 1fr auto;
+  grid-template-columns: 80px 1fr auto auto;
   align-items: center;
   gap: 4px;
   position: relative;
+}
+
+/* Tier picker for augments with a <Levels> table (Sapphire of Defense, …). */
+.augLevelSelect {
+  padding: 1px 2px;
+  font-size: 10px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-gold-dark);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  max-width: 108px;
+}
+
+.augLevelSelect:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
 }
 
 .augType {
@@ -457,6 +474,21 @@
 
 /* Augment option list — replaces a bare <select> so each entry can carry an
    icon and raise a hover card describing what the augment does. */
+.augSearch {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 11px;
+  background: var(--color-bg-input);
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.augSearch::placeholder {
+  color: var(--color-text-muted);
+}
+
 .augOptionList {
   display: flex;
   flex-direction: column;

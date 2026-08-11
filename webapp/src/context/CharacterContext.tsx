@@ -23,8 +23,9 @@ type Action =
   | { type: 'SET_SKILL_RANK_AT_LEVEL'; level: number; skill: string; rank: number }
   | { type: 'SET_GEAR'; slot: string; itemName: string }
   | { type: 'CLEAR_GEAR'; slot: string }
-  | { type: 'SET_AUGMENT'; key: string; augmentName: string }
+  | { type: 'SET_AUGMENT'; key: string; augmentName: string; levelIndex?: number }
   | { type: 'CLEAR_AUGMENT'; key: string }
+  | { type: 'SET_AUGMENT_LEVEL'; key: string; levelIndex: number }
   | { type: 'SET_SLOT_UPGRADE'; key: string; upgradeType: string }
   | { type: 'SET_PAST_LIFE'; source: string; count: number }
   | { type: 'TRAIN_SPECIAL_FEAT'; featName: string }
@@ -289,6 +290,9 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
         augmentChoices: Object.fromEntries(
           Object.entries(state.augmentChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
         ),
+        augmentLevelChoices: Object.fromEntries(
+          Object.entries(state.augmentLevelChoices ?? {}).filter(([k]) => !k.startsWith(action.slot + ':')),
+        ),
         slotUpgradeChoices: Object.fromEntries(
           Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
         ),
@@ -299,18 +303,41 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       const augmentChoices = Object.fromEntries(
         Object.entries(state.augmentChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
       )
+      const augmentLevelChoices = Object.fromEntries(
+        Object.entries(state.augmentLevelChoices ?? {}).filter(([k]) => !k.startsWith(action.slot + ':')),
+      )
       const slotUpgradeChoices = Object.fromEntries(
         Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
       )
-      return { ...state, gear, augmentChoices, slotUpgradeChoices }
+      return { ...state, gear, augmentChoices, augmentLevelChoices, slotUpgradeChoices }
     }
-    case 'SET_AUGMENT':
-      return { ...state, augmentChoices: { ...state.augmentChoices, [action.key]: action.augmentName } }
+    case 'SET_AUGMENT': {
+      // A stored tier belongs to the augment that was in the slot; swapping
+      // the augment drops it (the caller passes levelIndex for a replacement
+      // that has selectable tiers of its own).
+      const augmentLevelChoices = { ...(state.augmentLevelChoices ?? {}) }
+      if (action.levelIndex != null) augmentLevelChoices[action.key] = action.levelIndex
+      else delete augmentLevelChoices[action.key]
+      return {
+        ...state,
+        augmentChoices: { ...state.augmentChoices, [action.key]: action.augmentName },
+        augmentLevelChoices,
+      }
+    }
     case 'CLEAR_AUGMENT': {
       const augmentChoices = { ...state.augmentChoices }
       delete augmentChoices[action.key]
-      return { ...state, augmentChoices }
+      const augmentLevelChoices = { ...(state.augmentLevelChoices ?? {}) }
+      delete augmentLevelChoices[action.key]
+      return { ...state, augmentChoices, augmentLevelChoices }
     }
+    case 'SET_AUGMENT_LEVEL':
+      // V2 ItemAugment::SelectedLevelIndex — indexes the augment's LevelValue
+      // table (OnAugmentLevelSelect, ItemSelectDialog.cpp:799-808).
+      return {
+        ...state,
+        augmentLevelChoices: { ...(state.augmentLevelChoices ?? {}), [action.key]: action.levelIndex },
+      }
     case 'SET_SLOT_UPGRADE':
       // V2 parity: irreversible once chosen (ItemSelectDialog.cpp:847-881
       // OnUpgradeSelect) — the only way back is re-equipping the item
