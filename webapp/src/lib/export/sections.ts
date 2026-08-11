@@ -821,21 +821,95 @@ const grantedFeats: SectionDef = {
   },
 }
 
+// V2 ForumExportDlg.cpp:735-844 (AddConsolidatedFeats) — a per-level [TABLE]
+// (Level | Class | Feats) with the same row shape as AddFeatSelections, but
+// each feat-type slot is color-coded ("[COLOR=rgb(65, 168, 95)]FeatType: [/COLOR]
+// [COLOR=rgb(184, 49, 47)]FeatName[/COLOR]", plus a yellow "Alternate: "
+// annotation when the slot has one), each character-level ability bump gets
+// its own yellow row, and level 1 carries a red warning when the build's
+// starting class differs from the race's Iconic class (distinguishing
+// "Lesser Reincarnation" for an archetype of that class from "+1 Heart of
+// Wood" for anything else). V3's old `consolidatedFeats` just tallied how
+// many times each distinct feat choice appeared build-wide — different
+// content, not a formatting gap (X12). Two V2 pieces are intentionally not
+// reproduced: `TrainedFeat::HasFeatSwapWarning` (a hypothetical-swap
+// prerequisite re-check with no V3 model) and the per-level placement of
+// automatic feats (V2's `LevelTraining::AutomaticFeats()` interleaves them
+// here too, but V3 has no reliable per-level placement for the
+// AutomaticAcquisition-derived ones like Attack/Sneak/Heroic Durability —
+// they stay in the dedicated `automaticFeats` section instead).
+const CONSOLIDATED_TYPE_COLOR = 'rgb(65, 168, 95)'
+const CONSOLIDATED_FEAT_COLOR = 'rgb(184, 49, 47)'
+const CONSOLIDATED_ALT_COLOR = 'rgb(250, 197, 28)'
+
 const consolidatedFeats: SectionDef = {
   id: 'ConsolidatedFeats',
   label: 'Consolidated feats',
-  emit: ({ build }) => {
-    const counts = new Map<string, number>()
-    for (const v of Object.values(build.featChoices)) {
-      if (!v) continue
-      counts.set(v, (counts.get(v) ?? 0) + 1)
+  emit: ({ build, allClasses, allRaces }) => {
+    const heroicLevel = Math.min(20, build.totalLevel)
+    if (heroicLevel === 0) return []
+    const classes = allClasses ?? []
+    const races = allRaces ?? []
+    const lc = getLevelClasses(build)
+    const slots = buildSlots(build, classes, races)
+
+    const lines: string[] = [
+      'Class and Feat Selection (Consolidated)',
+      '[TABLE]',
+      '[TR][TD]Level[/TD][TD]Class[/TD][TD]Feats[/TD][/TR]',
+    ]
+
+    for (let charLevel = 1; charLevel <= heroicLevel; charLevel++) {
+      const className = lc[charLevel - 1] || 'Unknown'
+      const classLevel = classLevelsAtLevel(build, className, charLevel, classes)
+      const cells: string[] = []
+
+      if (charLevel === 1) {
+        const race = races.find(r => r.Name === build.race)
+        if (race?.IconicClass && race.IconicClass !== className) {
+          const cls = classes.find(c => c.Name === className)
+          const msg = cls?.BaseClass && cls.BaseClass === race.IconicClass
+            ? 'Requires a Lesser Reincarnation to switch from Iconic class to Archetype class'
+            : 'Requires a +1 Heart of Wood to switch out of Iconic Class'
+          cells.push(`[TD][COLOR=${CONSOLIDATED_FEAT_COLOR}]${msg}[/COLOR][/TD]`)
+        }
+      }
+
+      for (const slot of slots.filter(s => s.level === charLevel)) {
+        const choice = build.featChoices[slot.key]
+        let cell = `[TD][COLOR=${CONSOLIDATED_TYPE_COLOR}]${slot.featType}: [/COLOR][COLOR=${CONSOLIDATED_FEAT_COLOR}]`
+        if (choice) {
+          cell += choice
+          const alt = build.alternateFeats[slot.key]
+          if (alt) {
+            cell += `[/COLOR][COLOR=${CONSOLIDATED_ALT_COLOR}] Alternate: [/COLOR][COLOR=${CONSOLIDATED_FEAT_COLOR}]${alt}`
+          }
+        } else {
+          cell += 'Empty Feat Slot'
+        }
+        cell += '[/COLOR][/TD]'
+        cells.push(cell)
+      }
+
+      // V2 quirk (ForumExportDlg.cpp:809-811): the ability's plain name is
+      // written before the row's [TD] tag opens, leaking outside the cell.
+      const abilityUp = (build.abilityLevelUps as Record<number, Ability | undefined>)[charLevel]
+      if (abilityUp) {
+        cells.push(`${abilityUp}[TD][COLOR=${CONSOLIDATED_ALT_COLOR}]${abilityUp}: +1 Level up[/COLOR][/TD]`)
+      }
+
+      const classCell = `${className}(${classLevel})`
+      if (cells.length === 0) {
+        lines.push(`[TR][TD]${charLevel}[/TD][TD]${classCell}[/TD][TD][/TD][/TR]`)
+      } else {
+        lines.push(`[TR][TD]${charLevel}[/TD][TD]${classCell}[/TD]${cells[0]}[/TR]`)
+        for (let i = 1; i < cells.length; i++) {
+          lines.push(`[TR][TD][/TD][TD][/TD]${cells[i]}[/TR]`)
+        }
+      }
     }
-    if (counts.size === 0) return []
-    const out = ['[b]Consolidated Feats[/b]:']
-    Array.from(counts.entries()).sort(([a], [b]) => a.localeCompare(b)).forEach(([n, c]) => {
-      out.push(`  ${n}${c > 1 ? ` x${c}` : ''}`)
-    })
-    return out
+    lines.push('[/TABLE]')
+    return lines
   },
 }
 
