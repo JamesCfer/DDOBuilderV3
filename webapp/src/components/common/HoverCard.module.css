@@ -1,0 +1,185 @@
+/* -----------------------------------------------------------------------
+   HoverCard — the shared themed hover panel used by gear/augment tooltips.
+   Same visual family as the breakdown tooltip: panel navy, gold-tinted rule
+   under the heading, dropdown shadow.
+   ----------------------------------------------------------------------- */
+
+.card {
+  position: fixed;
+  z-index: 10000;
+  min-width: 210px;
+  max-width: 360px;
+
+  background: linear-gradient(180deg, var(--color-bg-panel) 0%, var(--color-bg-secondary) 100%);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  color: var(--color-text-primary);
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 0 0 6px;
+  pointer-events: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Gold hairline along the top edge, echoing the panel headers. */
+.card::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold), var(--color-gold-dark));
+  opacity: 0.75;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-gold-light);
+  letter-spacing: 0.01em;
+}
+
+.subtitle {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Body pieces ── */
+.body {
+  padding: 6px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.sectionTitle {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 2px;
+  margin-bottom: 3px;
+}
+
+/* Effect list: value | name | bonus-type chip */
+.effects {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.effectRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 6px;
+}
+
+.effectValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gold);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.effectName {
+  color: var(--color-text-primary);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.chip {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-input);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slotRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 6px;
+  align-items: baseline;
+}
+
+.slotType {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.slotFilled {
+  color: var(--color-text-primary);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.slotEmpty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.typeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.typeChip {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.meta {
+  color: var(--color-text-muted);
+}
+
+.metaLabel {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}

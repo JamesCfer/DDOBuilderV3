@@ -5,6 +5,9 @@ import { findGearByEffect } from '../../lib/findGear'
 import { displaySlotsForItemKey } from '../../lib/gearSlots'
 import { useDocument } from '../../context/DocumentContext'
 import type { Item, ItemBuff } from '../../types/ddo'
+import { formatBuffText } from '../../lib/itemDisplay'
+import HoverCard, { useHoverCard } from '../common/HoverCard'
+import { ItemCardContent } from './GearHoverCards'
 import styles from './FindGearDialog.module.css'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
@@ -67,6 +70,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
   const listId = useId()
+  const itemHover = useHoverCard<Item>()
 
   const maxCharLevel = Math.max(
     1,
@@ -258,19 +262,17 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                     {displayResults.flatMap(result =>
                       result.slots.map(apiSlot => (
                         <tr key={`${result.item.Name}:${apiSlot}`} className={styles.row}>
-                          <td className={styles.tdName}>{result.item.Name}</td>
+                          <td
+                            className={styles.tdName}
+                            onMouseEnter={itemHover.show(result.item)}
+                            onMouseLeave={itemHover.hide}
+                          >{result.item.Name}</td>
                           <td className={styles.tdNum}>{result.item.MinLevel ?? 1}</td>
                           <td className={styles.tdSlot}>
                             {apiSlot === 'Ring' ? 'Ring' : apiSlot}
                           </td>
                           <td className={styles.tdEffect}>
-                            {result.matchedBuffs
-                              .map(b => {
-                                const val = b.Value1 != null ? `+${b.Value1} ` : ''
-                                const bonus = b.BonusType ? ` (${b.BonusType})` : ''
-                                return `${val}${b.Type}${bonus}`
-                              })
-                              .join(', ')}
+                            {result.matchedBuffs.map(b => formatBuffText(b)).join(', ')}
                           </td>
                           <td className={styles.tdEquip}>
                             <EquipCell
@@ -290,6 +292,11 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
           )}
         </div>
       </div>
+      {itemHover.hover && (
+        <HoverCard x={itemHover.hover.x} y={itemHover.hover.y} openLeft={itemHover.hover.openLeft}>
+          <ItemCardContent item={itemHover.hover.data} />
+        </HoverCard>
+      )}
     </div>
   )
 }

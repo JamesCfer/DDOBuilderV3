@@ -455,6 +455,60 @@
   overflow: hidden;
 }
 
+/* Augment option list — replaces a bare <select> so each entry can carry an
+   icon and raise a hover card describing what the augment does. */
+.augOptionList {
+  display: flex;
+  flex-direction: column;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.augOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 6px;
+  font-size: 11px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.augOption:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  border-left-color: var(--color-gold);
+}
+
+.augOptionActive {
+  background: var(--color-bg-active);
+  color: var(--color-text-primary);
+  border-left-color: var(--color-gold-light);
+}
+
+.augOptionIcon {
+  border-radius: 2px;
+}
+
+.augOptionName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.augOptionLevel {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 .upgradeSelect {
   width: 100%;
   padding: 2px 6px;
