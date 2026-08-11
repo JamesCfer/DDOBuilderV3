@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 153 | **X12 — forum-export "Consolidated Feats" section had different semantics from V2, not just formatting** — `ForumExportDlg.cpp:735-844 AddConsolidatedFeats` renders a per-level `[TABLE]` (Level | Class | Feats) with color-coded feat-type/name `[COLOR]` pairs, a yellow "Alternate: " annotation, a yellow ability-level-up row per level, and a red level-1 warning when the build's starting class differs from the race's Iconic class. V3's `consolidatedFeats` just tallied how many times each distinct feat choice appeared build-wide — unrelated content. Rewrote to emit V2's per-level table, reusing the already-exact `buildSlots`/`getLevelClasses`/`classLevelsAtLevel` helpers (items U7/X9/X11) and the previously-unwired `build.alternateFeats` state; byte-reproduces a verbatim V2 quirk (the ability-level-up row's plain-text name leaking outside its `[TD]` tag). Feat-swap warnings and per-level automatic-feat placement are left out — genuinely unmodeled in V3, with automatic feats staying visible in the separate `automaticFeats` section. 7 new regression tests in `parityPassX12ConsolidatedFeats.test.ts`. | this PR |
 | 152 | **X13 — forum-export "Weapon Damage" section dropped ~10 of its fields, keeping only a V3-invented dice/crit/to-hit/damage/doublestrike summary that has no V2 equivalent** — `ForumExportDlg.cpp:1680-1732 AddWeaponDamage` always emits a fixed scalar block (Melee Power, Doublestrike%, Strikethrough%, Mainhand/Offhand damage-ability multiplier, Off-Hand attack Chance%, Fortification Bypass%, Dodge Bypass%, Helpless Damage bonus%, Ranged Power, Doubleshot Chance%, Sneak Attack Attack bonus, Sneak Attack Damage `Nd6+M`), each numeric/percent field truncated to a whole number via `AddBreakdown`. Rewrote V3's `weaponDamage` section to emit V2's exact block, reusing the already oracle/golden-verified stat keys (`melee.power`, `ranged.power`, `melee.doublestrike`, `melee.strikethrough`, `offhand.attack`, `fortBypass`, `helpless`, `ranged.doubleshot` — items #106/#137) plus three previously-parsed-but-unsurfaced keys (`melee.damageAbilityMult`, `offhand.damageAbilityMult`, `dodgeBypass`) and the sneak-attack triad (`melee.sneakAttack`, `melee.sneakDice`, `melee.sneakDamage`) — no new stat computation needed. The per-weapon effects breakdown (On Hit/Critical damage lines, DR Bypass, Ghost Touch/True Seeing) has no V3 stat model yet and is left for a future pass. 6 new regression tests in `parityPassX13WeaponDamage.test.ts`. | this PR |
 | 151 | **X11 — forum-export "Skills" section had no per-level breakdown, only whole-build totals** — `ForumExportDlg.cpp:889-1027 AddSkills` always emits a `[code]`-wrapped monospace grid: a per-level "Skill Points" budget row, a level-number header, one row per V2 skill (raw per-level trained count for class skills, ½-rank multiples for cross-class — reading `LevelTraining::TrainedSkills()`), trailing Ranks/Tome/Buffed columns, and an "Available Points" row. V3's `skills` section only printed non-zero "skill: N ranks (+M)" free-text lines with no per-level data at all. Rewrote to emit V2's exact grid, sourcing per-level data from the existing `getLevelTrainingEntries` helper (Done item U7/#62) and the Ranks/Tome/Buffed columns straight from the already-V2-exact `skill.<Name>` stat (items #21/#64/#106) — no new stat computation needed. 11 new regression tests in `parityPassX11Skills.test.ts`. | this PR |
 | 150 | **X17 — Enhancement/Destiny/Reaper tree export sections had plain "[b]...[/b]:" headers, no AP/Destiny-Point totals, no tier labels, no Points-spent line** — `ForumExportDlg.cpp:1216-1451` (`AddEnhancements`/`AddEpicDestinyTree`/`AddReaperTrees` + their per-tree `AddEnhancementTree`/`AddEpicDestinyTree`/`AddReaperTree` helpers) wrap each section in a `[COLOR=rgb(184, 49, 47)][SIZE=6]` header (Enhancements: hardcoded "80 APs" plus Racial/Universal bonus AP when present; Epic Destinies: the Destiny Point total; Reaper: no total), then one `[COLOR=rgb(65, 168, 95)][SIZE=5]TreeName - Points spent: N[/SIZE][/COLOR]` block per trained tree terminated by `[HR][/HR]`, prefixing each enhancement with its tier ("Core1 ".."Core6 " / "Tier1 ".."Tier6 ", from `YPosition`/`XPosition`) and a " - N Ranks" suffix for multi-rank items. V3's `enhancements`/`epicDestinies`/`reaperTrees` sections (`sections.ts`) printed flat `[b]…[/b]:`/`  tree:`/`    name (rank)` lines with no coloring, AP totals, tier labels or spent totals. Rewrote all three to emit V2's exact headers and per-tree blocks, reusing the existing `computeBonusActionPoints` (racial/universal AP) and `destinyPoolForBuild` (Destiny Points) helpers and a tree-cost calculation mirrored from `EnhancementTreePanel.tsx`'s `costUpToRank`. Also reproduces a verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max `Ranks()`, not the trained rank, unlike the Enhancement/Epic Destiny emitters. `SectionContext` gains an `allTrees?: EnhancementTree[]` field, wired from `ForumExportPanel.tsx`'s existing `useStaticBundle()` bundle. 7 new regression tests in `parityPassX17TreeHeaders.test.ts`. | this PR |
@@ -1007,15 +1008,35 @@ already closed; these are new, some content gaps (not just formatting):
   `stats.total()` (already V2-exact per items #21/#64/#106 — no new stat
   computation needed), and a trailing "Available Points" row. 11 regression
   tests in `parityPassX11Skills.test.ts`.
-- ❌ **X12 — `AddConsolidatedFeats` has different semantics, not just
-  formatting.** V2 (`ForumExportDlg.cpp:735-844`) renders a per-level
-  `[TABLE]` (Level | Class | Feats) with color-coded slot labels,
-  "(Requires Feat Swap with Fred)"/"Alternate:" annotations, ability
-  level-ups, automatic feats, and a red level-1 warning for
+- ✅ **X12 — `AddConsolidatedFeats` has different semantics, not just
+  formatting — done (#153, this pass).** V2 (`ForumExportDlg.cpp:735-844`)
+  renders a per-level `[TABLE]` (Level | Class | Feats) with color-coded
+  slot labels, "(Requires Feat Swap with Fred)"/"Alternate:" annotations,
+  ability level-ups, automatic feats, and a red level-1 warning for
   Iconic/Archetype mismatches. V3's `consolidatedFeats`
-  (`sections.ts:578-594`) just tallies how many times each distinct
+  (`sections.ts:578-594`) just tallied how many times each distinct
   feat-choice value appears build-wide ("FeatName xN") — different content,
-  not a formatting gap.
+  not a formatting gap. Rewrote to emit V2's per-level table, reusing the
+  already-exact `buildSlots`/`getLevelClasses`/`classLevelsAtLevel` helpers
+  (Done items U7/X9/X11): color-coded `FeatType: FeatName` cells (V2's
+  green/red `[COLOR]` pair), a yellow "Alternate: " annotation from
+  `build.alternateFeats` (same slot-keyed shape V2's `AlternateFeatName`
+  has, previously unused dead state — this is its first real consumer), a
+  yellow ability-level-up row per `build.abilityLevelUps` entry (byte-exact
+  reproduction of a verbatim V2 quirk: the ability's plain name leaks
+  outside the row's `[TD]` tag before the colored cell opens), and a red
+  level-1 warning (`Race.IconicClass` vs the level-1 class, distinguishing
+  "Lesser Reincarnation" for one of the Iconic class's own `BaseClass`
+  archetypes from "+1 Heart of Wood" for anything else) — no new data
+  model needed. Two V2 pieces are intentionally left out, both undocumented
+  in V3's data model: `TrainedFeat::HasFeatSwapWarning` (a hypothetical-swap
+  prerequisite re-check with no V3 equivalent) and per-level placement of
+  automatic feats (V2 interleaves `LevelTraining::AutomaticFeats()` into
+  this same table, but V3 has no reliable per-level placement for the
+  AutomaticAcquisition-derived ones like Attack/Sneak/Heroic Durability —
+  they stay visible in the separate, already-correct `automaticFeats`
+  section instead). 7 new regression tests in
+  `parityPassX12ConsolidatedFeats.test.ts`.
 - ✅ **X13 — `AddWeaponDamage` drops most fields — done (#152, this pass).**
   V2 (`ForumExportDlg.cpp:1680-1732`) always emits a fixed scalar block: Melee
   Power, Doublestrike%, Strikethrough%, Mainhand/Offhand damage-ability
