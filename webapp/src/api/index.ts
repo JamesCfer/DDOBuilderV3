@@ -50,4 +50,24 @@ export const api = {
   adventurePacks: () => get<string[]>('/adventure-packs'),
   itemBuffs: () => get<ItemBuffSpec[]>('/item-buffs'),
   itemClickies: () => get<ItemClickieSpec[]>('/item-clickies'),
+  // In-game DungeonHelper plugins (downloads, not build data)
+  plugins: () => get<PluginCatalogue>('/plugins'),
+}
+
+/** A downloadable in-game plugin release (see /api/plugins). */
+export interface PluginRelease {
+  key: string
+  name: string
+  author: string
+  description: string
+  manifest: string
+  version: string | null
+  notes: string | null
+  zipUrl: string | null
+  isManager: boolean
+}
+
+export interface PluginCatalogue {
+  managerKey: string
+  plugins: PluginRelease[]
 }

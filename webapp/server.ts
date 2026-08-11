@@ -551,6 +551,108 @@ app.post('/api/community/:id/vote', (req, res) => {
 })
 
 // ---------------------------------------------------------------------------
+// DDO game plugins (DungeonHelper) — download catalogue
+//
+// The plugins live in a separate public release repo: catalog.json lists every
+// plugin and points at a per-plugin version.json manifest holding the current
+// version, release notes and zip URL. We aggregate both here so the browser
+// makes one request (and so the zips can be offered from our own URL).
+// ---------------------------------------------------------------------------
+
+const PLUGIN_CATALOG_URL = process.env.PLUGIN_CATALOG_URL
+  ?? 'https://raw.githubusercontent.com/JamesCfer/ddo-info-releases/main/catalog.json'
+
+/** Key of the plugin manager itself — featured at the top of the page. */
+const PLUGIN_MANAGER_KEY = 'ddohub'
+
+interface CatalogEntry {
+  key: string
+  name: string
+  author: string
+  description: string
+  manifest: string
+}
+
+interface PluginRelease extends CatalogEntry {
+  version: string | null
+  notes: string | null
+  zipUrl: string | null
+  isManager: boolean
+}
+
+const PLUGIN_CACHE_MS = 10 * 60 * 1000
+let pluginCache: { at: number; plugins: PluginRelease[] } | null = null
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(url, { headers: { accept: 'application/json' } })
+  if (!res.ok) throw new Error(`${url} → ${res.status}`)
+  return await res.json() as T
+}
+
+async function loadPluginReleases(): Promise<PluginRelease[]> {
+  const catalog = await fetchJson<{ plugins?: CatalogEntry[] }>(PLUGIN_CATALOG_URL)
+  const entries = catalog.plugins ?? []
+  const plugins = await Promise.all(entries.map(async (entry): Promise<PluginRelease> => {
+    const base: PluginRelease = {
+      ...entry,
+      version: null,
+      notes: null,
+      zipUrl: null,
+      isManager: entry.key === PLUGIN_MANAGER_KEY,
+    }
+    try {
+      const manifest = await fetchJson<{ version?: string; notes?: string; zip_url?: string }>(entry.manifest)
+      return {
+        ...base,
+        version: manifest.version ?? null,
+        notes: manifest.notes ?? null,
+        zipUrl: manifest.zip_url ?? null,
+      }
+    } catch {
+      // A missing/broken manifest shouldn't hide the plugin — it just has no
+      // download until the release repo catches up.
+      return base
+    }
+  }))
+  // Manager first, then alphabetical by display name.
+  return plugins.sort((a, b) =>
+    Number(b.isManager) - Number(a.isManager) || a.name.localeCompare(b.name))
+}
+
+async function getPluginReleases(): Promise<PluginRelease[]> {
+  if (pluginCache && Date.now() - pluginCache.at < PLUGIN_CACHE_MS) return pluginCache.plugins
+  try {
+    const plugins = await loadPluginReleases()
+    pluginCache = { at: Date.now(), plugins }
+    return plugins
+  } catch (err) {
+    if (pluginCache) return pluginCache.plugins // serve stale rather than nothing
+    throw err
+  }
+}
+
+app.get('/api/plugins', async (_req, res) => {
+  try {
+    res.json({ managerKey: PLUGIN_MANAGER_KEY, plugins: await getPluginReleases() })
+  } catch (err) {
+    res.status(502).json({ error: `Plugin catalogue unavailable: ${String(err)}` })
+  }
+})
+
+// Stable, shareable download URL that redirects to the current release zip, so
+// links keep working across version bumps.
+app.get('/api/plugins/:key/download', async (req, res) => {
+  try {
+    const plugin = (await getPluginReleases()).find(p => p.key === req.params.key)
+    if (!plugin) { res.status(404).json({ error: 'Unknown plugin' }); return }
+    if (!plugin.zipUrl) { res.status(503).json({ error: 'No release available yet' }); return }
+    res.redirect(302, plugin.zipUrl)
+  } catch (err) {
+    res.status(502).json({ error: String(err) })
+  }
+})
+
+// ---------------------------------------------------------------------------
 // Auto-update routes
 // ---------------------------------------------------------------------------
 

@@ -77,7 +77,7 @@ const PAGE_TABS: Record<Page, string[]> = {
 /** Tabs whose content wants the full viewport width (trees, tables). */
 const WIDE_TABS = new Set([
   'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows',
-  'Level Plan', 'Optimizer',
+  'Level Plan', 'Optimizer', 'Dungeon Help',
 ])
 
 export default function App() {

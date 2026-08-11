@@ -1,93 +1,118 @@
-// Plugins — where people find the dungeon-help plugins that go with the
-// planner.
-//
-// The list is DATA, not markup (`pluginCatalogue.ts`): adding a plugin should
-// be one entry, not a JSX edit, and the page renders whatever is there. It
-// ships empty on purpose — inventing plugin names and download links would
-// put things on screen that do not exist and cannot be clicked. Fill the
-// catalogue in and the page populates itself.
+// In-game plugin downloads. The headline download is the Plugin Hub — the
+// plugin manager that installs and updates every other plugin from inside
+// DungeonHelper — with the individual plugins listed underneath for anyone who
+// wants to install one by hand. Releases come from /api/plugins, which
+// aggregates the public release repo's catalog.json + per-plugin manifests.
 
-import { PLUGINS, PLUGIN_CATEGORIES, type PluginEntry } from './pluginCatalogue'
-import styles from './PluginsPanel.module.css'
+import { useEffect, useState } from 'react'
+import styles from './Plugins.module.css'
+import { api } from '../../api'
+import type { PluginRelease } from '../../api'
 
-function PluginCard({ plugin }: { plugin: PluginEntry }) {
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardHead}>
-        <span className={styles.cardName}>{plugin.name}</span>
-        {plugin.version && <span className={styles.cardVersion}>v{plugin.version}</span>}
-      </div>
-      <p className={styles.cardDesc}>{plugin.description}</p>
-      {plugin.tags && plugin.tags.length > 0 && (
-        <div className={styles.tags}>
-          {plugin.tags.map(t => <span key={t} className={styles.tag}>{t}</span>)}
-        </div>
-      )}
-      <div className={styles.cardLinks}>
-        {plugin.downloadUrl && (
-          <a
-            className={styles.primaryLink}
-            href={plugin.downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Download
-          </a>
-        )}
-        {plugin.infoUrl && (
-          <a
-            className={styles.link}
-            href={plugin.infoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Details
-          </a>
-        )}
-      </div>
-    </div>
-  )
+/** Stable download URL served by us; redirects to the current release zip. */
+function downloadUrl(key: string) {
+  return `/api/plugins/${encodeURIComponent(key)}/download`
 }
 
 export default function PluginsPanel() {
-  const categories = PLUGIN_CATEGORIES.filter(c => PLUGINS.some(p => p.category === c))
+  const [plugins, setPlugins] = useState<PluginRelease[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    api.plugins()
+      .then(res => { if (!cancelled) setPlugins(res.plugins) })
+      .catch(() => { if (!cancelled) setError('Could not reach the plugin release feed. Try again in a moment.') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  const manager = plugins.find(p => p.isManager) ?? null
+  const others = plugins.filter(p => !p.isManager)
 
   return (
-    <div className="panel">
-      <div className="panel-header">Dungeon Help Plugins</div>
-      <div className="panel-body">
-        <p className={styles.intro}>
-          In-game helpers that pair with the planner — quest and dungeon
-          guidance, timers, trackers and overlays.
-        </p>
+    <div className={styles.panel}>
+      <div className="panel">
+        <div className="panel-header">DDO Plugins</div>
+        <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ fontSize: '13px', margin: 0 }}>
+            These run inside the game through{' '}
+            <a href="https://www.dungeonhelper.com/" target="_blank" rel="noreferrer">DungeonHelper</a>,
+            not in this planner. Install the Plugin Hub once and it installs,
+            updates and hosts the rest for you.
+          </p>
 
-        {PLUGINS.length === 0 ? (
-          <div className={styles.empty}>
-            <p>No plugins are listed yet.</p>
-            <p className={styles.emptyHint}>
-              The catalogue lives in{' '}
-              <code>webapp/src/components/plugins/pluginCatalogue.ts</code>. Add
-              an entry per plugin — name, description, category and links — and
-              it appears here.
-            </p>
-          </div>
-        ) : (
-          categories.map(category => (
-            <section key={category} className={styles.section}>
-              <h3 className={styles.sectionTitle}>{category}</h3>
+          {loading && <p style={{ fontSize: '13px' }}>Loading the plugin catalogue…</p>}
+          {error && <p className={styles.error}>{error}</p>}
+
+          {manager && (
+            <section className={styles.hero}>
+              <div className={styles.heroText}>
+                <h2 className={styles.heroTitle}>
+                  {manager.name}
+                  {manager.version && <span className={styles.version}>v{manager.version}</span>}
+                </h2>
+                <p className={styles.blurb}>{manager.description}</p>
+                {manager.notes && (
+                  <p className={styles.notes}><strong>Latest release:</strong> {manager.notes}</p>
+                )}
+              </div>
+              <div className={styles.heroActions}>
+                {manager.zipUrl ? (
+                  <>
+                    <a className={styles.downloadBtn} href={downloadUrl(manager.key)}>
+                      ⬇ Download the Plugin Hub
+                    </a>
+                    <span className={styles.downloadHint}>
+                      {manager.key}-{manager.version}.zip · free · by {manager.author}
+                    </span>
+                  </>
+                ) : (
+                  <span className={styles.unavailable}>No release published yet.</span>
+                )}
+              </div>
+            </section>
+          )}
+
+          <section>
+            <strong>Installing it</strong>
+            <ol className={styles.steps}>
+              <li>Download the zip above — leave it zipped.</li>
+              <li>Open DungeonHelper and go to its plugin settings.</li>
+              <li>Choose <em>Add plugin</em> and pick the zip you just downloaded.</li>
+              <li>Restart DungeonHelper. The hub appears on the DungeonHelper toolbar.</li>
+              <li>Open the hub and install any of the plugins below from inside it — it keeps them updated from then on.</li>
+            </ol>
+          </section>
+
+          {others.length > 0 && (
+            <section>
+              <strong>Plugins the hub can install</strong>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '4px 0 10px' }}>
+                You don't need to download these individually — the hub does it
+                for you. The direct links are here for manual installs.
+              </p>
               <div className={styles.grid}>
-                {PLUGINS.filter(p => p.category === category).map(p => (
-                  <PluginCard key={p.name} plugin={p} />
+                {others.map(p => (
+                  <article key={p.key} className={styles.card}>
+                    <h3 className={styles.cardTitle}>
+                      <span>{p.name}</span>
+                      {p.version && <span className={styles.version}>v{p.version}</span>}
+                    </h3>
+                    <p className={styles.cardDesc}>{p.description}</p>
+                    <div className={styles.cardFoot}>
+                      <span>by {p.author}</span>
+                      {p.zipUrl
+                        ? <a className={styles.smallDownload} href={downloadUrl(p.key)}>⬇ Download</a>
+                        : <span className={styles.unavailable}>No release yet</span>}
+                    </div>
+                  </article>
                 ))}
               </div>
             </section>
-          ))
-        )}
-
-        <p className={styles.footnote}>
-          Plugins are separate downloads and are installed in the game client,
-          not here. Links open in a new tab.
-        </p>
+          )}
+        </div>
       </div>
     </div>
   )
