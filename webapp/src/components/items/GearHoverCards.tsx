@@ -7,6 +7,7 @@ import DdoIcon from '../DdoIcon'
 import { HoverHeader, HoverBody, HoverSection, hoverStyles as s } from '../common/HoverCard'
 import {
   describeBuff, augmentTypeColor, augmentDescription, augmentTypes, augmentValueAtLevel,
+  hasSelectableLevels, augmentLevelOptions, augmentValueAtIndex,
 } from '../../lib/itemDisplay'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
@@ -95,21 +96,32 @@ export function ItemCardContent({ item, augmentFills }: {
   )
 }
 
-export function AugmentCardContent({ augment, itemLevel, slotType }: {
+export function AugmentCardContent({ augment, itemLevel, maxTierLevel, slotType, levelIndex }: {
   augment: Augment
   /** Host item level — resolves a ChooseLevel augment's `[value]`. */
   itemLevel?: number
+  /** Character level — caps the tiers listed for a <Levels> augment. */
+  maxTierLevel?: number
   /** The slot it is being previewed for, highlighted among its types. */
   slotType?: string
+  /** The tier in play for this slot, when the augment has selectable levels. */
+  levelIndex?: number
 }) {
   // An augment lists EVERY slot colour it fits (a blue augment also lists
   // Green/Purple), which is a wall of chips in a preview. When we know which
   // slot it is being previewed for, show just that one.
   const allTypes = augmentTypes(augment)
   const types = slotType && allTypes.includes(slotType) ? [slotType] : allTypes
-  const description = augmentDescription(augment, itemLevel)
+  // A tiered augment shows its own ladder, so the description resolves at the
+  // tier in play rather than at the item level.
+  const tiered = hasSelectableLevels(augment)
+  const tiers = tiered ? augmentLevelOptions(augment, maxTierLevel ?? itemLevel) : []
+  const activeIndex = levelIndex ?? (tiers.length > 0 ? tiers[tiers.length - 1].index : 0)
+  const description = tiered
+    ? augment.Description?.replace(/\[value\]/gi, String(augmentValueAtIndex(augment, activeIndex) ?? ''))
+    : augmentDescription(augment, itemLevel)
   // Only worth spelling out when the description did not already fold it in.
-  const value = augment.Description?.match(/\[value\]/i)
+  const value = tiered || augment.Description?.match(/\[value\]/i)
     ? undefined
     : augmentValueAtLevel(augment, itemLevel)
   const minLevel = augment.MinLevel ?? 1
@@ -137,6 +149,23 @@ export function AugmentCardContent({ augment, itemLevel, slotType }: {
             <span className={s.metaLabel}>At item level {itemLevel ?? 1}: </span>
             {value}
           </div>
+        )}
+        {tiers.length > 0 && (
+          <HoverSection title="Levels">
+            <div className={s.effects}>
+              {tiers.map(tier => (
+                <div
+                  key={tier.index}
+                  className={s.effectRow}
+                  style={tier.index === activeIndex ? undefined : { opacity: 0.55 }}
+                >
+                  <span className={s.effectValue}>{tier.value >= 0 ? '+' : ''}{tier.value}</span>
+                  <span className={s.effectName}>at item level {tier.level}</span>
+                  {tier.index === activeIndex && <span className={s.chip}>selected</span>}
+                </div>
+              ))}
+            </div>
+          </HoverSection>
         )}
         {augment.SetBonus && (
           <div className={s.meta}>

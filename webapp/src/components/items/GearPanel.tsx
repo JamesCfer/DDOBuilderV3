@@ -11,7 +11,9 @@ import { useDocument } from '../../context/DocumentContext'
 import { resolveAugmentSlots, pendingSlotUpgrades, effectiveAugmentChoice } from '../../lib/gearSlotUpgrades'
 import { itemSlotKey } from '../../lib/gearSlots'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
-import { augmentTypeColor } from '../../lib/itemDisplay'
+import {
+  augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
+} from '../../lib/itemDisplay'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent, AugmentCardContent, type AugmentFill } from './GearHoverCards'
 import styles from './GearPanel.module.css'
@@ -178,15 +180,25 @@ interface AugmentSlotProps {
   augment: ItemAugment
   index: number
   choice: string
-  onSet: (key: string, name: string) => void
+  /** Stored V2 SelectedLevelIndex for this slot, when the player picked one. */
+  levelIndex?: number
+  onSet: (key: string, name: string, levelIndex?: number) => void
   onClear: (key: string) => void
+  onSetLevel: (key: string, levelIndex: number) => void
   maxItemLevel: number
+  /** Character level — V2 caps the offered augment tiers to it, not to the
+   *  host item's level (ItemSelectDialog.cpp:573). */
+  buildLevel: number
 }
 
-function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItemLevel }: AugmentSlotProps) {
+function AugmentSlot({
+  slotName, augment, index, choice, levelIndex, onSet, onClear, onSetLevel, maxItemLevel,
+  buildLevel,
+}: AugmentSlotProps) {
   const [fetched, setFetched] = useState<Augment[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
   const { allAugments } = useStaticBundle()
   const { hover, show, hide } = useHoverCard<Augment>()
   const key = augmentKey(slotName, augment.Type, index)
@@ -208,9 +220,33 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
       ?? allAugments.find(a => a.Name === choice))
     : undefined
 
+  // Tier picker: only the gem augments carry a <Levels> table, and V2 caps the
+  // offered tiers to the host item's level (ItemSelectDialog.cpp:573).
+  const levelOptions = chosenAugment && hasSelectableLevels(chosenAugment)
+    ? augmentLevelOptions(chosenAugment, buildLevel)
+    : []
+  const effectiveLevelIndex = levelIndex
+    ?? (chosenAugment ? bestAugmentLevelIndex(chosenAugment, buildLevel) : 0)
+
+  const needle = search.trim().toLowerCase()
   const sortedOptions = options
-    .slice()
+    .filter(a => !needle
+      || a.Name.toLowerCase().includes(needle)
+      || (a.Description ?? '').toLowerCase().includes(needle))
     .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
+
+  /** Picking an augment stores its best usable tier, so a Levels augment never
+   *  silently sits on its weakest one. */
+  function chooseAugment(name: string) {
+    const picked = options.find(a => a.Name === name)
+    const withLevels = picked && hasSelectableLevels(picked)
+      ? bestAugmentLevelIndex(picked, buildLevel)
+      : undefined
+    onSet(key, name, withLevels)
+    setOpen(false)
+    setSearch('')
+    hide()
+  }
 
   function handleOpen() {
     if (!open && itemSpecific.length === 0 && fetched.length === 0) {
@@ -238,6 +274,21 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
       >
         {choice || '— Empty —'}
       </button>
+      {levelOptions.length > 1 && (
+        <select
+          className={styles.augLevelSelect}
+          value={effectiveLevelIndex}
+          title="Augment level — picks which value from the augment's level table applies"
+          aria-label={`${choice} level`}
+          onChange={e => onSetLevel(key, Number(e.target.value))}
+        >
+          {levelOptions.map(opt => (
+            <option key={opt.index} value={opt.index}>
+              Lv {opt.level} ({opt.value >= 0 ? '+' : ''}{opt.value})
+            </option>
+          ))}
+        </select>
+      )}
       {choice && (
         <button
           className={styles.augClear}
@@ -248,10 +299,19 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
       )}
       {open && (
         <div className={styles.augPicker}>
+          <input
+            className={styles.augSearch}
+            placeholder="Search augments…"
+            value={search}
+            autoFocus
+            onChange={e => setSearch(e.target.value)}
+          />
           {loading ? (
             <div className={styles.pickerLoading}>Loading…</div>
           ) : options.length === 0 ? (
             <div className={styles.pickerEmpty}>No augments available for {augment.Type}</div>
+          ) : sortedOptions.length === 0 ? (
+            <div className={styles.pickerEmpty}>No augments match “{search}”</div>
           ) : (
             <div className={styles.augOptionList} role="listbox" aria-label={`${augment.Type} augments`}>
               <button
@@ -259,7 +319,7 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
                 role="option"
                 aria-selected={!choice}
                 className={`${styles.augOption} ${!choice ? styles.augOptionActive : ''}`}
-                onClick={() => { onSet(key, ''); setOpen(false) }}
+                onClick={() => chooseAugment('')}
               >
                 <span className={styles.augOptionName}>— Empty —</span>
               </button>
@@ -272,7 +332,7 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
                   className={`${styles.augOption} ${aug.Name === choice ? styles.augOptionActive : ''}`}
                   onMouseEnter={show(aug)}
                   onMouseLeave={hide}
-                  onClick={() => { onSet(key, aug.Name); setOpen(false) }}
+                  onClick={() => chooseAugment(aug.Name)}
                 >
                   <DdoIcon
                     category="AugmentImages"
@@ -295,7 +355,9 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
           <AugmentCardContent
             augment={hover.data}
             itemLevel={maxItemLevel}
+            maxTierLevel={buildLevel}
             slotType={augment.Type}
+            levelIndex={hover.data.Name === choice ? effectiveLevelIndex : undefined}
           />
         </HoverCard>
       )}
@@ -444,13 +506,16 @@ export default function GearPanel() {
                 augment={augment}
                 index={index}
                 choice={effectiveAugmentChoice(augmentChoices, augmentKey(slot, augment.Type, index), augment)}
-                onSet={(key, name) => dispatch({ type: 'SET_AUGMENT', key, augmentName: name })}
+                levelIndex={build.augmentLevelChoices?.[augmentKey(slot, augment.Type, index)]}
+                onSet={(key, name, levelIndex) => dispatch({ type: 'SET_AUGMENT', key, augmentName: name, levelIndex })}
+                onSetLevel={(key, levelIndex) => dispatch({ type: 'SET_AUGMENT_LEVEL', key, levelIndex })}
                 onClear={(key) => (augment.SelectedAugment
                   // A pre-filled slot needs an explicit '' so the item's
                   // SelectedAugment default stays overridden after clearing.
                   ? dispatch({ type: 'SET_AUGMENT', key, augmentName: '' })
                   : dispatch({ type: 'CLEAR_AUGMENT', key }))}
                 maxItemLevel={detail?.MinLevel ?? maxLevel}
+                buildLevel={maxLevel}
               />
             ))}
             {pendingUpgrades.map(({ upgrade, key, options }) => (

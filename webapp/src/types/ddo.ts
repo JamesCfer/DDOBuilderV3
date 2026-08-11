@@ -346,6 +346,18 @@ export interface Augment {
   /** V2 Augment::LevelValue — space-separated values, one per level. */
   LevelValue?: { '#text': string; size?: number } | string
   /**
+   * V2 Augment::Levels — the item levels each LevelValue entry belongs to
+   * ("1 4 8 12 …"). Present on the gem augments (Diamond/Ruby/Sapphire/Topaz),
+   * where the player PICKS the tier (ItemSelectDialog::PopulateAugmentList
+   * shows a level combo). Absent on the Cannith-style tables, whose index is
+   * the host item's level - 1.
+   */
+  Levels?: { '#text': string; size?: number } | string
+  /** V2 Augment::LevelValue2 — the second effect's per-level table (DualValues). */
+  LevelValue2?: { '#text': string; size?: number } | string
+  /** V2 Augment::DualValues (DL_FLAG, parses to ""): effect[1] reads LevelValue2. */
+  DualValues?: boolean | string
+  /**
    * V2 Augment::EnterValue (DL_FLAG, parses to ""): every effect's Amount is
    * REPLACED by the player-entered `ItemAugment::Value` (e.g. "Mythic Power
    * Boost" — the player enters their current Mythic Bonus rank). Distinct
