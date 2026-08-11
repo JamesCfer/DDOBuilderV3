@@ -10,6 +10,10 @@ import { importGearSetXml } from '../../lib/v2Import'
 import { useDocument } from '../../context/DocumentContext'
 import { resolveAugmentSlots, pendingSlotUpgrades, effectiveAugmentChoice } from '../../lib/gearSlotUpgrades'
 import { itemSlotKey } from '../../lib/gearSlots'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { augmentTypeColor } from '../../lib/itemDisplay'
+import HoverCard, { useHoverCard } from '../common/HoverCard'
+import { ItemCardContent, AugmentCardContent, type AugmentFill } from './GearHoverCards'
 import styles from './GearPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -39,40 +43,6 @@ function augmentKey(slot: string, augType: string, idx: number) {
 }
 
 // ---------------------------------------------------------------------------
-// Tooltip formatter
-// ---------------------------------------------------------------------------
-function formatItemTooltip(item: Item): string {
-  const lines: string[] = []
-  const lvl = item.MinLevel && item.MinLevel > 1 ? ` (Level ${item.MinLevel})` : ''
-  lines.push(item.Name + lvl)
-  if (item.Description) lines.push('', item.Description)
-
-  const buffs = toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
-  if (buffs.length > 0) {
-    lines.push('')
-    for (const b of buffs) {
-      const val = b.Value1 != null ? `+${b.Value1} ` : ''
-      const bonus = b.BonusType ? ` (${b.BonusType})` : ''
-      lines.push(`${val}${b.Type}${bonus}`)
-    }
-  }
-
-  const augments = toArray(item.ItemAugment as ItemAugment | ItemAugment[] | undefined)
-  if (augments.length > 0) {
-    lines.push('', 'Augments: ' + augments.map(a => a.Type).join(', '))
-  }
-
-  const sets = toArray(item.SetBonus as string | string[] | undefined)
-  if (sets.length > 0) {
-    lines.push('', 'Set: ' + sets.join(', '))
-  }
-
-  if (item.DropLocation) lines.push('', 'From: ' + item.DropLocation)
-
-  return lines.join('\n')
-}
-
-// ---------------------------------------------------------------------------
 // Item picker modal
 // ---------------------------------------------------------------------------
 interface ItemPickerModalProps {
@@ -85,6 +55,7 @@ interface ItemPickerModalProps {
 }
 
 function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: ItemPickerModalProps) {
+  const { hover, show, hide } = useHoverCard<Item>()
   const [search, setSearch] = useState('')
   const [minLv, setMinLv] = useState(1)
   const [maxLv, setMaxLv] = useState(maxLevel)
@@ -172,7 +143,8 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
             <button
               key={item.Name}
               className={`${styles.pickerItem} ${item.Name === current ? styles.pickerItemActive : ''}`}
-              title={formatItemTooltip(item)}
+              onMouseEnter={show(item)}
+              onMouseLeave={hide}
               onClick={() => { onSelect(item.Name); onClose() }}
             >
               <DdoIcon
@@ -189,6 +161,11 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
           ))}
         </div>
       </div>
+      {hover && (
+        <HoverCard x={hover.x} y={hover.y} openLeft={hover.openLeft}>
+          <ItemCardContent item={hover.data} />
+        </HoverCard>
+      )}
     </div>
   )
 }
@@ -210,7 +187,10 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
   const [fetched, setFetched] = useState<Augment[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { allAugments } = useStaticBundle()
+  const { hover, show, hide } = useHoverCard<Augment>()
   const key = augmentKey(slotName, augment.Type, index)
+  const typeColor = augmentTypeColor(augment.Type)
 
   // V2 CompatibleAugments (GlobalSupportFunctions.cpp:2355): a slot with
   // ItemSpecificAugments offers exactly that list — a picker, not a fixed
@@ -218,6 +198,19 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
   // catalogue by slot type, capped to the host item's level.
   const itemSpecific = toArray(augment.Augment)
   const options = itemSpecific.length > 0 ? itemSpecific : fetched
+
+  // The slotted augment's own record, for the closed-slot hover card. Item-
+  // specific options carry their data inline; everything else resolves against
+  // the shared catalogue, which is already loaded for the stats panels.
+  const chosenAugment = choice
+    ? (itemSpecific.find(a => a.Name === choice)
+      ?? options.find(a => a.Name === choice)
+      ?? allAugments.find(a => a.Name === choice))
+    : undefined
+
+  const sortedOptions = options
+    .slice()
+    .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
 
   function handleOpen() {
     if (!open && itemSpecific.length === 0 && fetched.length === 0) {
@@ -232,10 +225,15 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
 
   return (
     <div className={styles.augRow}>
-      <span className={styles.augType}>{augment.Type}</span>
+      <span className={styles.augType} style={{ color: typeColor }} title={augment.Type}>
+        {augment.Type}
+      </span>
       <button
         className={`${styles.augSelector} ${choice ? styles.augFilled : ''}`}
+        style={choice ? { borderColor: typeColor } : undefined}
         onClick={handleOpen}
+        onMouseEnter={chosenAugment ? show(chosenAugment) : undefined}
+        onMouseLeave={hide}
         type="button"
       >
         {choice || '— Empty —'}
@@ -255,24 +253,51 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
           ) : options.length === 0 ? (
             <div className={styles.pickerEmpty}>No augments available for {augment.Type}</div>
           ) : (
-            <select
-              size={Math.min(8, options.length + 1)}
-              className={styles.pickerSelect}
-              value={choice}
-              onChange={e => { onSet(key, e.target.value); setOpen(false) }}
-            >
-              <option value="">— Empty —</option>
-              {options
-                .slice()
-                .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
-                .map(aug => (
-                  <option key={aug.Name} value={aug.Name}>
-                    {aug.Name}{aug.MinLevel && aug.MinLevel > 1 ? ` (Lv ${aug.MinLevel})` : ''}
-                  </option>
-                ))}
-            </select>
+            <div className={styles.augOptionList} role="listbox" aria-label={`${augment.Type} augments`}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={!choice}
+                className={`${styles.augOption} ${!choice ? styles.augOptionActive : ''}`}
+                onClick={() => { onSet(key, ''); setOpen(false) }}
+              >
+                <span className={styles.augOptionName}>— Empty —</span>
+              </button>
+              {sortedOptions.map(aug => (
+                <button
+                  key={aug.Name}
+                  type="button"
+                  role="option"
+                  aria-selected={aug.Name === choice}
+                  className={`${styles.augOption} ${aug.Name === choice ? styles.augOptionActive : ''}`}
+                  onMouseEnter={show(aug)}
+                  onMouseLeave={hide}
+                  onClick={() => { onSet(key, aug.Name); setOpen(false) }}
+                >
+                  <DdoIcon
+                    category="AugmentImages"
+                    name={aug.Icon ?? aug.Name}
+                    size={16}
+                    className={styles.augOptionIcon}
+                  />
+                  <span className={styles.augOptionName}>{aug.Name}</span>
+                  {aug.MinLevel != null && aug.MinLevel > 1 && (
+                    <span className={styles.augOptionLevel}>Lv {aug.MinLevel}</span>
+                  )}
+                </button>
+              ))}
+            </div>
           )}
         </div>
+      )}
+      {hover && (
+        <HoverCard x={hover.x} y={hover.y} openLeft={hover.openLeft}>
+          <AugmentCardContent
+            augment={hover.data}
+            itemLevel={maxItemLevel}
+            slotType={augment.Type}
+          />
+        </HoverCard>
       )}
     </div>
   )
@@ -284,6 +309,7 @@ function AugmentSlot({ slotName, augment, index, choice, onSet, onClear, maxItem
 export default function GearPanel() {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
+  const itemHover = useHoverCard<{ item: Item; fills: AugmentFill[] }>()
 
   const [slotItems, setSlotItems] = useState<Record<string, Item[] | null>>({})
   const [itemDetails, setItemDetails] = useState<Record<string, Item | null>>({})
@@ -365,7 +391,13 @@ export default function GearPanel() {
     const basicItem = basicList ? basicList.find(i => i.Name === equipped) : null
     const displayIcon = icon ?? basicItem?.Icon
 
-    const slotTooltip = detail ? formatItemTooltip(detail) : (equipped ?? '')
+    // What the hover card shows for this slot: the item's augment slots with
+    // the player's current picks folded in.
+    const augFills: AugmentFill[] = augSlots.map(({ augment, index }) => ({
+      type: augment.Type,
+      index,
+      choice: effectiveAugmentChoice(augmentChoices, augmentKey(slot, augment.Type, index), augment),
+    }))
 
     return (
       <div key={slot} className={styles.slotBlock}>
@@ -375,7 +407,9 @@ export default function GearPanel() {
           <button
             className={`${styles.slotBtn} ${equipped ? styles.slotBtnEquipped : ''}`}
             onClick={() => handleSlotClick(slot)}
-            title={slotTooltip}
+            onMouseEnter={detail ? itemHover.show({ item: detail, fills: augFills }) : undefined}
+            onMouseLeave={itemHover.hide}
+            title={detail ? undefined : (equipped ?? undefined)}
             type="button"
           >
             {equipped && displayIcon ? (
@@ -421,7 +455,11 @@ export default function GearPanel() {
             ))}
             {pendingUpgrades.map(({ upgrade, key, options }) => (
               <div key={key} className={styles.augRow}>
-                <span className={styles.augType} title="Choose an additional augment slot color (cannot be undone)">
+                <span
+                  className={styles.augType}
+                  style={{ color: augmentTypeColor(upgrade.Type) }}
+                  title="Choose an additional augment slot color (cannot be undone)"
+                >
                   {upgrade.Type}
                 </span>
                 <select
@@ -433,7 +471,7 @@ export default function GearPanel() {
                 >
                   <option value="">— Choose slot color —</option>
                   {options.map(color => (
-                    <option key={color} value={color}>{color}</option>
+                    <option key={color} value={color} style={{ color: augmentTypeColor(color) }}>{color}</option>
                   ))}
                 </select>
               </div>
@@ -609,6 +647,11 @@ export default function GearPanel() {
             <div className={styles.pickerLoading}>Loading {slotLabel(openSlot)} items…</div>
           </div>
         </div>
+      )}
+      {itemHover.hover && (
+        <HoverCard x={itemHover.hover.x} y={itemHover.hover.y} openLeft={itemHover.hover.openLeft}>
+          <ItemCardContent item={itemHover.hover.data.item} augmentFills={itemHover.hover.data.fills} />
+        </HoverCard>
       )}
       {findGearOpen && <FindGearDialog onClose={() => setFindGearOpen(false)} />}
       {importOpen && <GearImportDialog onClose={() => setImportOpen(false)} />}
