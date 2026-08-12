@@ -145,6 +145,38 @@ export interface Feat {
   Effect?: Effect | Effect[]
   /** V2 Feat::AutomaticAssignment — Requirements gating automatic (non-trained) acquisition. */
   AutomaticAcquisition?: Requirements
+  /** V2 Feat::DCs() — combat/utility DCs granted while this feat is trained
+   *  (e.g. Trip, Sunder, Stunning Blow; the universal "Attack" feat grants
+   *  Intimidate/Diplomacy/Bluff). Forum-export "Tactical DCs" parity (X16). */
+  DC?: DC | DC[]
+}
+
+// ---------------------------------------------------------------------------
+// Combat / utility DC (V2 DC.h/DC.cpp — Trip, Sunder, Stunning Blow,
+// Intimidate, Turn Undead, tree-granted tactical DCs, …). Forum export's
+// "Tactical DCs" section (ForumExportDlg.cpp:1734-1756 AddTacticalDCs) lists
+// one row per DC currently granted by a trained feat or enhancement.
+// ---------------------------------------------------------------------------
+export interface DC {
+  Name: string
+  Description?: string
+  Icon?: string
+  DCType?: string
+  DCVersus: string
+  /** Literal text shown alongside the computed total, e.g. "d20". */
+  Other?: string
+  Amount?: unknown
+  ClassMultiplier?: unknown
+  FullAbility?: Ability | Ability[]
+  ModAbility?: Ability | Ability[]
+  School?: string | string[]
+  Skill?: string
+  Tactical?: string
+  Tactical2?: string
+  BaseClassLevel?: string
+  ClassLevel?: string
+  HalfClassLevel?: string
+  HalfBaseClassLevel?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -156,6 +188,8 @@ export interface EnhancementSelection {
   Icon?: string
   Cost?: number
   Effect?: Effect | Effect[]
+  /** Selection-scoped DCs (V2 Selector::EffectDCs) — see `DC` above. */
+  DC?: DC | DC[]
 }
 
 export interface EnhancementTreeItem {
@@ -176,6 +210,9 @@ export interface EnhancementTreeItem {
   Requirements?: Requirements
   Selector?: { EnhancementSelection: EnhancementSelection[] }[]
   Effect?: Effect | Effect[]
+  /** Always-active DCs (V2 EnhancementTreeItem::m_EffectDC) — combined with
+   *  the chosen selection's own DCs, if any. See `DC` above. */
+  DC?: DC | DC[]
 }
 
 export interface EnhancementTree {

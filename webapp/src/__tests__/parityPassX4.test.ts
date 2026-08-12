@@ -4,11 +4,19 @@
 // types defined in TacticalTypes.h. V3 sections.ts had a tacticalDCs section
 // that called stats.total('tacticalDC') which is always 0 — parseEffect routes
 // to 'tacticalDC.All' or 'tacticalDC.{Type}', never to bare 'tacticalDC'.
+//
+// Superseded by parity pass X16 (parityPassX16TacticalDCs.test.ts): V2's real
+// AddTacticalDCs emits one table row per DC object currently granted by a
+// trained feat/enhancement (CDCPane's active buttons), not a flat 13-entry
+// TacticalType enumeration. These tests now exercise the section through
+// that same active-DC-catalogue API; the fixed-enumeration assertions this
+// file used to make no longer apply to V2's actual behaviour.
 
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SECTIONS } from '../lib/export/sections'
 import { emptyBuild } from '../types/ddo'
 import type { BuildStats } from '../hooks/useBuildStats'
+import type { Feat } from '../types/ddo'
 
 function mockStats(overrides: Record<string, number>): BuildStats {
   return {
@@ -23,101 +31,51 @@ function mockStats(overrides: Record<string, number>): BuildStats {
   } as unknown as BuildStats
 }
 
-describe('Forum export tacticalDCs section — parity pass X4', () => {
-  const tacticalSection = DEFAULT_SECTIONS.find(s => s.id === 'TacticalDCs')!
-  const build = emptyBuild()
+const tripFeat: Feat = {
+  Name: 'Trip',
+  DC: { Name: 'Trip', DCVersus: 'Balance', Amount: 10, ModAbility: 'Strength', Tactical: 'Trip' },
+}
+const stunFeat: Feat = {
+  Name: 'Stunning Blow',
+  DC: { Name: 'Stunning Blow', DCVersus: 'Fortitude', Amount: 10, ModAbility: 'Strength', Tactical: 'Stun' },
+}
 
-  it('returns empty array when no tactical DC bonuses are set', () => {
+describe('Forum export tacticalDCs section — parity pass X4 (superseded by X16)', () => {
+  const tacticalSection = DEFAULT_SECTIONS.find(s => s.id === 'TacticalDCs')!
+  const build = { ...emptyBuild(), featChoices: {} }
+
+  it('returns empty array when no context catalogues are supplied', () => {
     const stats = mockStats({})
     expect(tacticalSection.emit({ build, stats })).toEqual([])
   })
 
-  it('emits a Trip row when tacticalDC.Trip is non-zero', () => {
-    const stats = mockStats({ 'tacticalDC.Trip': 4 })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.length).toBeGreaterThan(0)
-    expect(lines.some(l => l.includes('Trip') && l.includes('+4'))).toBe(true)
-  })
-
-  it('emits a Stun row when tacticalDC.Stun is non-zero', () => {
-    const stats = mockStats({ 'tacticalDC.Stun': 6 })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Stun') && l.includes('+6'))).toBe(true)
-  })
-
-  it('emits multiple rows for multiple non-zero types', () => {
-    const stats = mockStats({
-      'tacticalDC.Trip': 3,
-      'tacticalDC.Stun': 5,
-      'tacticalDC.Sunder': 2,
-      'tacticalDC.Assassinate': 7,
+  it('returns empty array when no feat/enhancement grants an active DC', () => {
+    const stats = mockStats({})
+    const lines = tacticalSection.emit({
+      build, stats, allFeats: [tripFeat], allTrees: [], allClasses: [], allRaces: [],
     })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Trip'))).toBe(true)
-    expect(lines.some(l => l.includes('Stun'))).toBe(true)
-    expect(lines.some(l => l.includes('Sunder'))).toBe(true)
-    expect(lines.some(l => l.includes('Assassinate'))).toBe(true)
+    expect(lines).toEqual([])
   })
 
-  it('omits types where the bonus is zero', () => {
-    const stats = mockStats({ 'tacticalDC.Stun': 4 })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Trip'))).toBe(false)
-    expect(lines.some(l => l.includes('Assassinate'))).toBe(false)
-    expect(lines.some(l => l.includes('Sunder'))).toBe(false)
-  })
-
-  it('emits a header line when any type is non-zero', () => {
-    const stats = mockStats({ 'tacticalDC.Stun': 5 })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines[0]).toMatch(/Tactical DC/i)
-  })
-
-  it('adds tacticalDC.All to each specific type total', () => {
-    const stats = mockStats({
-      'tacticalDC.All': 2,
-      'tacticalDC.Trip': 4,
+  it('emits a table row for a trained feat carrying a DC (Trip)', () => {
+    const stats = mockStats({ 'ability.Strength': 16 })
+    const withTrip = { ...build, featChoices: { slot1: 'Trip' } }
+    const lines = tacticalSection.emit({
+      build: withTrip, stats, allFeats: [tripFeat], allTrees: [], allClasses: [], allRaces: [],
     })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Trip') && l.includes('+6'))).toBe(true)
-    expect(lines.some(l => l.includes('Stun') && l.includes('+2'))).toBe(true)
+    expect(lines[0]).toBe('[SIZE=3][TABLE]')
+    expect(lines[1]).toBe('[TR][TD]Tactical DC[/TD][TD]Value[/TD][TD]Evaluation[/TD][/TR]')
+    expect(lines.some(l => l.includes('[TD]Trip[/TD]'))).toBe(true)
+    expect(lines[lines.length - 1]).toBe('[/TABLE][/SIZE]')
   })
 
-  it('supports all 13 V2 tactical types by their canonical display names', () => {
-    const stats = mockStats({
-      'tacticalDC.Assassinate': 1,
-      'tacticalDC.Trap': 2,
-      'tacticalDC.Trip': 3,
-      'tacticalDC.Stun': 4,
-      'tacticalDC.Sunder': 5,
-      'tacticalDC.StunningShield': 6,
-      'tacticalDC.General': 7,
-      'tacticalDC.Wands': 8,
-      'tacticalDC.Fear': 9,
-      'tacticalDC.InnateAttack': 10,
-      'tacticalDC.BreathWeapon': 11,
-      'tacticalDC.Poison': 12,
-      'tacticalDC.RuneArm': 13,
+  it('emits multiple rows for multiple trained DC-granting feats', () => {
+    const stats = mockStats({ 'ability.Strength': 16 })
+    const withBoth = { ...build, featChoices: { slot1: 'Trip', slot2: 'Stunning Blow' } }
+    const lines = tacticalSection.emit({
+      build: withBoth, stats, allFeats: [tripFeat, stunFeat], allTrees: [], allClasses: [], allRaces: [],
     })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Assassinate'))).toBe(true)
-    expect(lines.some(l => l.includes('Trap'))).toBe(true)
-    expect(lines.some(l => l.includes('Trip'))).toBe(true)
-    expect(lines.some(l => l.includes('Stun'))).toBe(true)
-    expect(lines.some(l => l.includes('Sunder'))).toBe(true)
-    expect(lines.some(l => l.includes('Stunning Shield'))).toBe(true)
-    expect(lines.some(l => l.includes('General'))).toBe(true)
-    expect(lines.some(l => l.includes('Wands'))).toBe(true)
-    expect(lines.some(l => l.includes('Fear'))).toBe(true)
-    expect(lines.some(l => l.includes('Innate Attack'))).toBe(true)
-    expect(lines.some(l => l.includes('Breath Weapon'))).toBe(true)
-    expect(lines.some(l => l.includes('Poison'))).toBe(true)
-    expect(lines.some(l => l.includes('Rune Arm'))).toBe(true)
-  })
-
-  it('handles negative tactical DC bonuses (debuffs)', () => {
-    const stats = mockStats({ 'tacticalDC.Trip': -2 })
-    const lines = tacticalSection.emit({ build, stats })
-    expect(lines.some(l => l.includes('Trip') && l.includes('-2'))).toBe(true)
+    expect(lines.some(l => l.includes('[TD]Trip[/TD]'))).toBe(true)
+    expect(lines.some(l => l.includes('[TD]Stunning Blow[/TD]'))).toBe(true)
   })
 })

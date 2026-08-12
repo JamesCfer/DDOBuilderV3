@@ -16,6 +16,7 @@ import { buildSlots, getLevelTrainingEntries } from '../levelTraining'
 import { computeBonusActionPoints } from '../actionPoints'
 import { destinyPoolForBuild } from '../destiny'
 import { SKILL_NAMES } from '../gamedata'
+import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -736,35 +737,30 @@ const weaponDamage: SectionDef = {
   },
 }
 
-const V2_TACTICAL_TYPES: [key: string, label: string][] = [
-  ['Assassinate',    'Assassinate'],
-  ['Trap',           'Trap'],
-  ['Trip',           'Trip'],
-  ['Stun',           'Stun'],
-  ['Sunder',         'Sunder'],
-  ['StunningShield', 'Stunning Shield'],
-  ['General',        'General'],
-  ['Wands',          'Wands'],
-  ['Fear',           'Fear'],
-  ['InnateAttack',   'Innate Attack'],
-  ['BreathWeapon',   'Breath Weapon'],
-  ['Poison',         'Poison'],
-  ['RuneArm',        'Rune Arm'],
-]
-
+// V2 ForumExportDlg.cpp:1734-1756 (AddTacticalDCs): a [SIZE=3][TABLE] with
+// 3 columns (Tactical DC / Value / Evaluation), one row per DC currently
+// granted by a trained feat or enhancement (CDCPane's active button list —
+// Trip, Sunder, Stunning Blow, Intimidate/Diplomacy/Bluff from the
+// universal "Attack" feat, tree-granted tactical DCs, …), each row's Value
+// and Evaluation built from DC::DCBreakdown's exact component text. V3
+// previously emitted flat "  Label: +N" lines for a fixed 13-entry
+// TacticalType enumeration — unrelated to V2's actual per-DC-object list.
 const tacticalDCs: SectionDef = {
   id: 'TacticalDCs',
   label: 'Tactical DCs',
-  emit: ({ stats }) => {
-    if (!stats) return []
-    const allBonus = stats.total('tacticalDC.All')
-    const rows: string[] = []
-    for (const [key, label] of V2_TACTICAL_TYPES) {
-      const total = allBonus + stats.total(`tacticalDC.${key}`)
-      if (total !== 0) rows.push(`  ${label}: ${sign(total)}`)
+  emit: ({ build, stats, allFeats, allTrees, allClasses, allRaces }) => {
+    if (!stats || !allFeats || !allTrees || !allClasses || !allRaces) return []
+    const active = collectActiveDCs(build, allFeats, allTrees, allClasses, allRaces, stats.grantedFeatsList)
+    if (active.length === 0) return []
+    const ctx = { build, stats, allClasses }
+    const lines = ['[SIZE=3][TABLE]', '[TR][TD]Tactical DC[/TD][TD]Value[/TD][TD]Evaluation[/TD][/TR]']
+    for (const { dc, stacks } of active) {
+      const versus = dcVersusText(dc, stacks, ctx)
+      const evaluation = dcEvaluationText(dc, stacks, ctx)
+      lines.push(`[TR][TD]${dc.Name}[/TD][TD]${versus}[/TD][TD]${evaluation}[/TD][/TR]`)
     }
-    if (rows.length === 0) return []
-    return ['[b]Tactical DCs[/b]:', ...rows]
+    lines.push('[/TABLE][/SIZE]')
+    return lines
   },
 }
 
