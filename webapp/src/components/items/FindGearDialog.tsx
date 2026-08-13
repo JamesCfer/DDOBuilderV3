@@ -1,4 +1,4 @@
-import { useState, useEffect, useId } from 'react'
+import { useState, useEffect, useId, useMemo } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { findGearByEffect } from '../../lib/findGear'
@@ -6,8 +6,11 @@ import { displaySlotsForItemKey } from '../../lib/gearSlots'
 import { useDocument } from '../../context/DocumentContext'
 import type { Item, ItemBuff } from '../../types/ddo'
 import { formatBuffText } from '../../lib/itemDisplay'
+import { itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent } from './GearHoverCards'
+import ItemTypeSelect from './ItemTypeSelect'
 import styles from './FindGearDialog.module.css'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
@@ -69,6 +72,7 @@ const MAX_RESULTS = 400
 export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
+  const { allWeaponGroups } = useStaticBundle()
   const listId = useId()
   const itemHover = useHoverCard<Item>()
 
@@ -83,6 +87,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
 
   const [nameSearch, setNameSearch] = useState('')
   const [buffSearch, setBuffSearch] = useState('')
+  const [itemType, setItemType] = useState('')
   const [minLv, setMinLv] = useState(1)
   const [maxLv, setMaxLv] = useState(maxCharLevel)
   const [minVal, setMinVal] = useState<number | ''>('')
@@ -109,23 +114,40 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
 
   // V2 ContentPane parity: hide items from unowned adventure packs
   // (ItemSelectDialog.cpp:312-318 applies the same filter to FindGearDialog).
-  const dontOwn = new Set(doc.contentIDontOwn ?? [])
-  const ownedItems = allItems
-    ? allItems.filter(it => !it.AdventurePack || !dontOwn.has(it.AdventurePack))
-    : null
+  const dontOwnKey = (doc.contentIDontOwn ?? []).join('\u0001')
+  const ownedItems = useMemo(() => {
+    if (!allItems) return null
+    const dontOwn = new Set(dontOwnKey ? dontOwnKey.split('\u0001') : [])
+    return allItems.filter(it => !it.AdventurePack || !dontOwn.has(it.AdventurePack))
+  }, [allItems, dontOwnKey])
 
-  const results =
-    ownedItems && (nameSearch || buffSearch || minLv > 1 || maxLv < maxCharLevel || minVal !== '')
-      ? findGearByEffect(ownedItems, {
-          nameSearch: nameSearch || undefined,
-          buffSearch: buffSearch || undefined,
-          minLevel: minLv > 1 ? minLv : undefined,
-          maxLevel: maxLv,
-          minValue: minVal !== '' ? minVal : undefined,
-        })
-      : []
+  // Type options come from the whole owned catalogue, so the list of weapon /
+  // armor types on offer doesn't shift as the other filters narrow results.
+  const typeOptions = useMemo(
+    () => itemTypeOptions(ownedItems ?? [], allWeaponGroups),
+    [ownedItems, allWeaponGroups],
+  )
 
-  const hasFilter = nameSearch || buffSearch || minLv > 1 || maxLv < maxCharLevel || minVal !== ''
+  const hasFilter = Boolean(
+    nameSearch || buffSearch || itemType || minLv > 1 || maxLv < maxCharLevel || minVal !== '',
+  )
+
+  const results = useMemo(
+    () =>
+      ownedItems && hasFilter
+        ? findGearByEffect(ownedItems, {
+            nameSearch: nameSearch || undefined,
+            buffSearch: buffSearch || undefined,
+            itemType: itemType || undefined,
+            weaponGroups: allWeaponGroups,
+            minLevel: minLv > 1 ? minLv : undefined,
+            maxLevel: maxLv,
+            minValue: minVal !== '' ? minVal : undefined,
+          })
+        : [],
+    [ownedItems, hasFilter, nameSearch, buffSearch, itemType, allWeaponGroups, minLv, maxLv, minVal],
+  )
+
   const displayResults = results.slice(0, MAX_RESULTS)
   const truncated = results.length > MAX_RESULTS
 
@@ -136,12 +158,13 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   function handleReset() {
     setNameSearch('')
     setBuffSearch('')
+    setItemType('')
     setMinLv(1)
     setMaxLv(maxCharLevel)
     setMinVal('')
   }
 
-  const isDirty = nameSearch || buffSearch || minLv > 1 || maxLv < maxCharLevel || minVal !== ''
+  const isDirty = hasFilter
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -181,6 +204,16 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                 <option key={t} value={t} />
               ))}
             </datalist>
+          </label>
+
+          <label className={styles.filterLabel}>
+            Item type
+            <ItemTypeSelect
+              className={styles.filterSelect}
+              value={itemType}
+              onChange={setItemType}
+              optionGroups={typeOptions}
+            />
           </label>
 
           <label className={styles.filterLabelNarrow}>
@@ -236,7 +269,8 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             <div className={styles.placeholder}>Loading item database…</div>
           ) : !hasFilter ? (
             <div className={styles.placeholder}>
-              Enter an item name or effect type to search across all gear slots.
+              Search across all gear slots — by name, by effect, or by item type
+              (Longsword, Small Shield, Medium Armor, Minor Artifact…).
             </div>
           ) : results.length === 0 ? (
             <div className={styles.placeholder}>No items match — try adjusting the filters.</div>
@@ -254,6 +288,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                       <th className={styles.thName}>Item</th>
                       <th className={styles.thNum}>Lv</th>
                       <th className={styles.thSlot}>Slot</th>
+                      <th className={styles.thType}>Type</th>
                       <th className={styles.thEffect}>Matched Effect(s)</th>
                       <th className={styles.thEquip}></th>
                     </tr>
@@ -269,7 +304,17 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                           >{result.item.Name}</td>
                           <td className={styles.tdNum}>{result.item.MinLevel ?? 1}</td>
                           <td className={styles.tdSlot}>
-                            {apiSlot === 'Ring' ? 'Ring' : apiSlot}
+                            {/* Data-file slot keys ("Weapon1") read as the
+                                panel's slot names ("Main Hand"). */}
+                            {apiSlot === 'Ring' ? 'Ring' : displaySlotsForItemKey(apiSlot).join(' / ')}
+                          </td>
+                          <td className={styles.tdType}>
+                            {itemTypeLabel(result.item) || '—'}
+                            {'MinorArtifact' in result.item && (
+                              <span className={styles.artifactTag} title="Minor Artifact — only one may be equipped">
+                                Artifact
+                              </span>
+                            )}
                           </td>
                           <td className={styles.tdEffect}>
                             {result.matchedBuffs.map(b => formatBuffText(b)).join(', ')}

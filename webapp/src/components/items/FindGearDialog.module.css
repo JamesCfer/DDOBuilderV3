@@ -125,6 +125,23 @@
   border-color: var(--color-border-focus);
 }
 
+.filterSelect {
+  padding: 4px 6px;
+  font-size: 12px;
+  max-width: 190px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.filterSelect:focus {
+  border-color: var(--color-border-focus);
+}
+
 .resetBtn {
   padding: 3px 8px;
   font-size: 11px;
@@ -199,7 +216,8 @@
 .thName  { width: 30%; }
 .thNum   { width: 40px; text-align: right; }
 .thSlot  { width: 80px; }
-.thEffect { width: 38%; }
+.thType  { width: 120px; }
+.thEffect { width: 34%; }
 .thEquip { width: 80px; }
 
 .row:hover td {
@@ -232,6 +250,23 @@
   color: var(--color-text-secondary);
   font-size: 11px;
   white-space: nowrap;
+}
+
+.tdType {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.artifactTag {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .tdEffect {

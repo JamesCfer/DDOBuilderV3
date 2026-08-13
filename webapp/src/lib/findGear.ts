@@ -1,4 +1,6 @@
 import type { Item, ItemBuff } from '../types/ddo'
+import { itemMatchesType } from './itemFilters'
+import type { WeaponGroupSpec } from './weapons/groups'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
@@ -15,6 +17,11 @@ export interface FindGearQuery {
   minLevel?: number
   maxLevel?: number
   nameSearch?: string
+  /** Item type token from `itemFilters` — e.g. `wt:Longsword`, `ar:Medium`,
+   *  `wg:Two Handed`, `cat:shield`, `special:artifact`. */
+  itemType?: string
+  /** WeaponGroupings.xml data, needed only to resolve `wg:` tokens. */
+  weaponGroups?: WeaponGroupSpec[]
 }
 
 export interface FindGearResult {
@@ -30,7 +37,8 @@ export interface FindGearResult {
  * MinLevel ascending then name. Implements V2 FindGearDialog cross-slot search.
  */
 export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearResult[] {
-  const { buffType, buffSearch, minValue, minLevel, maxLevel, nameSearch } = query
+  const { buffType, buffSearch, minValue, minLevel, maxLevel, nameSearch, itemType, weaponGroups } =
+    query
 
   const results: FindGearResult[] = []
 
@@ -39,6 +47,7 @@ export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearR
     if (minLevel != null && lvl < minLevel) continue
     if (maxLevel != null && lvl > maxLevel) continue
     if (nameSearch && !item.Name.toLowerCase().includes(nameSearch.toLowerCase())) continue
+    if (itemType && !itemMatchesType(item, itemType, weaponGroups)) continue
 
     const allBuffs = toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
     let matchedBuffs: ItemBuff[]
