@@ -1,5 +1,4 @@
 import express from 'express'
-import compression from 'compression'
 import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
@@ -17,6 +16,10 @@ import { augmentMatchesSlotType } from './src/lib/gearSlotUpgrades'
 import { CommunityStore } from './src/server/communityStore'
 import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
 import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
+import {
+  formatBugReport, sendDiscordDm, ReportRateLimiter, MAX_REPORT_LENGTH, DISCORD_API_BASE,
+} from './src/server/bugReport'
+import { loadOptionalCompression } from './src/server/optionalCompression'
 import type { CharacterDocument } from './src/types/ddo'
 
 dotenv.config()
@@ -29,7 +32,9 @@ app.use(cors())
 // The catalogue responses are large, highly repetitive JSON — /api/items alone
 // is 8.1 MB raw and gzips to ~0.9 MB. Compressing costs a few ms of CPU on a
 // cached-in-memory payload and saves seconds of transfer on the gear panels.
-app.use(compression())
+// Loaded optionally: a missing module must degrade to uncompressed, never
+// crash-loop the server (see optionalCompression.ts).
+app.use(loadOptionalCompression())
 app.use(express.json())
 
 // ---------------------------------------------------------------------------
@@ -553,6 +558,66 @@ app.post('/api/community/:id/vote', (req, res) => {
     const score = community.vote(req.params.id, userId, value)
     res.json({ score, myVote: value })
   } catch (err) { communityError(res, err) }
+})
+
+// ---------------------------------------------------------------------------
+// Bug reports → Discord DM
+//
+// The in-app bug widget posts here; the server relays the text to the
+// maintainer as a Discord direct message. Credentials come from the
+// environment and are never sent to the browser:
+//
+//   DISCORD_BOT_TOKEN     bot token (Discord developer portal → Bot → Token)
+//   DISCORD_REPORT_USER_ID  numeric user id to DM
+//
+// With either unset the endpoint reports 501 and the widget hides itself, so
+// a fork without a bot simply has no bug button.
+//
+// Note: Discord only lets a bot open a DM with a user who shares a server
+// with it — invite the bot to a server you are in, or the DM is rejected.
+// ---------------------------------------------------------------------------
+
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN ?? ''
+const DISCORD_REPORT_USER_ID = process.env.DISCORD_REPORT_USER_ID ?? ''
+// Overridable for local testing against a stub; defaults to the real API.
+const DISCORD_API = process.env.DISCORD_API_BASE ?? DISCORD_API_BASE
+const bugReportsConfigured = () => Boolean(DISCORD_BOT_TOKEN && DISCORD_REPORT_USER_ID)
+const reportLimiter = new ReportRateLimiter()
+
+app.get('/api/bug-report/config', (_req, res) => {
+  res.json({ enabled: bugReportsConfigured() })
+})
+
+app.post('/api/bug-report', async (req, res) => {
+  if (!bugReportsConfigured()) {
+    res.status(501).json({ error: 'Bug reporting is not configured on this server' })
+    return
+  }
+  const { text, page, version } = req.body ?? {}
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    res.status(400).json({ error: 'Please describe the bug' })
+    return
+  }
+  if (text.length > MAX_REPORT_LENGTH) {
+    res.status(400).json({ error: `Please keep the report under ${MAX_REPORT_LENGTH} characters` })
+    return
+  }
+  const ip = req.ip ?? 'unknown'
+  if (reportLimiter.limited(ip)) {
+    res.status(429).json({ error: 'Too many reports just now — please try again later' })
+    return
+  }
+  try {
+    await sendDiscordDm(DISCORD_BOT_TOKEN, DISCORD_REPORT_USER_ID, formatBugReport(text, {
+      page: typeof page === 'string' ? page.slice(0, 40) : undefined,
+      version: typeof version === 'string' ? version.slice(0, 20) : undefined,
+    }), DISCORD_API)
+    res.json({ ok: true })
+  } catch (err) {
+    // Never leak the token or Discord's raw response to the browser.
+    console.error('[bug-report] delivery failed:', err instanceof Error ? err.message : err)
+    res.status(502).json({ error: 'Could not deliver the report — please try again later' })
+  }
 })
 
 // ---------------------------------------------------------------------------

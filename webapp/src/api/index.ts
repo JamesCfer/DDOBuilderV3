@@ -67,6 +67,20 @@ async function get<T>(path: string, params?: Record<string, string | number>): P
   return request
 }
 
+/** POST JSON, surfacing the server's `error` message when it rejects. */
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null) as { error?: string } | null
+    throw new Error(detail?.error ?? `API ${path} → ${res.status}`)
+  }
+  return res.json() as Promise<T>
+}
+
 export const api = {
   races: () => get<Race[]>('/races'),
   classes: () => get<DDOClass[]>('/classes'),
@@ -103,6 +117,10 @@ export const api = {
   itemClickies: () => get<ItemClickieSpec[]>('/item-clickies'),
   // In-game DungeonHelper plugins (downloads, not build data)
   plugins: () => get<PluginCatalogue>('/plugins'),
+  /** Whether this server can deliver bug reports (Discord bot configured). */
+  bugReportConfig: () => get<{ enabled: boolean }>('/bug-report/config'),
+  sendBugReport: (report: { text: string; page?: string; version?: string }) =>
+    post<{ ok: true }>('/bug-report', report),
 }
 
 /** A downloadable in-game plugin release (see /api/plugins). */
