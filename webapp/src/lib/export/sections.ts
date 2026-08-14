@@ -5,7 +5,7 @@
 // any subset and re-order them.
 
 import type {
-  CharacterBuild, Ability, DDOClass, Race, Stance, OptionalBuff, Feat,
+  CharacterBuild, Ability, DDOClass, Race, Stance, OptionalBuff, Feat, Spell,
   EnhancementTree, EnhancementTreeItem, EnhancementSelection,
 } from '../../types/ddo'
 import type { BuildStats } from '../../hooks/useBuildStats'
@@ -17,6 +17,7 @@ import { computeBonusActionPoints } from '../actionPoints'
 import { destinyPoolForBuild } from '../destiny'
 import { SKILL_NAMES } from '../gamedata'
 import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown'
+import { computeSpellDC, computeCasterLevel, computeMaxCasterLevel } from '../spells/spellMath'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -56,6 +57,9 @@ export interface SectionContext {
    *  tier labels and Points-spent totals in the enhancements/epicDestinies/
    *  reaperTrees sections (X17). */
   allTrees?: EnhancementTree[]
+  /** Full spell catalogue — required to resolve School/CL/MCL/DC columns in
+   *  the spells section (X18). */
+  allSpells?: Spell[]
 }
 
 export interface SectionDef {
@@ -686,22 +690,81 @@ const spellPowers: SectionDef = {
   },
 }
 
+function toSpellArray<T>(v: T | T[] | undefined): T[] {
+  if (v === undefined || v === null) return []
+  return Array.isArray(v) ? v : [v]
+}
+
+const SPELL_TABLE_HEADER =
+  '[TR][TD][COLOR=rgb(65, 168, 95)]Level[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]Spell Name[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]School[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]CL/MCL[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]DC[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]Average Damage[/COLOR][/TD]' +
+  '[TD][COLOR=rgb(65, 168, 95)]Critical Damage[/COLOR][/TD][/TR]'
+
+// V2 ForumExportDlg.cpp:1554-1645 (AddSpellList): the per-weapon-style Average
+// Damage / Critical Damage columns read Spell::SpellDamageEffects().front()'s
+// dice formula (SpellDamage::AverageDamageText/CriticalDamageText), which
+// depends on a full Dice-per-caster-level model V3 does not have yet — left
+// as "-" here, same scoping decision as X13's per-weapon effects breakdown.
+function spellRow(
+  level: number,
+  name: string,
+  spell: Spell | undefined,
+  cls: DDOClass | undefined,
+  classLevel: number,
+  stats: BuildStats | null,
+): string {
+  const school = spell?.School
+    ? (Array.isArray(spell.School) ? spell.School.join(', ') : spell.School)
+    : ''
+  const hasDamage = toSpellArray(spell?.SpellDamage).length > 0
+  let clCell = '-'
+  if (spell && hasDamage && stats) {
+    const cl = computeCasterLevel(spell, cls, classLevel, stats)
+    const mcl = computeMaxCasterLevel(spell, cls, classLevel, stats)
+    clCell = Number.isFinite(mcl) && mcl > 0 ? `${cl}/${mcl}` : `${cl}`
+  }
+  let dcCell = '-'
+  if (spell && stats) {
+    // V2 Spell::DC (Spell.cpp:113-122) evaluates only DCs().front() — the
+    // FIRST SpellDC block, not the highest (unlike the live Spells panel,
+    // which shows the max across all blocks).
+    const dcs = toSpellArray(spell.SpellDC)
+    if (dcs.length > 0) {
+      const dc = computeSpellDC(spell, dcs[0], cls, classLevel, stats)
+      if (dc !== 0) dcCell = String(Math.trunc(dc))
+    }
+  }
+  return `[TR][TD]${level}[/TD][TD]${name}[/TD][TD]${school}[/TD]` +
+    `[TD]${clCell}[/TD][TD]${dcCell}[/TD][TD]-[/TD][TD]-[/TD][/TR]`
+}
+
 const spells: SectionDef = {
   id: 'Spells',
   label: 'Trained spells',
-  emit: ({ build }) => {
-    const classes = Object.keys(build.trainedSpells).filter(c =>
+  emit: ({ build, stats, allClasses, allSpells }) => {
+    const classNames = Object.keys(build.trainedSpells).filter(c =>
       Object.values(build.trainedSpells[c] ?? {}).some(arr => arr.length > 0))
-    if (classes.length === 0) return []
-    const lines = ['[b]Spells[/b]:']
-    for (const c of classes) {
-      lines.push(`  ${c}:`)
-      const byLevel = build.trainedSpells[c]
+    if (classNames.length === 0) return []
+    const lines: string[] = []
+    for (const className of classNames) {
+      const byLevel = build.trainedSpells[className]
+      const bc = build.classes.find(c => c.name === className)
+      const cls = allClasses?.find(c => c.Name === className)
+      const classLevel = bc?.levels ?? 0
+      lines.push(`${className} Spells`)
+      lines.push('[SIZE=3][TABLE]')
+      lines.push(SPELL_TABLE_HEADER)
       for (const lvl of Object.keys(byLevel).map(Number).sort((a, b) => a - b)) {
-        const list = byLevel[lvl] ?? []
-        if (list.length === 0) continue
-        lines.push(`    Level ${lvl}: ${list.join(', ')}`)
+        for (const name of byLevel[lvl] ?? []) {
+          const spell = allSpells?.find(s => s.Name === name)
+          lines.push(spellRow(lvl, name, spell, cls, classLevel, stats))
+        }
       }
+      lines.push('[/TABLE][/SIZE]')
     }
     return lines
   },
