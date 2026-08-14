@@ -40,6 +40,7 @@ import SettingsPanel from './components/layout/SettingsPanel'
 import ContentPanel from './components/layout/ContentPanel'
 import HelpPanel from './components/layout/HelpPanel'
 import AppShortcuts from './components/layout/AppShortcuts'
+import BugReportWidget from './components/layout/BugReportWidget'
 import Dashboard from './components/layout/Dashboard'
 import OptimizerPanel from './components/optimizer/OptimizerPanel'
 import LifeBuildBar from './components/layout/LifeBuildBar'
@@ -248,6 +249,7 @@ function AppInner() {
           <AnalysisDock />
         </div>
       </Layout>
+      <BugReportWidget page={`${page} · ${tab}`} />
     </>
   )
 }
