@@ -4,6 +4,36 @@ import type { AttackRate, BonusTypeSpec, Challenge, ItemBuffSpec, ItemClickieSpe
 
 const BASE = '/api'
 
+// ---------------------------------------------------------------------------
+// Catalogue cache
+// ---------------------------------------------------------------------------
+// The data-file catalogues never change while the app is running, but panels
+// fetch them independently — /api/classes and /api/races were each requested
+// five times per session, and every open of a gear picker re-downloaded the
+// slot's item list (4.2 MB for Main Hand; 8.1 MB for Find Gear's full
+// catalogue). Responses for these paths are memoised by full URL, and
+// concurrent callers share one in-flight request instead of racing.
+//
+// Only static data lives here. Anything user- or build-specific (community
+// browsing, parity runs, set-bonus lookups for the current gear) stays
+// uncached so it always reflects current state.
+const CACHEABLE = new Set([
+  '/races', '/classes', '/feats', '/enhancements', '/items', '/item',
+  '/augments', '/stances', '/setbonuses', '/guildbuffs', '/filigree',
+  '/filigree-bonuses', '/selfbuffs', '/patrons', '/quests', '/gems',
+  '/spells', '/weapongroups', '/attack-rates', '/bonus-types', '/challenges',
+  '/ignored-list', '/adventure-packs', '/item-buffs', '/item-clickies',
+])
+
+const responseCache = new Map<string, unknown>()
+const inflight = new Map<string, Promise<unknown>>()
+
+/** Test-only: drop every memoised catalogue response. */
+export function resetApiCacheForTests(): void {
+  responseCache.clear()
+  inflight.clear()
+}
+
 async function get<T>(path: string, params?: Record<string, string | number>): Promise<T> {
   const url = new URL(BASE + path, window.location.origin)
   if (params) {
@@ -11,9 +41,30 @@ async function get<T>(path: string, params?: Record<string, string | number>): P
       if (v !== undefined && v !== '') url.searchParams.set(k, String(v))
     }
   }
-  const res = await fetch(url.toString())
-  if (!res.ok) throw new Error(`API ${path} → ${res.status}`)
-  return res.json() as Promise<T>
+  const key = url.toString()
+  const cacheable = CACHEABLE.has(path)
+
+  if (cacheable) {
+    if (responseCache.has(key)) return responseCache.get(key) as T
+    const pending = inflight.get(key)
+    if (pending) return pending as Promise<T>
+  }
+
+  const request = fetch(key)
+    .then(res => {
+      if (!res.ok) throw new Error(`API ${path} → ${res.status}`)
+      return res.json() as Promise<T>
+    })
+    .then(data => {
+      if (cacheable) responseCache.set(key, data)
+      return data
+    })
+    .finally(() => {
+      inflight.delete(key)
+    })
+
+  if (cacheable) inflight.set(key, request)
+  return request
 }
 
 export const api = {

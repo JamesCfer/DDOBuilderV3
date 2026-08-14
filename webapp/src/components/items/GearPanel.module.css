@@ -292,6 +292,32 @@
   flex: 1;
 }
 
+.pickerMore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.1s, color 0.1s;
+}
+
+.pickerMore:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+}
+
+.pickerMoreCount {
+  font-size: 9px;
+  color: var(--color-text-muted);
+}
+
 .pickerItem {
   display: flex;
   flex-direction: column;

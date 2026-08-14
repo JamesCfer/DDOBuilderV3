@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef, useDeferredValue } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { Item, ItemBuff, ItemAugment, Augment } from '../../types/ddo'
@@ -42,6 +42,9 @@ function toArray<T>(val: T | T[] | undefined): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
+/** Item tiles mounted per page in the slot picker. */
+const PICKER_PAGE = 120
+
 function augmentKey(slot: string, augType: string, idx: number) {
   return `${slot}:${augType}:${idx}`
 }
@@ -67,10 +70,15 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
   const [buffFilter, setBuffFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
 
+  // Typing must not wait on re-filtering thousands of items: the input tracks
+  // `search` (immediate), the result grid tracks the deferred copy, so React
+  // paints the keystroke first and re-filters after.
+  const deferredSearch = useDeferredValue(search)
+
   // Collect unique buff types across all items in this slot
-  const allBuffTypes = Array.from(new Set(
+  const allBuffTypes = useMemo(() => Array.from(new Set(
     items.flatMap(item => toArray(item.Buff as ItemBuff | ItemBuff[] | undefined).map(b => b.Type).filter(Boolean))
-  )).sort()
+  )).sort(), [items])
 
   // Weapon / armor / shield types this slot can actually hold. Weapon slots get
   // the full weapon-class list; a Necklace slot gets no type control at all.
@@ -79,13 +87,42 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
     [items, allWeaponGroups],
   )
 
-  const available = items
-    .filter(item => (item.MinLevel ?? 1) >= minLv)
-    .filter(item => (item.MinLevel ?? 1) <= maxLv)
-    .filter(item => !buffFilter || toArray(item.Buff as ItemBuff | ItemBuff[] | undefined).some(b => b.Type === buffFilter))
-    .filter(item => itemMatchesType(item, typeFilter, allWeaponGroups))
-    .filter(item => !search || item.Name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
+  // One pass over the slot's items instead of five chained .filter() copies —
+  // Main Hand holds 3650 of them and this used to re-run on every render.
+  const available = useMemo(() => {
+    const needle = deferredSearch.toLowerCase()
+    return items
+      .filter(item => {
+        const lvl = item.MinLevel ?? 1
+        if (lvl < minLv || lvl > maxLv) return false
+        if (buffFilter && !toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
+          .some(b => b.Type === buffFilter)) return false
+        if (!itemMatchesType(item, typeFilter, allWeaponGroups)) return false
+        if (needle && !item.Name.toLowerCase().includes(needle)) return false
+        return true
+      })
+      .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
+  }, [items, minLv, maxLv, buffFilter, typeFilter, allWeaponGroups, deferredSearch])
+
+  // Mounting 3651 tiles (each with an icon) is what made opening a weapon slot
+  // stutter. Render a page at a time and extend as the player scrolls near the
+  // end; any filter change resets to the first page.
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [visibleCount, setVisibleCount] = useState(PICKER_PAGE)
+  useEffect(() => {
+    setVisibleCount(PICKER_PAGE)
+    // Back to the top too, or a narrowed list opens part-scrolled.
+    if (gridRef.current) gridRef.current.scrollTop = 0
+  }, [available])
+  const shown = available.slice(0, visibleCount)
+
+  function handlePickerScroll(e: React.UIEvent<HTMLDivElement>) {
+    if (visibleCount >= available.length) return
+    const el = e.currentTarget
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 400) {
+      setVisibleCount(c => Math.min(c + PICKER_PAGE, available.length))
+    }
+  }
 
   return (
     <div className={styles.pickerOverlay} onClick={onClose}>
@@ -159,7 +196,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
             >Reset</button>
           )}
         </div>
-        <div className={styles.pickerGrid}>
+        <div className={styles.pickerGrid} ref={gridRef} onScroll={handlePickerScroll}>
           <button
             className={`${styles.pickerItem} ${!current ? styles.pickerItemActive : ''}`}
             onClick={() => { onSelect(''); onClose() }}
@@ -167,7 +204,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
             <span className={styles.pickerEmptyIcon}>—</span>
             <span className={styles.pickerItemName}>Empty</span>
           </button>
-          {available.map(item => (
+          {shown.map(item => (
             <button
               key={item.Name}
               className={`${styles.pickerItem} ${item.Name === current ? styles.pickerItemActive : ''}`}
@@ -190,6 +227,18 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
               )}
             </button>
           ))}
+          {visibleCount < available.length && (
+            <button
+              className={styles.pickerMore}
+              type="button"
+              onClick={() => setVisibleCount(c => Math.min(c + PICKER_PAGE, available.length))}
+            >
+              Show more
+              <span className={styles.pickerMoreCount}>
+                {available.length - visibleCount} left
+              </span>
+            </button>
+          )}
         </div>
       </div>
       {hover && (
