@@ -848,11 +848,18 @@ function accumulateAugments(
     const aug = resolveAugment(key, augName, gearItems, allAugments)
     if (!aug) continue
     // V2 Build::ApplyAugment names augment effects
-    // "<host item> : <augment slot type> : <augment name>" (Build.cpp:4933-36)
-    // — the HOST keeps two copies of the same augment in different items
-    // DISTINCT (they then compete Highest-Only instead of stack-merging).
-    // Mirror that by scoping the source to the host slot.
-    const source = `Augment: ${aug.Name} (${key.split(':')[0]})`
+    // "<host item> : <augment slot type> : <augment name>" (Build.cpp:4933-36).
+    // BOTH the host and the SLOT TYPE are part of that name, and the name is
+    // what the identical-effect merge keys on: two copies of one augment stack
+    // only when they sit in same-coloured slots of the same item. Dropping the
+    // slot type made a multi-colour augment (Topaz fits Green/Orange/Yellow)
+    // merge with itself across an item's Green and Yellow slots — reporting
+    // double value for a bonus type that cannot stack, which in turn taught
+    // the optimizer to fill every slot on an item with the same augment.
+    const keyParts = key.split(':')
+    const hostSlot = keyParts[0]
+    const augSlotType = keyParts.slice(1, -1).join(':') || (aug.Type as string ?? '')
+    const source = `Augment: ${aug.Name} (${hostSlot} : ${augSlotType})`
     const augAny = aug as Augment & { ChooseLevel?: unknown, DualValues?: unknown, LevelValue2?: unknown, EnterValue?: unknown }
     const hasChooseLevel = augAny.ChooseLevel !== undefined
     const hasEnterValue = augAny.EnterValue !== undefined
