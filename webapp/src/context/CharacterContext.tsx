@@ -85,7 +85,19 @@ type Action =
   | { type: 'DELETE_ATTACK_CHAIN'; chainName: string }
   | { type: 'SET_ACTIVE_ATTACK_CHAIN'; chainName: string }
 
-function migrateFiligreeSlots(raw: unknown, count: number): FiligreeSlot[] {
+/** V2 MAX_FILIGREE (stdafx.h:61) — both weapon and artifact slot counts. */
+export const MAX_FILIGREE_SLOTS = 20
+
+/**
+ * Normalise a stored filigree slot array.
+ *
+ * The array's LENGTH is the build's chosen slot count (V2
+ * EquippedGear::SetNumFiligrees, EquippedGear.cpp:466, keeps the list sized
+ * exactly to the count, blank entries included), so a saved count is data to
+ * preserve — not a default to re-apply. `defaultCount` fills in only for a
+ * build saved before the slots existed.
+ */
+function migrateFiligreeSlots(raw: unknown, defaultCount: number): FiligreeSlot[] {
   const arr: FiligreeSlot[] = []
   if (Array.isArray(raw)) {
     for (const item of raw) {
@@ -93,8 +105,10 @@ function migrateFiligreeSlots(raw: unknown, count: number): FiligreeSlot[] {
       else if (item && typeof item === 'object' && 'name' in item) arr.push(item as FiligreeSlot)
     }
   }
-  while (arr.length < count) arr.push({ name: '', rare: false })
-  return arr.slice(0, count)
+  if (arr.length === 0) {
+    return Array.from({ length: defaultCount }, () => ({ name: '', rare: false }))
+  }
+  return arr.slice(0, MAX_FILIGREE_SLOTS)
 }
 
 function migrateLevelClasses(raw: CharacterBuild): string[] {
@@ -171,9 +185,6 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     favorFeats: raw.favorFeats ?? [],
   }
 }
-
-/** V2 MAX_FILIGREE (stdafx.h:61) — both weapon and artifact slot counts. */
-export const MAX_FILIGREE_SLOTS = 20
 
 function resizeFiligreeSlots(
   slots: ReadonlyArray<{ name: string; rare: boolean }>,

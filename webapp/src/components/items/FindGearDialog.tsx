@@ -1,4 +1,4 @@
-import { useState, useEffect, useId, useMemo } from 'react'
+import { useState, useEffect, useId, useMemo, useDeferredValue } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { findGearByEffect } from '../../lib/findGear'
@@ -92,6 +92,11 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const [maxLv, setMaxLv] = useState(maxCharLevel)
   const [minVal, setMinVal] = useState<number | ''>('')
 
+  // Searching runs over the whole 8779-item catalogue, so the inputs stay
+  // immediate and the result table re-computes from the deferred copies.
+  const deferredName = useDeferredValue(nameSearch)
+  const deferredBuff = useDeferredValue(buffSearch)
+
   useEffect(() => {
     api
       .items()
@@ -136,8 +141,8 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
     () =>
       ownedItems && hasFilter
         ? findGearByEffect(ownedItems, {
-            nameSearch: nameSearch || undefined,
-            buffSearch: buffSearch || undefined,
+            nameSearch: deferredName || undefined,
+            buffSearch: deferredBuff || undefined,
             itemType: itemType || undefined,
             weaponGroups: allWeaponGroups,
             minLevel: minLv > 1 ? minLv : undefined,
@@ -145,7 +150,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             minValue: minVal !== '' ? minVal : undefined,
           })
         : [],
-    [ownedItems, hasFilter, nameSearch, buffSearch, itemType, allWeaponGroups, minLv, maxLv, minVal],
+    [ownedItems, hasFilter, deferredName, deferredBuff, itemType, allWeaponGroups, minLv, maxLv, minVal],
   )
 
   const displayResults = results.slice(0, MAX_RESULTS)
