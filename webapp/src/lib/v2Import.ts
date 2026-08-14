@@ -836,7 +836,14 @@ function parseBuildNode(
   // hardcoded 6 silently dropped filigrees 7-10 of real endgame builds.
   const numFiligrees = Number((sentientNode as AnyRec).NumFiligrees) || 6
   out.filigreeSlots = parseFiligreeSlots(sentientNode, 'Filigree', numFiligrees)
-  out.artifactFiligreeSlots = parseFiligreeSlots(sentientNode, 'ArtifactFiligree', 10)
+  // Artifact filigrees have no count element — V2 pads to MAX_ARTIFACT_FILIGREE
+  // (10, stdafx.h:62) — so the number of entries written IS the slot count.
+  // Falling back to 10 only when the file carries none keeps V2 files, which
+  // always write all ten, importing unchanged.
+  out.artifactFiligreeSlots = parseFiligreeSlots(sentientNode, 'ArtifactFiligree', 0)
+  if (out.artifactFiligreeSlots.length === 0) {
+    out.artifactFiligreeSlots = parseFiligreeSlots(sentientNode, 'ArtifactFiligree', 10)
+  }
 
   // ── Active stances ───────────────────────────────────────────────────────
   out.activeBuffs = arr(getRec(buildNode, 'ActiveStances')?.Stances as string | string[] | undefined)

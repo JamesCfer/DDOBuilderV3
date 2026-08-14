@@ -421,11 +421,17 @@ interface SentientInfo {
   artifactFiligrees?: FiligreeSlot[]
 }
 
-/** Trim trailing empty filigree slots (V3 pads the arrays to fixed length). */
-function trimFiligrees(slots: FiligreeSlot[] | undefined): FiligreeSlot[] {
-  const out = [...(slots ?? [])]
-  while (out.length > 0 && !out[out.length - 1]?.name) out.pop()
-  return out
+/**
+ * The build's filigree slots, blank entries included.
+ *
+ * V2 sizes its list to the chosen slot count and writes an empty `<Name/>`
+ * for every unfilled slot (EquippedGear::SetNumFiligrees, EquippedGear.cpp:466
+ * — it pads with blank WeaponFiligree entries). Trimming the trailing blanks
+ * would export a smaller `<NumFiligrees>` than the player picked, so re-import
+ * would silently shrink the jewel.
+ */
+function filigreesToEmit(slots: FiligreeSlot[] | undefined): FiligreeSlot[] {
+  return [...(slots ?? [])]
 }
 
 function emitGearSet(
@@ -503,7 +509,7 @@ function emitGearSet(
   // (TrainedFiligree.h DL_STRING) — V2 itself writes empty <Name/> for
   // unfilled slots.
   if (sentient?.personality) xml.leaf('Personality', sentient.personality)
-  const filigrees = trimFiligrees(sentient?.filigrees)
+  const filigrees = filigreesToEmit(sentient?.filigrees)
   xml.leaf('NumFiligrees', filigrees.length)
   const emitFiligree = (tag: string, f: FiligreeSlot) => {
     xml.open(tag)
@@ -512,7 +518,10 @@ function emitGearSet(
     xml.close(tag)
   }
   for (const f of filigrees) emitFiligree('Filigree', f)
-  for (const f of trimFiligrees(sentient?.artifactFiligrees)) {
+  // V2 has no <NumArtifactFiligrees>: the element count IS the count (it pads
+  // to MAX_ARTIFACT_FILIGREE = 10 on load, stdafx.h:62), so every configured
+  // artifact slot is emitted for the count to survive a round trip.
+  for (const f of filigreesToEmit(sentient?.artifactFiligrees)) {
     emitFiligree('ArtifactFiligree', f)
   }
   // V2 EquippedGear.Snapshot{Ability} — per-set ability snapshot for gear-swap
@@ -677,9 +686,13 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
     for (const name of setNames) {
       emitGearSet(xml, name, named[name] ?? {}, namedAug[name] ?? {}, snapshots[name], itemCatalogue, sentient)
     }
-  } else if (Object.keys(build.gear ?? {}).length > 0) {
+  } else {
+    // Always emit the active set, even with nothing equipped: V2 gives every
+    // build a "Standard" layout with no items (Build.cpp:97-100), and the
+    // sentient jewel — personality and both filigree lists — lives INSIDE
+    // <EquippedGear>. Skipping the empty set dropped a build's filigrees.
     const name = build.activeGearSetName || 'Standard'
-    emitGearSet(xml, name, build.gear, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices, build.augmentValueChoices)
+    emitGearSet(xml, name, build.gear ?? {}, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices, build.augmentValueChoices)
   }
   // GearSetSnapshot — names the snapshot baseline set (F3).
   if (build.gearSetSnapshot) xml.leaf('GearSetSnapshot', build.gearSetSnapshot)
