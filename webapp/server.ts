@@ -1,5 +1,4 @@
 import express from 'express'
-import compression from 'compression'
 import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
@@ -20,6 +19,7 @@ import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
 import {
   formatBugReport, sendDiscordDm, ReportRateLimiter, MAX_REPORT_LENGTH, DISCORD_API_BASE,
 } from './src/server/bugReport'
+import { loadOptionalCompression } from './src/server/optionalCompression'
 import type { CharacterDocument } from './src/types/ddo'
 
 dotenv.config()
@@ -32,7 +32,9 @@ app.use(cors())
 // The catalogue responses are large, highly repetitive JSON — /api/items alone
 // is 8.1 MB raw and gzips to ~0.9 MB. Compressing costs a few ms of CPU on a
 // cached-in-memory payload and saves seconds of transfer on the gear panels.
-app.use(compression())
+// Loaded optionally: a missing module must degrade to uncompressed, never
+// crash-loop the server (see optionalCompression.ts).
+app.use(loadOptionalCompression())
 app.use(express.json())
 
 // ---------------------------------------------------------------------------
