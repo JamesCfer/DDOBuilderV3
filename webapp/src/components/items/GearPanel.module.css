@@ -349,6 +349,13 @@
   font-weight: 600;
 }
 
+.pickerItemType {
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.2;
+}
+
 .pickerLoading,
 .pickerEmpty {
   padding: 8px 10px;

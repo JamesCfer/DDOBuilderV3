@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { Item, ItemBuff, ItemAugment, Augment } from '../../types/ddo'
@@ -14,8 +14,10 @@ import { useStaticBundle } from '../../hooks/useStaticBundle'
 import {
   augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
 } from '../../lib/itemDisplay'
+import { itemMatchesType, itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent, AugmentCardContent, type AugmentFill } from './GearHoverCards'
+import ItemTypeSelect from './ItemTypeSelect'
 import styles from './GearPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -58,20 +60,30 @@ interface ItemPickerModalProps {
 
 function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: ItemPickerModalProps) {
   const { hover, show, hide } = useHoverCard<Item>()
+  const { allWeaponGroups } = useStaticBundle()
   const [search, setSearch] = useState('')
   const [minLv, setMinLv] = useState(1)
   const [maxLv, setMaxLv] = useState(maxLevel)
   const [buffFilter, setBuffFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
 
   // Collect unique buff types across all items in this slot
   const allBuffTypes = Array.from(new Set(
     items.flatMap(item => toArray(item.Buff as ItemBuff | ItemBuff[] | undefined).map(b => b.Type).filter(Boolean))
   )).sort()
 
+  // Weapon / armor / shield types this slot can actually hold. Weapon slots get
+  // the full weapon-class list; a Necklace slot gets no type control at all.
+  const typeOptions = useMemo(
+    () => itemTypeOptions(items, allWeaponGroups),
+    [items, allWeaponGroups],
+  )
+
   const available = items
     .filter(item => (item.MinLevel ?? 1) >= minLv)
     .filter(item => (item.MinLevel ?? 1) <= maxLv)
     .filter(item => !buffFilter || toArray(item.Buff as ItemBuff | ItemBuff[] | undefined).some(b => b.Type === buffFilter))
+    .filter(item => itemMatchesType(item, typeFilter, allWeaponGroups))
     .filter(item => !search || item.Name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
 
@@ -126,10 +138,24 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
               {allBuffTypes.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </label>
-          {(minLv !== 1 || maxLv !== maxLevel || buffFilter) && (
+          {typeOptions.length > 0 && (
+            <label className={styles.filterLabel}>
+              Type
+              <ItemTypeSelect
+                className={styles.filterSelect}
+                value={typeFilter}
+                onChange={setTypeFilter}
+                optionGroups={typeOptions}
+                anyLabel="All"
+              />
+            </label>
+          )}
+          {(minLv !== 1 || maxLv !== maxLevel || buffFilter || typeFilter) && (
             <button
               className={styles.filterReset}
-              onClick={() => { setMinLv(1); setMaxLv(maxLevel); setBuffFilter('') }}
+              onClick={() => {
+                setMinLv(1); setMaxLv(maxLevel); setBuffFilter(''); setTypeFilter('')
+              }}
             >Reset</button>
           )}
         </div>
@@ -156,6 +182,9 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
                 className={styles.pickerIcon}
               />
               <span className={styles.pickerItemName}>{item.Name}</span>
+              {itemTypeLabel(item) && (
+                <span className={styles.pickerItemType}>{itemTypeLabel(item)}</span>
+              )}
               {item.MinLevel != null && item.MinLevel > 1 && (
                 <span className={styles.pickerItemLevel}>Lv {item.MinLevel}</span>
               )}
