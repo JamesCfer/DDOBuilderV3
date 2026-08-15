@@ -34,9 +34,16 @@ function buildClassTabs(
     const cap = computeMaxSpellLevel(cls, bc.levels)
     if (cap === 0) continue
     const byLevel: Record<number, Spell[]> = {}
+    // The catalogue lists Dominate Person and Dominate Animal twice. The row
+    // key is the spell name and training is stored by name, so a duplicate is
+    // both a React key collision and two rows that toggle as one — keep the
+    // first and drop the repeat.
+    const seen = new Set<string>()
     for (const spell of allSpells) {
       const lvl = spell.Level?.[bc.name]
       if (lvl == null || lvl < 1 || lvl > cap) continue
+      if (seen.has(spell.Name)) continue
+      seen.add(spell.Name)
       if (!byLevel[lvl]) byLevel[lvl] = []
       byLevel[lvl].push(spell)
     }

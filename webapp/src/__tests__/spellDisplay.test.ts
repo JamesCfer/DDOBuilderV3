@@ -150,6 +150,39 @@ describe('spellEffectLines', () => {
     expect(line.value).toBe('+4')
   })
 
+  it('handles an effect whose Type is a list of stats', () => {
+    // Heroism grants attack, saves and skills from ONE effect entry, so Type
+    // is an array. Calling .replace() on it threw, and with no error boundary
+    // the thrown TypeError blanked the entire app — 65 spells did this,
+    // including Heroism, Good Hope, Recitation and Holy Sword.
+    const [line] = spellEffectLines({
+      Name: 'Heroism',
+      Effect: [{
+        Type: ['Weapon_Attack', 'SaveBonus', 'SkillBonus'] as never,
+        Bonus: 'Morale', Amount: 2,
+      }],
+    }, 10)
+    expect(line.label).toBe('Weapon Attack, Save Bonus, Skill Bonus')
+    expect(line.value).toBe('+2')
+  })
+
+  it('survives a list where a plain string is expected, without throwing', () => {
+    expect(() => spellEffectLines({
+      Name: 'Odd',
+      Effect: [{ Type: ['PRR', 'MRR'] as never, Bonus: ['Insight'] as never, Amount: 5 }],
+    }, 10)).not.toThrow()
+    const [line] = spellEffectLines({
+      Name: 'Odd',
+      Effect: [{ Type: ['PRR', 'MRR'] as never, Bonus: ['Insight'] as never, Amount: 5 }],
+    }, 10)
+    expect(line.label).toBe('PRR, MRR')
+    expect(line.bonusType).toBe('Insight')
+  })
+
+  it('skips an effect it cannot name at all rather than rendering a blank row', () => {
+    expect(spellEffectLines({ Name: 'X', Effect: [{ Type: 7 as never, Amount: 3 }] }, 1)).toEqual([])
+  })
+
   it('prefers an explicit DisplayName over the raw type', () => {
     expect(spellEffectLines({
       Name: 'X', Effect: [{ Type: 'AbilityBonus', DisplayName: 'Strength', Amount: 4 }],
@@ -166,6 +199,12 @@ describe('humanizeType', () => {
     expect(humanizeType('EnergyResistance')).toBe('Energy Resistance')
     expect(humanizeType('Weapon_BaseDamage')).toBe('Weapon Base Damage')
     expect(humanizeType('AC')).toBe('AC')
+  })
+
+  it('joins a list and returns empty for anything that is not text', () => {
+    expect(humanizeType(['PRR', 'MRR'])).toBe('PRR, MRR')
+    expect(humanizeType(undefined)).toBe('')
+    expect(humanizeType(42)).toBe('')
   })
 })
 
