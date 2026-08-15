@@ -14,6 +14,7 @@
 
 import type { Augment, Effect, Filigree, Item, ItemBuff } from '../../types/ddo'
 import { parseEffect, parseItemBuff } from '../effectParser'
+import { expandDerivedKeys } from '../combat/expectedDamage'
 import type { ObjectiveSpec } from './objective'
 
 /** Items evaluated per empty slot per round. */
@@ -50,6 +51,17 @@ export function itemRelevance(item: Item, objectiveKeys: ReadonlySet<string>): n
     }
   }
   return score
+}
+
+/**
+ * The stat keys a candidate must touch to be worth trying. Derived objectives
+ * (Damage per Swing, Crit Multiplier) expand into the raw keys that feed them —
+ * nothing parses to a derived key, so without this a derived objective matched
+ * no gear, no augments and no filigrees at all, and the search had nothing to
+ * evaluate.
+ */
+export function objectiveKeys(objective: ObjectiveSpec): Set<string> {
+  return expandDerivedKeys(objective.stats.map(s => s.key))
 }
 
 /**
@@ -95,7 +107,7 @@ export function shortlistForSlot(
   objective: ObjectiveSpec,
   opts: ShortlistOptions,
 ): Item[] {
-  const keys = new Set(objective.stats.map(s => s.key))
+  const keys = objectiveKeys(objective)
   const perSlot = opts.perSlot ?? DEFAULT_CANDIDATES_PER_SLOT
   return items
     .filter(i => Number(i.MinLevel ?? 0) <= opts.maxLevel)
@@ -119,7 +131,7 @@ export function shortlistAugments(
   objective: ObjectiveSpec,
   opts: ShortlistOptions,
 ): Record<string, Augment[]> {
-  const keys = new Set(objective.stats.map(s => s.key))
+  const keys = objectiveKeys(objective)
   const perColour = opts.perSlot ?? DEFAULT_AUGMENTS_PER_COLOUR
   const byColour = new Map<string, Array<{ augment: Augment; relevance: number }>>()
   for (const augment of augments) {
@@ -147,7 +159,7 @@ export function shortlistFiligrees(
   objective: ObjectiveSpec,
   perSlot = DEFAULT_FILIGREES,
 ): Filigree[] {
-  const keys = new Set(objective.stats.map(s => s.key))
+  const keys = objectiveKeys(objective)
   return filigrees
     .map(filigree => ({ filigree, relevance: effectRelevance(filigree.Effect, filigree.Name, keys) }))
     .filter(c => c.relevance > 0)
