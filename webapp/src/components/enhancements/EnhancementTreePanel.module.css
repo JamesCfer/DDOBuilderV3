@@ -38,7 +38,7 @@
 .tabActive {
   color: var(--color-gold);
   border-bottom-color: var(--color-gold);
-  text-shadow: 0 0 10px rgba(212,152,42,0.5);
+  text-shadow: 0 0 10px var(--tint-accent-strong);
 }
 
 /* ── Status / empty states ───────────────────────────────────────────── */
@@ -51,7 +51,7 @@
 }
 
 .errorMsg {
-  color: var(--color-red, #c94040);
+  color: var(--color-red);
   font-style: normal;
 }
 
@@ -70,14 +70,14 @@
   font-size: 12px;
   border: 1px solid var(--color-gold-dark);
   border-radius: var(--radius-sm);
-  background: rgba(200,136,42,0.12);
+  background: var(--tint-accent);
   color: var(--color-gold);
   cursor: pointer;
   transition: background 0.12s;
 }
 
 .addTreeBtn:hover {
-  background: rgba(200,136,42,0.22);
+  background: var(--tint-accent-strong);
 }
 
 .toolbarHint {
@@ -118,10 +118,10 @@
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  background: linear-gradient(180deg, rgba(30,36,68,0.9) 0%, rgba(17,22,40,0.95) 100%);
+  background: linear-gradient(180deg, var(--tint-sink-strong) 0%, var(--tint-sink-strong) 100%);
   border-bottom: 1px solid var(--color-border-light);
   min-width: 0;
-  box-shadow: 0 1px 0 rgba(212,152,42,0.15);
+  box-shadow: 0 1px 0 var(--tint-accent);
 }
 
 .treeHeaderIcon {
@@ -132,7 +132,7 @@
   flex: 1;
   font-size: 11px;
   font-weight: 700;
-  color: var(--color-gold-light, #f0c060);
+  color: var(--color-gold-light);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -147,7 +147,7 @@
 }
 
 .apCapReached {
-  color: var(--color-green, #4ca44c) !important;
+  color: var(--color-green) !important;
 }
 
 /* ── Reset / remove buttons ──────────────────────────────────────────── */
@@ -170,16 +170,16 @@
 }
 
 .removeBtn:hover {
-  background: rgba(180, 40, 40, 0.2);
-  color: #e05050;
-  border-color: rgba(180,40,40,0.4);
+  background: var(--tint-danger);
+  color: var(--color-red);
+  border-color: var(--tint-danger);
 }
 
 /* ── Tree picker modal ───────────────────────────────────────────────── */
 .pickerOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
+  background: var(--tint-sink-strong);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -275,7 +275,7 @@
 
 .pickerTreeOn {
   border-color: var(--color-gold);
-  background: rgba(200,136,42,0.15);
+  background: var(--tint-accent);
 }
 
 .pickerTreeDisabled {
@@ -303,7 +303,7 @@
 }
 
 .pickerTreeOn .pickerTreeName {
-  color: var(--color-gold-light, #f0c060);
+  color: var(--color-gold-light);
 }
 
 /* Favor-unlock marker in the tree picker: these trees are listed on the

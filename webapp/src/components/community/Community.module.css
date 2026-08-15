@@ -264,7 +264,7 @@
 .starred, .starred:hover:not(:disabled) {
   color: var(--color-gold-light);
   border-color: var(--color-gold-dark);
-  box-shadow: 0 0 8px rgba(212,152,42,0.3);
+  box-shadow: 0 0 8px var(--tint-accent-strong);
 }
 
 .saveRow {

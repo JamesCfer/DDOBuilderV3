@@ -443,6 +443,52 @@ app.get('/api/auth/me', (req, res) => {
   res.json({ user: community.publicUser(user) })
 })
 
+// ---------------------------------------------------------------------------
+// Appearance — the signed-in user's theme choice and custom palette.
+//
+// Kept on the account so colours follow the user to another browser. Signed-out
+// users keep the identical shape in localStorage; the client merges the two,
+// preferring the account.
+// ---------------------------------------------------------------------------
+
+/** Only real colour tokens are storable, and only as CSS colour literals. */
+function sanitizeTheme(raw: unknown): { id?: string; base?: string; custom?: Record<string, string> } | null {
+  if (raw === null) return null                       // an explicit reset
+  if (typeof raw !== 'object' || raw === undefined) return null
+  const input = raw as { id?: unknown; base?: unknown; custom?: unknown }
+  const out: { id?: string; base?: string; custom?: Record<string, string> } = {}
+  if (typeof input.id === 'string' && /^[a-z0-9-]{1,32}$/.test(input.id)) out.id = input.id
+  // The preset a custom palette was mixed on: untouched tokens come from it.
+  if (typeof input.base === 'string' && /^[a-z0-9-]{1,32}$/.test(input.base)) out.base = input.base
+  if (input.custom && typeof input.custom === 'object') {
+    const custom: Record<string, string> = {}
+    for (const [key, value] of Object.entries(input.custom as Record<string, unknown>)) {
+      // A token name and a colour — nothing else reaches a stylesheet.
+      if (!/^--[a-z0-9-]{1,40}$/.test(key)) continue
+      if (typeof value !== 'string') continue
+      if (!/^#[0-9a-fA-F]{3,8}$/.test(value.trim())) continue
+      custom[key] = value.trim()
+      if (Object.keys(custom).length >= 40) break
+    }
+    if (Object.keys(custom).length > 0) out.custom = custom
+  }
+  return out
+}
+
+app.get('/api/my/theme', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  res.json({ theme: community.themeFor(userId) ?? null })
+})
+
+app.put('/api/my/theme', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  const theme = sanitizeTheme(req.body?.theme)
+  community.setTheme(userId, theme ?? undefined)
+  res.json({ theme: community.themeFor(userId) ?? null })
+})
+
 app.get('/api/my/builds', (req, res) => {
   const userId = requireAuth(req, res)
   if (!userId) return

@@ -18,12 +18,12 @@ body {
   background:
     repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px,
+      var(--tint-raise-faint) 0px, var(--tint-raise-faint) 1px,
       transparent 1px, transparent 28px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px,
+      var(--tint-raise-faint) 0px, var(--tint-raise-faint) 1px,
       transparent 1px, transparent 28px
     ),
     var(--gradient-app-glow),
@@ -90,7 +90,7 @@ button {
 button:hover:not(:disabled) {
   background: var(--color-bg-active);
   border-color: var(--color-border-light);
-  box-shadow: 0 0 0 1px rgba(212,152,42,0.12);
+  box-shadow: 0 0 0 1px var(--tint-accent);
 }
 
 button:active:not(:disabled) {
@@ -117,7 +117,7 @@ select, input {
 
 select:focus, input:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 2px rgba(212,152,42,0.2);
+  box-shadow: 0 0 0 2px var(--tint-accent-strong);
 }
 
 select option {
@@ -137,7 +137,7 @@ h1, h2, h3, h4 {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-panel);
   /* Subtle outer gold shimmer */
-  outline: 1px solid rgba(212,152,42,0.07);
+  outline: 1px solid var(--tint-accent-faint);
   outline-offset: 1px;
   overflow: hidden;
 }
@@ -181,8 +181,8 @@ label {
  * ------------------------------------------------------------------------- */
 @media print {
   body {
-    background: #fff !important;
-    color: #000 !important;
+    background: var(--color-text-primary) !important;
+    color: var(--color-bg-primary) !important;
   }
   /* Hide navigation chrome and interactive-only controls. */
   nav, aside[class*='Sidebar'], [class*='sidebar'], [class*='hamburger'],

@@ -11,9 +11,12 @@ import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 
 import {
-  THEMES, DEFAULT_THEME, applyTheme, readStoredTheme, storeTheme, themeDef, isThemeId,
+  THEMES, DEFAULT_THEME, CUSTOM_TOKENS, CUSTOM_THEME_ID,
+  applyTheme, applyChoice, isCustomChoice, readStoredCustom, readStoredTheme,
+  readStoredChoice, sanitizeCustom, storeCustom, storeTheme, themeDef, isThemeId,
 } from '../lib/theme'
 import ThemeMenu from '../components/layout/ThemeMenu'
+import { AuthProvider } from '../context/AuthContext'
 
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -23,6 +26,7 @@ beforeEach(() => {
   window.localStorage.clear()
   document.documentElement.removeAttribute('data-theme')
   document.documentElement.style.colorScheme = ''
+  for (const { token } of CUSTOM_TOKENS) document.documentElement.style.removeProperty(token)
 })
 
 describe('theme registry', () => {
@@ -144,9 +148,35 @@ function render() {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  act(() => { root.render(React.createElement(ThemeMenu)) })
+  // ThemeMenu reads the signed-in account to decide where to save; with no
+  // stored token the provider settles synchronously as signed-out.
+  act(() => {
+    root.render(React.createElement(AuthProvider, null, React.createElement(ThemeMenu)))
+  })
   mounted.push({ root, container })
   return container
+}
+
+/**
+ * Set a controlled <input> the way a user would. React tracks the last value it
+ * wrote, so assigning `.value` directly is swallowed as "no change" — going
+ * through the prototype setter is what makes onChange fire.
+ */
+function pick(input: HTMLInputElement, colour: string) {
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+  act(() => {
+    setter.call(input, colour)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+}
+
+/** Open the menu and step into the custom-colour editor. */
+function openEditor(c: HTMLElement) {
+  act(() => { (c.querySelector('button') as HTMLButtonElement).click() })
+  const custom = [...document.querySelectorAll('[role="menu"] button')]
+    .find(b => b.textContent?.includes('Custom')) as HTMLButtonElement
+  act(() => { custom.click() })
+  return [...document.querySelectorAll('[role="menu"] input[type="color"]')] as HTMLInputElement[]
 }
 
 afterEach(() => {
@@ -195,5 +225,155 @@ describe('ThemeMenu', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     })
     expect(document.querySelector('[role="menu"]')).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Custom palettes
+// ---------------------------------------------------------------------------
+
+describe('sanitizeCustom', () => {
+  it('keeps known tokens carrying a hex colour', () => {
+    expect(sanitizeCustom({ '--color-gold': '#44ff88' })).toEqual({ '--color-gold': '#44ff88' })
+    expect(sanitizeCustom({ '--color-gold': ' #fff ' })).toEqual({ '--color-gold': '#fff' })
+  })
+
+  it('drops tokens the editor does not expose, and anything that is not a colour', () => {
+    expect(sanitizeCustom({
+      '--color-gold': '#44ff88',
+      '--not-a-token': '#000000',
+      '--color-border': 'url(evil.css)',
+      '--color-bg-panel': 42,
+    })).toEqual({ '--color-gold': '#44ff88' })
+  })
+
+  it('returns undefined when nothing survives, or the input is not an object', () => {
+    expect(sanitizeCustom({ '--color-gold': 'red' })).toBeUndefined()
+    expect(sanitizeCustom({})).toBeUndefined()
+    expect(sanitizeCustom(null)).toBeUndefined()
+    expect(sanitizeCustom('#fff')).toBeUndefined()
+  })
+})
+
+describe('applyChoice', () => {
+  const root = () => document.documentElement
+
+  it('applies a preset with no inline overrides left behind', () => {
+    applyChoice({ id: 'emerald' })
+    expect(root().getAttribute('data-theme')).toBe('emerald')
+    expect(root().style.getPropertyValue('--color-gold')).toBe('')
+  })
+
+  it('layers custom colours on top of the base preset', () => {
+    applyChoice({ id: CUSTOM_THEME_ID, base: 'crimson', custom: { '--color-gold': '#44ff88' } })
+    expect(root().getAttribute('data-theme')).toBe('crimson')
+    expect(root().style.getPropertyValue('--color-gold')).toBe('#44ff88')
+  })
+
+  it('clears the previous overrides when switching back to a preset', () => {
+    applyChoice({ id: CUSTOM_THEME_ID, base: 'crimson', custom: { '--color-gold': '#44ff88' } })
+    applyChoice({ id: 'ashen' })
+    expect(root().style.getPropertyValue('--color-gold')).toBe('')
+    expect(root().getAttribute('data-theme')).toBe('ashen')
+  })
+
+  it('treats an empty custom palette as its base preset', () => {
+    expect(isCustomChoice({ id: CUSTOM_THEME_ID, base: 'ashen', custom: {} })).toBe(false)
+    applyChoice({ id: CUSTOM_THEME_ID, base: 'ashen', custom: {} })
+    expect(root().getAttribute('data-theme')).toBe('ashen')
+  })
+
+  it('falls back to the default when the base is unknown', () => {
+    applyChoice({ id: CUSTOM_THEME_ID, base: 'chartreuse' as never, custom: { '--color-gold': '#fff' } })
+    expect(root().hasAttribute('data-theme')).toBe(false)   // default carries none
+    expect(root().style.getPropertyValue('--color-gold')).toBe('#fff')
+  })
+
+  it('round-trips a custom palette through storage, sanitising on the way back', () => {
+    storeCustom({ '--color-gold': '#44ff88' })
+    expect(readStoredCustom()).toEqual({ '--color-gold': '#44ff88' })
+    storeCustom(undefined)
+    expect(readStoredCustom()).toBeUndefined()
+    window.localStorage.setItem('ddo-builder-theme-custom', '{ not json')
+    expect(readStoredCustom()).toBeUndefined()
+    window.localStorage.setItem('ddo-builder-theme-custom', JSON.stringify({ '--evil': '#000' }))
+    expect(readStoredCustom()).toBeUndefined()
+  })
+})
+
+describe('readStoredChoice — what a page reload restores', () => {
+  it('gives back the preset when no custom palette is saved', () => {
+    storeTheme('emerald')
+    expect(readStoredChoice()).toEqual({ id: 'emerald' })
+  })
+
+  it('gives back the custom palette over the preset it was mixed on', () => {
+    storeTheme('emerald')
+    storeCustom({ '--color-gold': '#44ff88' })
+    expect(readStoredChoice()).toEqual({
+      id: CUSTOM_THEME_ID, base: 'emerald', custom: { '--color-gold': '#44ff88' },
+    })
+    // The bootstrap path: applying it must put the overrides back on <html>.
+    applyChoice(readStoredChoice())
+    expect(document.documentElement.style.getPropertyValue('--color-gold')).toBe('#44ff88')
+    expect(document.documentElement.getAttribute('data-theme')).toBe('emerald')
+  })
+})
+
+describe('ThemeMenu custom editor', () => {
+  it('offers a colour picker for every exposed token', () => {
+    const inputs = openEditor(render())
+    expect(inputs).toHaveLength(CUSTOM_TOKENS.length)
+    const menu = document.querySelector('[role="menu"]')
+    for (const t of CUSTOM_TOKENS) expect(menu?.textContent).toContain(t.label)
+  })
+
+  it('applies and stores a colour the moment it is picked', () => {
+    const inputs = openEditor(render())
+    expect(CUSTOM_TOKENS[0].token).toBe('--color-bg-primary')
+    pick(inputs[0], '#123456')
+    expect(document.documentElement.style.getPropertyValue('--color-bg-primary')).toBe('#123456')
+    expect(readStoredCustom()).toEqual({ '--color-bg-primary': '#123456' })
+  })
+
+  it('mixes on top of the preset that was selected, and keeps it stored', () => {
+    storeTheme('emerald')
+    const inputs = openEditor(render())
+    pick(inputs[0], '#123456')
+    expect(document.documentElement.getAttribute('data-theme')).toBe('emerald')
+    expect(window.localStorage.getItem('ddo-builder-theme')).toBe('emerald')
+  })
+
+  it('resets back to the base preset, dropping the overrides', () => {
+    storeTheme('emerald')
+    const c = render()
+    const inputs = openEditor(c)
+    pick(inputs[0], '#123456')
+    const reset = [...document.querySelectorAll('[role="menu"] button')]
+      .find(b => b.textContent?.startsWith('Reset to')) as HTMLButtonElement
+    expect(reset.textContent).toContain('emerald')
+    act(() => { reset.click() })
+    expect(document.documentElement.style.getPropertyValue('--color-bg-primary')).toBe('')
+    expect(readStoredCustom()).toBeUndefined()
+    expect(document.documentElement.getAttribute('data-theme')).toBe('emerald')
+  })
+
+  it('reopens with the stored custom palette in place', () => {
+    storeTheme('arcane')
+    storeCustom({ '--color-gold': '#44ff88' })
+    const c = render()
+    act(() => { (c.querySelector('button') as HTMLButtonElement).click() })
+    const custom = [...document.querySelectorAll('[role="menu"] button')]
+      .find(b => b.textContent?.includes('Custom')) as HTMLButtonElement
+    expect(custom.getAttribute('aria-pressed')).toBe('true')
+    // No preset is marked while a custom palette is in use.
+    const pressedPresets = [...document.querySelectorAll('[role="menu"] button')]
+      .filter(b => b.getAttribute('aria-pressed') === 'true')
+    expect(pressedPresets).toHaveLength(1)
+  })
+
+  it('tells a signed-out user the palette is only kept in this browser', () => {
+    openEditor(render())
+    expect(document.querySelector('[role="menu"]')?.textContent).toContain('sign in')
   })
 })

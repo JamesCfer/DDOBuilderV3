@@ -5,7 +5,7 @@
   top: 0;
   z-index: 100;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 60%),
+    linear-gradient(180deg, var(--tint-raise-faint) 0%, transparent 60%),
     var(--color-bg-sidebar);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 4px 24px rgba(0,0,0,0.6);
@@ -34,7 +34,7 @@
   font-size: 17px;
   letter-spacing: 0.06em;
   color: var(--color-gold-light);
-  text-shadow: 0 0 18px rgba(212,152,42,0.35);
+  text-shadow: 0 0 18px var(--tint-accent-strong);
 }
 
 .brandBadge {
@@ -43,7 +43,7 @@
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   background: var(--color-gold-dark);
-  color: #fff8e8;
+  color: var(--color-text-primary);
   letter-spacing: 0.08em;
 }
 
@@ -96,7 +96,7 @@
   bottom: -1px;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
-  box-shadow: 0 0 10px rgba(212,152,42,0.7);
+  box-shadow: 0 0 10px var(--tint-accent-strong);
 }
 
 /* Right cluster */

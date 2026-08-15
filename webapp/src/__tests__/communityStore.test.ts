@@ -452,3 +452,56 @@ describe('CommunityStore — Google sign-in', () => {
     expect(() => store.loginWithGoogle('sub', 'not-an-email')).toThrow(/email/)
   })
 })
+
+describe('CommunityStore — saved appearance', () => {
+  let store: CommunityStore
+  let userId: string
+  beforeEach(() => {
+    store = new CommunityStore(':memory:')
+    userId = store.register('alice', 'alice@example.com', 'password123').id
+  })
+
+  it('has no theme until one is saved', () => {
+    expect(store.themeFor(userId)).toBeUndefined()
+  })
+
+  it('round-trips a preset and a custom palette mixed on a base', () => {
+    store.setTheme(userId, { id: 'emerald' })
+    expect(store.themeFor(userId)).toEqual({ id: 'emerald' })
+
+    store.setTheme(userId, {
+      id: 'custom', base: 'arcane', custom: { '--color-gold': '#44ff88' },
+    })
+    expect(store.themeFor(userId)).toEqual({
+      id: 'custom', base: 'arcane', custom: { '--color-gold': '#44ff88' },
+    })
+  })
+
+  it('clears the saved theme when set to undefined', () => {
+    store.setTheme(userId, { id: 'crimson' })
+    store.setTheme(userId, undefined)
+    expect(store.themeFor(userId)).toBeUndefined()
+  })
+
+  it('ignores an unknown user rather than throwing', () => {
+    expect(() => store.setTheme('nobody', { id: 'ashen' })).not.toThrow()
+    expect(store.themeFor('nobody')).toBeUndefined()
+  })
+
+  it('survives a reload from disk', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ddo-theme-'))
+    const file = join(dir, 'community.json')
+    try {
+      const first = new CommunityStore(file)
+      const id = first.register('bob', 'bob@example.com', 'password123').id
+      first.setTheme(id, { id: 'custom', base: 'daylight', custom: { '--color-border': '#abcdef' } })
+
+      const reloaded = new CommunityStore(file)
+      expect(reloaded.themeFor(id)).toEqual({
+        id: 'custom', base: 'daylight', custom: { '--color-border': '#abcdef' },
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})

@@ -128,7 +128,7 @@
 .pickerOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
+  background: var(--tint-sink-strong);
   z-index: 400;
   display: flex;
   align-items: center;
@@ -340,7 +340,7 @@
 
 .pickerItemActive {
   border-color: var(--color-gold);
-  background: rgba(200,136,42,0.15);
+  background: var(--tint-accent);
 }
 
 .pickerIcon {
@@ -366,7 +366,7 @@
 }
 
 .pickerItemActive .pickerItemName {
-  color: var(--color-gold-light, #f0c060);
+  color: var(--color-gold-light);
 }
 
 .pickerItemLevel {

@@ -24,7 +24,7 @@
   padding: 2px 8px;
   border: 1px solid;
   border-radius: 12px;
-  background: rgba(0,0,0,0.2);
+  background: var(--tint-sink);
 }
 
 .classCountBadge {
@@ -34,14 +34,14 @@
   border: 1px solid var(--color-border);
   border-radius: 12px;
   color: var(--color-text-muted);
-  background: rgba(0,0,0,0.2);
+  background: var(--tint-sink);
   margin-left: auto;
 }
 
 .classCountFull {
   color: var(--color-gold);
   border-color: var(--color-gold-dark);
-  background: rgba(200,136,42,0.12);
+  background: var(--tint-accent);
 }
 
 /* ── Quick-fill row ──────────────────────────────────────────────────── */
@@ -340,7 +340,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 3px;
-  background: rgba(0,0,0,0.15);
+  background: var(--tint-sink);
 }
 
 .classRow {
@@ -366,7 +366,7 @@
 
 .classRowSelected {
   border-color: var(--color-gold-dark);
-  background: rgba(200,136,42,0.10);
+  background: var(--tint-accent);
   color: var(--color-text-primary);
 }
 

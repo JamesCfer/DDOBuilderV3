@@ -23,7 +23,7 @@
   font-size: 10px;
   font-weight: 700;
   color: var(--color-gold);
-  background: rgba(200, 136, 42, 0.12);
+  background: var(--tint-accent);
   border: 1px solid var(--color-gold-dark);
   border-radius: var(--radius-sm);
   padding: 1px 4px;
@@ -45,7 +45,7 @@
 .slotClass {
   flex-shrink: 0;
   font-size: 10px;
-  color: var(--color-blue, #6ab0de);
+  color: var(--color-blue);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,7 +80,7 @@
 .featPickerBtnChosen {
   border-style: solid;
   border-color: var(--color-gold-dark);
-  background: var(--color-bg-active, rgba(200,136,42,0.08));
+  background: var(--color-bg-active);
 }
 
 .chosenIcon {
@@ -127,7 +127,7 @@
 .pickerOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--tint-sink-strong);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -215,7 +215,7 @@
 
 .pickerItemActive {
   border-color: var(--color-gold);
-  background: rgba(200,136,42,0.15);
+  background: var(--tint-accent);
 }
 
 .pickerItemLocked {
@@ -276,5 +276,5 @@
 .lockedToggleOn {
   border-color: var(--color-gold-dark);
   color: var(--color-gold);
-  background: rgba(200,136,42,0.1);
+  background: var(--tint-accent);
 }

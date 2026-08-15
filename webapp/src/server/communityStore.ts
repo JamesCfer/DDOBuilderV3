@@ -23,6 +23,19 @@ export interface CommunityUser {
   /** Google `sub` claim when the account is linked to a Google identity. */
   googleId?: string
   createdAt: string
+  /**
+   * Saved appearance: the chosen preset, plus any custom palette the user
+   * mixed. Stored on the account so a signed-in user's colours follow them to
+   * another browser; signed-out users keep the same shape in localStorage.
+   */
+  theme?: {
+    /** Preset id, or 'custom' when the palette below is in use. */
+    id?: string
+    /** Preset a custom palette was mixed on top of. */
+    base?: string
+    /** Token name → CSS colour, e.g. { '--color-gold': '#44ff88' }. */
+    custom?: Record<string, string>
+  }
 }
 
 export interface BuildSnapshot {
@@ -220,6 +233,20 @@ export class CommunityStore {
   /** Public projection of a user — safe to send to any client. */
   publicUser(u: CommunityUser): { id: string; username: string } {
     return { id: u.id, username: u.username }
+  }
+
+  /** The account's saved appearance, if it has one. */
+  themeFor(userId: string): CommunityUser['theme'] | undefined {
+    return this.userById(userId)?.theme
+  }
+
+  /** Save the account's appearance. Passing undefined clears it. */
+  setTheme(userId: string, theme: CommunityUser['theme']): void {
+    const user = this.userById(userId)
+    if (!user) return
+    if (theme === undefined) delete user.theme
+    else user.theme = theme
+    this.persist()
   }
 
   // -------------------------------------------------------------------------

@@ -25,8 +25,8 @@
 .positive {
   font-size: 12px;
   color: var(--color-green);
-  background: rgba(80, 160, 80, 0.1);
-  border: 1px solid rgba(80, 160, 80, 0.3);
+  background: var(--tint-success);
+  border: 1px solid var(--tint-success);
   border-radius: var(--radius-sm);
   padding: 2px 6px;
 }
@@ -34,8 +34,8 @@
 .negative {
   font-size: 12px;
   color: var(--color-red);
-  background: rgba(200, 64, 64, 0.1);
-  border: 1px solid rgba(200, 64, 64, 0.3);
+  background: var(--tint-danger);
+  border: 1px solid var(--tint-danger);
   border-radius: var(--radius-sm);
   padding: 2px 6px;
 }

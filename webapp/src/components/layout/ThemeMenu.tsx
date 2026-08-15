@@ -1,26 +1,61 @@
 // Theme picker for the top bar, between the File menu and the account button.
 //
-// Applies on click with no confirm step: the whole page recolours instantly, so
-// the preview IS the app. The choice persists in localStorage and is re-applied
-// before first paint (see main.tsx), so a reload never flashes the old palette.
+// Presets apply on click with no confirm step: the whole page recolours
+// instantly, so the preview IS the app. "Custom" opens colour pickers for the
+// handful of tokens worth exposing, mixed on top of whichever preset is
+// selected.
+//
+// Where the choice is saved depends on who is asking. Signed in, it goes to the
+// account so the colours follow the user to another browser; signed out (or if
+// the save fails) localStorage keeps it for this browser. The local copy is
+// always written, so a sign-out never loses the palette.
 
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { communityApi } from '../../lib/community/api'
 import {
-  THEMES, applyTheme, readStoredTheme, storeTheme, type ThemeId,
+  THEMES, CUSTOM_TOKENS, CUSTOM_THEME_ID, DEFAULT_THEME,
+  applyChoice, currentTokenValue, isThemeId, readStoredChoice,
+  sanitizeCustom, storeCustom, storeTheme,
+  type ThemeChoice, type ThemeId,
 } from '../../lib/theme'
 import styles from './ThemeMenu.module.css'
 
 export default function ThemeMenu() {
+  const { user } = useAuth()
   const [open, setOpen] = useState(false)
-  const [theme, setTheme] = useState<ThemeId>(() => readStoredTheme())
+  const [editing, setEditing] = useState(false)
+  const [choice, setChoice] = useState<ThemeChoice>(readStoredChoice)
   const ref = useRef<HTMLDivElement>(null)
+
+  // A signed-in account's saved appearance wins over this browser's copy.
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    communityApi.myTheme()
+      .then(({ theme }) => {
+        if (cancelled || !theme) return
+        const custom = sanitizeCustom(theme.custom)
+        const base = isThemeId(theme.base) ? theme.base : DEFAULT_THEME
+        const next: ThemeChoice = custom
+          ? { id: CUSTOM_THEME_ID, base, custom }
+          : { id: isThemeId(theme.id) ? theme.id : DEFAULT_THEME }
+        setChoice(next)
+        applyChoice(next)
+        persistLocally(next)
+      })
+      .catch(() => { /* offline or signed out — the local copy stands */ })
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setEditing(false) }
     }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); setEditing(false) }
+    }
     document.addEventListener('mousedown', onDoc)
     document.addEventListener('keydown', onKey)
     return () => {
@@ -29,25 +64,48 @@ export default function ThemeMenu() {
     }
   }, [open])
 
-  function choose(id: ThemeId) {
-    applyTheme(id)
-    storeTheme(id)
-    setTheme(id)
+  function persistLocally(next: ThemeChoice) {
+    storeTheme((next.id === CUSTOM_THEME_ID ? next.base : next.id as ThemeId) ?? DEFAULT_THEME)
+    storeCustom(next.id === CUSTOM_THEME_ID ? next.custom : undefined)
   }
 
-  const dark = THEMES.filter(t => t.mode === 'dark')
-  const light = THEMES.filter(t => t.mode === 'light')
+  function commit(next: ThemeChoice) {
+    setChoice(next)
+    applyChoice(next)
+    persistLocally(next)
+    if (user) {
+      communityApi.saveMyTheme({ id: next.id, base: next.base, custom: next.custom })
+        .catch(() => { /* saved locally regardless */ })
+    }
+  }
 
-  const group = (label: string, list: typeof THEMES) => (
+  function choosePreset(id: ThemeId) {
+    commit({ id })
+    setEditing(false)
+  }
+
+  function editColour(token: string, colour: string) {
+    const base = (choice.id === CUSTOM_THEME_ID ? choice.base : choice.id as ThemeId) ?? DEFAULT_THEME
+    commit({
+      id: CUSTOM_THEME_ID,
+      base,
+      custom: { ...(choice.custom ?? {}), [token]: colour },
+    })
+  }
+
+  const isCustom = choice.id === CUSTOM_THEME_ID
+  const baseId = (isCustom ? choice.base : choice.id as ThemeId) ?? DEFAULT_THEME
+
+  const presets = (label: string, mode: 'dark' | 'light') => (
     <div className={styles.group} key={label}>
       <div className={styles.groupLabel}>{label}</div>
-      {list.map(t => (
+      {THEMES.filter(t => t.mode === mode).map(t => (
         <button
           key={t.id}
           type="button"
-          className={`${styles.option} ${t.id === theme ? styles.optionActive : ''}`}
-          onClick={() => choose(t.id)}
-          aria-pressed={t.id === theme}
+          className={`${styles.option} ${!isCustom && t.id === choice.id ? styles.optionActive : ''}`}
+          onClick={() => choosePreset(t.id)}
+          aria-pressed={!isCustom && t.id === choice.id}
         >
           <span className={styles.swatch} aria-hidden="true">
             {t.swatch.map((c, i) => (
@@ -58,7 +116,7 @@ export default function ThemeMenu() {
             <span className={styles.optionLabel}>{t.label}</span>
             <span className={styles.optionHint}>{t.hint}</span>
           </span>
-          {t.id === theme && <span className={styles.check} aria-hidden="true">✓</span>}
+          {!isCustom && t.id === choice.id && <span className={styles.check} aria-hidden="true">✓</span>}
         </button>
       ))}
     </div>
@@ -77,11 +135,88 @@ export default function ThemeMenu() {
         <GearIcon />
         <span className={styles.caret}>▾</span>
       </button>
+
       {open && (
         <div className={styles.panel} role="menu" aria-label="Colour theme">
           <div className={styles.title}>Appearance</div>
-          {group('Dark', dark)}
-          {group('Light', light)}
+
+          {!editing && (
+            <>
+              {presets('Dark', 'dark')}
+              {presets('Light', 'light')}
+              <div className={styles.group}>
+                <button
+                  type="button"
+                  className={`${styles.option} ${isCustom ? styles.optionActive : ''}`}
+                  onClick={() => setEditing(true)}
+                  aria-pressed={isCustom}
+                >
+                  <span className={styles.swatch} aria-hidden="true">
+                    {CUSTOM_TOKENS.slice(0, 3).map(t => (
+                      <span
+                        key={t.token}
+                        className={styles.swatchDot}
+                        style={{ background: choice.custom?.[t.token] ?? currentTokenValue(t.token) }}
+                      />
+                    ))}
+                  </span>
+                  <span className={styles.optionText}>
+                    <span className={styles.optionLabel}>Custom…</span>
+                    <span className={styles.optionHint}>
+                      {isCustom ? 'Your own palette' : `Mix your own on ${baseId}`}
+                    </span>
+                  </span>
+                  {isCustom && <span className={styles.check} aria-hidden="true">✓</span>}
+                </button>
+              </div>
+            </>
+          )}
+
+          {editing && (
+            <div className={styles.editor}>
+              <div className={styles.editorNote}>
+                {user
+                  ? `Saved to ${user.username}`
+                  : 'Saved in this browser — sign in to keep it across devices'}
+              </div>
+              {CUSTOM_TOKENS.map(t => {
+                const value = choice.custom?.[t.token] ?? currentTokenValue(t.token)
+                return (
+                  <label key={t.token} className={styles.colourRow}>
+                    <input
+                      type="color"
+                      className={styles.colourInput}
+                      value={value.length === 7 ? value : '#888888'}
+                      onChange={e => editColour(t.token, e.target.value)}
+                      aria-label={t.label}
+                    />
+                    <span className={styles.optionText}>
+                      <span className={styles.optionLabel}>{t.label}</span>
+                      <span className={styles.optionHint}>{t.hint}</span>
+                    </span>
+                    <span className={styles.colourValue}>{value}</span>
+                  </label>
+                )
+              })}
+              <div className={styles.editorActions}>
+                <button
+                  type="button"
+                  className={styles.editorBtn}
+                  onClick={() => setEditing(false)}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className={styles.editorBtn}
+                  onClick={() => { commit({ id: baseId }); setEditing(false) }}
+                  disabled={!isCustom}
+                >
+                  Reset to {baseId}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

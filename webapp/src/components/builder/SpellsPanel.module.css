@@ -30,7 +30,7 @@
 }
 
 .tabActive {
-  background: rgba(200, 136, 42, 0.15);
+  background: var(--tint-accent);
   border-color: var(--color-gold);
   color: var(--color-gold);
 }
@@ -157,9 +157,9 @@
 }
 
 .mmActive {
-  background: var(--color-gold, #c8882a);
-  color: #000;
-  border-color: var(--color-gold, #c8882a);
+  background: var(--color-gold);
+  color: var(--color-bg-primary);
+  border-color: var(--color-gold);
 }
 
 .mmLegend {
@@ -180,5 +180,5 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-bg-secondary);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
 }

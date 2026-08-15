@@ -3,10 +3,11 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles/globals.css'
 import './styles/themes.css'
-import { applyTheme, readStoredTheme } from './lib/theme'
+import { applyChoice, readStoredChoice } from './lib/theme'
 
 // Before the first render, so a reload never flashes the default palette.
-applyTheme(readStoredTheme())
+// A custom palette is restored here too, not just the preset under it.
+applyChoice(readStoredChoice())
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

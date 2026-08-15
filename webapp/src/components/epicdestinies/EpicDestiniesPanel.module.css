@@ -95,7 +95,7 @@
 
 .activeBtnOn {
   border-color: var(--color-gold-dark);
-  background: rgba(212, 175, 55, 0.15);
+  background: var(--tint-accent);
   color: var(--color-gold);
 }
 
@@ -183,8 +183,8 @@
   font-weight: 600;
   padding: 1px 5px;
   border-radius: var(--radius-sm);
-  background: var(--color-gold-dark, #8b6914);
-  color: #fff;
+  background: var(--color-gold-dark);
+  color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -309,13 +309,13 @@
 
 .unlockedItemOn {
   border-color: var(--color-gold-dark);
-  background: rgba(212, 175, 55, 0.12);
+  background: var(--tint-accent);
   color: var(--color-gold);
 }
 
 .unlockedSpend {
   font-size: 10px;
-  color: var(--color-green, #4caf50);
+  color: var(--color-green);
   font-weight: 700;
 }
 

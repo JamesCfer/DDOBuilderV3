@@ -66,13 +66,13 @@
 
 .tome {
   font-size: 11px;
-  color: var(--color-gold-light, #c8a84b);
+  color: var(--color-gold-light);
   font-weight: 600;
 }
 
 .total {
   font-size: 12px;
-  color: var(--color-text-secondary, #aaa);
+  color: var(--color-text-secondary);
   margin-left: 2px;
 }
 

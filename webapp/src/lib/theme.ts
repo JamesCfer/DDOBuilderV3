@@ -109,3 +109,118 @@ export function storeTheme(id: ThemeId): void {
     /* not persisting is survivable — the choice still applies this session */
   }
 }
+
+// ---------------------------------------------------------------------------
+// Custom palettes
+// ---------------------------------------------------------------------------
+// A custom theme is the preset it started from plus overrides for the handful
+// of tokens worth exposing. The overrides are applied as inline custom
+// properties on <html>, so they win over any [data-theme] block without
+// generating a stylesheet.
+
+/** The tokens the editor exposes, in the order it shows them. */
+export const CUSTOM_TOKENS: ReadonlyArray<{ token: string; label: string; hint: string }> = [
+  { token: '--color-bg-primary', label: 'Page', hint: 'Behind everything' },
+  { token: '--color-bg-panel', label: 'Panel', hint: 'Cards and dialogs' },
+  { token: '--color-bg-secondary', label: 'Panel header', hint: 'Headers and toolbars' },
+  { token: '--color-bg-input', label: 'Input', hint: 'Fields and pickers' },
+  { token: '--color-text-primary', label: 'Text', hint: 'Main reading colour' },
+  { token: '--color-text-secondary', label: 'Muted text', hint: 'Labels and hints' },
+  { token: '--color-gold', label: 'Accent', hint: 'Highlights and actions' },
+  { token: '--color-border', label: 'Border', hint: 'Panel edges and rules' },
+]
+
+export const CUSTOM_THEME_ID = 'custom'
+
+export interface ThemeChoice {
+  /** Preset id, or 'custom'. */
+  id: string
+  /** Which preset a custom palette was mixed on top of — tokens the user did
+   *  not touch still come from a coherent palette. */
+  base?: ThemeId
+  /** Token → colour, only when id is 'custom'. */
+  custom?: Record<string, string>
+}
+
+const CUSTOM_KEY = 'ddo-builder-theme-custom'
+
+/** A custom palette is only meaningful with at least one override. */
+export function isCustomChoice(choice: ThemeChoice): boolean {
+  return choice.id === CUSTOM_THEME_ID && !!choice.custom && Object.keys(choice.custom).length > 0
+}
+
+export function readStoredCustom(): Record<string, string> | undefined {
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_KEY)
+    if (!raw) return undefined
+    const parsed = JSON.parse(raw) as unknown
+    return sanitizeCustom(parsed)
+  } catch {
+    return undefined
+  }
+}
+
+export function storeCustom(custom: Record<string, string> | undefined): void {
+  try {
+    if (custom && Object.keys(custom).length > 0) {
+      window.localStorage.setItem(CUSTOM_KEY, JSON.stringify(custom))
+    } else {
+      window.localStorage.removeItem(CUSTOM_KEY)
+    }
+  } catch {
+    /* not persisting is survivable */
+  }
+}
+
+/** Keep only known tokens carrying a hex colour — the same rule the server applies. */
+export function sanitizeCustom(raw: unknown): Record<string, string> | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const allowed = new Set(CUSTOM_TOKENS.map(t => t.token))
+  const out: Record<string, string> = {}
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!allowed.has(key)) continue
+    if (typeof value !== 'string' || !/^#[0-9a-fA-F]{3,8}$/.test(value.trim())) continue
+    out[key] = value.trim()
+  }
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+/**
+ * Apply a full choice: the preset's palette, then any custom overrides on top.
+ * Overrides from a previous choice are always cleared first, so switching back
+ * to a preset really does drop them.
+ */
+export function applyChoice(choice: ThemeChoice): void {
+  const root = document.documentElement
+  for (const { token } of CUSTOM_TOKENS) root.style.removeProperty(token)
+
+  if (isCustomChoice(choice)) {
+    // Custom starts from the base it was mixed on, so untouched tokens still
+    // come from a coherent palette rather than the default.
+    applyTheme(isThemeId(choice.base) ? choice.base : DEFAULT_THEME)
+    for (const [token, colour] of Object.entries(choice.custom ?? {})) {
+      root.style.setProperty(token, colour)
+    }
+    return
+  }
+  // A 'custom' choice with nothing overridden is just its base preset — falling
+  // back to the app default here would silently discard the palette behind it.
+  if (choice.id === CUSTOM_THEME_ID) {
+    applyTheme(isThemeId(choice.base) ? choice.base : DEFAULT_THEME)
+    return
+  }
+  applyTheme(isThemeId(choice.id) ? choice.id : DEFAULT_THEME)
+}
+
+/** This browser's saved choice — preset, or custom palette over its base. */
+export function readStoredChoice(): ThemeChoice {
+  const id = readStoredTheme()
+  const custom = readStoredCustom()
+  return custom ? { id: CUSTOM_THEME_ID, base: id, custom } : { id }
+}
+
+/** The colour a token currently resolves to, for seeding the editor. */
+export function currentTokenValue(token: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+  return /^#[0-9a-fA-F]{3,8}$/.test(value) ? value : '#888888'
+}

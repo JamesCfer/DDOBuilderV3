@@ -11,7 +11,7 @@
 }
 
 .header:hover {
-  color: var(--color-gold-bright, var(--color-gold));
+  color: var(--color-gold);
 }
 
 .header:focus-visible {
