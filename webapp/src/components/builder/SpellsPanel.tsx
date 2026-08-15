@@ -9,6 +9,9 @@ import {
   computeSpellCost, computeMaxSpellLevel, availableMetamagics, METAMAGIC_KEYS,
   knownSpellCount,
 } from '../../lib/spells/spellMath'
+import DdoIcon from '../DdoIcon'
+import HoverCard, { useHoverCard } from '../common/HoverCard'
+import { SpellCardContent, type SpellCardStats } from './SpellHoverCard'
 import styles from './SpellsPanel.module.css'
 
 interface ClassTab {
@@ -52,6 +55,7 @@ export default function SpellsPanel() {
   const { allClasses, allSpells } = bundle
   const loading = !bundle.loaded
   const [activeTab, setActiveTab] = useState<string | null>(null)
+  const card = useHoverCard<{ spell: Spell; className: string; stats: SpellCardStats }>()
 
   const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
@@ -157,10 +161,34 @@ export default function SpellsPanel() {
                             const mcl = computeMaxCasterLevel(spell, activeTabData.cls, activeTabData.classLevel, stats)
                             const cost = computeSpellCost(spell, activeTabData.cls, activeTabData.classLevel, stats, enabledMM)
                             const mmList = availableMetamagics(spell)
+                            const cardStats: SpellCardStats = {
+                              spellLevel: lvl,
+                              casterLevel: cl,
+                              maxCasterLevel: mcl,
+                              cost,
+                              dc: dcValues.length > 0 ? Math.max(...dcValues) : undefined,
+                            }
                             return (
-                              <div key={spell.Name} className={styles.spellRow}>
+                              <div
+                                key={spell.Name}
+                                className={styles.spellRow}
+                                // Anchored on the row's right edge: the list
+                                // fills the panel, so a card opening left
+                                // would sit on top of the names.
+                                onMouseEnter={card.show(
+                                  { spell, className: activeTabData.className, stats: cardStats },
+                                  'right',
+                                )}
+                                onMouseLeave={card.hide}
+                              >
                                 <input type="checkbox" checked={trained} onChange={() => toggleTrain(activeTabData.className, lvl, spell.Name)} className={styles.trainCheckbox} disabled={!trained && atCap} title={trained ? 'Untrain' : atCap ? `Spell slots full (${cap}/${cap})` : 'Train'} />
-                                <span className={styles.spellName} title={spell.Description ?? spell.Name}>{spell.Name}</span>
+                                <DdoIcon
+                                  category="SpellImages"
+                                  name={spell.Icon ?? spell.Name}
+                                  size={18}
+                                  className={styles.spellIcon}
+                                />
+                                <span className={styles.spellName}>{spell.Name}</span>
                                 {spell.School && <span className={styles.spellSchool}>{Array.isArray(spell.School) ? spell.School.join('/') : spell.School}</span>}
                                 <span className={styles.spellStat} title="Caster Level">CL {cl}{mcl !== Infinity ? `/${mcl}` : ''}</span>
                                 <span className={styles.spellStat} title="Spell Point cost">SP {cost}</span>
@@ -201,6 +229,15 @@ export default function SpellsPanel() {
           </>
         )}
       </div>
+      {card.hover && (
+        <HoverCard x={card.hover.x} y={card.hover.y} openLeft={card.hover.openLeft}>
+          <SpellCardContent
+            spell={card.hover.data.spell}
+            className={card.hover.data.className}
+            stats={card.hover.data.stats}
+          />
+        </HoverCard>
+      )}
     </div>
   )
 }

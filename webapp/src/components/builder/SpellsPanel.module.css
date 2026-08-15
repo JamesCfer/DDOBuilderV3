@@ -96,6 +96,12 @@
   background: var(--color-bg-hover);
 }
 
+.spellIcon {
+  border-radius: 3px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
 .spellName {
   font-size: 12px;
   font-weight: 600;
@@ -181,4 +187,40 @@
   border-radius: var(--radius-sm);
   background: var(--color-bg-secondary);
   font-family: var(--font-mono);
+}
+
+/* ── Hover card ── */
+
+.cardStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 11px;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardStat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.cardStatLabel {
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* "1d6+3 per caster level" trailing a damage line — secondary to the total. */
+.cardScaling {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.cardMetamagics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
