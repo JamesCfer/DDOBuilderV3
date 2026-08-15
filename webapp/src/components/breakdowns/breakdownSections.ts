@@ -5,6 +5,9 @@
 
 import type { BuildStats } from '../../lib/buildStats'
 import { absorptionTotal } from '../../lib/bonus'
+import { deriveWeaponClasses, type WeaponGroupSpec } from '../../lib/weapons/groups'
+import { critProfile } from '../../lib/combat/critProfile'
+import { expectedDamage } from '../../lib/combat/expectedDamage'
 import type { ResolvedBonus } from '../../lib/bonus'
 import type { CharacterBuild, DDOClass } from '../../types/ddo'
 import { SKILLS, SCHOOL_DCS } from '../../lib/gamedata'
@@ -27,7 +30,19 @@ export function buildBreakdownSections(
   stats: BuildStats,
   build: CharacterBuild,
   allClasses: DDOClass[],
+  /** WeaponGroupings.xml — decides whether the wielded weapon is a ranged one.
+   *  Without it the Ranged rows fall back to a name-based check. */
+  allWeaponGroups: WeaponGroupSpec[] = [],
 ): BreakdownSection[] {
+  /** Is this weapon type a bow, crossbow or thrown weapon? */
+  function rangedWeapon(weaponType?: string): boolean {
+    if (!weaponType) return false
+    if (allWeaponGroups.length > 0) {
+      const classes = deriveWeaponClasses(weaponType, allWeaponGroups)
+      return classes.has('Ranged') || classes.has('All Ranged') || classes.has('Thrown')
+    }
+    return /bow|crossbow|dart|shuriken|throwing/i.test(weaponType)
+  }
   // ── Class aggregates for labels ──────────────────────────────────────────
   const casterClasses = build.classes
     .filter(bc => bc.name && bc.levels > 0)
@@ -57,8 +72,14 @@ export function buildBreakdownSections(
     }
   }
 
-  function fixedRow(label: string, value: number, display: string, bonuses: ResolvedBonus[], dim = false): StatRowData {
-    return { label, total: value, display, bonuses, dim }
+  /** A row whose value is computed rather than summed from one stat key.
+   *  `statKey` is still worth passing when a derived key exists for it: the
+   *  optimizer harvests every keyed row as a possible objective. */
+  function fixedRow(
+    label: string, value: number, display: string, bonuses: ResolvedBonus[],
+    dim = false, statKey?: string,
+  ): StatRowData {
+    return { label, total: value, display, bonuses, dim, statKey }
   }
 
   // ── Sections ─────────────────────────────────────────────────────────────
@@ -183,15 +204,39 @@ export function buildBreakdownSections(
   const rangedToHitTotal = babTotal + stats.total('ranged.toHit')
 
   const weapon = stats.weapon
-  const baseThreatRange  = weapon?.critThreatRange ?? 1
-  const bonusThreatRange = stats.total('weapon.threatRange')
-  const totalThreatRange = baseThreatRange + bonusThreatRange
-  const baseCritMult     = weapon?.critMultiplier ?? 2
-  const threatDisplay    = totalThreatRange > 1 ? `${21 - totalThreatRange}–20` : '20'
+  // Crit range and multipliers arrive on four different stat keys; critProfile
+  // is the one place that reads all of them (a Dragonlord's +2 multiplier used
+  // to be invisible here, and Keen counted in Combat but not in Analysis).
+  const crit = critProfile(k => stats.total(k), weapon)
+  const damage = expectedDamage(k => stats.total(k), stats.keys(), weapon)
+  // A bow's crit profile is the wielded weapon's — V3 models weapon effects on
+  // the hand that holds them — but Ranged Power scales the shot, not Melee.
+  const shot = expectedDamage(k => stats.total(k), stats.keys(), weapon, { power: 'ranged' })
+  const isRanged = weapon ? rangedWeapon(weapon.weaponType) : false
+  // The off-hand keeps its own dice and base crit profile; the character's crit
+  // bonuses and damage bonus apply to both hands, and DDO halves the off-hand's
+  // ability damage.
+  const offhand = stats.offhandWeapon ?? null
+  const offhandCrit = critProfile(k => stats.total(k), offhand)
+  const offhandDamage = expectedDamage(k => stats.total(k), stats.keys(), offhand, { offhand: true })
+  const offhandCritBonuses: ResolvedBonus[] = [
+    { value: offhandCrit.baseMultiplier, type: 'Base', source: offhand?.name ?? 'None', active: true },
+    ...stats.resolve('melee.crit.multiplier').bonuses,
+  ]
+  const offhandThreatBonuses: ResolvedBonus[] = [
+    { value: offhandCrit.baseThreatFaces, type: 'Base', source: offhand?.name ?? 'None', active: true },
+    ...stats.resolve('weapon.threatRange').bonuses,
+    ...stats.resolve('melee.crit.range').bonuses,
+  ]
   const weaponDiceDisplay = weapon ? `${weapon.diceNum}d${weapon.diceSides}` : '—'
   const threatBonuses: ResolvedBonus[] = [
-    { value: baseThreatRange, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
+    { value: crit.baseThreatFaces, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
     ...stats.resolve('weapon.threatRange').bonuses,
+    ...stats.resolve('melee.crit.range').bonuses,
+  ]
+  const critMultBonuses: ResolvedBonus[] = [
+    { value: crit.baseMultiplier, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
+    ...stats.resolve('melee.crit.multiplier').bonuses,
   ]
 
   const meleeStats: StatRowData[] = [
@@ -200,9 +245,23 @@ export function buildBreakdownSections(
       [...stats.resolve('bab').bonuses, ...stats.resolve('melee.toHit').bonuses]),
     statRow('Damage Bonus',   'melee.damage',       sign),
     fixedRow('W Dice',        0, weaponDiceDisplay, [], !weapon),
-    fixedRow('Threat Range',  totalThreatRange, threatDisplay, threatBonuses),
-    fixedRow('Crit Multiplier', baseCritMult, `×${baseCritMult}`,
-      [{ value: baseCritMult, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true }]),
+    fixedRow('Threat Range',  crit.threatFaces, crit.threatDisplay, threatBonuses,
+      false, 'crit.threatFaces'),
+    fixedRow('Crit Chance',   crit.critChance * 100, pct(crit.critChance * 100), threatBonuses,
+      false, 'crit.chance'),
+    fixedRow('Crit Multiplier', crit.multiplier, `×${crit.multiplier}`, critMultBonuses,
+      false, 'crit.multiplier'),
+    // Always listed even at zero: dimmed rows are still selectable optimizer
+    // objectives, and "raise my 19-20 multiplier" is a goal a build may not
+    // have made progress on yet.
+    fixedRow('Crit Multiplier 19–20', crit.multiplier19to20, `×${crit.multiplier19to20}`,
+      [...critMultBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
+      crit.bonus19to20 === 0, 'crit.multiplier19to20'),
+    statRow('Crit-Only Damage', 'melee.crit.damage', sign),
+    fixedRow('Damage per Swing', damage.perSwing, damage.perSwing.toFixed(1),
+      [{ value: damage.perSwing, type: 'Computed', source:
+        `${damage.normalHit.toFixed(1)} on a hit, ${damage.critStandard.toFixed(1)} on a crit`,
+        active: true }], !weapon, 'damage.perSwing'),
     statRow('Doublestrike',   'melee.doublestrike', pct),
     statRow('Sneak Atk Dice', 'melee.sneakDice'),
     statRow('Strikethrough',  'melee.strikethrough', pct),
@@ -212,9 +271,50 @@ export function buildBreakdownSections(
     statRow('Ranged Power',   'ranged.power',      sign),
     fixedRow('To-Hit Bonus',  rangedToHitTotal, sign(rangedToHitTotal),
       [...stats.resolve('bab').bonuses, ...stats.resolve('ranged.toHit').bonuses]),
-    fixedRow('Threat Range',  20, '20',  [{ value: 20, type: 'Base', source: 'Base', active: true }]),
-    fixedRow('Crit Multiplier', 2, '×2', [{ value: 2,  type: 'Base', source: 'Base', active: true }]),
+    // Dimmed unless a ranged weapon is actually wielded: these describe the
+    // equipped bow/crossbow, not a hypothetical one.
+    fixedRow('Threat Range',  crit.threatFaces, crit.threatDisplay, threatBonuses, !isRanged),
+    fixedRow('Crit Chance',   crit.critChance * 100, pct(crit.critChance * 100),
+      threatBonuses, !isRanged),
+    fixedRow('Crit Multiplier', crit.multiplier, `×${crit.multiplier}`, critMultBonuses, !isRanged),
+    fixedRow('Crit Multiplier 19–20', crit.multiplier19to20, `×${crit.multiplier19to20}`,
+      [...critMultBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
+      !isRanged || crit.bonus19to20 === 0),
+    fixedRow('Damage per Shot', shot.perSwing, shot.perSwing.toFixed(1),
+      [{ value: shot.perSwing, type: 'Computed', source:
+        `${shot.normalHit.toFixed(1)} on a hit, ${shot.critStandard.toFixed(1)} on a crit`,
+        active: true }], !isRanged, 'damage.perShot'),
     statRow('Doubleshot',     'ranged.doubleshot', pct),
+  ]
+
+  // ── Off Hand ─────────────────────────────────────────────────────────────
+  // Every row is dimmed when the off hand is empty (or holds a shield), so the
+  // section reads as "nothing here" rather than showing a phantom weapon.
+  const offhandStats: StatRowData[] = [
+    fixedRow('Weapon', 0, offhand?.name ?? '—', [], !offhand),
+    fixedRow('W Dice', 0, offhand ? `${offhand.diceNum}d${offhand.diceSides}` : '—', [], !offhand),
+    fixedRow('Threat Range', offhandCrit.threatFaces,
+      offhand ? offhandCrit.threatDisplay : '—', offhandThreatBonuses, !offhand,
+      'crit.offhand.threatFaces'),
+    fixedRow('Crit Chance', offhandCrit.critChance * 100,
+      offhand ? pct(offhandCrit.critChance * 100) : '—', offhandThreatBonuses, !offhand,
+      'crit.offhand.chance'),
+    fixedRow('Crit Multiplier', offhandCrit.multiplier,
+      offhand ? `×${offhandCrit.multiplier}` : '—', offhandCritBonuses, !offhand,
+      'crit.offhand.multiplier'),
+    fixedRow('Crit Multiplier 19–20', offhandCrit.multiplier19to20,
+      offhand ? `×${offhandCrit.multiplier19to20}` : '—',
+      [...offhandCritBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
+      !offhand || offhandCrit.bonus19to20 === 0, 'crit.offhand.multiplier19to20'),
+    fixedRow('Damage per Swing', offhandDamage.perSwing,
+      offhand ? offhandDamage.perSwing.toFixed(1) : '—',
+      [{ value: offhandDamage.perSwing, type: 'Computed', source:
+        offhand
+          ? `${offhandDamage.normalHit.toFixed(1)} on a hit, half ability damage`
+          : 'No off-hand weapon',
+        active: true }], !offhand, 'damage.offhand.perSwing'),
+    statRow('Attack Chance', 'offhand.attack', pct),
+    statRow('Doublestrike', 'offhand.doublestrike', pct),
   ]
 
   const spellStats: StatRowData[] = [
@@ -374,6 +474,7 @@ export function buildBreakdownSections(
     { title: 'Energy Resistance & DR',   rows: energyStats,        defaultOpen: true,  hideWhenEmpty: true },
     { title: 'Melee',                    rows: meleeStats,         defaultOpen: true,  hideWhenEmpty: false },
     { title: 'Ranged',                   rows: rangedStats,        defaultOpen: true,  hideWhenEmpty: false },
+    { title: 'Off Hand',                 rows: offhandStats,       defaultOpen: false, hideWhenEmpty: false },
     { title: 'Spellcasting',             rows: spellStats,         defaultOpen: spellStats.some(s => !s.dim), hideWhenEmpty: false },
     { title: 'Combat',                   rows: miscStats,          defaultOpen: true,  hideWhenEmpty: false },
     { title: 'Weapon Effects',           rows: weaponEffectStats,  defaultOpen: false, hideWhenEmpty: true },

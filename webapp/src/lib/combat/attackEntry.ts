@@ -7,6 +7,7 @@
 // tested independently of React.
 
 import type { BuildStats, WeaponInfo } from '../../hooks/useBuildStats'
+import { critProfile } from './critProfile'
 
 export interface AttackEntryOptions {
   offhand?: WeaponInfo | null
@@ -100,17 +101,11 @@ export function buildAttackEntry(
   const offhandDoublestrike = stats.total('offhand.doublestrike') / 100
   const meleeToHit = stats.total('melee.toHit') + stats.total('melee.attack')
   const meleeDamage = stats.total('melee.damage')
-  const baseCrit = stats.total('melee.crit.range') // additional threat faces from feats
-  const baseCritMult = stats.total('melee.crit.multiplier')
-  // V2 tracks a separate 19-20 critical multiplier that seeds itself with the
-  // standard multiplier as its base, then stacks 19-20-only effects on top
-  // (BreakdownItemWeaponCriticalMultiplier.cpp:52-66). Effects feed it via the
-  // `weapon.critMultiplier19to20` stat key (effectParser Weapon_CriticalMultiplier19To20).
-  const critMult19to20Bonus = stats.total('weapon.critMultiplier19to20')
-  // Crit-only damage bonus: V2 damage effects flagged `*Critical` apply on a
-  // confirmed crit on top of the multiplied base
-  // (BreakdownItemWeaponDamageBonus.cpp:184-202). Surfaced as `melee.crit.damage`.
-  const critOnlyDamage = stats.total('melee.crit.damage')
+  // Threat range and both multipliers come from critProfile so this agrees with
+  // the Analysis breakdown — reading only `melee.crit.range` here dropped
+  // Improved Critical, which arrives on `weapon.threatRange`.
+  const crit = critProfile(k => stats.total(k), weapon)
+  const critOnlyDamage = crit.critOnlyDamage
   const sneakDice = stats.total('melee.sneakDice') + stats.total('melee.sneakAttack')
 
   const abilityMod = modifier(abilityScore)
@@ -148,7 +143,7 @@ export function buildAttackEntry(
   const hitC = hitChanceVsAC(attackBonus, opts.foeAC)
 
   // Crit math: threat range = (21 - critThreatRange) .. 20 (faces that threaten).
-  const threatFaces = Math.max(1, weapon.critThreatRange + baseCrit)
+  const threatFaces = crit.threatFaces
   const critC = (threatFaces / 20) * hitC
 
   // V2 distinguishes the standard crit multiplier from the 19-20 multiplier
@@ -156,10 +151,10 @@ export function buildAttackEntry(
   // only on natural 19/20 rolls; lower threat faces (e.g. 17-18 on a falchion)
   // use the standard multiplier. Split the threat faces accordingly so the
   // higher 19-20 multiplier only weights the at-most-2 top faces.
-  const stdMult = weapon.critMultiplier + baseCritMult
-  const mult19to20 = stdMult + critMult19to20Bonus
-  const faces19to20 = Math.min(2, threatFaces) // 19 and/or 20
-  const facesStd = threatFaces - faces19to20 // 17,18,... when keened past 19-20
+  const stdMult = crit.multiplier
+  const mult19to20 = crit.multiplier19to20
+  const faces19to20 = crit.faces19to20 // 19 and/or 20
+  const facesStd = crit.facesStandard // 17,18,... when keened past 19-20
   // Per-crit damage = (base × multiplier) + crit-only bonus; sneak is added flat
   // (DDO does not multiply sneak dice on crits).
   const critDmgForMult = (mult: number) => (baseDamage * mult + critOnlyDamage + sneakBonus) * meleePowerMult

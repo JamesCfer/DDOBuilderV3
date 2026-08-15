@@ -25,6 +25,7 @@ import { parseEffect, parseItemBuff, requirementsMet } from './effectParser'
 import type { EffectContext, ItemBuffTemplate } from './effectParser'
 import { resolveBonus, emptyResolvedStat } from './bonus'
 import type { RawBonus, ResolvedStat } from './bonus'
+import { withDerivedCombatStats } from './combat/expectedDamage'
 import { deriveWeaponClasses } from './weapons/groups'
 import type { WeaponGroupSpec, RuntimeGroupAdd, RuntimeGroupMerge } from './weapons/groups'
 import { buildAutomaticFeatGroups } from './automaticFeats'
@@ -50,6 +51,10 @@ export interface BuildStats {
   keys: () => string[]
   /** Equipped weapon info (null if no weapon equipped) */
   weapon: WeaponInfo | null
+  /** Off-hand weapon info (null when the off hand is empty or holds a shield).
+   *  It keeps its own dice and base crit profile, so damage and crit rows for
+   *  the off hand cannot be derived from `weapon` alone. */
+  offhandWeapon?: WeaponInfo | null
   /** Armor max-DEX cap (null = no cap) */
   armorMaxDex: number | null
   /** Sorted list of SLA spell names derived from SpellLikeAbility effects
@@ -3291,6 +3296,7 @@ export function buildStatMap(input: BuildStatsInput, build: CharacterBuild): Sta
 export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild): BuildStats {
   const map = buildStatMap(input, build)
   const weaponInfo = extractWeaponInfo(input.gearItems)
+  const offhandInfo = extractOffhandWeaponInfo(input.gearItems)
   const armorMaxDex = extractArmorMaxDex(input.gearItems)
   const mapKeys = Array.from(map.keys())
   const slaList = mapKeys
@@ -3303,7 +3309,9 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     .map(k => k.slice('grantedFeat.'.length))
   const groups = input.allWeaponGroups ?? []
   const { adds: groupAdds, merges: groupMerges } = buildRuntimeGroupAdds(input, build)
-  return {
+  // Derived combat stats (expected damage, crit profile) ride on top so the
+  // optimizer can target them exactly like any other stat.
+  return withDerivedCombatStats({
     resolve: (key: string): ResolvedStat => {
       const bonuses = map.get(key)
       return bonuses?.length ? resolveBonus(bonuses) : emptyResolvedStat()
@@ -3319,5 +3327,5 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     grantedFeatsList,
     isWeaponProficient: (weaponType: string) =>
       deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),
-  }
+  }, offhandInfo)
 }
