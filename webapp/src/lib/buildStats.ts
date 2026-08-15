@@ -1111,13 +1111,30 @@ export function extractWeaponInfo(gearItems: Record<string, Item>): WeaponInfo |
   return null
 }
 
-/** Off-hand weapon for two-weapon fighting (null if no off-hand weapon). */
+/**
+ * Off-hand weapon for two-weapon fighting (null if the off hand is empty or
+ * holds a shield).
+ *
+ * Handwraps are the exception: an unarmed character wears ONE pair and strikes
+ * with both hands, so the equipped handwraps are their own off-hand weapon.
+ * Reading the Off Hand slot alone reported no off-hand attacks at all for
+ * every monk and unarmed build.
+ */
 export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): WeaponInfo | null {
   for (const slot of ['Off Hand', 'Weapon2', 'OffHand']) {
     const wi = weaponInfoFromItem(gearItems[slot], slot)
     if (wi) return wi
   }
-  return null
+  const mainHand = extractWeaponInfo(gearItems)
+  return mainHand && isUnarmedWeapon(mainHand) ? mainHand : null
+}
+
+/** Handwraps (and bare fists) strike with both hands from the one item. */
+export function isUnarmedWeapon(weapon: WeaponInfo | null | undefined): boolean {
+  if (!weapon) return false
+  return weapon.weaponType === 'Handwraps'
+    || weapon.weaponType === 'Unarmed'
+    || /handwrap/i.test(weapon.name ?? '')
 }
 
 // V2 GlobalSupportFunctions.cpp WeaponBaseCriticalRange: the amount Keen /

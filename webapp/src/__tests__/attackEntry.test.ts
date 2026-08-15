@@ -129,9 +129,12 @@ describe('buildAttackEntry', () => {
     const perfect = buildAttackEntry(makeStats({ 'offhand.doublestrike': 65 }), falchion, 18, 20, {
       foeAC: 10, offhand: falchion, twoWeaponFightingTier: 2,
     })
-    // Off-hand DPR scales by the (1 + off-hand doublestrike) factor.
+    // Off-hand DPR scales by the (1 + off-hand doublestrike) factor...
     expect(plain.offhandDPR).toBeCloseTo(noDs.offhandDPR * 1.5, 4)
-    expect(perfect.offhandDPR).toBeCloseTo(noDs.offhandDPR * 1.65, 4)
+    // ...up to the 60% off-hand ceiling. Perfect Two Weapon Fighting derives
+    // 65% OF the main hand's doublestrike, so a build whose derived total lands
+    // above 60% is clamped there rather than scaling by 1.65.
+    expect(perfect.offhandDPR).toBeCloseTo(noDs.offhandDPR * 1.6, 4)
   })
 
   // ---- Gap 4: fortification downgrades crits to normal hits ----
@@ -150,5 +153,56 @@ describe('buildAttackEntry', () => {
     const perSwingHalf = (h - c * 0.5) * hd + c * 0.5 * cd
     expect(half.totalDPR).toBeCloseTo(none.totalDPR * (perSwingHalf / perSwingNoFort), 4)
     expect(full.totalDPR).toBeLessThan(none.totalDPR)
+  })
+})
+
+const handwraps: WeaponInfo = {
+  name: 'Handwraps', slot: 'Weapon1', diceNum: 1, diceSides: 6,
+  critThreatRange: 1, critMultiplier: 2, weaponType: 'Handwraps',
+  attackModifier: 'Strength',
+} as WeaponInfo
+
+describe('unarmed off-hand strikes', () => {
+  it('takes no two-weapon penalty when the off hand IS the handwraps', () => {
+    const stats = makeStats({ 'melee.damage': 10 })
+    const armed = buildAttackEntry(stats, falchion, 20, 20, {
+      foeAC: 30, offhand: falchion, twoWeaponFightingTier: 1,
+    })
+    const unarmed = buildAttackEntry(stats, handwraps, 20, 20, {
+      foeAC: 30, offhand: handwraps, twoWeaponFightingTier: 1,
+    })
+    // Dual-wielding two weapons costs to-hit; striking with both fists does not.
+    const solo = buildAttackEntry(stats, handwraps, 20, 20, { foeAC: 30 })
+    expect(unarmed.hitChance).toBeCloseTo(solo.hitChance, 6)
+    expect(armed.hitChance).toBeLessThan(solo.hitChance)
+  })
+})
+
+describe('doublestrike caps at 100%', () => {
+  const swing = (doublestrike: number) => {
+    const stats = makeStats({ 'melee.damage': 10, 'melee.doublestrike': doublestrike })
+    return buildAttackEntry(stats, falchion, 20, 20, { foeAC: 10, twoHanded: true }).mainDPR
+  }
+
+  it('adds its own percentage below the cap', () => {
+    expect(swing(50)).toBeCloseTo(swing(0) * 1.5, 6)
+  })
+
+  it('caps the off-hand doublestrike at 60%', () => {
+    const dpr = (offhandDs: number) => buildAttackEntry(
+      makeStats({ 'melee.damage': 10, 'offhand.doublestrike': offhandDs }),
+      falchion, 20, 20,
+      { foeAC: 10, offhand: falchion, twoWeaponFightingTier: 4 },
+    ).offhandDPR
+    expect(dpr(90)).toBeCloseTo(dpr(60), 6)
+    expect(dpr(30)).toBeLessThan(dpr(60))
+  })
+
+  it('stops at double — a swing cannot happen a third time', () => {
+    expect(swing(100)).toBeCloseTo(swing(0) * 2, 6)
+    // Anything past 100% is wasted rather than compounding: 250% doublestrike
+    // used to report 3.5× the damage of a single swing.
+    expect(swing(250)).toBeCloseTo(swing(0) * 2, 6)
+    expect(swing(250)).toBe(swing(100))
   })
 })

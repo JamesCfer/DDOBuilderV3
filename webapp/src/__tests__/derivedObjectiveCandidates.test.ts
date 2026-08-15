@@ -68,6 +68,18 @@ describe('objectiveKeys', () => {
     expect(keys).not.toContain('melee.power')
   })
 
+  it('pulls doublestrike into a per-attack objective', () => {
+    const keys = objectiveKeys(objective('damage.perAttack', 'Damage per Attack'))
+    expect(keys).toContain('melee.doublestrike')
+    expect(keys).toContain('melee.power')
+    // ...and the ranged / off-hand variants use their own proc stat.
+    expect(objectiveKeys(objective('damage.ranged.perAttack'))).toContain('ranged.doubleshot')
+    expect(objectiveKeys(objective('damage.offhand.perAttack'))).toContain('offhand.doublestrike')
+    // The plain per-swing objective does not: doublestrike adds a swing, not
+    // damage to this one.
+    expect(objectiveKeys(objective('damage.perSwing'))).not.toContain('melee.doublestrike')
+  })
+
   it('leaves a raw objective untouched', () => {
     expect([...objectiveKeys(objective('melee.power'))]).toEqual(['melee.power'])
   })
