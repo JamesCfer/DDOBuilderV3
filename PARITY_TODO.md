@@ -290,851 +290,202 @@ Remaining read/write-fidelity gaps:
 
 ## High-priority remaining — numerical correctness & effect parser coverage
 
-### Golden-build residue (user-supplied V2 breakdown export, 2026-07-17)
+The prior TODO list (see the Done table above and the historical detail
+inside each closed PR) closed every previously-tracked item — numerical
+correctness was oracle-verified to 0 mismatches across 151 real+fuzzed
+builds on the full `BreakdownsPane` analytics surface, `Effect.cpp`'s
+Type/AType switch was confirmed to have no missing cases across two
+separate full audits, and the forum-export/UI sweeps found nothing new as
+of PR #178+. A fresh sixth-pass scan (2026-08-15, four parallel agents
+covering numerical/effect-parser field-level checks, data-loading edge
+cases, and a UI re-sweep) found three genuine new gaps, all outside the
+surfaces the oracle can cross-check (it doesn't emit weapon to-hit/damage
+or Favor numbers):
 
-A real V2 breakdown export for `exampledps.DDOBuild` (Bard 18/Barb 1/Ftr 1,
-L34, SWF dagger build with active mantles/buffs) was diffed against V3 after
-PR #141. 21 of 55 tracked stats now match exactly (STR/CON/BAB/SP/
-Fortification/Doublestrike/Doubleshot/Strikethrough/Fort-Bypass/Helpless/
-Max-Dex/False-Life/Reaper-HP/Song-Count/Sneak-Dice/Imbue-Dice/Spell-Pen/
-Fate-Points/Displacement/Incorporeality/Movement-Speed). Remaining
-mismatches, largest first — each needs a source-by-source V2 trace:
+- ❌ **N15 — Weapon to-hit and damage-ability pools are incorrectly merged
+  into one selection.** V2 keeps two independent `LargestStatBonus()`
+  picks: `BreakdownItemWeaponAttackBonus.cpp:142` selects the to-hit
+  ability only from `Effect_Weapon_AttackAbility`/
+  `Effect_WeaponAttackAbilityClass` sources; `BreakdownItemWeaponDamageBonus.cpp:54`
+  selects the damage-ability multiplier's ability only from
+  `Effect_Weapon_DamageAbility`/`Effect_WeaponDamageAbilityClass` sources —
+  these two pools can legitimately differ (a tree can grant a
+  damage-ability with no matching attack-ability grant, or vice versa).
+  `webapp/src/components/combat/CombatPanel.tsx:60-69` instead merges both
+  effect families into one `Set` (regex
+  `/^melee\.(attackAbility|damageAbility)\.(.+)$/`), picks a single
+  best-scoring ability, and `lib/combat/attackEntry.ts` applies that one
+  ability's modifier to both `rawAttackBonus` (to-hit, line ~132) and
+  `baseDamage` (damage, line ~123). Concrete divergent case: Bard
+  Swashbuckler "Different Tack" enhancements
+  (`EnhancementTrees/Bard_Swashbuckler.tree.xml:1177-1235` — "Smooth
+  Flourishes"/"Swift Strikes"/"Two Steps Ahead") grant CHA/DEX/INT
+  `Weapon_DamageAbility` with **no** matching `Weapon_AttackAbility` grant —
+  a Swashbuckler with high CHA and dumped STR gets CHA wrongly applied to
+  to-hit in V3 (V2 correctly keeps to-hit on STR/BAB). Fix: track the
+  attack-ability and damage-ability candidate pools separately through
+  `CombatPanel`/`attackEntry.ts`, matching V2's two independent selections.
 
-- ✅ **G-SP / G-MP — melee power, ranged power, universal spell power all
-  V2-exact** (#106): Epic/Legendary Power auto-feats ×14 were the missing
-  84; elemental spell powers now ±1 (governing-skill fold reordered after
-  `skill.All` fan-out; residue is the ±1 ability cluster). The old mantle /
-  implement suspicions were investigated and ruled out (mantles grant no
-  MP/RP/SP; implement bonus requires Divine Crusader "Strike with Poise"
-  rank 3, not trained on the golden build).
-- ✅ **G-MRR / G-PRR / G-AC — CLOSED (pass 133)**: MRR Cap was already exact
-  (Nystul 5pc via the NumFiligrees import fix); the remaining PRR/MRR/AC
-  residue (narrowed −24/−28 → −4/−8/−4 by the ChooseLevel augment fix (#107)
-  and passes 121-123) turned out to already be zero by the time passes
-  127-132 landed their own PRR/MRR/armor-stance root causes (Attack-feat
-  per-shield PRR/MRR, `featCounts` wiring, `<Weapon>`-tagged shield TWF gate,
-  missing-`AType`→0, tracked armor stances, shield/weapon `<Weapon>` naming)
-  — nobody had re-run this specific real-V2-export diff since #165 to notice.
-  Re-diffing `exampledps.cc1.v2export.txt` directly (not just the oracle
-  corpus) confirms `ac`/`mrr`/`prr` now match V2 exactly (diff 0, was
-  bounded at −4/−8/−4). `parityGoldenPass106.test.ts`'s `KNOWN_OPEN` set is
-  now empty — every stat in the real export is exact-checked, closing the
-  last item in "Golden-build residue". The old "Legendary Bulwark" lead was
-  already RULED OUT (instrumented `accumulateSetBonuses` end-to-end: the set
-  fires correctly inside the combined hp percent row).
-- ✅ **G-HP — CLOSED in pass 120 (#162)**: the +195/+213 exampledps residue
-  was favor feats + TotalLevel×rank + the Reaper stance gate; `hp` is now
-  exact-checked in `parityGoldenPass106.test.ts` (out of `KNOWN_OPEN`).
-  Historical detail of the four #157 bugs kept below.
-- 🟡 **(historical) G-HP — four real bugs fixed (#157), residue was +195 —
-  root-caused via a `v2calc`-oracle per-effect `AllActiveEffects()` dump**
-  (temporary debug hooks added to `DDOBuilder/BreakdownItem.h`/
-  `v2calc/src/main.cpp`, reverted after diagnosis — not part of this fix).
-  (1) **Epic/Legendary class HP was wrongly halved**
-  (`accumulateClass`/`buildStats.ts`): V2 `BreakdownItemHitpoints.cpp:68-83`
-  only halves Epic/Legendary HD in the *separate* `classHitpoints`
-  accumulator that feeds the Combat Style % bonus — the class's own HP
-  effect (`AddOtherEffect("<Class> N Levels", ...)`) is ALWAYS the full,
-  un-halved amount. V3 halved the HP effect itself (YingsMonk: Epic 10
-  levels 50→100, Legendary 4 levels 20→40). (2) **Combat Style HD
-  double-counted Epic/Legendary**: the `nonEpicHD` loop iterated
-  `ctxClassLevels` (which already carries Epic/Legendary at full HD)
-  *and* separately re-added them at half HD — 1.5× instead of 0.5×
-  weight (exampledps: 376 vs V2's 236). Fixed by skipping Epic/Legendary
-  in the loop. (3) **CON-mod HP delta mis-scoped**: the correction for
-  gear/enhancement CON bonuses invisible to the early "quick resolve"
-  pass scaled by heroic `build.totalLevel` instead of heroic+epic+
-  legendary, unlike the *base* CON HP formula it corrects (which already
-  used the full total) — under-counted CON HP on any epic/legendary
-  build where CON changes after the quick pass. (4) **`HitpointsReaper`
-  (APCount, V2's separate level-capped `Breakdown_ReaperHitpoints`) was
-  merged into the same `hp`-Reaper bucket as flat, always-uncapped
-  `Hitpoints`-typed Reaper effects** (V2 "Reaper's Defense I/II/IV"), so
-  V3's cap over-applied to both, AND the cap threshold used heroic level
-  instead of V2's `pBuild->Level() + 1` (total character level). Now
-  routed to a dedicated `hpReaperAP` key, capped separately at the
-  correct level. YingsMonk oracle HP 4198: V3 went 2851→4077 (was 32%
-  low, now 3% low). exampledps (real V2 export, HP 2797): V3 went
-  from −78 under to +195 over — closing these four bugs overshot on
-  this build, meaning the true remaining residue is a
-  *different*, still-undiagnosed source (likely a percent-HP total or a
-  missing effect — V2's `AllActiveEffects()` dump for this build lists
-  raw entries summing to 2346, i.e. V2 itself applies ~451 of
-  additional percent-scaled HP that isn't enumerated as a separate
-  effect line; V3's equivalent percent line came to 690, a genuine
-  mismatch worth its own trace. Also spotted but NOT yet fixed:
-  V2's dump has "Warchanter: Howl of the North" (Competence +20) and
-  "Legendary Bulwark" (Legendary +10) that V3 never applies at all).
-  5 new regression tests in `parityPassEpicLegendaryHP.test.ts` (synthetic
-  builds, oracle-independent) cover bugs 1-4 directly.
-- ✅ **2026-07-19 user cc1-gearset export diff — CLOSED (pass 137)**: this
-  bullet's Will/Fort/Reflex/Fortification-Bypass/Dodge/Unconscious-Range
-  claims were never re-verifiable because (a) `parseV2Export.ts` didn't parse
-  the export's "Weapon Damage" section at all (no `fortBypass`/`melee.power`/
-  etc. keys ever reached the golden test) and (b) the file was assumed
-  unreproducible. The committed `exampledps.DDOBuild` +
-  `exampledps.cc1.v2export.txt` fixture turns out to BE this exact save —
-  its `<ActiveStances>` list contains Power Attack / Enhanced Bloodrage /
-  Mantle of Fury and its export text has the same HP 2797 / Unc Rng −360 /
-  Dodge 18/25 / Fort 75 / Will 53 / Fortification-Bypass-71 numbers quoted
-  above. `saves are exact` (added in pass 135) already pins Will/Fort/Reflex
-  as exact; pass 137 parses the Weapon Damage section and pins
-  meleePower/rangedPower/doublestrike/doubleshot/strikethrough/
-  offhandAttack/fortBypass/helpless as exact too — all 8 match V2 with zero
-  diff. So the stance-restoration-from-import concern was unfounded (it
-  already works — `v2Import.ts` reads `<ActiveStances>` into
-  `build.activeBuffs`, and `buildStats.ts`'s persisted-stance merge applies
-  them), and every numeric claim in this bullet is now regression-pinned
-  and V2-exact. No remaining residue.
-- ✅ **Display gaps vs V2 export — closed (#111)**: Epic/Legendary auto-feat
-  rows and half-rank skill totals done (#107). (1) AutomaticAcquisition
-  feats (Attack, Sneak, Heroic Durability, Defensive Fighting, Sunder,
-  Trip, Improved Heroic Durability (Class 5/10/15)) now surface in both
-  the Automatic Feats panel and the forum export's AutomaticFeats section
-  under a new "Automatically Acquired" group — done (#111). (2) the
-  export's Dodge line already renders V2's `dodge/cap` form ("18/25") as
-  of X7 (#95) — this sub-item was stale, verified via `parityPassX7.test.ts`.
-- ✅ **G-SKILL — skills V2-exact except the ±1 ability-mod cluster** (#106):
-  Epic Skills ×10 (uniform +10), per-level cross-class half-ranks
-  (Balance/Perform), Merfolk's Blessing at caster level 25 (Swim 73 exact).
-- ✅ **G-SAVES — closed (#108)**: the uniform +4 was Epic/Legendary base
-  saves — their save progression is `None` in the class XML (V2 adds 0);
-  V3's `saveBase()` fallback added +3/+1. All three saves + all 9 sub-saves
-  now V2-exact against the current export.
-- ✅ **G-AB (partial) — Off-Hand Attack Chance −20 fixed (N14)**: the
-  universal "Attack" feat (`Feats.xml`, granted automatically to every
-  character) carries an unconditional `OffHandAttackBonus` effect of +20
-  ("Standard off hand attack chance") alongside the already-modeled base
-  helpless-damage (+50%) and strikethrough (+20%) values from Done item #52.
-  `buildStats.ts` added the two but missed this third one, so `offhand.attack`
-  was always 0 absent a TWF-style feat/enhancement. Added
-  `add(map, 'offhand.attack', { value: 20, ... })` next to the other two
-  Attack-feat base adds. Golden diff: 20/20 exact now (was 0/20).
-- ✅ **G-AB closed (#107/#108)**: all six abilities, Dodge, Max Ki,
-  unconscious range V2-exact (tome cap, augment LevelValue, Primal Scream
-  stacks, self-buff split, reaper selector picks, Attack-feat −10 base).
-### Oracle-derived mechanical bug list (2026-07, `scripts/oracleDiff.ts` vs v2calc across ~90 builds)
+- ❌ **N16 — Item-granted `AddGroupWeapon` (`<Item2>` on an equipped item's
+  `<Buff>`) never registers the wielded weapon into the named weapon
+  group.** V2 `Buff::UpdatedEffects` (`DDOBuilder/Buff.cpp:180-244`)
+  appends the item's own `<Item2>` value onto the resolved template
+  effect's item list (`Effect_AddGroupWeapon` template + `Item2=<WeaponType>`
+  → `Item=[<GroupName>, <WeaponType>]`), registering that specific wielded
+  weapon type into the effect's weapon group. `types/ddo.ts`'s `ItemBuff`
+  has no `Item2` field, `effectParser.ts`'s `parseItemBuffViaTemplate`
+  never reads/appends a second item, and `AddGroupWeapon` is explicitly
+  treated as a no-stat-contribution control-flow case in `parseEffect` —
+  worse, `buildRuntimeGroupAdds` (`buildStats.ts:215-335`), V3's only
+  weapon-group-membership builder, scans trained feats/enhancements only
+  and never scans equipped items' `Buffs`. Confirmed real-data impact: 11
+  items reference `<Item2>` (e.g. `Legendary Silver Blade of the
+  Flame.item` grants "Favored Weapon" group membership to its Longsword),
+  and multiple Cleric/Paladin feats (`Weapon of the Faithful`, `Zeal`, …)
+  gate attack/damage bonuses on `Requirement Item=Favored Weapon` — those
+  bonuses silently never apply in V3 when group membership comes only from
+  an item. Fix: add `ItemBuff.Item2?: string`, extend
+  `parseItemBuffViaTemplate` to append it to the cloned effect's `Item`
+  list, and extend `buildRuntimeGroupAdds` to also scan equipped-item
+  buffs for `AddGroupWeapon`/`MergeGroups`.
 
-The v2calc oracle is now the source of truth. Ranked by builds affected
-(V2 oracle value is correct; the number is how many builds mismatch).
+- ❌ **F1 — Favor totals ignore quest completion difficulty entirely;
+  `IgnoreForTotalFavor` quests double-count.** V2
+  `Quest::MaxFavor()`/`Quest::Favor(QuestDifficulty)`
+  (`DDOBuilder/Quest.cpp:97-129`) scale a quest's base Favor by its
+  difficulty — Elite/Reaper ×3, Hard ×2, Normal/Solo ×1, Casual ÷2 — for
+  both the "available favor" denominator (`CDDOBuilderApp::LoadQuests`,
+  gated on `!IgnoreForTotalFavor()`) and "earned favor" (keyed off the
+  actual `CompletedQuest::Difficulty()` a quest was run at,
+  `FavorPane.cpp:411-422`). `webapp/src/components/favor/FavorPanel.tsx`
+  (`questFavor()`, `totalAvailable`, `totalFavor`) sums the raw, unscaled
+  `Favor` field with no multiplier at all, and `Quest.IgnoreForTotalFavor`
+  isn't in `types/ddo.ts`'s `Quest` interface or checked anywhere, so
+  duplicate-content quests (e.g. "Devil Assault (Normal)"/"(Hard)") are
+  double-counted in the total. 553/569 quests in
+  `Output/DataFiles/Quests.xml` carry `<Elite/>`, so V2's real denominator
+  is roughly 3× what V3 currently shows. V3 already has the plumbing
+  half-built: `build.questDifficulty: Record<string, QuestDifficulty>`
+  exists on `CharacterBuild`, `v2Import.ts:950` populates it from imported
+  files, and a `SET_QUEST_DIFFICULTY` reducer case exists in
+  `buildLog.ts:152` — but no component ever dispatches it, so imported
+  difficulty data is silently discarded and there's no way to set it from
+  the UI (V2's `FavorPane.cpp:506-539` right-click menu has no V3
+  equivalent — see U12 below). Fix: add `IgnoreForTotalFavor?: boolean` +
+  presence-only `Solo/Casual/Normal/Hard/Elite/Reaper?: boolean` flags to
+  the `Quest` type (same normalization pattern as `NotHeroic`/
+  `NoPastLife`), add a `maxFavor(quest)`/`favorAtDifficulty(quest, diff)`
+  helper pair mirroring `Quest::MaxFavor`/`Quest::Favor`, and wire
+  `FavorPanel` to read/write `build.questDifficulty` instead of a flat
+  boolean.
 
-**Current scoreboard after pass 133 (2026-07-29, UNIFIED 151-build corpus =
-53 curated + 98 fuzz): 0 builds with any mismatch on the FULL analytics
-surface.** The compared surface now covers everything the BreakdownsPane
-exports: abilities, saves + sub-saves, all 21 skills, HP family, PRR/MRR,
-dodge (+cap), doublestrike/doubleshot, sneak attack (dice/attack/damage),
-tactical DCs, Ki (max/passive/hit/crit), spell points, per-class and
-per-school caster levels, spell pen, per-type spell POWERS and CRIT
-CHANCES (universal + Item=All + per-type composition), school DCs,
-per-type energy RESISTANCES and multiplicative ABSORPTIONS, movement
-speed, healing/repair/negative amps, threat, fate points, destiny APs,
-tumble charges, and ~50 more scalars. Not yet emitted headless (documented
-oracle gaps, not V3 gaps): AC total, weapon to-hit/damage lines, buff
-Durations, Immunities.
-
-Pass-131 scoreboard (2026-07-28, same corpus, 3 residuals): `oracleDiff.ts` now
-sweeps `Output/FuzzBuilds` by default. The fuzz corpus went **79 → 0
-mismatching builds** in this pass; the old 98 `fuzz-*.golden.json` /
-`.v3stats.json` files were exposed as a CIRCULAR baseline (byte-identical
-copies of V3's own output, `capturedAt` always empty — V3 validated against
-V3) and are deleted; `randomBuildFuzzer.ts` no longer writes them. Two
-critical prerequisites were **oracle-side** fixes (both previously masked by
-`.DDOBuild` files that persist `<ActiveStances>`): the headless oracle never
-ran `CStancesPane`'s AUTO-stance evaluation (armor/shield/weapon-type/race/
-fighting-style/Greensteel stances — new `v2calc/shim/AutoStancesLinux.cpp`
-replicates `CStanceButton::Evaluate` + `UpdateStanceStates` +
-`UpdateGreensteelStances` verbatim), and the pane-derived stances in V3 had
-compensating bugs (see pass 131 below). Residual 3 builds:
-`Nerfer.DDOBuild` (7 stats, mixed signs), `Odd tank.DDOBuild` (3 saves −3,
-persisted stale "Cloth Armor" on heavy armor — V3 now agrees with the
-re-derivation but its save deltas remain), `New New Inquiz build Ranged
-DPS.DDOBuild` (hp +66: V2 ignores the off-hand's "Melancholic False Life"
-augment via a mechanism not yet identified — its stale "(Accessory)" slot
-type was DISPROVEN as the cause by direct oracle experiment; V2 CopyUserSet-
-Values keeps original augments wholesale, so the match-by-type theory is
-also out).
-
-Previous scoreboard (passes 119-130, 53-build corpus, 0 mismatching): every tracked stat is now
-V2-exact across the full corpus. CLOSED buckets: mrrCap, fortification,
-saveReflex, ability.DEX, ability.CON, saveFortitude, saveWill, hitpoints,
-prr, mrr, dodge, ability.STR, and (as of #172) the "Max imbue" AND "Nerfer"
-rangedPower mismatches (`ctxBAB` double-counted Epic/Legendary AND never saw
-an active `OverrideBAB` boost — see pass 129 above), and (as of #173) the
-last "Maetrim" rangedPower/meleePower mismatch (`EnterValue` augments like
-"Mythic Power Boost" never read the player-entered `ItemAugment::Value` —
-see pass 130 above). Historical per-bucket notes below are kept for the
-evidence trail; where a note conflicts with this scoreboard,
-the scoreboard wins.
-
-- ✅ **Pass 133 — full-analytics widening: the oracle now emits (and the
-  referee compares) the entire BreakdownsPane surface (this PR).**
-  Oracle side: `BreakdownHostLinux.cpp` registers ~150 additional breakdowns
-  (21 `BreakdownItemSkill` wired to their ability breakdowns, 13
-  `BreakdownItemTactical`, universal + 17×3 `BreakdownItemSpellPower`
-  (power/lore/crit-multiplier), 13×2 energy resistance/absorption,
-  SpellPoints/MaximumKi/SneakAttackDice/OffhandDoublestrike/PactDice/
-  TurnUndead, and a ~90-entry simple-breakdown table); `main.cpp` emits new
-  JSON objects `skills`, `tacticalDC`, `spellPower`, `spellCritChance`,
-  `energyResistance`, `energyAbsorption` plus ~50 scalars. Referee:
-  `oracleDiff.ts` composes V2 display semantics (sub-save = base+sub;
-  school DC = dc.All + dc.school; per-type spell power/crit = universal +
-  Item=All + per-type; absorption recombined MULTIPLICATIVELY from resolved
-  winners; maxDexBonus 999 sentinel; movementSpeed −100 base; destinyAPs
-  from epic/legendary levels + FatePoints/3). V3 fixes found by the wider
-  net, each oracle-verified on YingsMonk:
-  - **Snapshot abilities**: `Snapshot*` StackSources (Henshin Mystic "Clear
-    Your Mind" Wis/2 → tactical DCs +3) read the persisted per-gear-set
-    ability snapshot (`Build::SnapshotAbilityValue`) when `GearSetSnapshot`
-    names an existing set — missing tags default 0; live totals only as
-    fallback. New `EffectContext.snapshotAbilities`.
-  - **SpellFocusMastery → dc.All** (was mis-mapped to spell penetration;
-    its ItemBuffs.xml template is SpellDC Item=All).
-  - **ItemBuff Value1/Value2 split** (`Buff::UpdatedEffects`): with both
-    values, template effect[0] gets Value1, effect[1] Value2 (Deception
-    "+12 to hit / +18 sneak damage" — Ophael's Cincture).
-  - **Tumble charges**: V2's universal "Attack" feat carries them (base 2 +
-    1 @10 Tumble ranks + 1 @20, cloth/light only).
-  - **Absorption bonus types**: V3 stamped every `absorb.*` bonus with a
-    fake "Absorption" type, defeating same-type Highest-Only stacking
-    (guild Stormreaver Memorial II/III/IV all counted; V2 keeps only IV).
-    Real bonus types restored; UI/export multiplicative math now matches V2.
-  - **Auto-stance race filter narrowed** to the build's OWN race — the
-    catalogue-wide filter swallowed persisted iconic past-life stances
-    whose trimmed names collide with race names ("Aasimar Scourge ").
-  Full-corpus rounds (the widened referee took the corpus 136 → 0
-  mismatching builds over four more fix rounds):
-  - **Skill tomes**: V2 `<SkillTomes>` element names map to display names
-    (DisableDevice → "Disable Device", SpellCraft → "Spellcraft", UMD →
-    "Use Magic Device") — multi-word tomes were dropped from every skill
-    total and the Spellcraft-fed spell powers; plus the
-    `Character::SkillTomeValue` level cap (2, +1 at 3/7/…/31).
-  - **Skill requirements gate on TRAINED ranks + capped tome**
-    (`Requirement::EvaluateSkill`), not resolved totals — item skill
-    bonuses wrongly passed Tumble rank gates. New
-    `EffectContext.skillRanks`.
-  - **Absorption identical-effect merge** (`absorptionTotal`, shared by
-    referee/UI/export): group by (v2Name, value) so five Arcane-sphere
-    "+1% Energy Absorbance" ×3 passives form ONE (1−0.15) factor while
-    the same-named 10%/stack "Block Energy" stays separate; and absorb.*
-    bonuses keep their REAL types so guild tiers compete Highest-Only.
-  - **Item=All spell power/lore fan-out** into the 17 concrete types so
-    All-typed items compete Highest-Only per type with per-element items
-    (V2 pools them together); school DCs re-resolve the UNION of dc.All +
-    dc.school pools for the same reason. Bare 'Light'/'Alignment' Items
-    are DEAD in V2 (spellPowerTypeMap has only "Light/Alignment").
-  - **GroupMember/GroupMember2 requirements** = V2
-    EvaluateWeaponGroupMember on main/off hand ("Favored Weapon" gates —
-    Divine Crusader implement, ranged doublestrike/doubleshot);
-    `ItemTypeInSlot` and `WeaponTypesEquipped` (main-hand-only Item[0])
-    evaluated honestly via new gear context fields.
-  - **Effect identity includes StackSource** (`Effect::operator==`): two
-    "Spell: Jump" casts from different classes compete Highest-Only
-    instead of merging ×2; effect Item lists dedupe (V2 notifies each
-    breakdown once per effect — Dolorous Combat Mastery lists Stun twice).
-  - **Mixed Magics** raises ClassCasterLevel-driven amounts to
-    min(20, char level) (Bless at CL 27) and the referee's per-class
-    caster levels compose class levels + Mixed Magics + cl pools.
-  - **SpellPoints**: casting-stat pick replicates V2's observer graph
-    (early pick by base+racial+levelup+tome TOTALS; re-pick with final
-    totals only when an OBSERVED stat changes); FvS/Sorc item multiplier
-    excludes percent effects and truncates; "Purity of Heart" and 89
-    other legacy feat names translate at import
-    (`TrainedFeat::TranslateOldFeatNames`).
-  - **Embedded gear fallback**: items not in the catalogue (Cannith
-    crafted, leveled challenge items) use the .DDOBuild's embedded
-    definition, matching `Build::GetLatestVersionOfItem`.
-  - **ItemBuffs.xml duplicate Types**: V2 FindBuff returns the FIRST
-    match; the catalogue Map now keeps first-wins ("Silent Moves" has a
-    5 and a 0 variant).
-  - **Misc**: `<NegativeValues/>` item-buff templates negate stamped
-    values (Undying = negative UnconsciousRange); shield ACP routes to
-    the shield pool; implement bonus (main-hand MinLevel → sp.Universal);
-    destinyAPs/maxDexBonus referee composition (+1 level offset; cloth =
-    999 "No limit"); Energy_All includes the alignment energies; V2's
-    universal "Attack" feat grants Tumble charges.
-  Regression tests: `parityPass133.test.ts` (16 tests).
-
-- ✅ **Pass 132 — residuals closed: 151/151 builds oracle-exact (PR #175).**
-  New tooling: `BreakdownItem::V2CalcDumpEffects` (V2CALC_LINUX-guarded) +
-  `V2CALC_DUMP_EFFECTS=<key>` in the oracle prints a breakdown's per-effect
-  pools (other/char/item, with active/inactive/non-stacking state) — the
-  per-effect referee that localised every fix below. Also fixed an
-  `oracleDiff.ts` arg bug that silently DROPPED the first file argument
-  (`i !== tolIdx+1` with tolIdx=-1) — single-file runs were falling through
-  to the full sweep, which had masked one unverified "fix" during pass 131.
-  - **Off-hand removal** (Inquiz hp +66): V2 `EquippedGear::SetItem` removes
-    the off-hand item when the main hand cannot have one
-    (`CanEquipTo2ndWeapon`: two-handed melee/bows/handwraps/quarterstaff
-    never; the five crossbows only with "Artificer Rune Arm Use" trained or
-    granted). The item AND its slotted augments contribute nothing.
-  - **Persisted stance semantics** (Nerfer): AUTO-family stances are never
-    read from `<ActiveStances>` (armor/shield, weapon types, fighting
-    styles, Ranged Combat, Centered, races, alignments — all re-derived);
-    persisted USER stances are revoked when their stance definition's
-    Requirements fail at load (`CStanceButton::Evaluate` → `DisableStance`)
-    — stance defs indexed from `allFeats[].Stance`.
-  - **Data-driven AUTO stances** (Odd tank saves −3): Stances.xml Auto
-    entries (e.g. "Aura of Good"/"Aura of Courage", BaseClassMinLevel-
-    gated) now auto-activate; `loadStances` is part of `loadAllCatalogues`
-    and `BuildStatsInput.allStances`. Feat-granted Group=Auto stance defs
-    self-activate too. A whitelist keeps the pass honest: stances whose
-    requirements use types `requirementsMet` only conservatively passes
-    (GroupMember/ItemTypeInSlot/…) are left to the dedicated derivations.
-  - **Centered is class-free** ("lowest hp possible" dodge, "Max imbue"
-    6-stat cluster): V2's Centered stance requires only Cloth Armor + both
-    hands in the "Centered" weapon group (Empty counts) — the old
-    monk-level requirement was wrong; it had been masked by the stale
-    persisted-stance merge.
-  - **UI import tree gate**: `usePersistence` passes `allTrees` from
-    `useStaticBundle` into `importV2Build`.
-  Regression tests: `parityPass132.test.ts` (8 tests). Full suite 1083.
-
-- ✅ **Pass 131 — fuzz-corpus alignment (fuzz 79→0, PR #174).** Root causes,
-  each verified by direct oracle diff (all in V3 unless marked oracle):
-  - **(oracle) headless auto-stance evaluation** — new
-    `v2calc/shim/AutoStancesLinux.cpp` (see scoreboard note above). Fuzz
-    builds write an empty `<ActiveStances/>`, so the oracle computed
-    no armor/shield/weapon/race stances at all (mrrCap=0 everywhere, no
-    armor PRR, …). The pane logic is now replicated headless; V2-authored
-    files with persisted stances are unaffected (evaluation is idempotent).
-  - **Armor stances re-derive from gear, ALWAYS** (`deriveArmorStances`):
-    the old "recorded stance wins" rule was disproven — V2's armor stances
-    are `<AutoControlled/>` and recomputed on load ("Odd tank" persists
-    "Cloth Armor" while wearing heavy armor; V2 recomputes Heavy). Also:
-    Docent→Cloth, Mithral Body→Light, Adamantine Body→Heavy, and an
-    armor-slot item with NO `<Armor>` field yields NO armor stance
-    (`Requirement::EvaluateItemInSlot`: "Empty" matches only an empty slot).
-  - **Shield stances read `<Weapon>`** — real shield items are tagged
-    `<Weapon>Buckler/Small Shield/Large Shield/Tower Shield</Weapon>`,
-    never `<Armor>`; V2's stance names are per-type + umbrella "Shield" +
-    "Orb"/"Rune Arm". The old `.Armor`-based detection ('Heavy/Light
-    Shield' names) never matched anything.
-  - **`Item.Weapon` was parsed as an ARRAY** (`dataLoaders.ts` had 'Weapon'
-    in the global isArray list for WeaponGroupings' sake), so every
-    `item.Weapon === '…'` comparison was silently false — scoped the array
-    rule to WeaponGroup paths. This had disabled shield/weapon-type stance
-    derivation and `weaponInfoFromItem.weaponType` with real catalogue data;
-    persisted `<ActiveStances>` had been masking it on the curated corpus.
-  - **Fighting-style stances follow Stances.xml requirements** — THF = main
-    in "Two Handed" group; Ranged Combat = "All Ranged"; TWF = BOTH hands in
-    "One Handed" (no animal form); SWF = main in "Single Weapon"/"Thrown"
-    AND off-hand Empty/Buckler/Orb/Rune Arm. The old heuristic SWF'd any
-    single weapon (a repeating crossbow is neither group → V2 never SWFs).
-  - **Gear pool: ONE winner per bonus type by |value|**
-    (`RemoveNonStacking` compares `fabs`): a −2 Resistance penalty is a
-    "lesser version" of a +7 Resistance and is DROPPED, not applied
-    alongside (old rule kept best-positive AND most-negative).
-  - **Identical duplicate gear effects stack-merge** (`AddEffect`: one
-    entry × stacks, exempt from Highest-Only) — Epic Ring of the Buccaneer
-    carries GoodLuck +1 Luck twice → +2. Approximated by (source, value,
-    percent) within the per-type gear pool; augment sources now include the
-    host slot (V2 names them `<item> : <slot type> : <augment>`), so the
-    same augment in two items stays DISTINCT and competes instead.
-  - **Item buff bonus types honor the item's `<BonusType>`** — the Dodge
-    and FalseLife cases in `parseItemBuff`/`parseEffect` hardcoded
-    'Dodge'/'False Life', so dodge items stacked unconditionally
-    (fuzz-5034: 9+8→17, V2 keeps 9) and tiered FalseLife
-    (Enhancement/Insightful/Quality, Indomitable Wrappings 12+5+2=19)
-    collapsed into one pool. A buff with NO `<Value1>` now resolves through
-    the ItemBuffs.xml template (template's own Amount — Nightforge Docent's
-    bare `<FalseLife>` → +10) instead of parsing as 0.
-  - **Anonymous `AType=Stacks` effects merge by the owner's stamped name**:
-    V2 stamps every DisplayName-less effect with its owner at load
-    (`Feat::EndElement` → feat name; `EnhancementTreeItem::GetEffects` →
-    `Name(selection)`), and `Effect::operator==` compares that stamp. So
-    Shifter + Razorclaw Shifter "Shifter: Self Reliant" (same display name
-    in both trees) merge to `Amount[Σranks−1]`, while "Past Life: Elf" vs
-    "Past Life: Halfling" (identical anonymous tables) never merge.
-    `parseEffect` gained a `stampName` param; the merge is also scoped per
-    effect pool (gear vs character, V2 `m_effects` vs `m_itemEffects`).
-  - **V2's tree-version gate on import** (`SpendInTree::EndElement`): a
-    spend whose `<TreeVersion>` mismatches the catalogue tree's `<Version>`
-    is revoked wholesale (headless answer = "No"); legacy tree names carry
-    a LEADING SPACE in V2 that our trimming parsers lose, so
-    `importV2Build`/`importV2Document` accept an `allTrees` catalogue, spot
-    spaced names in the raw XML, and drop trimmed-name legacy spends the
-    way V2 does (fuzz-5009's "Ninja Spy" v1 spend → revoked; a real
-    V2-authored " Ninja Spy V1" spend survives).
-  Regression tests: `parityPass131.test.ts` (12 tests) + updated
-  `bonus.test.ts` / `parityPass121PRR` / `parityPass127PRR` /
-  `parityPass39` / `parityPass45` / `weaponSlotDetection` specs whose old
-  assertions encoded the disproven behaviors.
-
-- ✅ **GrantFeat never re-applies the granted feat's own stat effects (#124)
-  — ability.CON / saveFortitude / saveWill CLOSED, prr 14→10, mrr 12→8,
-  rangedPower 3→2, ability.STR 3→2, builds-with-mismatch 31→28**: pass 59
-  assumed V2 `Build::ApplyFeatEffects` fires whenever any source grants a
-  feat via `Effect_GrantFeat` and fed the granted feat's own `<Effect>` list
-  through `accumulateFeat`. Verified directly against the compiled V2
-  source: `Build::ApplyEnhancementEffects`/`ApplyItemEffects` notify a
-  GrantFeat effect only to breakdowns registered for `Effect_GrantFeat` —
-  that is `CGrantedFeatsPane` (`OnInitialUpdate`:
-  `RegisterBuildCallbackEffect(Effect_GrantFeat, this)`, used only to track
-  the name for the Granted Feats panel / feat-prerequisite `IsGrantedFeat`
-  checks) and a narrow `BreakdownItemPRR` re-derive trigger
-  (`EnhancementEffectApplied`/`Revoked`: `if (effect.IsType(Effect_GrantFeat))
-  CreateOtherEffects()`, recomputing armor-derived PRR, not applying the
-  feat). `Build::ApplyFeatEffects` (`Build.cpp:2683`) is reached only via
-  `TrainFeat`/`AutomaticFeats`/`TrainSpecialFeat` — never from a GrantFeat
-  notification. Real-corpus symptom (oracle-diffed "highest Number
-  possible.DDOBuild"): Epic Destiny "Fury of the Wild: I'm Always Angry"
-  grants the Barbarian "Rage" feat outright via GrantFeat (no stance check
-  on the grant itself); Rage's `AbilityBonus`/`SaveBonus`/`ACBonus` effects
-  are each gated on `Requirement Stance=Rage` — on this non-Barbarian build
-  with the Rage stance toggled, V3 added a phantom +4 STR / +4 CON / +2
-  Will-morale / −2 AC that V2 (per the compiled oracle) never applies.
-  `grantedFeat.<Name>` markers are still emitted and still populate
-  `grantedFeatsList` (unchanged, #60 parity) — only the stat-effect
-  re-application is removed. 3 regression tests in
-  `parityPass124GrantFeat.test.ts`; `parityPass59.test.ts` corrected to
-  match the verified V2 behavior.
-
-- ✅ **hitpoints — CLOSED (49→38 #116, →31 #161, →21 #162, →19 #163, →2 #169,
-  →0 #171)** — passes 116/119/120/121 closed epic/legendary halving,
-  Combat-Style double-count, CON-delta scope, Reaper AP-cap scope, feat
-  TotalLevel indexing, favor feats, the Reaper stance gate, and GoF selector
-  own-effects; #169 closed the cross-feat `AType=Stacks` FatePoint
-  global-stack merge; #171 closed the last builder (raydc, a classless
-  build) — the "Unknown" pseudo-class never synthesized Improved Heroic
-  Durability's 5/10/15 milestones. The old "percent-HP residue" theory is
-  RETIRED — pass 120's reconciliation proved the percent engine exact; the
-  exampledps golden HP residue is 0 and exact-checked.
-- ✅ **saves: Reflex 37→18 / Fort 30→8 / Will 6 — CLOSED (this PR)** — root cause #1 fixed:
-  `accumulateGuildBuffs` hardcoded the `classLevels` param passed to
-  `parseEffect` to `0`, so every Guild Buff effect with `AType="TotalLevel"`
-  (V2 `Effect.cpp:1205-1219`, indexed by `m_pBuild->Level()` — the total
-  character level) always resolved to `Amount[0]` instead of the value for
-  the build's actual level (e.g. GuildBuffs.xml "Game Hunter", a 40-entry
-  table giving +1 Fortitude at level 1-8 up to +3 at level 13+, was frozen at
-  +1 for every build regardless of level). Root-caused via a temporary
-  `v2calc` per-effect `AllActiveEffects()`/`IsActive()` oracle dump (reverted)
-  against `YingsMonk.DDOBuild`: V2 saveFortitude 84 vs V3 82, traced to
-  "Game Hunter" contributing +1 instead of +3; same bug hit "Chronoscope"
-  (Reflex) and every other `TotalLevel`-scaled guild buff — this also explains
-  most of the `fortification` bucket (28→1). Fixed by threading
-  `build.totalLevel + epicLevels + legendaryLevels` through as the
-  `classLevels` arg. 2 regression tests in `parityGuildBuffTotalLevel.test.ts`.
-  Residual: closed by passes 119 (feat TotalLevel + selector requirements +
-  SliderValue), 122 (oracle slider default) and 123 (stale trained spells).
-  This bullet was left marked 🟡 after #165 even though the residual it
-  described was already gone; re-verified against the real
-  `exampledps.cc1.v2export.txt` export (`parityGoldenPass106.test.ts`) —
-  `save.Fort`/`save.Reflex`/`save.Will` are exact. New pinned assertion
-  added directly to that test so a future regression fails loudly instead
-  of silently reopening.
-- ✅ **dodge (35→16 by #122's diagnosis, →1 after #164)** — the long-standing
-  "armor-MDB secondary cap" hypothesis was STALE/WRONG (the cap never bound
-  on the reconciled builds; `v2Formulas.ts` already applied it correctly).
-  Real causes: dead `DodgeBonusTowerShield` type double-counting Mobility
-  (+2 on 5 builds) and the ORACLE's headless slider defaulting to 1 stack
-  instead of 0 ("Slippery Magic" +5 phantom on 6 builds) — both fixed in
-  pass 122 (#164).
-- ✅ **abilities: Completionist / Racial Completionist +2 never applied
-  (114)** — the monk elemental-form stance-stacking sub-cause noted here was
-  already fixed by #113 (`Amount_Stacks` merge); re-diffing the golden
-  Maetrim build against the real `v2calc` oracle (per-effect `IsActive()`
-  dump) surfaced the actual remaining root cause: `v2Import.ts` only read
-  past lives from `<Character><SpecialFeats>`, dropping any past life V2
-  records at `<Life><SpecialFeats>` scope instead (V2 sums both —
-  `Life::AllSpecialFeats()`, `Life.cpp:709-713`); real saves can and do split
-  past lives across both nodes (Maetrim's "Past Life: Duergar" ×3 and "Past
-  Life: Rogue - Arcane Trickster" ×3 are Life-scoped only). That alone made
-  `pastLives['Duergar']` come back `undefined`, which blocked Racial
-  Completionist's "every race at 3" check. Two more independent bugs in
-  `buildAutomaticFeatGroups`'s Completionist gating (`DDOBuilder.cpp:494-577`,
-  the *dynamic* per-feat Requirements V2 rebuilds at data-load time, not the
-  `Feats.xml` placeholder): (a) class Completionist must group archetypes
-  under their base class via a `RequiresOneOf` (base class's own past life OR
-  any archetype's) at threshold ≥1 — not ≥3, and not each archetype counted
-  as an independent "class" (which was unsatisfiable, since archetype past
-  lives are recorded as `"<Base> - <Archetype>"`, never a bare archetype
-  name); (b) Racial Completionist must skip `NoPastLife` races (Wood Elf) —
-  `dataLoaders.ts`'s `loadRaces` never normalised the `<NoPastLife/>`
-  presence-only XML flag (same class of bug already fixed for `<NotHeroic/>`
-  on classes), so `!r.NoPastLife` was always true and Wood Elf stayed a
-  permanently-unsatisfiable requirement. Together these zeroed out
-  Completionist/Racial Completionist's +2 AbilityBonus/+2 SkillBonus for
-  every fully-past-lifed build in the corpus. Oracle: Maetrim/YingsMonk STR
-  now V2-exact once the oracle's own Guild Buff data-loading gap was also
-  fixed (see next item — that oracle gap was previously *masking* this one
-  via error cancellation on several builds, which is why fixing this alone
-  moved net oracle mismatch counts up, not down, on those specific builds).
-- ✅ **RETRACTED — "Guild Buff effects wrongly apply an `AbilityBonus`"
-  (115)**: this was a false lead, not a V3 bug. The previous entry concluded
-  V3's `accumulateGuildBuffs` (`webapp/src/lib/buildStats.ts:824+`) over-
-  applies a +2 to every ability because the `v2calc` oracle's per-effect dump
-  showed **zero** guild-buff entries for Maetrim/YingsMonk. Root cause traced
-  to the *oracle*, not V3: `v2calc/shim/GlobalDataLinux.cpp`'s
-  `V2CalcLoadGameData` never called `GuildBuffsFile` to populate
-  `g_guildBuffs` (it was left as a deliberately-empty stub — see the old
-  comment "Not populated by v2calc... kept as empty backing stores"), so
-  `Build::ApplyGuildBuffs` iterated an empty list and every real V2 guild-buff
-  effect was silently absent from the oracle's JSON — the oracle was wrong,
-  not V2 itself. Fixed `v2calc` to load `GuildBuffs.xml` via `GuildBuffsFile`
-  (mirrors `CDDOBuilderApp::LoadGuildBuffs`, `DDOBuilder.cpp:1229-1238`) and
-  added it to the Makefile's source list. Re-running `oracleDiff.ts` after the
-  fix: `ability.STR/CON/DEX/INT/WIS/CHA` mismatches across the corpus dropped
-  from 22-24 builds each to 0-4 (residual unrelated to guild buffs). Maetrim's
-  GuildLevel=200 legitimately unlocks all three ability-granting guild
-  buildings (Floating Rock Garden Str/Wis L15, Paradoxical Puzzle Box Dex/Int
-  L16, Old Sully's Grog Cellar Con/Cha L17) simultaneously — V2 has no
-  "only one building selected" mechanic, so +2 to every ability from three
-  independent Guild-bonus-type sources is the correct, V2-exact total. New
-  regression test in `parityCompletionist.test.ts` asserts the three
-  per-ability Guild Buff bonus lines directly.
-- ✅ **prr 22→14 / mrr 19→12 (rounds 121-122); mrrCap 4→0 and
-  fortification 28→0 CLOSED (#163); rangedPower 15→3 / meleePower 10→1
-  (#163/#164/#165) — CLOSED (this PR).** Selector own-effects + tracked
-  armor stances (#163), auto-feat dedup + oracle slider (#164),
-  trained-spell carry-over + truncation (#165). The "round-2 diagnosis in
-  flight" note was stale: pass 133's full-analytics oracle widening
-  (151/151 builds, 0 mismatches) and the real-export golden test
-  (`parityGoldenPass106.test.ts`'s `ac`/`mrr`/`prr` exact-match assertion,
-  already passing since #177) already closed the mixed-sign residue this
-  bullet described; nobody had flipped its marker.
-
-Workflow: `make -C v2calc` once, then `cd webapp && npx tsx scripts/oracleDiff.ts`
-prints the live list; fix, re-run, repeat. `oracleDiff.ts <file>` targets one build.
-
-Fifth review pass (2026-07). A full switch/case diff of `Effect.h`/`Effect.cpp`
-against `effectParser.ts` again found **no missing Type/AType cases**
-(confirmed `AbilityTotalIndex`, `SliderValueLookup`, `Cap`,
-`WeaponOtherDamageBonusClass`, `ImbueDice`, etc. all correctly handled,
-including a deliberate V2-bug-for-bug replication in `SliderValueLookup`).
-This pass's new gaps are all in **Effect/BreakdownItem fields and rounding
-rules** rather than missing cases — four items, all narrow but each affects a
-non-trivial number of live effects:
-
-- ✅ **N10 — Percent-effect rounding truncates once globally instead of once
-  per effect.** V2 `BreakdownItem.cpp:474-503` (`DoPercentageEffects`)
-  truncates **each** `<Percent/>`-tagged effect's contribution individually
-  and sums the already-truncated amounts. Only `BreakdownItemHitpoints` opts
-  into the alternate "combine all percents first, truncate once" path
-  (`DoAllPercentsAtOnce()`, `BreakdownItem.cpp:498-501`) — every other
-  percent-tagged stat (ACBonus ~63 effects, Weapon_Attack ~17, SpellPoints
-  ~10, per Done-item #50) truncates per-effect in V2. Fixed: the percent
-  post-pass in `webapp/src/lib/buildStats.ts` now special-cases the `hp`
-  stat key to keep the combined-truncation formula
-  (`Math.trunc(base * percentSum / 100)`, verified equivalent to V2's
-  discrepancy-correction math for `m_bAllPercentsAtOnce`), while every other
-  stat truncates each active resolved percent bonus individually
-  (`Math.trunc(base * b.value / 100)`) and sums the truncated amounts. 2
-  regression tests in `parityPassN10.test.ts`.
-- ✅ **N11 — `Bonus="Temporary"` effects no longer inflated by percentage
-  bonuses on the same stat** — done (#102 in Done table above).
-- ✅ **N12 — `<Rank>` effect gate now honored for all effect types** —
-  done (#103 in Done table above).
-- ✅ **N13 — `<ApplyAsItemEffect/>` routes into the gear "Highest Only"
-  pool** — done (#103 in Done table above), together with the empty-element
-  flag-parsing bug that also disabled ALL `<Percent/>` effects with real data.
-
-`parseItemBuff` correctly has no handling for either `Rank` or
-`ApplyAsItemEffect` — neither field ever appears in `ItemBuffs.xml` (0
-occurrences confirmed), so no change is needed there.
-
-- ✅ **N7 — `Weapon_CriticalRange` effect parsed into a dead stat key** —
-  done (#111 in Done table above).
-- ✅ **N8 — `Weapon_CriticalMultiplier` effect parses into a dead stat key** —
-  done (#90 in Done table above).
-- ✅ **N9 — `Life.specialFeats` now applied to stats + AP budget** — done
-  (see Done table).
-- ✅ **E1 — `SLA` (Spell-Like Ability)** — done (#74/#69).
-- ✅ **Non-stance runtime gates** — done (#73).
+Everything else checked in this pass came back clean: a field-by-field
+re-audit of `Effect.h`/`Effect.cpp` (`RequirementsToBeActive`, `Cap`,
+`StackSource`, `Rank`, `Rare`, `Weapon1`/`Weapon2`, `IsItemSpecific`,
+`ApplyAsItemEffect`, `operator==`) against `effectParser.ts`/`buildStats.ts`
+found every field already read and honored correctly; `BreakdownItemAC.cpp`
+(dex-cap, percentage AC, armor enchantment, natural armor) matches V2
+line-for-line including a confirmed-intentional V2 quirk (shield
+enchantment is observed but never folded into AC's own effect pool, in
+both V2 and V3); `BreakdownItemDuration`/`BreakdownItemImmunities` have no
+formula to get wrong and are already ported.
 
 ---
 
 ## Medium-priority remaining
 
 ### Subsystems V3 hasn't ported
-- ✅ **Combat simulator with attack chains** — done (#70).
-- ➖ **Gear optimizer / auto-equip** — phantom: V2 has no such feature.
-- ✅ **Settings** — done (#67/#69).
-- ✅ **Build version migration** — done (#66).
-
-### Pass-131 follow-ups — ALL CLOSED by pass 132 (see the pass-132 entry
-### in the oracle-derived bug list; the referee is now 151/151 exact)
-- ✅ **UI import `allTrees`** — `usePersistence.ts` now reads the tree
-  catalogue from `useStaticBundle()` and passes it to `importV2Build`, so
-  the tree-version gate fires on UI imports too.
-- ✅ **"New New Inquiz" hp +66** — mechanism identified with the new
-  per-effect oracle dump (`V2CALC_DUMP_EFFECTS`): the off-hand item itself
-  is REMOVED by `EquippedGear::SetItem` + `CanEquipTo2ndWeapon`
-  (crossbow main hand without "Artificer Rune Arm Use" → no off-hand at
-  all, augments included). Replicated in `buildStats` (off-hand removal +
-  augments die with the host).
-- ✅ **Nerfer / Odd tank** — both were stale-persisted-stance artifacts:
-  Nerfer persisted "Wind Stance" that V2 revokes at load (its stance
-  definition requires Centered, and a longbow isn't a centering weapon);
-  Odd tank was missing the Stances.xml AUTO stances "Aura of Good"/"Aura
-  of Courage" (Sacred Defender "Resistance Aura" +saves is gated on one).
-  V3 now models V2's full stance load semantics (pass 132).
+Nothing new — the last remaining item (`➖ Gear optimizer / auto-equip`) is
+a phantom, V2 has no such feature. No other unported subsystem found.
 
 ### Data-file edge cases
-- ✅ **Item slot edge cases** — done (#71); trinket-via-augment not a V2 mechanic.
-- ✅ **Cosmetic gear effects** — done (#71).
-- ✅ **Sentient gem personality buffs** — not a gap (#71).
-- ✅ **Filigree set bonuses with conditional triggers** — done (#71).
-- ✅ **D1 — Legacy enhancement trees filtered from the picker** — done (#97).
-- ✅ **D2 — `<SlotUpgrade>` (item augment-slot color upgrades)** — done (#98).
-- ✅ **D3 — Minor Artifact single-equip restriction enforced** — done (#136,
-  this pass). `Item.MinorArtifact?: string` added to `types/ddo.ts`;
-  `buildStats.ts` strips every equipped Minor Artifact past the first
-  (V2 canonical slot order tiebreak, no equip-order history in a static
-  snapshot) through the existing `gearSlotsRemovedByV2` off-hand-rule
-  mechanism, so augments/set-bonus contributions of the revoked item(s)
-  are dropped too (V2 `EquippedGear::SetItem`, `EquippedGear.cpp:352-372`).
-- ✅ **D4 — Artifact Filigree slots now gate on an equipped Minor Artifact
-  item** — done (#134, this pass). V2 `Build.cpp:4767-4771`/`4843-4849`
-  only applies/revokes the 10 "Artifact Filigree" slot effects when
-  `gear.HasMinorArtifact()` is true. `buildStats.ts`'s call to
-  `accumulateFiligrees` always applied `build.artifactFiligreeSlots` with
-  no such gate — a build with no Minor Artifact equipped still got Artifact
-  Filigree bonuses in V3. Fixed: `buildStatMapOnce` now checks whether any
-  `gearItems` entry carries the presence-only `<MinorArtifact/>` flag
-  (`'MinorArtifact' in item`, same pattern as the existing `NoPastLife`/
-  `NotHeroic` flag normalisation) and passes an empty artifact-filigree
-  slot list when none is equipped. 3 regression tests in
-  `parityPassD4ArtifactFiligree.test.ts`.
-- ✅ **D5 — Docent (Mithral/Adamantine Body) armor AC gated on the matching
-  feat** — already done (stale marker; verified fixed in `buildStats.ts`'s
-  `accumulateGear`, landed with pass 134/#178 but this TODO entry was never
-  flipped). An item with a `MithralBody` value only contributes its base
-  `ArmorBonus` when "Composite Plating" is trained and its Mithral Body
-  bonus when "Mithral Body" is trained; `AdamantineBody` similarly requires
-  "Adamantine Body" — matching V2 `Build.cpp:5779-5822` `ApplyArmorEffects`.
-- ✅ **D6 — Legendary Green Steel "Dominant" stances never auto-activate —
-  done (#147, this pass).** V2 `StancesPane.cpp:1053-1160`
-  (`UpdateGreensteelStances`): with 2+ equipped Green Steel items, V2
-  compares each item's Dominion/Escalation/Opposition set-bonus stack
-  counts and auto-activates one of 5 mutually-exclusive stances
-  (Dominion/Escalation/Opposition/Ethereal(4+)/Material(4+)), gating
-  further set-bonus effects. `Item.h`'s `IsGreensteel` flag was unused in
-  `webapp/src/lib` (only referenced in `v1Import.ts`'s name-migration
-  tables) — a build with 2+ Green Steel items never got these auto-
-  stances or their downstream effects in V3. Added `Item.IsGreensteel`
-  (presence-only flag, mirrors `MinorArtifact`); `buildStats.ts` gains
-  `deriveGreensteelStances` (counts non-weapon-slot `IsGreensteel` items,
-  applies V2's exact dominance rules including Opposition's odd
-  "only when Dominion and Escalation are tied" clause) and a shared
-  `computeSetBonusCounts` helper (extracted from `accumulateSetBonuses` so
-  both consult the same Set Bonus stack counts); the derived stances merge
-  into `ctxStances` before gear/set-bonus effects resolve, so the existing
-  `SetBonuses.xml` Dominion/Escalation/Opposition/Ethereal/Material blocks
-  (already `Requirement Type="Stance"`-gated) fire correctly for the first
-  time. 9 regression tests in `parityPassD6Greensteel.test.ts`.
-- ✅ **D7 — `RestrictedSlots` item-level slot exclusion** — done (#145,
-  this pass). V2 `Item.h:73` + `Build::SetGear` (`Build.cpp:4674-4692`) +
-  `EquippedGear::IsSlotRestricted` (`EquippedGear.cpp:308-309`): an
-  equipped item can declare arbitrary *other* inventory slots that must be
-  cleared while it's worn (distinct from the already-ported two-handed/
-  off-hand check) — e.g. "Shining Crescents" (Weapon1) restricts Weapon2,
-  "Platinum Knuckles"/"Legendary Platinum Knuckles" (Weapon1) restrict
-  Gloves. Added `Item.RestrictedSlots?: Record<string, boolean>` (same
-  shape/parsing as the existing `EquipmentSlot` field); `buildStats.ts`
-  now scans `gearItems` for it and clears every restricted display slot
-  (via `gearSlots.ts`'s `displaySlotsForItemKey`) through the existing
-  `gearSlotsRemovedByV2` mechanism, so a cleared slot's augments/set-bonus
-  contributions die with it too — same pattern as D3/D4.
-
-Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
-Crafting-style systems don't exist in V2's data model (no crafting XML
-files anywhere in `DDOBuilder/`); `IsAcceptsSentience` (1393 items) is
-cosmetic-only even in V2 (never checked in `Build.cpp`/`EquippedGear.cpp`),
-consistent with the existing #71 sentient-gem finding.
+This pass's data-loading agent re-checked every presence-only XML flag
+(`DL_FLAG`-style) across `Item.h`, `Race.h`, `Class.h`, `Augment.h`,
+`SetBonus.h`, `Stance.h`, `EnhancementTree.h`, `EnhancementTreeItem.h`,
+`Buff.h`, `SpellDC.h`, `Spell.h` against `dataLoaders.ts`/`buildStats.ts`/
+`requirements.ts`/`effectParser.ts` — `IsConstruct`, `SuppressSetBonus`,
+`DualValues`/`EnterValue`/`ChooseLevel`, `AutoControlled`,
+`ApplyToWeaponOnly`/`NegativeValues`, `IgnoreForParse` (editor-only, never
+read by `Build.cpp`) are all correctly handled or genuinely out of
+stat-computation scope; item-level `NoAutoUpdate`/`UserSetsLevel` are
+UI-dialog-only in V2 (editor tooling) and not part of build-stat math. No
+unloaded V2 data files found beyond what the Done table already covers.
+The one real data-edge-case finding this pass turned up — missing
+`Quest.IgnoreForTotalFavor`/difficulty flags — is filed as **F1** above
+since its primary symptom is a wrong numeric total, not a data-loading
+omission per se.
 
 ### Spell power school coverage
-- ✅ **X6 — Missing alignment/physical spell power types in export and BreakdownsPanel** — done (#109).
+Nothing new — already fully closed (X6, #109).
 
 ### Editor tools (intentionally out of parity scope)
-- ➖ **Item / enhancement-tree / spell / race / class editors** — V3 reads V2's
-  XML directly; not on the parity path.
+- ➖ **Item / enhancement-tree / spell / race / class editors** — V3 reads
+  V2's XML directly; not on the parity path.
 
 ---
 
 ## Low-priority remaining
 
 ### UI polish
-- ✅ **Keyboard shortcuts / print layout / auto-save / drag-and-drop import** —
-  done (#69).
+
+- ❌ **U12 — Favor-difficulty right-click picker has no V3 equivalent.**
+  Companion to **F1** above. V2 `FavorPane.cpp:506-539`
+  (`OnRightClickListQuests`) lets the player set a completed quest's run
+  difficulty (Solo/Casual/Normal/Hard/Elite/Reaper1-10) via a right-click
+  context menu, which then scales the favor that quest contributes.
+  `webapp/src/components/favor/FavorPanel.tsx` only has a plain
+  complete/incomplete checkbox with no difficulty selector at all. Ship
+  together with F1's calculation fix — the display fix is meaningless
+  without a way to set the difficulty, and vice versa.
+
+- ❌ **U13 — BonusesPane's user-customizable "watched breakdowns" list has
+  no V3 equivalent.** V2 `BonusesPane.cpp`
+  (`OnAddBreakdown`/`OnRemoveBreakdown`/`OnMoveUpBreakdown`/
+  `OnMoveDownBreakdown`, ~lines 200-300) is a per-bonus-type table
+  (Enhancement/Insightful/Artifact/Quality/Profane/Equipment/Competence/
+  Exceptional/Festive/Fortune/Legendary columns) where the player picks
+  specific stats to monitor via an Add popup, then removes/reorders them;
+  the selection persists per-`Life` (`Life.h:95-98`,
+  `AddMonitoredBreakdown`/`RemoveMonitoredBreakdown`/
+  `Move*MonitoredBreakdown`). V3's `components/bonuses/BonusesPanel.tsx` is
+  a fixed, non-customizable summary (Active Feats/Buffs/Items/Ability
+  Totals) — no add/remove/reorder interaction, and no
+  `monitoredBreakdown`-equivalent field anywhere in `types/ddo.ts`
+  (confirmed via full-codebase grep).
+
+- ❌ **U14 — Per-life clipboard copy/paste and single-life export/import
+  have no V3 equivalent.** `BuildsPane.cpp:612-666` — right-clicking a
+  Life/Build node in V2's tree shows `ID_LIFE_EXPORTTONEWFILE`
+  (`SaveLifeToNewFile`, exports just that one Life to a new `.DDOBuild`),
+  `ID_LIFE_IMPORTLIVESFROMOTHER` (`ImportLivesFromOtherFile`, merges Lives
+  from a second file into the current document), and
+  `ID_LIFE_COPYTOCLIPBOARD`/`ID_LIFE_PASTEFROMCLIPBOARD` (a custom
+  clipboard format `CF_CUSTOM_LIFE` carrying one Life's XML, for
+  copy/paste between runs or documents). `webapp/src/lib/v2Export.ts` only
+  exposes whole-build/whole-document export
+  (`exportV2Build`/`exportV2Document`/`exportV2DocumentModel`), and
+  `LifeBuildBar.tsx` has no context menu at all — no per-life export, no
+  cross-file import/merge, no clipboard copy/paste.
+
+- ✅ **Keyboard shortcuts / print layout / auto-save / drag-and-drop
+  import** — done (#69).
 - ✅ **L1 — Build history log (V2 `LogPane`)** — done (#101).
-- ✅ **UI parity (fifth pass)** — a fresh file-by-file sweep of all 39 V2
-  `*Pane.cpp`/`*Dlg.cpp`/`*Dialog.cpp` files against `webapp/src/components/`
-  found **no new gaps**: every feature maps to an existing V3 component or a
-  legitimate out-of-scope MFC/dev-tool detail (see "Out-of-scope by design"
-  below). U1–U11 (see Done table) remain the complete list of ported UI work.
+- ✅ **UI parity (fifth pass)** — a file-by-file sweep of all 39 V2
+  `*Pane.cpp`/`*Dlg.cpp`/`*Dialog.cpp` files against
+  `webapp/src/components/` found no whole-panel gaps; U1–U11 (Done table)
+  remain the complete list of ported whole-panel UI work. The sixth-pass
+  scan (this file) went a layer deeper — interaction-level gaps *inside*
+  panels that do exist — and found U12–U14 above.
 
 ### Forum export gaps
 
-Fifth review pass diffed every `Add*` method in `DDOBuilder/ForumExportDlg.cpp`
-against `webapp/src/lib/export/sections.ts`. X1–X9 (see Done table) are
-already closed; these are new, some content gaps (not just formatting):
-
-- ✅ **X10 — `specialFeats` forum-export section is dead code — done (#146,
-  this pass).** V2 `AddSpecialFeats` (`ForumExportDlg.cpp:435-473`) filters
-  `Build::SpecialFeats()` (Life+Character `<SpecialFeats>` plus the Build's
-  own `<FavorFeats>`) by `Type=="Special"`/`"Favor"` into two headed blocks.
-  V3's `specialFeats` section read `(build as any).specialFeats` — but
-  `specialFeats: string[]` only exists on the `Life` type (`types/ddo.ts`),
-  not `CharacterBuild`, and `ForumExportPanel.tsx`'s `SectionContext` never
-  passed `Life` or `build.favorFeats`; the cast was always `undefined`, so
-  this section emitted nothing for every real build (U11's Special/Favor
-  Feats training UI writes to the right fields — this was purely an
-  export-plumbing miss). Fixed: `SectionContext` gains a `specialFeats?:
-  string[]` field (mirroring `useBuildStats`'s existing per-call resolution
-  of `Life.specialFeats` from the active Life); `ForumExportPanel.tsx` now
-  reads `useDocument()` + `findActiveLife(doc)?.specialFeats` and passes it
-  through. The section emits two `[b]Heading[/b]:` blocks — "Special Feats"
-  from `ctx.specialFeats`, "Favor Feats" from `build.favorFeats` — each with
-  V2's duplicate-count suffix (`Name(N)`). V3 keeps the two pools separate
-  by data-model source rather than re-deriving a per-entry `Type` string, a
-  reasonable approximation of V2's Type-based filter since real V2 saves
-  populate the `<SpecialFeats>` node with Type="Special" entries and the
-  `<FavorFeats>` node with Type="Favor" entries. 4 regression tests in
-  `parityPassX10SpecialFeats.test.ts`; `parityPass5.test.ts`'s stale
-  assertion (which forced the dead legacy cast to exercise the section)
-  updated to pass `specialFeats` via context instead.
-- ✅ **X11 — `AddSkills` has no V3 equivalent — done (#209, this pass).** V2
-  (`ForumExportDlg.cpp:889-1027`) emits a `[code]` monospace grid: skill
-  points available per level, per-skill per-level ranks (½ for
-  cross-class), Ranks/Tome/Buffed-total columns, and an "Available Points"
-  row. V3's `skills` (`sections.ts:312-325`) only printed total ranks + stat
-  bonus per skill — the whole per-level breakdown was missing. Rewrote the
-  section to emit V2's exact `[code]` grid: a "Skill Points" row (per-level
-  budget from `getLevelTrainingEntries`), a zero-padded level-number header
-  (byte-identical to V2's misaligned "Skill Name       " label + " Ranks
-  Tome Buffed" suffix), all 21 `SKILL_NAMES` rows in V2 enum order (raw
-  per-level trained count for class skills, `floor(raw/2)` + a literal "½"
-  — V2's 0xBD byte — for cross-class, reusing `build.skillRanksByLevel` via
-  `getLevelTrainingEntries`), Ranks/Tome/Buffed columns read straight off
-  the existing `skill.<Name>` stat's `Ranks`/`Tome` bonus rows and
-  `stats.total()` (already V2-exact per items #21/#64/#106 — no new stat
-  computation needed), and a trailing "Available Points" row. 11 regression
-  tests in `parityPassX11Skills.test.ts`.
-- ✅ **X12 — `AddConsolidatedFeats` has different semantics, not just
-  formatting — done (#153, this pass).** V2 (`ForumExportDlg.cpp:735-844`)
-  renders a per-level `[TABLE]` (Level | Class | Feats) with color-coded
-  slot labels, "(Requires Feat Swap with Fred)"/"Alternate:" annotations,
-  ability level-ups, automatic feats, and a red level-1 warning for
-  Iconic/Archetype mismatches. V3's `consolidatedFeats`
-  (`sections.ts:578-594`) just tallied how many times each distinct
-  feat-choice value appears build-wide ("FeatName xN") — different content,
-  not a formatting gap. Rewrote to emit V2's per-level table, reusing the
-  already-exact `buildSlots`/`getLevelClasses`/`classLevelsAtLevel` helpers
-  (Done items U7/X9/X11): color-coded `FeatType: FeatName` cells (V2's
-  green/red `[COLOR]` pair), a yellow "Alternate: " annotation from
-  `build.alternateFeats` (same slot-keyed shape V2's `AlternateFeatName`
-  has, previously unused dead state — this is its first real consumer), a
-  yellow ability-level-up row per `build.abilityLevelUps` entry (byte-exact
-  reproduction of a verbatim V2 quirk: the ability's plain name leaks
-  outside the row's `[TD]` tag before the colored cell opens), and a red
-  level-1 warning (`Race.IconicClass` vs the level-1 class, distinguishing
-  "Lesser Reincarnation" for one of the Iconic class's own `BaseClass`
-  archetypes from "+1 Heart of Wood" for anything else) — no new data
-  model needed. Two V2 pieces are intentionally left out, both undocumented
-  in V3's data model: `TrainedFeat::HasFeatSwapWarning` (a hypothetical-swap
-  prerequisite re-check with no V3 equivalent) and per-level placement of
-  automatic feats (V2 interleaves `LevelTraining::AutomaticFeats()` into
-  this same table, but V3 has no reliable per-level placement for the
-  AutomaticAcquisition-derived ones like Attack/Sneak/Heroic Durability —
-  they stay visible in the separate, already-correct `automaticFeats`
-  section instead). 7 new regression tests in
-  `parityPassX12ConsolidatedFeats.test.ts`.
-- ✅ **X13 — `AddWeaponDamage` drops most fields — done (#152, this pass).**
-  V2 (`ForumExportDlg.cpp:1680-1732`) always emits a fixed scalar block: Melee
-  Power, Doublestrike%, Strikethrough%, Mainhand/Offhand damage-ability
-  multiplier, Off-Hand attack Chance%, Fortification Bypass%, Dodge Bypass%,
-  Helpless Damage bonus%, Ranged Power, Doubleshot Chance%, then (after a
-  blank line) Sneak Attack Attack bonus and Sneak Attack Damage (`Nd6+M`) —
-  each numeric/percent field via `AddBreakdown`, which truncates to a whole
-  number. V3's `weaponDamage` (`sections.ts`) only showed a V3-invented
-  dice/crit/to-hit/damage/doublestrike% summary that has no V2 equivalent in
-  this section at all, and dropped every field above. Rewrote the section to
-  emit V2's exact block, reading the already oracle/golden-verified stat keys
-  `melee.power`/`ranged.power`/`melee.doublestrike`/`melee.strikethrough`/
-  `offhand.attack`/`fortBypass`/`helpless`/`ranged.doubleshot` (Done items
-  #106/#137) plus the previously-parsed-but-unsurfaced
-  `melee.damageAbilityMult`/`offhand.damageAbilityMult`/`dodgeBypass`/
-  `melee.sneakAttack`/`melee.sneakDice`/`melee.sneakDamage` keys — no new
-  stat computation needed. Remaining gap, not closed in this pass: the
-  per-weapon effects breakdown (`BreakdownItemWeaponEffects::
-  AddForumExportData` — On Hit/Critical/Critical 19-20 damage lines, DR
-  Bypass, Ghost Touch/True Seeing notes) has no V3 stat model yet (per-weapon
-  DR bypass, ghost touch and true seeing flags aren't tracked at all) and is
-  intentionally left out; a future pass should add it as its own item if
-  needed. 6 new regression tests in `parityPassX13WeaponDamage.test.ts`.
-- ✅ **X14 — `AddEnergyResistances` wrong type list + no `[TABLE]` — done
-  (#208).** V2 (`ForumExportDlg.cpp:1167-1214`) always emits a
-  `[TABLE]` with a header row and exactly 13 fixed type rows — Acid, Chaos,
-  Cold, Electric, Evil, Fire, Force, Good, Lawful, Light, Negative, Poison,
-  Sonic (Positive/Repair/Rust are deliberately commented out in the C++) —
-  each row showing both Resistance and Absorbance (truncated to int,
-  `%`-suffixed) even when both are 0. V3's `energyResistances`
-  (`sections.ts`) used a different 11-type list (missing Chaos/Evil/Good/
-  Lawful, wrongly including Positive/Repair), only emitted a row when
-  non-zero, used a "Type Absorption: NN.N%" free-text line instead of a
-  table row, and returned an empty section when every value was 0. Rewrote
-  the section to always emit the full 13-row `[TABLE]`/`[TR][TD]…[/TD][/TR]`
-  in V2's exact type order, with `Math.trunc` on both resistance and
-  absorbance (absorbance still computed via the existing multiplicative
-  `absorptionTotal` helper). 6 new regression tests in
-  `parityPassX14EnergyResistances.test.ts`; `parityPassX3.test.ts`'s stale
-  assertions (written against the old conditional-row, decimal-percentage
-  format) updated to match the corrected V2-parity row format.
-- ✅ **X15 — `AddSpellPowers` missing Critical Multiplier column + table
-  wrap — done (this pass).** V2 (`ForumExportDlg.cpp:1453-1520`) always
-  wraps `[SIZE=3][TABLE]` around 16 fixed, unconditionally-emitted rows
-  (Acid, Light/Alignment, Chaos, Cold, Electric, Evil, Fire, Force/Untyped,
-  Negative, Physical, Poison, Positive, Repair, Rust, Sonic, Untyped) with
-  4 columns (Spell Power/Base/Critical Chance/Critical Multiplier — the
-  Critical Multiplier and Critical Chance columns are `(int)`-truncated,
-  the Base/power column is not). Two verbatim V2 quirks reproduced: there
-  is no Lawful row at all (`BreakdownsPane` tracks a Lawful spell-power
-  breakdown, but the export table never reads it), and "Force/Untyped"
-  reads the Force breakdown (not a Force+Untyped merge) while a separate
-  "Untyped" row reads the real Untyped breakdown. V3's `spellPowers`
-  (`sections.ts`) emitted flat "Label: power / crit X%" lines only for
-  non-zero types, had its own extra "Universal" row (added in pass X6),
-  and had no Critical Multiplier column at all. Fixed: rewrote the section
-  to emit V2's exact 16-row `[SIZE=3][TABLE]`, folding `sp.Universal`/
-  `spCrit.Universal`/`spCritDmg.Universal`+`spCritDmg.All` additively into
-  every row instead of a standalone row (`BreakdownItemSpellPower::
-  CreateOtherEffects` parity — the same composition already verified by
-  the oracle referee's `spellCritMultiplier` check, see pass 133). 8 new
-  regression tests in `parityPassX15SpellPowers.test.ts`; `parityPassX6.
-  test.ts`'s 5 stale assertions (written against the old conditional-row,
-  no-table, Universal-has-its-own-row format) updated to match.
-- ✅ **X16 — `AddTacticalDCs` missing table wrap + Evaluation column — done
-  (#154, this pass).** V2 (`ForumExportDlg.cpp:1734-1756`) wraps
-  `[SIZE=3][TABLE]` with 3 columns (Tactical DC/Value/Evaluation — the DC
-  formula breakdown text) and one row per currently-granted `DC` object.
-  V3's `tacticalDCs` (`sections.ts`) used to sum a fixed 13-entry
-  `TacticalType` enumeration with no table and no breakdown text — see the
-  Done-table entry above for the full rewrite (new `lib/dcBreakdown.ts`
-  replicating `DC::CalculateDC`/`DC::DCBreakdown`).
-- ✅ **X17 — Enhancement/Destiny/Reaper tree export sections missing
-  headers + tier labels — done (#150, this pass).** V2 (`ForumExportDlg.cpp:1216-1451`)
-  wraps each in a colored `[COLOR][SIZE=6]` header with AP totals ("Enhancements: 80
-  APs, Racial N, Universal N" / "Epic Destinies: N Destiny Points"), then
-  per-tree `[COLOR][SIZE=5]` "TreeName - Points spent: N" with `[HR][/HR]`
-  separators, and prefixes each enhancement with its tier ("Core1 "/
-  "Tier1".."Tier6") plus "- N Ranks". V3's `enhancements`/`epicDestinies`/
-  `reaperTrees` (`sections.ts:379-436`) use plain "[b]…[/b]:" headers — no
-  AP totals, tier labels, coloring, or "Points spent" line. Rewrote all
-  three to emit V2's exact headers/tier labels/Points-spent totals,
-  reusing `computeBonusActionPoints`/`destinyPoolForBuild` and a tree-cost
-  calculation mirrored from `EnhancementTreePanel.tsx`. Also reproduces a
-  verbatim V2 quirk: the Reaper-tree Ranks suffix reads the item's max
-  `Ranks()` instead of the trained rank. 7 new regression tests in
-  `parityPassX17TreeHeaders.test.ts`.
-
-- ✅ **X18 — `AddSpells` had no V3 table (School/CL-MCL/DC columns) — done
-  (#155, this pass).** See the Done-table entry above for the full rewrite.
-  Fixed/auto-known spells and the Average/Critical Damage dice-formula
-  columns remain out, both undocumented in V3's data model — noted in the
-  Done entry as a future-pass candidate.
+Nothing new. Every `CForumExportDlg::Add*` top-level method
+(`ForumExportDlg.cpp`'s `m_SectionOrder` dispatch table, ~line 200-272)
+was re-cross-checked against `webapp/src/lib/export/sections.ts`'s section
+ids — all 23 sections map 1:1. X1–X18 (Done table) remain the complete
+list of closed forum-export gaps.
 
 ---
-
 ## Random-build parity fuzzer
 
 `webapp/scripts/randomBuildFuzzer.ts` (see `docs/PARITY_FUZZER.md`) generates
@@ -1191,22 +542,29 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#120 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-07 (fifth pass) —
-five parallel scans covering numerical correctness (`Breakdown*.cpp` vs.
-`useBuildStats.ts`/`buildStats.ts`), effect parser coverage (`Effect.cpp` vs.
-`effectParser.ts`), UI features (`*Pane.cpp`/`*Dialog.cpp` vs.
-`webapp/src/components/`), forum export (`ForumExportDlg.cpp` vs.
-`sections.ts`), and data-loading edge cases (`Item.h`/`Build.cpp` vs.
-`dataLoaders.ts`/`buildStats.ts`). New gaps found: N10/N11 (percent-effect
-rounding mode and `Temporary` bonus-type exclusion in `BreakdownItem.cpp`'s
-percentage math), N12/N13 (`<Rank>` gate and `<ApplyAsItemEffect/>` flag on
-`Effect` — both honored only at one narrow call site instead of universally),
-D3–D7 (Minor Artifact single-equip + gated Artifact Filigree, Docent
-Mithral/Adamantine Body armor feat requirement, Legendary Green Steel
-auto-stances, `RestrictedSlots`), and X10–X17 (eight forum-export sections
-with dead/missing/wrong content: SpecialFeats, Skills grid, Consolidated
-Feats semantics, Weapon Damage fields, Energy Resistances type list,
-Spell Powers/Tactical DCs table formatting, Enhancement/Destiny/Reaper
-section headers). UI-feature parity (U1–U11) and effect-parser Type/AType
-switch-case coverage were both reconfirmed complete with no new gaps.*
+*Maintained by the parity-pass series. See PRs #53–#209 and the Done table
+above for completed items (through PR #209 / Done-table item 155, at which
+point every previously-tracked High/Medium/Low item was ✅ or ➖). Last full
+V2↔V3 review: 2026-08-15 (sixth pass) — four parallel agents covering
+numerical/effect-parser field-level checks (fields on `Effect`/`Buff` beyond
+the already-audited Type/AType switch), data-loading edge cases (presence-only
+XML flags across `Item.h`/`Race.h`/`Class.h`/`Augment.h`/`SetBonus.h`/
+`Stance.h`/`EnhancementTree(Item).h`/`Buff.h`/`SpellDC.h`/`Spell.h`), a UI
+re-sweep (interaction-level gaps inside panels already confirmed present, as
+opposed to whole-missing-panels), and a re-check of the three documented
+oracle blind spots (AC total, weapon to-hit/damage, buff Durations/
+Immunities). New gaps found: **N15** (`CombatPanel`/`attackEntry.ts` merge
+V2's two independent to-hit-ability and damage-ability `LargestStatBonus()`
+pools into one, misapplying an ability to the wrong side of the attack roll
+when a tree grants one without the other), **N16** (equipped-item `<Item2>`
+weapon-group grants — `Effect_AddGroupWeapon` via `Buff::UpdatedEffects` —
+are parsed nowhere in V3, silently dropping Favored-Weapon-gated feat
+bonuses on ~11 items), **F1** (Favor totals sum raw, unscaled `Favor` with
+no quest-difficulty multiplier and no `IgnoreForTotalFavor` dedup, though
+half the data plumbing already exists unused), and **U12–U14** (Favor
+difficulty right-click picker, BonusesPane's customizable monitored-stats
+list, and per-life clipboard/export/import all have no V3 equivalent).
+Everything else — the full `Effect`/`Buff` field audit, `BreakdownItemAC`,
+Duration/Immunities, every remaining data-loading flag, every
+`ForumExportDlg.cpp` `Add*` method, and the whole-panel UI sweep — came back
+with no new gaps, reconfirming the fifth-pass (2026-07) findings.*
