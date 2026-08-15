@@ -15,22 +15,22 @@
 }
 
 .pending {
-  color: var(--text-muted, #999);
-  border-color: var(--border, #444);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-light);
 }
 
 .pass {
-  color: #3fa34d;
-  border-color: #3fa34d55;
+  color: var(--color-green);
+  border-color: var(--tint-success);
 }
 
 .fail {
-  color: #d9822b;
-  border-color: #d9822b66;
+  color: var(--color-gold);
+  border-color: var(--tint-accent-strong);
 }
 
 .unavailable {
-  color: var(--text-muted, #999);
+  color: var(--color-text-secondary);
   border-color: transparent;
   opacity: 0.7;
 }
@@ -46,8 +46,8 @@
   overflow-y: auto;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid var(--border, #444);
-  background: var(--panel-bg, #222);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-panel);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
@@ -59,7 +59,7 @@
 
 .reason {
   font-size: 0.75rem;
-  color: var(--text-muted, #aaa);
+  color: var(--color-text-secondary);
 }
 
 .table {
@@ -72,7 +72,7 @@
 .table td {
   text-align: left;
   padding: 2px 6px;
-  border-bottom: 1px solid var(--border, #3333);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .table td:nth-child(2),

@@ -50,10 +50,10 @@ details[open] > .sectionTitle::before {
   font-size: 10px;
   font-weight: 700;
   color: var(--color-gold);
-  background: rgba(245, 158, 11, 0.12);
+  background: var(--tint-accent);
   padding: 1px 6px;
   border-radius: 8px;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid var(--tint-accent-strong);
 }
 
 .list {

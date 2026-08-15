@@ -131,10 +131,10 @@
 }
 
 .runBtn {
-  background: var(--color-accent, #3a6ea5);
+  background: var(--color-blue);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  color: #fff;
+  color: var(--color-text-primary);
   cursor: pointer;
   padding: 4px 14px;
   font-size: 12px;
@@ -160,7 +160,7 @@
 
 .progressFill {
   height: 100%;
-  background: var(--color-accent, #3a6ea5);
+  background: var(--color-blue);
   transition: width 0.2s;
 }
 
@@ -182,7 +182,7 @@
   color: var(--color-text-secondary);
 }
 
-.deltaPos { color: var(--color-success, #4caf50); font-weight: 600; }
+.deltaPos { color: var(--color-green); font-weight: 600; }
 .deltaZero { color: var(--color-text-muted); }
 
 .steps {
@@ -200,7 +200,7 @@
 }
 
 .stepGains {
-  color: var(--color-success, #4caf50);
+  color: var(--color-green);
   margin-left: 0.4rem;
 }
 
@@ -230,7 +230,7 @@
   padding: 0.45rem 0.7rem;
   border-left: 3px solid var(--color-gold);
   border-radius: var(--radius-sm);
-  background: rgba(212, 152, 42, 0.08);
+  background: var(--tint-accent-faint);
   font-size: 12px;
   color: var(--color-text);
 }
@@ -245,7 +245,7 @@
 /* The winning plan is outlined, not recoloured — both stay readable. */
 .planWinner {
   border-color: var(--color-gold);
-  box-shadow: 0 0 0 1px rgba(212, 152, 42, 0.25);
+  box-shadow: 0 0 0 1px var(--tint-accent-strong);
 }
 
 .planTitle {
@@ -261,7 +261,7 @@
   padding: 0 0.35rem;
   border-radius: var(--radius-sm);
   background: var(--color-gold);
-  color: #10131f;
+  color: var(--color-bg-primary);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;

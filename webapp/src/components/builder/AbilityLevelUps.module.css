@@ -33,7 +33,7 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--color-gold);
-  background: rgba(200, 136, 42, 0.15);
+  background: var(--tint-accent);
   border: 1px solid var(--color-gold-dark);
   border-radius: var(--radius-sm);
   padding: 2px 6px;

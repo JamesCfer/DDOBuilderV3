@@ -172,7 +172,7 @@
   padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid currentColor;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--tint-raise-faint);
 }
 
 .meta {

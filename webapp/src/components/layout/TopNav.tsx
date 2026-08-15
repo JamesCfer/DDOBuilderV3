@@ -3,6 +3,7 @@
 // Lives & Builds strip. Replaces the old 30-item left sidebar.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import ThemeMenu from './ThemeMenu'
 import styles from './TopNav.module.css'
 import { useCharacter } from '../../context/CharacterContext'
 import { api } from '../../api'
@@ -199,6 +200,7 @@ export default function TopNav({
               <UpdateButton />
             </div>
           </Dropdown>
+          <ThemeMenu />
           {account}
         </div>
       </div>

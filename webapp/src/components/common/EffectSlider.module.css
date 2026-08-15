@@ -8,7 +8,7 @@
 .label {
   flex: 0 0 14rem;
   font-size: 0.85rem;
-  color: var(--color-text, #ddd);
+  color: var(--color-text-primary);
 }
 
 .range {
@@ -20,7 +20,7 @@
   flex: 0 0 2.5rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text, #ddd);
+  color: var(--color-text-primary);
 }
 
 .disabled {

@@ -31,7 +31,7 @@
 }
 
 .tabActive {
-  background: rgba(200, 136, 42, 0.15);
+  background: var(--tint-accent);
   border-color: var(--color-gold);
   color: var(--color-gold);
 }
@@ -145,7 +145,7 @@
   padding: 0 4px;
   height: 14px;
   border-radius: var(--radius-sm);
-  background: rgba(200, 136, 42, 0.2);
+  background: var(--tint-accent-strong);
   color: var(--color-gold);
   line-height: 1;
 }

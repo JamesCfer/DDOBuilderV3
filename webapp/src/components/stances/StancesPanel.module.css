@@ -67,17 +67,17 @@
 .stanceAuto {
   border-color: var(--color-gold-dark);
   color: var(--color-gold);
-  background: rgba(200, 136, 42, 0.08);
+  background: var(--tint-accent-faint);
 }
 
 .stanceAuto:hover {
-  background: rgba(200, 136, 42, 0.15);
+  background: var(--tint-accent);
 }
 
 .stanceOn {
-  background: var(--color-gold, #c8882a);
-  color: #000;
-  border-color: var(--color-gold, #c8882a);
+  background: var(--color-gold);
+  color: var(--color-bg-primary);
+  border-color: var(--color-gold);
 }
 
 button.stance {

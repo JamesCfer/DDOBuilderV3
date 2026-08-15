@@ -29,7 +29,7 @@
 .fab:focus-visible {
   outline: none;
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 2px rgba(212, 152, 42, 0.25);
+  box-shadow: 0 0 0 2px var(--tint-accent-strong);
 }
 
 .icon {
@@ -66,7 +66,7 @@
   position: fixed;
   inset: 0;
   z-index: 950;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--tint-sink-strong);
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;

@@ -75,6 +75,13 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T
 }
 
+/** Appearance saved against an account (mirrors the server's shape). */
+export interface SavedTheme {
+  id?: string
+  base?: string
+  custom?: Record<string, string>
+}
+
 export const communityApi = {
   register: (username: string, email: string, password: string) =>
     req<{ token: string; user: CommunityUser }>('/api/auth/register', {
@@ -84,6 +91,14 @@ export const communityApi = {
   login: (username: string, password: string) =>
     req<{ token: string; user: CommunityUser }>('/api/auth/login', {
       method: 'POST', body: JSON.stringify({ username, password }),
+    }),
+
+  /** The account's saved appearance — theme choice and any custom palette. */
+  myTheme: () => req<{ theme: SavedTheme | null }>('/api/my/theme'),
+
+  saveMyTheme: (theme: SavedTheme | null) =>
+    req<{ theme: SavedTheme | null }>('/api/my/theme', {
+      method: 'PUT', body: JSON.stringify({ theme }),
     }),
 
   /** Google client id when the server has Google sign-in configured. */

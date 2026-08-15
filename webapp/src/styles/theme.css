@@ -44,6 +44,27 @@
   --radius-lg: 8px;
   --radius-xl: 12px;
 
+  /* Derived tints — accent washes and overlays, mixed from the palette so they
+     follow whatever theme is active. A literal rgba(212,152,42,.12) stays gold
+     on an Emerald theme and a black wash turns a light theme grey; these do
+     not. */
+  --tint-accent-strong: color-mix(in srgb, var(--color-gold) 22%, transparent);
+  --tint-accent:        color-mix(in srgb, var(--color-gold) 12%, transparent);
+  --tint-accent-faint:  color-mix(in srgb, var(--color-gold) 6%, transparent);
+  --tint-success:       color-mix(in srgb, var(--color-green) 18%, transparent);
+  --tint-danger:        color-mix(in srgb, var(--color-red) 18%, transparent);
+  /* A highlight lifting a surface, and a wash sinking one — the theme-aware
+     replacements for rgba(255,255,255,a) and rgba(0,0,0,a). */
+  --tint-raise:         color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+  --tint-raise-faint:   color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  --tint-sink:          color-mix(in srgb, var(--color-bg-primary) 55%, transparent);
+  --tint-sink-strong:   color-mix(in srgb, var(--color-bg-primary) 80%, transparent);
+
+  /* Ambient glow behind the page — themed, since a navy wash under a light
+     palette reads as a stain. */
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(20, 28, 60, 0.6) 0%, transparent 70%);
+
   /* Shadows */
   --shadow-sm:      0 2px 6px rgba(0,0,0,0.7);
   --shadow-panel:   0 4px 32px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.03);
