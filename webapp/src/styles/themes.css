@@ -1,0 +1,280 @@
+/* Colour themes.
+ *
+ * theme.css defines the token set on :root (the Twilight default). Every theme
+ * here re-declares the same tokens under a [data-theme] selector, so switching
+ * theme is one attribute on <html> and no component has to know a theme exists.
+ *
+ * Adding a theme means: a block here, and an entry in lib/theme.ts. Anything a
+ * theme does not override keeps the default value, so a palette only has to
+ * state what differs.
+ */
+
+/* ── Midnight — true black, dimmed accents. Easiest on the eyes in the dark,
+      and the one to pick on an OLED panel. ─────────────────────────────── */
+[data-theme='midnight'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(30, 30, 40, 0.5) 0%, transparent 70%);
+  --color-bg-primary:   #000000;
+  --color-bg-secondary: #060608;
+  --color-bg-panel:     #0b0b10;
+  --color-bg-input:     #030304;
+  --color-bg-hover:     #14141c;
+  --color-bg-active:    #1c1c28;
+  --color-bg-sidebar:   #000000;
+
+  --color-border:       #191922;
+  --color-border-light: #262634;
+  --color-border-focus: #b8862a;
+
+  --color-text-primary:   #d8d4c8;
+  --color-text-secondary: #7c7c90;
+  --color-text-muted:     #4a4a5c;
+  --color-text-disabled:  #2a2a36;
+
+  --color-gold:       #b8862a;
+  --color-gold-light: #d4a244;
+  --color-gold-dark:  #8a641c;
+  --color-red:        #a83838;
+  --color-green:      #327046;
+  --color-blue:       #2a5296;
+  --color-purple:     #6044a8;
+
+  --shadow-panel:    0 4px 32px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-dropdown: 0 8px 48px rgba(0, 0, 0, 0.98);
+  --shadow-gold:     0 0 16px rgba(184, 134, 42, 0.35);
+}
+
+/* ── Ashen — neutral graphite with a cold steel accent. No colour cast, for
+      when the navy-and-gold reads as too warm. ─────────────────────────── */
+[data-theme='ashen'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(60, 60, 70, 0.45) 0%, transparent 70%);
+  --color-bg-primary:   #0d0d0f;
+  --color-bg-secondary: #141417;
+  --color-bg-panel:     #1a1a1e;
+  --color-bg-input:     #101013;
+  --color-bg-hover:     #232329;
+  --color-bg-active:    #2d2d35;
+  --color-bg-sidebar:   #0a0a0c;
+
+  --color-border:       #2a2a31;
+  --color-border-light: #3d3d47;
+  --color-border-focus: #7fa8d4;
+
+  --color-text-primary:   #e8e8ea;
+  --color-text-secondary: #9a9aa4;
+  --color-text-muted:     #62626c;
+  --color-text-disabled:  #3a3a42;
+
+  --color-gold:       #7fa8d4;
+  --color-gold-light: #a3c4e8;
+  --color-gold-dark:  #5b7ea6;
+  --color-red:        #c05858;
+  --color-green:      #4a9068;
+  --color-blue:       #5b8cc4;
+  --color-purple:     #8878b8;
+
+  --shadow-gold: 0 0 16px rgba(127, 168, 212, 0.35);
+}
+
+/* ── Emerald — deep forest with jade accents. ───────────────────────────── */
+[data-theme='emerald'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(20, 60, 42, 0.55) 0%, transparent 70%);
+  --color-bg-primary:   #060c09;
+  --color-bg-secondary: #0a1410;
+  --color-bg-panel:     #0f1d17;
+  --color-bg-input:     #071009;
+  --color-bg-hover:     #172c22;
+  --color-bg-active:    #1f3c2e;
+  --color-bg-sidebar:   #050a07;
+
+  --color-border:       #1a3327;
+  --color-border-light: #2a5140;
+  --color-border-focus: #4fbd8a;
+
+  --color-text-primary:   #e4f0e4;
+  --color-text-secondary: #86a894;
+  --color-text-muted:     #52705f;
+  --color-text-disabled:  #2e463a;
+
+  --color-gold:       #4fbd8a;
+  --color-gold-light: #74d9a8;
+  --color-gold-dark:  #38906a;
+  --color-red:        #c05050;
+  --color-green:      #4fbd8a;
+  --color-blue:       #3f8fa8;
+  --color-purple:     #7a68b8;
+
+  --shadow-gold: 0 0 16px rgba(79, 189, 138, 0.35);
+}
+
+/* ── Crimson — dark maroon with ember accents. ──────────────────────────── */
+[data-theme='crimson'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(70, 24, 26, 0.55) 0%, transparent 70%);
+  --color-bg-primary:   #0d0607;
+  --color-bg-secondary: #150a0c;
+  --color-bg-panel:     #1e1013;
+  --color-bg-input:     #100708;
+  --color-bg-hover:     #2c191d;
+  --color-bg-active:    #3c2126;
+  --color-bg-sidebar:   #0a0405;
+
+  --color-border:       #331a1f;
+  --color-border-light: #522b33;
+  --color-border-focus: #e06a4a;
+
+  --color-text-primary:   #f4e4e0;
+  --color-text-secondary: #b08a86;
+  --color-text-muted:     #755a58;
+  --color-text-disabled:  #463335;
+
+  --color-gold:       #e06a4a;
+  --color-gold-light: #f28c6a;
+  --color-gold-dark:  #ac4c32;
+  --color-red:        #e05050;
+  --color-green:      #4a9060;
+  --color-blue:       #4a72b8;
+  --color-purple:     #9060b8;
+
+  --shadow-gold: 0 0 16px rgba(224, 106, 74, 0.4);
+}
+
+/* ── Arcane — indigo depth with amethyst accents. ───────────────────────── */
+[data-theme='arcane'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(48, 28, 90, 0.55) 0%, transparent 70%);
+  --color-bg-primary:   #08060f;
+  --color-bg-secondary: #0e0a1c;
+  --color-bg-panel:     #150f28;
+  --color-bg-input:     #0a0716;
+  --color-bg-hover:     #201838;
+  --color-bg-active:    #2c2150;
+  --color-bg-sidebar:   #060410;
+
+  --color-border:       #241a44;
+  --color-border-light: #3a2a68;
+  --color-border-focus: #a878f0;
+
+  --color-text-primary:   #ece4f8;
+  --color-text-secondary: #9a8cc0;
+  --color-text-muted:     #665a8c;
+  --color-text-disabled:  #3e3560;
+
+  --color-gold:       #a878f0;
+  --color-gold-light: #c49cff;
+  --color-gold-dark:  #7a52b8;
+  --color-red:        #d05070;
+  --color-green:      #48a878;
+  --color-blue:       #5878e0;
+  --color-purple:     #a878f0;
+
+  --shadow-gold: 0 0 16px rgba(168, 120, 240, 0.4);
+}
+
+/* ── Parchment — warm light theme. Aged paper and ink, closest in spirit to
+      the tabletop the game came from. ───────────────────────────────────── */
+[data-theme='parchment'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(200, 170, 110, 0.35) 0%, transparent 70%);
+  --color-bg-primary:   #ece3d0;
+  --color-bg-secondary: #f4ecdc;
+  --color-bg-panel:     #faf4e6;
+  --color-bg-input:     #fffaf0;
+  --color-bg-hover:     #e8dcc4;
+  --color-bg-active:    #ddcdae;
+  --color-bg-sidebar:   #e4d9c2;
+
+  --color-border:       #cbbb9c;
+  --color-border-light: #b3a081;
+  --color-border-focus: #8a6412;
+
+  --color-text-primary:   #2a2318;
+  --color-text-secondary: #5c5140;
+  --color-text-muted:     #857a66;
+  --color-text-disabled:  #b0a68e;
+
+  --color-gold:       #8a6412;
+  --color-gold-light: #a87d20;
+  --color-gold-dark:  #5e440a;
+  --color-red:        #a02828;
+  --color-green:      #2c6a40;
+  --color-blue:       #24548c;
+  --color-purple:     #5c3c9c;
+
+  /* Light themes need light shadows — the dark defaults read as smudges. */
+  --shadow-sm:       0 1px 3px rgba(90, 70, 40, 0.18);
+  --shadow-panel:    0 2px 12px rgba(90, 70, 40, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-dropdown: 0 6px 24px rgba(90, 70, 40, 0.28);
+  --shadow-sidebar:  2px 0 16px rgba(90, 70, 40, 0.18);
+  --shadow-gold:     0 0 12px rgba(138, 100, 18, 0.3);
+}
+
+/* ── Daylight — cool, plain light theme for bright rooms. ───────────────── */
+[data-theme='daylight'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(150, 175, 215, 0.35) 0%, transparent 70%);
+  --color-bg-primary:   #e8eaef;
+  --color-bg-secondary: #f2f4f8;
+  --color-bg-panel:     #ffffff;
+  --color-bg-input:     #ffffff;
+  --color-bg-hover:     #e2e6ee;
+  --color-bg-active:    #d2d9e6;
+  --color-bg-sidebar:   #eceff4;
+
+  --color-border:       #c8cedb;
+  --color-border-light: #aab3c4;
+  --color-border-focus: #1f5fa8;
+
+  --color-text-primary:   #161a22;
+  --color-text-secondary: #4c556a;
+  --color-text-muted:     #78829a;
+  --color-text-disabled:  #b0b8c8;
+
+  --color-gold:       #1f5fa8;
+  --color-gold-light: #2f7ac8;
+  --color-gold-dark:  #164478;
+  --color-red:        #b02828;
+  --color-green:      #1f7a48;
+  --color-blue:       #1f5fa8;
+  --color-purple:     #6034b0;
+
+  --shadow-sm:       0 1px 3px rgba(20, 30, 50, 0.12);
+  --shadow-panel:    0 2px 12px rgba(20, 30, 50, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-dropdown: 0 6px 24px rgba(20, 30, 50, 0.2);
+  --shadow-sidebar:  2px 0 16px rgba(20, 30, 50, 0.12);
+  --shadow-gold:     0 0 12px rgba(31, 95, 168, 0.25);
+}
+
+/* ── High Contrast — maximum separation for low-vision use. ─────────────── */
+[data-theme='contrast'] {
+  --gradient-app-glow:
+    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(0, 0, 0, 0) 0%, transparent 70%);
+  --color-bg-primary:   #000000;
+  --color-bg-secondary: #000000;
+  --color-bg-panel:     #0a0a0a;
+  --color-bg-input:     #000000;
+  --color-bg-hover:     #1f1f1f;
+  --color-bg-active:    #333333;
+  --color-bg-sidebar:   #000000;
+
+  --color-border:       #6a6a6a;
+  --color-border-light: #9a9a9a;
+  --color-border-focus: #ffd400;
+
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: #e0e0e0;
+  --color-text-muted:     #b4b4b4;
+  --color-text-disabled:  #808080;
+
+  --color-gold:       #ffd400;
+  --color-gold-light: #ffe866;
+  --color-gold-dark:  #c8a600;
+  --color-red:        #ff5f5f;
+  --color-green:      #4ce88a;
+  --color-blue:       #64b4ff;
+  --color-purple:     #c49cff;
+
+  --shadow-gold: 0 0 0 2px rgba(255, 212, 0, 0.5);
+}

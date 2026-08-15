@@ -26,7 +26,7 @@ body {
       rgba(255,255,255,0.008) 0px, rgba(255,255,255,0.008) 1px,
       transparent 1px, transparent 28px
     ),
-    radial-gradient(ellipse 120% 60% at 50% 0%, rgba(20,28,60,0.6) 0%, transparent 70%),
+    var(--gradient-app-glow),
     var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-main);
@@ -152,10 +152,12 @@ h1, h2, h3, h4 {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--color-gold);
-  /* Two-stop gradient: slightly lighter at top, darker below */
+  /* Two-stop gradient: slightly lighter at top, darker below. Built from the
+     theme's own surfaces so every palette recolours it — a fixed navy here is
+     what left light themes with dark panel headers. */
   background: linear-gradient(180deg,
-    rgba(30,36,68,0.8) 0%,
-    rgba(17,22,40,0.95) 100%
+    var(--color-bg-active) 0%,
+    var(--color-bg-panel) 100%
   );
   display: flex;
   align-items: center;

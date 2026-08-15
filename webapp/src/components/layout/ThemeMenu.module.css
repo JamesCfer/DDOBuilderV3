@@ -1,0 +1,143 @@
+/* Theme picker in the top bar. Every colour here is a token, so the menu
+   itself recolours along with the app the moment a theme is chosen. */
+
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.trigger:hover,
+.triggerOpen {
+  color: var(--color-gold-light);
+  border-color: var(--color-border);
+  background: var(--color-bg-hover);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.caret {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 400;
+  width: 268px;
+  padding: 6px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+}
+
+.title {
+  padding: 4px 8px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.group + .group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+.groupLabel {
+  padding: 3px 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.option:hover {
+  background: var(--color-bg-hover);
+}
+
+.optionActive {
+  background: var(--color-bg-active);
+  border-color: var(--color-border-light);
+}
+
+.swatch {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+}
+
+.swatchDot {
+  width: 9px;
+  height: 18px;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.optionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.optionHint {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.check {
+  color: var(--color-gold);
+  font-size: 11px;
+  flex-shrink: 0;
+}

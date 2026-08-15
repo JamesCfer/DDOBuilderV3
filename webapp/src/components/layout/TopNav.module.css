@@ -178,7 +178,8 @@
   align-items: center;
   gap: 14px;
   padding: 0 18px;
-  background: rgba(0,0,0,0.25);
+  /* A black wash muddies any light palette — use the theme's own surface. */
+  background: var(--color-bg-secondary);
 }
 
 .subTabs {
@@ -246,7 +247,7 @@
 
 .livesStrip {
   padding: 4px 18px 8px;
-  background: rgba(0,0,0,0.35);
+  background: var(--color-bg-secondary);
   border-top: 1px solid var(--color-border);
 }
 
