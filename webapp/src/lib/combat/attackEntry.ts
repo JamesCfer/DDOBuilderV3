@@ -8,6 +8,8 @@
 
 import type { BuildStats, WeaponInfo } from '../../hooks/useBuildStats'
 import { critProfile } from './critProfile'
+import { PROC_CAP } from './expectedDamage'
+import { isUnarmedWeapon } from '../buildStats'
 
 export interface AttackEntryOptions {
   offhand?: WeaponInfo | null
@@ -93,12 +95,17 @@ export function buildAttackEntry(
 ): AttackEntryResult {
   const meleePower = stats.total('melee.power')
   const meleePowerMult = 1 + meleePower / 100
-  const doublestrike = stats.total('melee.doublestrike') / 100
+  // Capped at 100%: at that point every attack already swings twice, so
+  // further doublestrike is wasted rather than compounding.
+  const doublestrike = Math.min(PROC_CAP.doublestrike, stats.total('melee.doublestrike')) / 100
   const damageAbilMult = stats.total('melee.damageAbilityMult') || 1
   const helplessDmg = stats.total('helpless') / 100
   const strikethrough = stats.total('melee.strikethrough') / 100
   const offhandAttackBonus = stats.total('offhand.attack') / 100
-  const offhandDoublestrike = stats.total('offhand.doublestrike') / 100
+  // The off-hand total is already half the main hand's (65% with Perfect Two
+  // Weapon Fighting) from buildStats phase 2.5; 60% is its ceiling.
+  const offhandDoublestrike =
+    Math.min(PROC_CAP.offhandDoublestrike, stats.total('offhand.doublestrike')) / 100
   const meleeToHit = stats.total('melee.toHit') + stats.total('melee.attack')
   const meleeDamage = stats.total('melee.damage')
   // Threat range and both multipliers come from critProfile so this agrees with
@@ -129,7 +136,11 @@ export function buildAttackEntry(
   //   +2 to both if the off-hand is light or Oversized TWF is trained.
   let mainTwfPenalty = 0
   let offhandTwfPenalty = 0
-  if (opts.offhand) {
+  // Handwraps are their own off-hand (one item, both fists), so an unarmed
+  // character has an off-hand swing without dual-wielding two weapons — and
+  // takes no two-weapon penalty for it.
+  const unarmedBothHands = isUnarmedWeapon(weapon)
+  if (opts.offhand && !unarmedBothHands) {
     const hasTwfFeat = (opts.twoWeaponFightingTier ?? 0) >= 1
     mainTwfPenalty = hasTwfFeat ? -4 : -6
     offhandTwfPenalty = hasTwfFeat ? -4 : -10

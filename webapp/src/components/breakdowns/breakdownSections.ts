@@ -262,6 +262,10 @@ export function buildBreakdownSections(
       [{ value: damage.perSwing, type: 'Computed', source:
         `${damage.normalHit.toFixed(1)} on a hit, ${damage.critStandard.toFixed(1)} on a crit`,
         active: true }], !weapon, 'damage.perSwing'),
+    fixedRow('Damage per Attack', damage.perAttack, damage.perAttack.toFixed(1),
+      [{ value: damage.perAttack, type: 'Computed', source:
+        `${damage.perSwing.toFixed(1)} per swing × ${(1 + damage.procChance).toFixed(2)} doublestrike`,
+        active: true }], !weapon, 'damage.perAttack'),
     statRow('Doublestrike',   'melee.doublestrike', pct),
     statRow('Sneak Atk Dice', 'melee.sneakDice'),
     statRow('Strikethrough',  'melee.strikethrough', pct),
@@ -284,6 +288,10 @@ export function buildBreakdownSections(
       [{ value: shot.perSwing, type: 'Computed', source:
         `${shot.normalHit.toFixed(1)} on a hit, ${shot.critStandard.toFixed(1)} on a crit`,
         active: true }], !isRanged, 'damage.perShot'),
+    fixedRow('Damage per Attack', shot.perAttack, shot.perAttack.toFixed(1),
+      [{ value: shot.perAttack, type: 'Computed', source:
+        `${shot.perSwing.toFixed(1)} per shot × ${(1 + shot.procChance).toFixed(2)} doubleshot`,
+        active: true }], !isRanged, 'damage.ranged.perAttack'),
     statRow('Doubleshot',     'ranged.doubleshot', pct),
   ]
 
@@ -313,6 +321,11 @@ export function buildBreakdownSections(
           ? `${offhandDamage.normalHit.toFixed(1)} on a hit, half ability damage`
           : 'No off-hand weapon',
         active: true }], !offhand, 'damage.offhand.perSwing'),
+    fixedRow('Damage per Attack', offhandDamage.perAttack,
+      offhand ? offhandDamage.perAttack.toFixed(1) : '—',
+      [{ value: offhandDamage.perAttack, type: 'Computed', source:
+        `${offhandDamage.perSwing.toFixed(1)} per swing × ${(1 + offhandDamage.procChance).toFixed(2)} doublestrike`,
+        active: true }], !offhand, 'damage.offhand.perAttack'),
     statRow('Attack Chance', 'offhand.attack', pct),
     statRow('Doublestrike', 'offhand.doublestrike', pct),
   ]

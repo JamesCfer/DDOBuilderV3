@@ -39,6 +39,11 @@ export interface ExpectedDamage {
   crit19to20: number
   /** Probability-weighted damage of a single swing, crits included. */
   perSwing: number
+  /** Doublestrike (or Doubleshot) chance actually applied, after this hand's
+   *  cap — 1 = one guaranteed extra swing, 5 = five (Doubleshot's ceiling). */
+  procChance: number
+  /** Damage of one attack: the swing plus its doublestrike/doubleshot swings. */
+  perAttack: number
   /** Multiplier the crits are worth over a build with no crits at all. */
   critUplift: number
   crit: CritProfile
@@ -58,6 +63,39 @@ export interface DamageOptions {
    * (mirrored in buildAttackEntry).
    */
   offhand?: boolean
+}
+
+/**
+ * How far each hand's extra-swing chance can go, in percent.
+ *
+ *   Doublestrike caps at 100% — a swing cannot happen a third time.
+ *   Doubleshot caps at 500%: a ranged attack can fire up to six arrows.
+ *   Off-hand doublestrike caps at 60%.
+ *
+ * The off-hand's chance is already DERIVED as half the main hand's (65% with
+ * Perfect Two Weapon Fighting) in buildStats phase 2.5, with explicit
+ * DoublestrikeOffhand effects stacked on top — so this is a ceiling on that
+ * total, not a second halving.
+ */
+export const PROC_CAP = {
+  doublestrike: 100,
+  doubleshot: 500,
+  offhandDoublestrike: 60,
+} as const
+
+/** Cap and normalise an extra-swing chance to a 0..n multiplier addend. */
+export function procMultiplier(chancePercent: number, cap = PROC_CAP.doublestrike): number {
+  return 1 + Math.max(0, Math.min(cap, chancePercent)) / 100
+}
+
+/** Stat key and cap for each hand's extra-swing chance. */
+function procSource(opts: DamageOptions): { key: string; cap: number } {
+  if (opts.offhand) {
+    return { key: 'offhand.doublestrike', cap: PROC_CAP.offhandDoublestrike }
+  }
+  return opts.power === 'ranged'
+    ? { key: 'ranged.doubleshot', cap: PROC_CAP.doubleshot }
+    : { key: 'melee.doublestrike', cap: PROC_CAP.doublestrike }
 }
 
 function avgDie(diceNum: number, diceSides: number): number {
@@ -130,6 +168,11 @@ export function expectedDamage(
     + crit.faces19to20 * crit19to20
   ) / 20
 
+  // Doublestrike / Doubleshot: extra swings of the same expected value, so the
+  // chance scales the attack's damage. Each hand has its own ceiling.
+  const proc = procSource(opts)
+  const procChance = Math.max(0, Math.min(proc.cap, total(proc.key))) / 100
+
   return {
     weaponDice,
     damageBonus,
@@ -139,6 +182,8 @@ export function expectedDamage(
     critStandard,
     crit19to20,
     perSwing,
+    procChance,
+    perAttack: perSwing * (1 + procChance),
     critUplift: normalHit > 0 ? perSwing / normalHit : 1,
     crit,
   }
@@ -147,6 +192,9 @@ export function expectedDamage(
 /** Derived combat stat keys, exposed through `stats.total()` / Analysis. */
 export const DERIVED_DAMAGE_KEYS = [
   'damage.perSwing',
+  'damage.perAttack',
+  'damage.ranged.perAttack',
+  'damage.offhand.perAttack',
   'damage.normalHit',
   'damage.crit',
   'damage.crit19to20',
@@ -183,6 +231,9 @@ export function derivedCombatStats(
     ['damage.crit', dmg.critStandard],
     ['damage.crit19to20', dmg.crit19to20],
     ['damage.perShot', shot.perSwing],
+    // Per ATTACK adds the doublestrike / doubleshot swing on top of the swing.
+    ['damage.perAttack', dmg.perAttack],
+    ['damage.ranged.perAttack', shot.perAttack],
     ['crit.threatFaces', dmg.crit.threatFaces],
     ['crit.chance', dmg.crit.critChance * 100],
     ['crit.multiplier', dmg.crit.multiplier],
@@ -193,6 +244,7 @@ export function derivedCombatStats(
   // crit bonuses and damage bonus.
   const oh = expectedDamage(total, keys, offhand, { offhand: true })
   stats.set('damage.offhand.perSwing', offhand ? oh.perSwing : 0)
+  stats.set('damage.offhand.perAttack', offhand ? oh.perAttack : 0)
   stats.set('crit.offhand.threatFaces', offhand ? oh.crit.threatFaces : 0)
   stats.set('crit.offhand.chance', offhand ? oh.crit.critChance * 100 : 0)
   stats.set('crit.offhand.multiplier', offhand ? oh.crit.multiplier : 0)
@@ -271,6 +323,9 @@ const DAMAGE_SHARED_KEYS = [
 
 export const DERIVED_STAT_CONTRIBUTORS: Readonly<Record<string, readonly string[]>> = {
   'damage.perSwing': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.perAttack': [...DAMAGE_SHARED_KEYS, 'melee.power', 'melee.doublestrike'],
+  'damage.ranged.perAttack': [...DAMAGE_SHARED_KEYS, 'ranged.power', 'ranged.doubleshot'],
+  'damage.offhand.perAttack': [...DAMAGE_SHARED_KEYS, 'melee.power', 'offhand.doublestrike'],
   'damage.normalHit': [...DAMAGE_SHARED_KEYS, 'melee.power'],
   'damage.crit': [...DAMAGE_SHARED_KEYS, 'melee.power'],
   'damage.crit19to20': [...DAMAGE_SHARED_KEYS, 'melee.power'],

@@ -100,10 +100,43 @@ describe('optimizer objectives', () => {
     const keys = optimizerStatsFromSections(sections).map(s => s.key)
     for (const key of [
       'damage.perSwing', 'damage.perShot', 'damage.offhand.perSwing',
+      'damage.perAttack', 'damage.ranged.perAttack', 'damage.offhand.perAttack',
       'crit.multiplier', 'crit.multiplier19to20', 'crit.threatFaces', 'crit.chance',
       'crit.offhand.multiplier', 'crit.offhand.threatFaces', 'crit.offhand.chance',
     ]) {
       expect(keys, `${key} should be an optimizer objective`).toContain(key)
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Handwraps: one item, both fists
+// ---------------------------------------------------------------------------
+
+const HANDWRAPS = item('Test Handwraps', 'Handwraps', 'Weapon1', [1, 6], 1, 2)
+
+describe('unarmed builds', () => {
+  it('treats the equipped handwraps as their own off-hand weapon', () => {
+    const { stats, sections } = sectionsFor({ 'Main Hand': HANDWRAPS })
+    expect(stats.offhandWeapon?.name).toBe('Test Handwraps')
+    expect(row(sections, 'Off Hand', 'Weapon')?.display).toBe('Test Handwraps')
+    expect(row(sections, 'Off Hand', 'W Dice')?.display).toBe('1d6')
+    expect(row(sections, 'Off Hand', 'Weapon')?.dim).toBe(false)
+  })
+
+  it('reports off-hand damage for an unarmed build', () => {
+    const { stats } = sectionsFor({ 'Main Hand': HANDWRAPS })
+    expect(stats.total('damage.offhand.perSwing')).toBeGreaterThan(0)
+  })
+
+  it('still leaves the off hand empty for an armed build with nothing there', () => {
+    const { stats } = sectionsFor({ 'Main Hand': RAPIER })
+    expect(stats.offhandWeapon).toBeNull()
+    expect(stats.total('damage.offhand.perSwing')).toBe(0)
+  })
+
+  it('prefers a real off-hand weapon over the handwraps fallback', () => {
+    const { stats } = sectionsFor({ 'Main Hand': HANDWRAPS, 'Off Hand': DAGGER })
+    expect(stats.offhandWeapon?.name).toBe('Test Dagger')
   })
 })

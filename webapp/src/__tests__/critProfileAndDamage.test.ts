@@ -252,3 +252,93 @@ describe('derivedCombatStats — both hands', () => {
     expect(d.get('damage.perShot')).toBeCloseTo(d.get('damage.perSwing')! * 2, 6)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Doublestrike / Doubleshot
+// ---------------------------------------------------------------------------
+
+describe('extra swings: doublestrike, doubleshot, off-hand', () => {
+  const base = { 'melee.damage': 20, 'ability.Strength': 30 }   // 33.5 per swing, no crits
+  const swing = (over: Record<string, number>, opts = {}) => {
+    const map = { ...base, ...over }
+    return expectedDamage(totals(map), Object.keys(map), weapon(), opts)
+  }
+
+  it('raises damage by its own percentage', () => {
+    const d = swing({ 'melee.doublestrike': 40 })
+    expect(d.procChance).toBeCloseTo(0.4)
+    expect(d.perAttack).toBeCloseTo(d.perSwing * 1.4, 6)
+  })
+
+  it('caps doublestrike at 100% — a swing cannot happen a third time', () => {
+    for (const ds of [100, 150, 400]) {
+      const d = swing({ 'melee.doublestrike': ds })
+      expect(d.procChance, `${ds}% doublestrike`).toBe(1)
+      expect(d.perAttack).toBeCloseTo(d.perSwing * 2, 6)
+    }
+  })
+
+  it('caps doubleshot at 500% — a ranged attack can fire six arrows', () => {
+    expect(swing({ 'ranged.doubleshot': 250 }, { power: 'ranged' }).procChance).toBeCloseTo(2.5)
+    for (const ds of [500, 700]) {
+      const d = swing({ 'ranged.doubleshot': ds }, { power: 'ranged' })
+      expect(d.procChance, `${ds}% doubleshot`).toBe(5)
+      expect(d.perAttack).toBeCloseTo(d.perSwing * 6, 6)
+    }
+  })
+
+  it('caps off-hand doublestrike at 60%', () => {
+    // The off-hand total already arrives halved (buildStats phase 2.5); 60% is
+    // the ceiling on that total, not a second halving.
+    expect(swing({ 'offhand.doublestrike': 45 }, { offhand: true }).procChance).toBeCloseTo(0.45)
+    for (const ds of [60, 90, 200]) {
+      expect(swing({ 'offhand.doublestrike': ds }, { offhand: true }).procChance,
+        `${ds}% off-hand`).toBeCloseTo(0.6)
+    }
+  })
+
+  it('never reduces damage below one swing', () => {
+    const d = swing({ 'melee.doublestrike': -50 })
+    expect(d.procChance).toBe(0)
+    expect(d.perAttack).toBeCloseTo(d.perSwing, 6)
+  })
+
+  it('leaves the per-swing number alone — it is still one swing', () => {
+    const without = swing({})
+    const withDs = swing({ 'melee.doublestrike': 75 })
+    expect(withDs.perSwing).toBe(without.perSwing)
+    expect(withDs.perAttack).toBeGreaterThan(without.perAttack)
+  })
+
+  it('reads each hand from its own stat', () => {
+    const map = {
+      'melee.doublestrike': 10, 'ranged.doubleshot': 50, 'offhand.doublestrike': 30,
+    }
+    expect(swing(map, { power: 'ranged' }).procChance).toBeCloseTo(0.5)
+    expect(swing(map, { offhand: true }).procChance).toBeCloseTo(0.3)
+    expect(swing(map).procChance).toBeCloseTo(0.1)
+  })
+
+  it('compounds with crits rather than replacing them', () => {
+    const d = swing({
+      'weapon.threatRange': 4, 'melee.crit.multiplier': 2, 'melee.doublestrike': 50,
+    })
+    const perSwing = (15 * 33.5 + 5 * 33.5 * 4) / 20
+    expect(d.perSwing).toBeCloseTo(perSwing, 6)
+    expect(d.perAttack).toBeCloseTo(perSwing * 1.5, 6)
+  })
+})
+
+describe('derivedCombatStats — per attack', () => {
+  it('exposes per-swing and per-attack separately for each hand', () => {
+    const map = {
+      'melee.damage': 20, 'ability.Strength': 30,
+      'melee.doublestrike': 50, 'ranged.doubleshot': 100, 'offhand.doublestrike': 20,
+    }
+    const dagger = weapon({ name: 'Dagger', diceNum: 1, diceSides: 4 })
+    const d = derivedCombatStats(totals(map), Object.keys(map), weapon(), dagger)
+    expect(d.get('damage.perAttack')).toBeCloseTo(d.get('damage.perSwing')! * 1.5, 6)
+    expect(d.get('damage.ranged.perAttack')).toBeCloseTo(d.get('damage.perShot')! * 2, 6)   // 100% doubleshot
+    expect(d.get('damage.offhand.perAttack')).toBeCloseTo(d.get('damage.offhand.perSwing')! * 1.2, 6)
+  })
+})
