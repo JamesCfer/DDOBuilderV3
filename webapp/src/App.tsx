@@ -41,6 +41,7 @@ import ContentPanel from './components/layout/ContentPanel'
 import HelpPanel from './components/layout/HelpPanel'
 import AppShortcuts from './components/layout/AppShortcuts'
 import BugReportWidget from './components/layout/BugReportWidget'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import Dashboard from './components/layout/Dashboard'
 import OptimizerPanel from './components/optimizer/OptimizerPanel'
 import LifeBuildBar from './components/layout/LifeBuildBar'
@@ -241,12 +242,15 @@ function AppInner() {
         account={<AccountButton onGoToAccount={goToAccount} />}
         livesBar={<LifeBuildBar />}
       >
+        {/* One panel throwing used to unmount the whole app, leaving a blank
+            page. Each region catches its own; the key resets the boundary when
+            the user navigates, so a bad tab is never sticky. */}
         <div className={styles.contentRow}>
-          <StanceBuffDock />
+          <ErrorBoundary label="Stances & Buffs"><StanceBuffDock /></ErrorBoundary>
           <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
-            {renderTab()}
+            <ErrorBoundary key={`${page}/${tab}`} label={tab}>{renderTab()}</ErrorBoundary>
           </div>
-          <AnalysisDock />
+          <ErrorBoundary label="Analysis"><AnalysisDock /></ErrorBoundary>
         </div>
       </Layout>
       <BugReportWidget page={`${page} · ${tab}`} />

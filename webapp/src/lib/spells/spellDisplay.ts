@@ -11,8 +11,18 @@ function toArray<T>(val: T | T[] | undefined | null): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
-/** "AbilityBonus" → "Ability Bonus"; leaves already-spaced text alone. */
-export function humanizeType(type: string): string {
+/**
+ * "AbilityBonus" → "Ability Bonus"; leaves already-spaced text alone.
+ *
+ * An effect's Type is a list when one effect grants several things at once —
+ * Heroism is Weapon_Attack + SaveBonus + SkillBonus in a single entry — so a
+ * list is joined rather than assumed to be a string.
+ */
+export function humanizeType(type: unknown): string {
+  if (Array.isArray(type)) {
+    return type.map(humanizeType).filter(Boolean).join(', ')
+  }
+  if (typeof type !== 'string') return ''
   return type
     .replace(/_/g, ' ')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -177,11 +187,16 @@ export function spellEffectLines(spell: Spell, casterLevel: number): EffectLine[
       ? getAmountAtRank(effect.Amount, casterLevel + 1)   // index 0 is caster level 0
       : amounts[0]
 
-    const targets = toArray(effect.Item).filter(Boolean)
+    // Every one of these fields is a list in at least one data-file entry, so
+    // none of them may be assumed to be a string.
+    const targets = toArray(effect.Item).filter(Boolean).map(String)
+    const label = humanizeType(effect.DisplayName) || humanizeType(effect.Type)
+    if (!label) continue
+    const bonus = Array.isArray(effect.Bonus) ? effect.Bonus[0] : effect.Bonus
     out.push({
       value: amount ? `${amount > 0 ? '+' : '−'}${Math.abs(amount)}` : undefined,
-      label: effect.DisplayName ?? humanizeType(effect.Type),
-      bonusType: effect.Bonus && effect.Bonus !== 'Unknown' ? effect.Bonus : undefined,
+      label,
+      bonusType: typeof bonus === 'string' && bonus && bonus !== 'Unknown' ? bonus : undefined,
       targets: targets.length > 0 ? targets.join(', ') : undefined,
     })
   }
