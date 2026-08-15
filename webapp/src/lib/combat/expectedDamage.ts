@@ -235,3 +235,66 @@ export function withDerivedCombatStats(
     keys: () => [...base.keys(), ...derived.keys()],
   }
 }
+
+// ---------------------------------------------------------------------------
+// Which raw stats feed each derived one
+// ---------------------------------------------------------------------------
+// The optimizer shortlists candidate gear, augments and filigrees by parsing
+// each one's effects and checking whether any resulting stat key is one the
+// objective names. Derived keys have no effects of their own — nothing parses
+// to `damage.perSwing` — so a derived objective matched NOTHING and the search
+// was handed an empty candidate pool. Expanding a derived key into the raw
+// keys it is computed from puts the right gear back in front of it.
+//
+// Kept next to the computation so the two cannot drift apart: any stat read by
+// `expectedDamage`/`critProfile` belongs in this table.
+
+const CRIT_RANGE_KEYS = ['weapon.threatRange', 'melee.crit.range']
+const CRIT_MULT_KEYS = ['melee.crit.multiplier']
+const CRIT_MULT_19_KEYS = [...CRIT_MULT_KEYS, 'weapon.critMultiplier19to20']
+
+/** Everything that moves a damage number, minus the power stat. */
+const DAMAGE_SHARED_KEYS = [
+  'melee.damage',
+  'weapon.bonusW',
+  'melee.crit.damage',
+  'melee.sneakDice',
+  'melee.sneakAttack',
+  'melee.damageAbilityMult',
+  // The ability that drives damage varies by build (Strength normally,
+  // Dexterity when finessing, others through feats), and shortlisting happens
+  // before a build is known — so any ability counts as damage-relevant.
+  'ability.Strength', 'ability.Dexterity', 'ability.Constitution',
+  'ability.Intelligence', 'ability.Wisdom', 'ability.Charisma',
+  ...CRIT_RANGE_KEYS, ...CRIT_MULT_19_KEYS,
+]
+
+export const DERIVED_STAT_CONTRIBUTORS: Readonly<Record<string, readonly string[]>> = {
+  'damage.perSwing': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.normalHit': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.crit': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.crit19to20': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.offhand.perSwing': [...DAMAGE_SHARED_KEYS, 'melee.power'],
+  'damage.perShot': [...DAMAGE_SHARED_KEYS, 'ranged.power'],
+  'crit.threatFaces': CRIT_RANGE_KEYS,
+  'crit.chance': CRIT_RANGE_KEYS,
+  'crit.multiplier': CRIT_MULT_KEYS,
+  'crit.multiplier19to20': CRIT_MULT_19_KEYS,
+  'crit.offhand.threatFaces': CRIT_RANGE_KEYS,
+  'crit.offhand.chance': CRIT_RANGE_KEYS,
+  'crit.offhand.multiplier': CRIT_MULT_KEYS,
+  'crit.offhand.multiplier19to20': CRIT_MULT_19_KEYS,
+}
+
+/**
+ * Expand objective stat keys so derived ones also match the raw keys that feed
+ * them. Raw keys pass through untouched.
+ */
+export function expandDerivedKeys(keys: Iterable<string>): Set<string> {
+  const out = new Set<string>()
+  for (const key of keys) {
+    out.add(key)
+    for (const contributor of DERIVED_STAT_CONTRIBUTORS[key] ?? []) out.add(contributor)
+  }
+  return out
+}
