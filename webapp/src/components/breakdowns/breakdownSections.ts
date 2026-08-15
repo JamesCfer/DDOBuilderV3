@@ -5,6 +5,8 @@
 
 import type { BuildStats } from '../../lib/buildStats'
 import { absorptionTotal } from '../../lib/bonus'
+import { critProfile } from '../../lib/combat/critProfile'
+import { expectedDamage } from '../../lib/combat/expectedDamage'
 import type { ResolvedBonus } from '../../lib/bonus'
 import type { CharacterBuild, DDOClass } from '../../types/ddo'
 import { SKILLS, SCHOOL_DCS } from '../../lib/gamedata'
@@ -57,8 +59,14 @@ export function buildBreakdownSections(
     }
   }
 
-  function fixedRow(label: string, value: number, display: string, bonuses: ResolvedBonus[], dim = false): StatRowData {
-    return { label, total: value, display, bonuses, dim }
+  /** A row whose value is computed rather than summed from one stat key.
+   *  `statKey` is still worth passing when a derived key exists for it: the
+   *  optimizer harvests every keyed row as a possible objective. */
+  function fixedRow(
+    label: string, value: number, display: string, bonuses: ResolvedBonus[],
+    dim = false, statKey?: string,
+  ): StatRowData {
+    return { label, total: value, display, bonuses, dim, statKey }
   }
 
   // ── Sections ─────────────────────────────────────────────────────────────
@@ -183,15 +191,20 @@ export function buildBreakdownSections(
   const rangedToHitTotal = babTotal + stats.total('ranged.toHit')
 
   const weapon = stats.weapon
-  const baseThreatRange  = weapon?.critThreatRange ?? 1
-  const bonusThreatRange = stats.total('weapon.threatRange')
-  const totalThreatRange = baseThreatRange + bonusThreatRange
-  const baseCritMult     = weapon?.critMultiplier ?? 2
-  const threatDisplay    = totalThreatRange > 1 ? `${21 - totalThreatRange}–20` : '20'
+  // Crit range and multipliers arrive on four different stat keys; critProfile
+  // is the one place that reads all of them (a Dragonlord's +2 multiplier used
+  // to be invisible here, and Keen counted in Combat but not in Analysis).
+  const crit = critProfile(k => stats.total(k), weapon)
+  const damage = expectedDamage(k => stats.total(k), stats.keys(), weapon)
   const weaponDiceDisplay = weapon ? `${weapon.diceNum}d${weapon.diceSides}` : '—'
   const threatBonuses: ResolvedBonus[] = [
-    { value: baseThreatRange, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
+    { value: crit.baseThreatFaces, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
     ...stats.resolve('weapon.threatRange').bonuses,
+    ...stats.resolve('melee.crit.range').bonuses,
+  ]
+  const critMultBonuses: ResolvedBonus[] = [
+    { value: crit.baseMultiplier, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
+    ...stats.resolve('melee.crit.multiplier').bonuses,
   ]
 
   const meleeStats: StatRowData[] = [
@@ -200,9 +213,23 @@ export function buildBreakdownSections(
       [...stats.resolve('bab').bonuses, ...stats.resolve('melee.toHit').bonuses]),
     statRow('Damage Bonus',   'melee.damage',       sign),
     fixedRow('W Dice',        0, weaponDiceDisplay, [], !weapon),
-    fixedRow('Threat Range',  totalThreatRange, threatDisplay, threatBonuses),
-    fixedRow('Crit Multiplier', baseCritMult, `×${baseCritMult}`,
-      [{ value: baseCritMult, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true }]),
+    fixedRow('Threat Range',  crit.threatFaces, crit.threatDisplay, threatBonuses,
+      false, 'crit.threatFaces'),
+    fixedRow('Crit Chance',   crit.critChance * 100, pct(crit.critChance * 100), threatBonuses,
+      false, 'crit.chance'),
+    fixedRow('Crit Multiplier', crit.multiplier, `×${crit.multiplier}`, critMultBonuses,
+      false, 'crit.multiplier'),
+    // Always listed even at zero: dimmed rows are still selectable optimizer
+    // objectives, and "raise my 19-20 multiplier" is a goal a build may not
+    // have made progress on yet.
+    fixedRow('Crit Multiplier 19–20', crit.multiplier19to20, `×${crit.multiplier19to20}`,
+      [...critMultBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
+      crit.bonus19to20 === 0, 'crit.multiplier19to20'),
+    statRow('Crit-Only Damage', 'melee.crit.damage', sign),
+    fixedRow('Damage per Swing', damage.perSwing, damage.perSwing.toFixed(1),
+      [{ value: damage.perSwing, type: 'Computed', source:
+        `${damage.normalHit.toFixed(1)} on a hit, ${damage.critStandard.toFixed(1)} on a crit`,
+        active: true }], !weapon, 'damage.perSwing'),
     statRow('Doublestrike',   'melee.doublestrike', pct),
     statRow('Sneak Atk Dice', 'melee.sneakDice'),
     statRow('Strikethrough',  'melee.strikethrough', pct),

@@ -5,6 +5,7 @@ import type { AttackRate } from '../../server/dataLoaders'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats, extractOffhandWeaponInfo } from '../../hooks/useBuildStats'
+import { critProfile } from '../../lib/combat/critProfile'
 import { buildAttackEntry } from '../../lib/combat/attackEntry'
 import {
   collectAvailableAttacks, estimateChainDamage,
@@ -124,8 +125,8 @@ export default function CombatPanel() {
       hitDamage: result.hitDamage,
       critDamage: result.critDamage,
       weaponDieAvg: stats.weapon.diceNum * (stats.weapon.diceSides + 1) / 2,
-      threatFaces: Math.max(1, stats.weapon.critThreatRange + stats.total('melee.crit.range')),
-      critMultiplier: stats.weapon.critMultiplier + stats.total('melee.crit.multiplier'),
+      threatFaces: critProfile(k => stats.total(k), stats.weapon).threatFaces,
+      critMultiplier: critProfile(k => stats.total(k), stats.weapon).multiplier,
     }
   }, [result, stats])
 
@@ -140,7 +141,9 @@ export default function CombatPanel() {
             <div className={styles.weaponHead}>
               <strong>{stats.weapon.name}</strong>
               <span className={styles.subtle}>
-                {stats.weapon.diceNum}d{stats.weapon.diceSides} crit {21 - stats.weapon.critThreatRange}-20 ×{stats.weapon.critMultiplier}
+                {stats.weapon.diceNum}d{stats.weapon.diceSides} crit{' '}
+                {critProfile(k => stats.total(k), stats.weapon).threatDisplay} ×
+                {critProfile(k => stats.total(k), stats.weapon).multiplier}
               </span>
             </div>
 
