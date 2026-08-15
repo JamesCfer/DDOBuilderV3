@@ -167,3 +167,88 @@ describe('derivedCombatStats', () => {
     expect(derived.get('damage.perSwing')).toBeCloseTo(65.325, 3)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Ranged and off-hand
+// ---------------------------------------------------------------------------
+
+describe('ranged swings', () => {
+  const bow = weapon({ name: 'Longbow', weaponType: 'Longbow', diceNum: 1, diceSides: 8, critThreatRange: 3, critMultiplier: 3 })
+  const map = { 'melee.power': 100, 'ranged.power': 50, 'melee.damage': 10, 'ability.Strength': 20 }
+
+  it('scales by Ranged Power, not Melee Power', () => {
+    const shot = expectedDamage(totals(map), Object.keys(map), bow, { power: 'ranged' })
+    const swing = expectedDamage(totals(map), Object.keys(map), bow)
+    // Same swing, different power stat: 1.5× vs 2×.
+    expect(shot.perSwing / swing.perSwing).toBeCloseTo(1.5 / 2, 6)
+  })
+
+  it('keeps the bow’s own threat range and multiplier', () => {
+    const shot = expectedDamage(totals(map), Object.keys(map), bow, { power: 'ranged' })
+    expect(shot.crit.threatFaces).toBe(3)      // 18-20
+    expect(shot.crit.multiplier).toBe(3)       // ×3
+    expect(shot.crit.threatDisplay).toBe('18–20')
+  })
+
+  it('applies the character’s crit bonuses to the bow too', () => {
+    const withBonus = { ...map, 'weapon.threatRange': 2, 'melee.crit.multiplier': 1 }
+    const shot = expectedDamage(totals(withBonus), Object.keys(withBonus), bow, { power: 'ranged' })
+    expect(shot.crit.threatFaces).toBe(5)      // 16-20
+    expect(shot.crit.multiplier).toBe(4)
+  })
+})
+
+describe('off-hand swings', () => {
+  const rapier = weapon({ name: 'Rapier', weaponType: 'Rapier', diceNum: 1, diceSides: 6, critThreatRange: 3, critMultiplier: 2 })
+  const map = { 'melee.damage': 10, 'ability.Strength': 30 }   // +10 modifier
+
+  it('gets half the ability damage the main hand does', () => {
+    const main = expectedDamage(totals(map), Object.keys(map), rapier)
+    const off = expectedDamage(totals(map), Object.keys(map), rapier, { offhand: true })
+    expect(main.abilityDamage).toBe(10)
+    expect(off.abilityDamage).toBe(5)
+    expect(off.baseDamage).toBe(main.baseDamage - 5)
+  })
+
+  it('keeps its own dice and base crit profile', () => {
+    const off = expectedDamage(totals(map), Object.keys(map), rapier, { offhand: true })
+    expect(off.weaponDice).toBe(3.5)
+    expect(off.crit.threatFaces).toBe(3)       // 18-20 rapier
+    expect(off.crit.multiplier).toBe(2)
+  })
+
+  it('shares the character’s crit bonuses with the main hand', () => {
+    const withBonus = { ...map, 'melee.crit.multiplier': 2, 'weapon.threatRange': 1 }
+    const off = expectedDamage(totals(withBonus), Object.keys(withBonus), rapier, { offhand: true })
+    expect(off.crit.threatFaces).toBe(4)       // 17-20
+    expect(off.crit.multiplier).toBe(4)
+  })
+})
+
+describe('derivedCombatStats — both hands', () => {
+  const axe = weapon({ name: 'Axe', weaponType: 'Great Axe', diceNum: 1, diceSides: 12, critThreatRange: 1, critMultiplier: 3 })
+  const dagger = weapon({ name: 'Dagger', weaponType: 'Dagger', diceNum: 1, diceSides: 4, critThreatRange: 3, critMultiplier: 2 })
+  const map = { 'melee.damage': 10, 'ability.Strength': 30, 'ranged.power': 100 }
+
+  it('reports the off hand separately from the main hand', () => {
+    const d = derivedCombatStats(totals(map), Object.keys(map), axe, dagger)
+    expect(d.get('crit.multiplier')).toBe(3)              // great axe
+    expect(d.get('crit.offhand.multiplier')).toBe(2)      // dagger
+    expect(d.get('crit.offhand.threatFaces')).toBe(3)     // dagger threatens 18-20
+    expect(d.get('damage.offhand.perSwing')).toBeGreaterThan(0)
+    expect(d.get('damage.offhand.perSwing')).toBeLessThan(d.get('damage.perSwing')!)
+  })
+
+  it('zeroes the off-hand stats when nothing is held there', () => {
+    const d = derivedCombatStats(totals(map), Object.keys(map), axe, null)
+    expect(d.get('damage.offhand.perSwing')).toBe(0)
+    expect(d.get('crit.offhand.multiplier')).toBe(0)
+    expect(d.get('crit.offhand.threatFaces')).toBe(0)
+  })
+
+  it('exposes a ranged-power version of the same swing', () => {
+    const d = derivedCombatStats(totals(map), Object.keys(map), axe, null)
+    // ranged.power 100 vs melee.power 0 → double.
+    expect(d.get('damage.perShot')).toBeCloseTo(d.get('damage.perSwing')! * 2, 6)
+  })
+})

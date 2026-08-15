@@ -240,7 +240,7 @@ export default function OptimizerPanel() {
   // covered barely a quarter of the rows.
   const allStats = useMemo(
     () => optimizerStatsFromSections(
-      buildBreakdownSections(currentStats, build, bundle.allClasses)),
+      buildBreakdownSections(currentStats, build, bundle.allClasses, bundle.allWeaponGroups)),
     [currentStats, build, bundle.allClasses],
   )
   const statGroups = useMemo(() => [...new Set(allStats.map(s => s.group))], [allStats])

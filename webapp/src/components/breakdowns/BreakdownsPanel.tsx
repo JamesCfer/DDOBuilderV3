@@ -99,7 +99,7 @@ export default function BreakdownsPanel() {
   const stats = useBuildStats(statsInput)
 
   // ── Sections (shared builder) ────────────────────────────────────────────
-  const sections = buildBreakdownSections(stats, build, bundle.allClasses)
+  const sections = buildBreakdownSections(stats, build, bundle.allClasses, bundle.allWeaponGroups)
   const rowIndex = indexSectionRows(sections)
 
   const hasCharacter = build.race || build.classes.some(c => c.name)

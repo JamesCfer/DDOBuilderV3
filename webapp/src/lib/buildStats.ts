@@ -51,6 +51,10 @@ export interface BuildStats {
   keys: () => string[]
   /** Equipped weapon info (null if no weapon equipped) */
   weapon: WeaponInfo | null
+  /** Off-hand weapon info (null when the off hand is empty or holds a shield).
+   *  It keeps its own dice and base crit profile, so damage and crit rows for
+   *  the off hand cannot be derived from `weapon` alone. */
+  offhandWeapon?: WeaponInfo | null
   /** Armor max-DEX cap (null = no cap) */
   armorMaxDex: number | null
   /** Sorted list of SLA spell names derived from SpellLikeAbility effects
@@ -3292,6 +3296,7 @@ export function buildStatMap(input: BuildStatsInput, build: CharacterBuild): Sta
 export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild): BuildStats {
   const map = buildStatMap(input, build)
   const weaponInfo = extractWeaponInfo(input.gearItems)
+  const offhandInfo = extractOffhandWeaponInfo(input.gearItems)
   const armorMaxDex = extractArmorMaxDex(input.gearItems)
   const mapKeys = Array.from(map.keys())
   const slaList = mapKeys
@@ -3322,5 +3327,5 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     grantedFeatsList,
     isWeaponProficient: (weaponType: string) =>
       deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),
-  })
+  }, offhandInfo)
 }

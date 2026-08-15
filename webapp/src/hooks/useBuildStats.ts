@@ -15,7 +15,8 @@ import { resolveBonus, emptyResolvedStat } from '../lib/bonus'
 import type { ResolvedStat } from '../lib/bonus'
 import { deriveWeaponClasses } from '../lib/weapons/groups'
 import {
-  buildStatMap, buildRuntimeGroupAdds, extractWeaponInfo, extractArmorMaxDex,
+  buildStatMap, buildRuntimeGroupAdds, extractWeaponInfo, extractOffhandWeaponInfo,
+  extractArmorMaxDex,
 } from '../lib/buildStats'
 import { withDerivedCombatStats } from '../lib/combat/expectedDamage'
 import type { BuildStats, BuildStatsInput, StatMap } from '../lib/buildStats'
@@ -55,6 +56,7 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
   )
 
   const weaponInfo = useMemo(() => extractWeaponInfo(input.gearItems), [input.gearItems])
+  const offhandInfo = useMemo(() => extractOffhandWeaponInfo(input.gearItems), [input.gearItems])
   const armorMaxDex = useMemo(() => extractArmorMaxDex(input.gearItems), [input.gearItems])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,8 +90,8 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       grantedFeatsList,
       isWeaponProficient: (weaponType: string) =>
         deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),
-    })
-  }, [statMap, weaponInfo, armorMaxDex, input.allWeaponGroups, groupAddsResult])
+    }, offhandInfo)
+  }, [statMap, weaponInfo, offhandInfo, armorMaxDex, input.allWeaponGroups, groupAddsResult])
 }
 
 // ---------------------------------------------------------------------------

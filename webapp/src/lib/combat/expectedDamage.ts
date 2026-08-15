@@ -46,6 +46,20 @@ export interface ExpectedDamage {
 
 type Total = (key: string) => number
 
+export interface DamageOptions {
+  /**
+   * Which power stat scales the swing. A bow's damage is scaled by Ranged
+   * Power, a sword's by Melee Power; both otherwise share the same formula.
+   */
+  power?: 'melee' | 'ranged'
+  /**
+   * Off-hand swing. DDO grants the off-hand half the ability damage the main
+   * hand gets — the same `damageAbilMult / 2` V2 uses in its DPS estimate
+   * (mirrored in buildAttackEntry).
+   */
+  offhand?: boolean
+}
+
 function avgDie(diceNum: number, diceSides: number): number {
   return diceNum * (diceSides + 1) / 2
 }
@@ -79,6 +93,7 @@ export function expectedDamage(
   total: Total,
   keys: string[],
   weapon?: WeaponInfo | null,
+  opts: DamageOptions = {},
 ): ExpectedDamage {
   const crit = critProfile(total, weapon)
 
@@ -87,15 +102,19 @@ export function expectedDamage(
   const diceSides = weapon?.diceSides ?? 2
   const weaponDice = avgDie(diceNum, diceSides)
 
-  const abilityMult = total('melee.damageAbilityMult') || 1
+  // Weapon effects are modelled on the wielded weapon, so the damage bonus
+  // and ability keys are shared; only the power stat and the off-hand's
+  // halved ability damage differ between hands.
+  const abilityMult = (total('melee.damageAbilityMult') || 1) / (opts.offhand ? 2 : 1)
   const abilityDamage = modifier(damageAbilityScore(total, keys)) * abilityMult
   const flatDamage = total('melee.damage')
   const damageBonus = flatDamage + abilityDamage
 
   const baseDamage = weaponDice + damageBonus
 
-  // Melee Power scales the whole swing (V2 applies it after the multiplier).
-  const powerMult = 1 + total('melee.power') / 100
+  // Melee/Ranged Power scales the whole swing (V2 applies it after the
+  // multiplier).
+  const powerMult = 1 + total(opts.power === 'ranged' ? 'ranged.power' : 'melee.power') / 100
   // Sneak dice are flat on a crit — DDO does not multiply them.
   const sneak = (total('melee.sneakDice') + total('melee.sneakAttack')) * 3.5
 
@@ -131,10 +150,16 @@ export const DERIVED_DAMAGE_KEYS = [
   'damage.normalHit',
   'damage.crit',
   'damage.crit19to20',
+  'damage.perShot',
+  'damage.offhand.perSwing',
   'crit.threatFaces',
   'crit.chance',
   'crit.multiplier',
   'crit.multiplier19to20',
+  'crit.offhand.threatFaces',
+  'crit.offhand.chance',
+  'crit.offhand.multiplier',
+  'crit.offhand.multiplier19to20',
 ] as const
 
 /**
@@ -146,18 +171,33 @@ export function derivedCombatStats(
   total: Total,
   keys: string[],
   weapon?: WeaponInfo | null,
+  offhand?: WeaponInfo | null,
 ): Map<string, number> {
   const dmg = expectedDamage(total, keys, weapon)
-  return new Map<string, number>([
+  // Same weapon, scaled by Ranged Power instead — meaningful when the wielded
+  // weapon is a bow or crossbow, and harmless otherwise.
+  const shot = expectedDamage(total, keys, weapon, { power: 'ranged' })
+  const stats = new Map<string, number>([
     ['damage.perSwing', dmg.perSwing],
     ['damage.normalHit', dmg.normalHit],
     ['damage.crit', dmg.critStandard],
     ['damage.crit19to20', dmg.crit19to20],
+    ['damage.perShot', shot.perSwing],
     ['crit.threatFaces', dmg.crit.threatFaces],
     ['crit.chance', dmg.crit.critChance * 100],
     ['crit.multiplier', dmg.crit.multiplier],
     ['crit.multiplier19to20', dmg.crit.multiplier19to20],
   ])
+  // The off-hand keeps its OWN dice and base crit profile — a rapier off-hand
+  // threatens 18-20 whatever the main hand is — while sharing the character's
+  // crit bonuses and damage bonus.
+  const oh = expectedDamage(total, keys, offhand, { offhand: true })
+  stats.set('damage.offhand.perSwing', offhand ? oh.perSwing : 0)
+  stats.set('crit.offhand.threatFaces', offhand ? oh.crit.threatFaces : 0)
+  stats.set('crit.offhand.chance', offhand ? oh.crit.critChance * 100 : 0)
+  stats.set('crit.offhand.multiplier', offhand ? oh.crit.multiplier : 0)
+  stats.set('crit.offhand.multiplier19to20', offhand ? oh.crit.multiplier19to20 : 0)
+  return stats
 }
 
 /** Convenience wrapper for callers holding a whole `BuildStats`. */
@@ -173,10 +213,14 @@ export function expectedDamageFor(stats: BuildStats): ExpectedDamage {
  * hook go through here, so a build's damage number is identical whether it is
  * being displayed or being optimized.
  */
-export function withDerivedCombatStats(base: BuildStats): BuildStats {
-  const derived = derivedCombatStats(base.total, base.keys(), base.weapon)
+export function withDerivedCombatStats(
+  base: BuildStats,
+  offhand?: WeaponInfo | null,
+): BuildStats {
+  const derived = derivedCombatStats(base.total, base.keys(), base.weapon, offhand)
   return {
     ...base,
+    offhandWeapon: offhand ?? null,
     total: (key: string) => derived.get(key) ?? base.total(key),
     resolve: (key: string) => {
       const value = derived.get(key)
