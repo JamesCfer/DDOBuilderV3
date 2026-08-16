@@ -28,6 +28,22 @@ export interface DynamicStance {
   autoControlled: boolean
 }
 
+/**
+ * True for a stance the pane controls automatically (V2 `<AutoControlled/>`).
+ *
+ * It is an XML FLAG, not a value: fast-xml-parser turns `<AutoControlled/>`
+ * into the empty string, so `s.AutoControlled === true` — and plain
+ * truthiness with it — was false for every one of the 30 entries in
+ * Stances.xml. The whole catalogue was therefore treated as hand-toggled, the
+ * pane's "Automatic" section was always empty, and stances the build already
+ * qualified for (Single Weapon Fighting, Light Armor, …) showed as off. Same
+ * present-means-set rule as effectParser's `flagSet`.
+ */
+export function isAutoControlled(s: { AutoControlled?: unknown }): boolean {
+  const v = s.AutoControlled
+  return v !== undefined && v !== null && v !== false
+}
+
 /** V2: named groups are single-selection except "User" and "Metamagics". */
 export function isSingleSelectionGroup(group: string): boolean {
   return group !== 'User' && group !== 'Metamagics' && group !== 'Auto'
@@ -76,7 +92,7 @@ export function collectDynamicStances(
       description: s.Description,
       group: normalizeStanceGroup(s.Group as string | string[] | undefined),
       source,
-      autoControlled: s.AutoControlled === true,
+      autoControlled: isAutoControlled(s),
     })
   }
 

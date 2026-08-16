@@ -18,6 +18,10 @@
 }
 
 .sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -64,14 +68,50 @@
   border-color: var(--color-border-light);
 }
 
-.stanceAuto {
-  border-color: var(--color-gold-dark);
-  color: var(--color-gold);
-  background: var(--tint-accent-faint);
+.hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
 }
 
-.stanceAuto:hover {
-  background: var(--tint-accent);
+.resetButton {
+  font: inherit;
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 1px 6px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+}
+
+/* Auto stance the build does not currently meet the requirements for. */
+.stanceOff {
+  opacity: 0.55;
+}
+
+.stanceOff:hover {
+  opacity: 1;
+}
+
+/* Auto stance held on/off by hand rather than derived from the build. */
+.stanceManual {
+  border-style: dashed;
+  border-color: var(--color-text-secondary);
+}
+
+/* Toggled on, but its own requirements fail — the engine revokes it. */
+.stanceRevoked {
+  opacity: 0.6;
+  text-decoration: line-through;
 }
 
 .stanceOn {

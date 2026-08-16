@@ -349,7 +349,9 @@ export interface Stance {
   Icon?: string
   Description?: string
   Group?: string
-  AutoControlled?: boolean
+  /** V2 `<AutoControlled/>` — an XML FLAG, so it parses to `""` when present.
+   *  Test it with `isAutoControlled()`, never for truthiness. */
+  AutoControlled?: boolean | ''
   /** V2 IncompatibleStance — list of stance names mutually exclusive with this one. */
   IncompatibleStance?: string | string[]
   /** V2 Stance ActiveRequirements (<Requirements> on the stance definition) —
@@ -627,6 +629,18 @@ export interface CharacterBuild {
   skillTomes: Record<string, number>
   /** names of toggled-on self/party buffs */
   activeBuffs: string[]
+  /**
+   * Manual overrides for the AUTO-controlled stances the engine derives from
+   * the build (armour/shield, wielded weapon types, fighting styles, race,
+   * alignment, Centered, …). `true` forces the stance on, `false` forces it
+   * off; a name that is absent derives normally, which is the usual case.
+   *
+   * V2's stance pane has no equivalent — its Auto buttons are read-only — so
+   * this is purely a V3 "what would this stance do?" testing affordance. It
+   * is never written by the V2 importer, so an imported build always starts
+   * fully auto-derived.
+   */
+  stanceOverrides: Record<string, boolean>
   /** quest name → completed */
   completedQuests: Record<string, boolean>
   notes: string
@@ -801,6 +815,7 @@ export function emptyBuild(): CharacterBuild {
     abilityTomes: {},
     skillTomes: {},
     activeBuffs: [],
+    stanceOverrides: {},
     completedQuests: {},
     notes: '',
     sentientGem: { name: '', personality: '', majorAugment: '', minorAugment: '' },

@@ -16,7 +16,7 @@ import type { ResolvedStat } from '../lib/bonus'
 import { deriveWeaponClasses } from '../lib/weapons/groups'
 import {
   buildStatMap, buildRuntimeGroupAdds, extractWeaponInfo, extractOffhandWeaponInfo,
-  extractArmorMaxDex,
+  extractArmorMaxDex, ACTIVE_STANCE_KEY_PREFIX,
 } from '../lib/buildStats'
 import { withDerivedCombatStats } from '../lib/combat/expectedDamage'
 import type { BuildStats, BuildStatsInput, StatMap } from '../lib/buildStats'
@@ -72,6 +72,10 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       .filter(k => k.startsWith('grantedFeat.'))
       .sort()
       .map(k => k.slice('grantedFeat.'.length))
+    const activeStances = statMapKeys
+      .filter(k => k.startsWith(ACTIVE_STANCE_KEY_PREFIX))
+      .sort()
+      .map(k => k.slice(ACTIVE_STANCE_KEY_PREFIX.length))
     const groups = input.allWeaponGroups ?? []
     const { adds: groupAdds, merges: groupMerges } = groupAddsResult
     return withDerivedCombatStats({
@@ -88,6 +92,7 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       armorMaxDex,
       slaList,
       grantedFeatsList,
+      activeStances,
       isWeaponProficient: (weaponType: string) =>
         deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),
     }, offhandInfo)
