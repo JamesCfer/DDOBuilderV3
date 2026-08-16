@@ -1799,11 +1799,27 @@ function buildStatMapOnce(
           ctxStances.add(st.Name)
         }
       }
+      // Iconic past-life stances are named "<Race> " in V2's data, with a
+      // trailing space that keeps them apart from the race auto-stance of the
+      // same name (dataLoaders' restoreIconicStanceNames puts it back after
+      // the XML parser trims it). V2 saves and pre-existing V3 saves persist
+      // the trimmed form, so map it onto the iconic stance when the catalogue
+      // has one. The build's OWN race name never reaches this loop — autoFamily
+      // filters it above — so being an iconic race still doesn't hand you that
+      // race's past-life bonus for free.
+      const iconicStanceNames = new Set<string>()
+      for (const f of allFeats) {
+        if ((f as { Acquire?: string }).Acquire !== 'IconicPastLife') continue
+        for (const st of toArray((f as { Stance?: Stance | Stance[] }).Stance)) {
+          if (st.Name?.endsWith(' ')) iconicStanceNames.add(st.Name)
+        }
+      }
       for (const s of build.activeBuffs) {
         if (autoFamily.has(s)) continue
         const def = stanceDefs.get(s)
         if (def?.Requirements && !requirementsMet(def.Requirements, stanceCtx)) continue
         ctxStances.add(s)
+        if (iconicStanceNames.has(`${s} `)) ctxStances.add(`${s} `)
       }
       // Manual overrides, pass 2 of 2 — the last word, so a stance forced OFF
       // stays off even though a pass above re-derived it (and one forced ON

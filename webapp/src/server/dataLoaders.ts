@@ -56,6 +56,73 @@ function readXml(filePath: string): unknown {
 }
 
 // ---------------------------------------------------------------------------
+// Iconic past-life stance names
+// ---------------------------------------------------------------------------
+
+/** The trailing space V2's data uses to keep an iconic past-life stance
+ *  distinct from the race auto-stance of the same name. */
+export const ICONIC_STANCE_SUFFIX = ' '
+
+/** True for a stance name in the iconic past-life form ("Bladeforged "). */
+export function isIconicStanceName(name: string): boolean {
+  return name.endsWith(ICONIC_STANCE_SUFFIX)
+}
+
+/**
+ * Restores the trailing space on iconic past-life stance names.
+ *
+ * V2's race files name these stances "<Race> " — "Bladeforged ", "Aasimar
+ * Scourge " — precisely so they do NOT collide with the auto-stance V2
+ * generates for the race itself ("Bladeforged"). XmlLib keeps the space;
+ * fast-xml-parser's `trimValues` strips it, collapsing the two onto one name,
+ * and with them collapsed BEING an iconic race silently granted that race's
+ * past-life stance bonus — no past life and no toggle required.
+ *
+ * Both the stance name and the `Requirement Type="Stance"` items that gate the
+ * feat's own effects are trimmed the same way, so the pair is renamed
+ * together and the gating still matches.
+ */
+export function restoreIconicStanceNames<T>(feats: T[]): T[] {
+  for (const feat of feats as unknown as Array<Record<string, unknown>>) {
+    if (feat?.Acquire !== 'IconicPastLife') continue
+    const stances = feat.Stance
+    const stanceList = (Array.isArray(stances) ? stances : stances ? [stances] : []) as
+      Array<Record<string, unknown>>
+    const renamed = new Set<string>()
+    for (const st of stanceList) {
+      const name = st?.Name
+      if (typeof name !== 'string' || isIconicStanceName(name)) continue
+      renamed.add(name)
+      st.Name = name + ICONIC_STANCE_SUFFIX
+    }
+    if (renamed.size === 0) continue
+    const effects = feat.Effect
+    for (const eff of (Array.isArray(effects) ? effects : effects ? [effects] : []) as
+      Array<Record<string, unknown>>) {
+      const reqs = (eff?.Requirements ?? {}) as Record<string, unknown>
+      const groups = [
+        reqs.Requirement,
+        ...[reqs.RequiresOneOf, reqs.RequiresNoneOf].flatMap(g =>
+          (Array.isArray(g) ? g : g ? [g] : []).map(x => (x as Record<string, unknown>)?.Requirement)),
+      ]
+      for (const group of groups) {
+        for (const req of (Array.isArray(group) ? group : group ? [group] : []) as
+          Array<Record<string, unknown>>) {
+          if (req?.Type !== 'Stance') continue
+          const items = req.Item
+          if (Array.isArray(items)) {
+            req.Item = items.map(i => (typeof i === 'string' && renamed.has(i) ? i + ICONIC_STANCE_SUFFIX : i))
+          } else if (typeof items === 'string' && renamed.has(items)) {
+            req.Item = items + ICONIC_STANCE_SUFFIX
+          }
+        }
+      }
+    }
+  }
+  return feats
+}
+
+// ---------------------------------------------------------------------------
 // Loaders
 // ---------------------------------------------------------------------------
 
@@ -78,6 +145,7 @@ export function loadRaces(dataDir: string): Race[] {
       // (the only race that carries it) from Racial Completionist gating.
       return races.map(r => ({
         ...r,
+        Feat: restoreIconicStanceNames(Array.isArray(r.Feat) ? r.Feat : r.Feat ? [r.Feat] : []),
         IsIconic: r.IconicClass != null && r.IconicClass !== '',
         NoPastLife: 'NoPastLife' in (r as object) ? true : undefined,
       }))
@@ -177,6 +245,9 @@ export function loadFeats(dataDir: string): Feat[] {
       }
     } catch { /* no Races dir */ }
   }
+  // Iconic past-life stances keep V2's trailing space (see
+  // restoreIconicStanceNames) so they stay distinct from the race auto-stance.
+  restoreIconicStanceNames(out)
   // Apply the V2 UpdateFeats group amendments now that every feat is loaded.
   if (groupAmendments.length) {
     const byName = new Map<string, Feat>()

@@ -153,5 +153,27 @@ export function collectDynamicStances(
     for (const s of stancesOf(feat)) push(s, `Feat: ${featName}`)
   }
 
+  // ── Iconic past lives ────────────────────────────────────────────────────
+  // Each race file's `Acquire=IconicPastLife` feat hosts a Group="Iconic"
+  // stance ("Bladeforged ", "Aasimar Scourge " — the trailing space is V2's,
+  // see restoreIconicStanceNames) that gates that past life's bonus: +2/4/6%
+  // Doublestrike, +10/20/30 spell power, and so on, per stack. V2 surfaces it
+  // as a toggle once the past life is acquired (Life::AllSpecialFeats →
+  // NotifyNewStance), and the "Iconic" group is single-selection, so only one
+  // can be lit at a time. V3 recorded the past lives but offered no toggle, so
+  // none of those bonuses could ever be applied.
+  for (const [source, count] of Object.entries(build.pastLives ?? {})) {
+    if (!count) continue
+    // Two key conventions reach `pastLives`: the panel writes the race name,
+    // the V2 importer writes the whole feat name.
+    const feat = inputs.allFeats.find(f => f.Name === `Past Life: ${source}`)
+      ?? inputs.allFeats.find(f => f.Name === source)
+    if (!feat || (feat as { Acquire?: string }).Acquire !== 'IconicPastLife') continue
+    const race = feat.Name.replace(/^Past Life:\s*/, '')
+    for (const s of stancesOf(feat)) {
+      push(s, `Iconic past life: ${race}${count > 1 ? ` ×${count}` : ''}`)
+    }
+  }
+
   return out
 }

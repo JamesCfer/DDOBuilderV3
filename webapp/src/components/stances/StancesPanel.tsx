@@ -216,7 +216,7 @@ export default function StancesPanel() {
             <section key={grp} className={styles.section}>
               <div className={styles.sectionTitle}>
                 <span>
-                  {grp === 'User' ? 'Toggleable' : grp}
+                  {grp === 'User' ? 'Toggleable' : grp === 'Iconic' ? 'Iconic Past Lives' : grp}
                   {isSingleSelectionGroup(grp) ? ' (one active)' : ''}
                 </span>
               </div>
@@ -229,7 +229,7 @@ export default function StancesPanel() {
                   // as if it were live.
                   const revoked = isOn && !active.has(e.name)
                   const tip = [
-                    e.description ?? e.name,
+                    e.description ?? e.name.trim(),
                     e.source ? `From: ${e.source}` : '',
                     revoked ? 'Inactive: this build does not meet its requirements' : '',
                   ].filter(Boolean).join('\n')
@@ -245,7 +245,9 @@ export default function StancesPanel() {
                       onClick={() => toggleEntry(e)}
                       type="button"
                     >
-                      {isOn && !revoked ? '✓ ' : ''}{e.name}{revoked ? ' ⊘' : ''}
+                      {/* Iconic past-life stances carry V2's trailing space in
+                          their name — trim it for display only. */}
+                      {isOn && !revoked ? '✓ ' : ''}{e.name.trim()}{revoked ? ' ⊘' : ''}
                     </button>
                   )
                 })}
