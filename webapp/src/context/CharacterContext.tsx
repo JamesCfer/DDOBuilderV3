@@ -51,6 +51,9 @@ type Action =
   | { type: 'SET_SKILL_TOME'; skill: string; bonus: number }
   | { type: 'TOGGLE_BUFF'; buffName: string }
   | { type: 'TOGGLE_STANCE'; stanceName: string; incompatible?: string[] }
+  /** Force an auto-derived stance on/off; `on: undefined` restores auto derivation. */
+  | { type: 'SET_STANCE_OVERRIDE'; stanceName: string; on: boolean | undefined }
+  | { type: 'CLEAR_STANCE_OVERRIDES' }
   | { type: 'TOGGLE_QUEST'; questName: string }
   | { type: 'SET_NOTES'; notes: string }
   | { type: 'SET_SENTIENT_GEM_NAME'; name: string }
@@ -160,6 +163,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     abilityTomes: raw.abilityTomes ?? {},
     skillTomes: raw.skillTomes ?? {},
     activeBuffs: raw.activeBuffs ?? [],
+    stanceOverrides: (raw as unknown as { stanceOverrides?: Record<string, boolean> }).stanceOverrides ?? {},
     selfBuffs: raw.selfBuffs ?? [],
     reaperSelections: raw.reaperSelections ?? {},
     augmentLevelChoices: raw.augmentLevelChoices ?? {},
@@ -469,6 +473,17 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       }
       return { ...state, activeBuffs: active }
     }
+    case 'SET_STANCE_OVERRIDE': {
+      // Auto stances are derived from the build, so "on" here is a manual
+      // override rather than a stored state: dropping the entry restores the
+      // derived value instead of pinning it to whatever it happens to be now.
+      const next = { ...(state.stanceOverrides ?? {}) }
+      if (action.on === undefined) delete next[action.stanceName]
+      else next[action.stanceName] = action.on
+      return { ...state, stanceOverrides: next }
+    }
+    case 'CLEAR_STANCE_OVERRIDES':
+      return { ...state, stanceOverrides: {} }
     case 'TOGGLE_QUEST':
       return { ...state, completedQuests: { ...state.completedQuests, [action.questName]: !state.completedQuests[action.questName] } }
     case 'SET_NOTES':

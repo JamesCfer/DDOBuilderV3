@@ -136,6 +136,8 @@ export function actionToLogMessage(action: LoggableAction): string | null {
     case 'SET_NOTES':
     case 'TOGGLE_BUFF':
     case 'TOGGLE_STANCE':
+    case 'SET_STANCE_OVERRIDE':
+    case 'CLEAR_STANCE_OVERRIDES':
     case 'SET_SLIDER':
     case 'TOGGLE_QUEST':
     case 'SET_CLICKIE_CHARGES':

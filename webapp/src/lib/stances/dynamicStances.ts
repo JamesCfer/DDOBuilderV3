@@ -28,6 +28,22 @@ export interface DynamicStance {
   autoControlled: boolean
 }
 
+/**
+ * True for a stance the pane controls automatically (V2 `<AutoControlled/>`).
+ *
+ * It is an XML FLAG, not a value: fast-xml-parser turns `<AutoControlled/>`
+ * into the empty string, so `s.AutoControlled === true` — and plain
+ * truthiness with it — was false for every one of the 30 entries in
+ * Stances.xml. The whole catalogue was therefore treated as hand-toggled, the
+ * pane's "Automatic" section was always empty, and stances the build already
+ * qualified for (Single Weapon Fighting, Light Armor, …) showed as off. Same
+ * present-means-set rule as effectParser's `flagSet`.
+ */
+export function isAutoControlled(s: { AutoControlled?: unknown }): boolean {
+  const v = s.AutoControlled
+  return v !== undefined && v !== null && v !== false
+}
+
 /** V2: named groups are single-selection except "User" and "Metamagics". */
 export function isSingleSelectionGroup(group: string): boolean {
   return group !== 'User' && group !== 'Metamagics' && group !== 'Auto'
@@ -76,7 +92,7 @@ export function collectDynamicStances(
       description: s.Description,
       group: normalizeStanceGroup(s.Group as string | string[] | undefined),
       source,
-      autoControlled: s.AutoControlled === true,
+      autoControlled: isAutoControlled(s),
     })
   }
 
@@ -135,6 +151,28 @@ export function collectDynamicStances(
   for (const featName of new Set(Object.values(build.featChoices).filter(Boolean))) {
     const feat = inputs.allFeats.find(f => f.Name === featName)
     for (const s of stancesOf(feat)) push(s, `Feat: ${featName}`)
+  }
+
+  // ── Iconic past lives ────────────────────────────────────────────────────
+  // Each race file's `Acquire=IconicPastLife` feat hosts a Group="Iconic"
+  // stance ("Bladeforged ", "Aasimar Scourge " — the trailing space is V2's,
+  // see restoreIconicStanceNames) that gates that past life's bonus: +2/4/6%
+  // Doublestrike, +10/20/30 spell power, and so on, per stack. V2 surfaces it
+  // as a toggle once the past life is acquired (Life::AllSpecialFeats →
+  // NotifyNewStance), and the "Iconic" group is single-selection, so only one
+  // can be lit at a time. V3 recorded the past lives but offered no toggle, so
+  // none of those bonuses could ever be applied.
+  for (const [source, count] of Object.entries(build.pastLives ?? {})) {
+    if (!count) continue
+    // Two key conventions reach `pastLives`: the panel writes the race name,
+    // the V2 importer writes the whole feat name.
+    const feat = inputs.allFeats.find(f => f.Name === `Past Life: ${source}`)
+      ?? inputs.allFeats.find(f => f.Name === source)
+    if (!feat || (feat as { Acquire?: string }).Acquire !== 'IconicPastLife') continue
+    const race = feat.Name.replace(/^Past Life:\s*/, '')
+    for (const s of stancesOf(feat)) {
+      push(s, `Iconic past life: ${race}${count > 1 ? ` ×${count}` : ''}`)
+    }
   }
 
   return out

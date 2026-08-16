@@ -65,6 +65,15 @@ export interface BuildStats {
    *  already present in the player-trained / auto-granted set. */
   grantedFeatsList: string[]
   /**
+   * Sorted names of every stance active for this build — the auto stances the
+   * engine derives from gear/race/alignment/fighting style, the Stances.xml
+   * and feat-granted Auto stances whose requirements hold, the player's own
+   * toggles that survived their requirement check, and the effect of
+   * `build.stanceOverrides`. This is the set every stance-gated effect is
+   * evaluated against, so the stances pane can show exactly what is live.
+   */
+  activeStances: string[]
+  /**
    * Returns true if the character has weapon proficiency for the given weapon
    * type (V2 Build::IsWeaponInGroup("Proficiency", wt) parity).
    * Proficiency is granted by AddGroupWeapon effects on trained feats and
@@ -712,6 +721,31 @@ function deriveArmorStances(gearItems: Record<string, Item>, feats?: Set<string>
   }
   return stances
 }
+
+/**
+ * Applies the build's manual stance overrides (`build.stanceOverrides`) to a
+ * derived stance set: `true` forces a stance on, `false` forces it off, and a
+ * name that is absent keeps whatever the derivation decided.
+ *
+ * V3-only — V2's auto stances are read-only in its pane. Called TWICE during
+ * derivation: once before the fighting-style / Centered pass so a forced
+ * stance feeds the stances derived FROM it (force "Cloth Armor" on and an
+ * unarmed build becomes Centered), and once at the end so a forced-off stance
+ * cannot be re-added by a later pass.
+ */
+function applyStanceOverrides(
+  stances: Set<string>,
+  overrides: Record<string, boolean> | undefined,
+): void {
+  if (!overrides) return
+  for (const [name, on] of Object.entries(overrides)) {
+    if (on) stances.add(name)
+    else stances.delete(name)
+  }
+}
+
+/** Stat-map key prefix carrying the derived active stance set out to the UI. */
+export const ACTIVE_STANCE_KEY_PREFIX = 'activeStance.'
 
 /**
  * V2 `Build::SetBonusCount` — the number of equipped items/augments
@@ -1467,6 +1501,26 @@ function buildStatMapOnce(
       allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
     }
 
+    // V2 Requirement::EvaluateMaterialType inputs: equipped item Material per
+    // V2 slot name (Requirement.cpp:1083-1100).
+    const ctxMaterialBySlot: Record<string, string> = {}
+    // V2 Requirement::EvaluateItemInSlot inputs: the equipped item's Weapon
+    // (or Armor) type per V2 slot name (Requirement.cpp:958-990) — gates
+    // e.g. Lamordia weapon augments' "+1 Spell DCs if slotted in a
+    // Quarterstaff" (oracle-verified on Bardbox). Derived HERE, ahead of the
+    // stance pass below, because several Stances.xml auto stances gate on it
+    // ("Staff" = Quarterstaff in Weapon1, "Sword and Board" = Weapon1 not
+    // empty, …).
+    const ctxItemTypeBySlot: Record<string, string> = {}
+    for (const [v3Slot, item] of Object.entries(gearItems)) {
+      const v2Slot = V3_SLOT_TO_V2_ENUM[v3Slot]
+      const material = (item as { Material?: string }).Material
+      if (v2Slot && material) ctxMaterialBySlot[v2Slot] = material
+      const itemType = (item as { Weapon?: string }).Weapon
+        ?? (item as { Armor?: string }).Armor
+      if (v2Slot && itemType) ctxItemTypeBySlot[v2Slot] = itemType
+    }
+
     const ctxStances = deriveArmorStances(gearItems, ctxFeats)
     // V2 parity: StancesPane::UpdateGreensteelStances auto-activates one of
     // five mutually-exclusive Legendary Green Steel dominance stances from
@@ -1493,6 +1547,11 @@ function buildStatMapOnce(
     // Gnome, …) only fire once that race stance is active. Mirror that here so
     // those race-form effects fire without the player toggling anything.
     if (build.race) ctxStances.add(build.race)
+    // Manual overrides, pass 1 of 2: applied here so a forced stance is
+    // visible to the derivations that read the stance set — Centered reads
+    // "Cloth Armor", the fighting styles read the animal forms, Swashbuckling
+    // reads the armour stances. Pass 2 runs after every auto pass below.
+    applyStanceOverrides(ctxStances, build.stanceOverrides)
     // (Centered derivation moved below — it needs the wielded weapon's
     // group membership, computed after gear scanning.)
     // Approximate BAB from class progressions (heroic + tier classes). Avoids cycles.
@@ -1673,6 +1732,11 @@ function buildStatMapOnce(
         weaponClassMain: ctxWeaponClassMain,
         weaponClassOffhand: ctxWeaponClassOff,
         materialBySlot: {},
+        // Lets the Stances.xml pass below evaluate ItemTypeInSlot honestly
+        // ("Staff", "Sword and Board") instead of skipping those stances.
+        itemTypeBySlot: ctxItemTypeBySlot,
+        weaponTypeMain: mainWeaponType,
+        weaponTypeOffhand: offWeaponType,
       }
       // Feat-granted AUTO stances (V2: Feat::Stances() → NewStance → the
       // pane's Auto group → CStanceButton::Evaluate auto-activates them).
@@ -1708,6 +1772,15 @@ function buildStatMapOnce(
           // Weapon"), which gates faith-feat attack bonuses and Sacred Fist
           // strikes (oracle-verified on fuzz-5008).
           'WeaponClassMainHand', 'WeaponClassOffHand',
+          // The wielded-weapon gates are honest too now that stanceCtx
+          // carries the per-slot item types: GroupMember/GroupMember2 read
+          // ctxWeaponClassMain/Off (V2 Requirement.cpp:472-473 —
+          // EvaluateWeaponGroupMember on the main / off hand) and
+          // ItemTypeInSlot reads ctxItemTypeBySlot. Without them the whole
+          // gear-driven half of the catalogue ("Axe", "Staff", "Sword and
+          // Board", "Swashbuckling", "Thrown Weapon", "Unarmed") never
+          // switched on, and the effects those stances gate never fired.
+          'GroupMember', 'GroupMember2', 'ItemTypeInSlot', 'WeaponTypesEquipped',
         ])
         const allHonest = (reqs: Requirements | undefined): boolean => {
           if (!reqs) return true
@@ -1726,32 +1799,48 @@ function buildStatMapOnce(
           ctxStances.add(st.Name)
         }
       }
+      // Iconic past-life stances are named "<Race> " in V2's data, with a
+      // trailing space that keeps them apart from the race auto-stance of the
+      // same name (dataLoaders' restoreIconicStanceNames puts it back after
+      // the XML parser trims it). V2 saves and pre-existing V3 saves persist
+      // the trimmed form, so map it onto the iconic stance when the catalogue
+      // has one. The build's OWN race name never reaches this loop — autoFamily
+      // filters it above — so being an iconic race still doesn't hand you that
+      // race's past-life bonus for free.
+      const iconicStanceNames = new Set<string>()
+      for (const f of allFeats) {
+        if ((f as { Acquire?: string }).Acquire !== 'IconicPastLife') continue
+        for (const st of toArray((f as { Stance?: Stance | Stance[] }).Stance)) {
+          if (st.Name?.endsWith(' ')) iconicStanceNames.add(st.Name)
+        }
+      }
       for (const s of build.activeBuffs) {
         if (autoFamily.has(s)) continue
         const def = stanceDefs.get(s)
         if (def?.Requirements && !requirementsMet(def.Requirements, stanceCtx)) continue
         ctxStances.add(s)
+        if (iconicStanceNames.has(`${s} `)) ctxStances.add(`${s} `)
       }
+      // Manual overrides, pass 2 of 2 — the last word, so a stance forced OFF
+      // stays off even though a pass above re-derived it (and one forced ON
+      // survives a failing requirement).
+      applyStanceOverrides(ctxStances, build.stanceOverrides)
+    }
+
+    // Publish the settled stance set so the UI can show which stances are
+    // actually live (the stances pane needs the derived autos, not just the
+    // player's toggles). Same mechanism as the sla./grantedFeat. key
+    // families — no separate return channel out of the stat map.
+    for (const name of ctxStances) {
+      add(map, `${ACTIVE_STANCE_KEY_PREFIX}${name}`, {
+        value: 1,
+        type: 'Stance',
+        source: name,
+      })
     }
 
     const ctxSliderValues: Record<string, number> = {
       ...((build as { sliderValues?: Record<string, number> }).sliderValues ?? {}),
-    }
-    // V2 Requirement::EvaluateMaterialType inputs: equipped item Material per
-    // V2 slot name (Requirement.cpp:1083-1100).
-    const ctxMaterialBySlot: Record<string, string> = {}
-    // V2 Requirement::EvaluateItemInSlot inputs: the equipped item's Weapon
-    // (or Armor) type per V2 slot name (Requirement.cpp:958-990) — gates
-    // e.g. Lamordia weapon augments' "+1 Spell DCs if slotted in a
-    // Quarterstaff" (oracle-verified on Bardbox).
-    const ctxItemTypeBySlot: Record<string, string> = {}
-    for (const [v3Slot, item] of Object.entries(gearItems)) {
-      const v2Slot = V3_SLOT_TO_V2_ENUM[v3Slot]
-      const material = (item as { Material?: string }).Material
-      if (v2Slot && material) ctxMaterialBySlot[v2Slot] = material
-      const itemType = (item as { Weapon?: string }).Weapon
-        ?? (item as { Armor?: string }).Armor
-      if (v2Slot && itemType) ctxItemTypeBySlot[v2Slot] = itemType
     }
 
     // V2 Build::SkillAtLevel per skill: trained ranks (1.0 when the class
@@ -3324,6 +3413,10 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     .filter(k => k.startsWith('grantedFeat.'))
     .sort()
     .map(k => k.slice('grantedFeat.'.length))
+  const activeStances = mapKeys
+    .filter(k => k.startsWith(ACTIVE_STANCE_KEY_PREFIX))
+    .sort()
+    .map(k => k.slice(ACTIVE_STANCE_KEY_PREFIX.length))
   const groups = input.allWeaponGroups ?? []
   const { adds: groupAdds, merges: groupMerges } = buildRuntimeGroupAdds(input, build)
   // Derived combat stats (expected damage, crit profile) ride on top so the
@@ -3342,6 +3435,7 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     armorMaxDex,
     slaList,
     grantedFeatsList,
+    activeStances,
     isWeaponProficient: (weaponType: string) =>
       deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),
   }, offhandInfo)

@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type {
   DDOClass, Race, Feat, EnhancementTree, Augment, SetBonus, FiligreeSetBonus,
-  Filigree, OptionalBuff, GuildBuff, Spell,
+  Filigree, OptionalBuff, GuildBuff, Spell, Stance,
 } from '../types/ddo'
 import type { WeaponGroupSpec } from '../lib/weapons/groups'
 import type { BonusTypeSpec, ItemBuffSpec } from '../server/dataLoaders'
@@ -32,6 +32,9 @@ export interface StaticBundle {
   allSpells: Spell[]
   allBonusTypes: BonusTypeSpec[]
   allItemBuffs: ItemBuffSpec[]
+  /** Stances.xml catalogue — drives the data-driven AUTO stance pass in
+   *  buildStats (without it, only the hard-coded stance families derive). */
+  allStances: Stance[]
   /** True once every catalogue fetch has settled. */
   loaded: boolean
 }
@@ -41,6 +44,7 @@ const empty: StaticBundle = {
   allSelfBuffs: [], allAugments: [], allSetBonuses: [],
   allFiligreeBonuses: [], allFiligrees: [], allWeaponGroups: [],
   allGuildBuffs: [], allSpells: [], allBonusTypes: [], allItemBuffs: [],
+  allStances: [],
   loaded: false,
 }
 
@@ -71,10 +75,11 @@ export function preloadStaticBundle(): Promise<StaticBundle> {
       api.spells().catch(() => [] as Spell[]),
       api.bonusTypes().catch(() => [] as BonusTypeSpec[]),
       api.itemBuffs().catch(() => [] as ItemBuffSpec[]),
+      api.stances().catch(() => [] as Stance[]),
     ]).then(([
       allClasses, allRaces, allFeats, allTrees, allSelfBuffs, allAugments,
       allSetBonuses, allFiligreeBonuses, allFiligrees, allWeaponGroups,
-      allGuildBuffs, allSpells, allBonusTypes, allItemBuffs,
+      allGuildBuffs, allSpells, allBonusTypes, allItemBuffs, allStances,
     ]) => {
       if (allBonusTypes.length > 0) {
         initBonusTypes(allBonusTypes)
@@ -82,7 +87,7 @@ export function preloadStaticBundle(): Promise<StaticBundle> {
       cache = {
         allClasses, allRaces, allFeats, allTrees, allSelfBuffs, allAugments,
         allSetBonuses, allFiligreeBonuses, allFiligrees, allWeaponGroups,
-        allGuildBuffs, allSpells, allBonusTypes, allItemBuffs,
+        allGuildBuffs, allSpells, allBonusTypes, allItemBuffs, allStances,
         loaded: true,
       }
       return cache
