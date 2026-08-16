@@ -62,7 +62,7 @@ type Action =
   | { type: 'SET_ENH_CHOICES'; treeName: string; choices: Record<string, number> }
   | { type: 'SET_ENH_SELECTIONS'; treeName: string; selections: Record<string, string> }
   | { type: 'SET_ENH_PINNED'; pinned: string[] }
-  | { type: 'RESET_ENH_TREE'; treeName: string }
+  | { type: 'RESET_ENH_TREE'; treeName: string; /** AP handed back, for the build log. */ refunded?: number }
   | { type: 'SAVE_GEAR_SET'; setName: string }
   | { type: 'LOAD_GEAR_SET'; setName: string }
   | { type: 'DELETE_GEAR_SET'; setName: string }

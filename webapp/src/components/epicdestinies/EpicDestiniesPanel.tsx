@@ -1,48 +1,13 @@
 import { useEffect, useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import type { EnhancementTree, EnhancementTreeItem } from '../../types/ddo'
+import type { EnhancementTree } from '../../types/ddo'
 import TreeGrid, { type TreeChoices } from '../enhancements/TreeGrid'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import { tier5LockedTree, availableDestinyTrees, destinyPoolForBuild } from '../../lib/destiny'
+import { computeTreeSpent } from '../../lib/enhancementSpend'
 import styles from './EpicDestiniesPanel.module.css'
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function normalizeCostPerRank(raw: unknown): string {
-  if (raw == null) return '1'
-  if (typeof raw === 'number' && isFinite(raw)) return String(raw)
-  if (typeof raw === 'string') return raw || '1'
-  if (typeof raw === 'object' && !Array.isArray(raw) && '#text' in (raw as object)) {
-    const t = (raw as Record<string, unknown>)['#text']
-    if (t != null) return String(t) || '1'
-  }
-  return '1'
-}
-
-function parseCosts(costPerRank: unknown, maxRanks: number): number[] {
-  const str = normalizeCostPerRank(costPerRank)
-  const parts = str.trim().split(/\s+/).map(Number).filter(isFinite)
-  if (parts.length === 0) return Array(maxRanks).fill(1)
-  if (parts.length === 1) return Array(maxRanks).fill(parts[0])
-  return Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
-}
-
-function costUpToRank(item: EnhancementTreeItem, rank: number): number {
-  const maxRanks = item.Ranks ?? 1
-  const costs = parseCosts(item.CostPerRank, maxRanks)
-  return costs.slice(0, rank).reduce((a, b) => a + b, 0)
-}
-
-function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): number {
-  return (tree.EnhancementTreeItem ?? []).reduce((sum, item) => {
-    const key = item.InternalName ?? item.Name
-    return sum + costUpToRank(item, choices[key] ?? choices[item.Name] ?? 0)
-  }, 0)
-}
 
 // ---------------------------------------------------------------------------
 // Component

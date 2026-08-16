@@ -32,7 +32,7 @@ type LoggableAction =
   | { type: 'RESET_DESTINY_TREE'; treeName: string }
   | { type: 'SET_ACTIVE_DESTINY'; name: string }
   | { type: 'SET_REAPER_CHOICE'; treeName: string; itemName: string; rank: number }
-  | { type: 'RESET_ENH_TREE'; treeName: string }
+  | { type: 'RESET_ENH_TREE'; treeName: string; refunded?: number }
   | { type: 'SET_ENH_CHOICES'; treeName: string; choices: Record<string, number> }
   | { type: 'TRAIN_SPELL'; className: string; spellLevel: number; spellName: string }
   | { type: 'REVOKE_SPELL'; className: string; spellLevel: number; spellName: string }
@@ -106,7 +106,11 @@ export function actionToLogMessage(action: LoggableAction): string | null {
       return `Reaper tree "${action.treeName}" — "${action.itemName}" rank ${action.rank}`
 
     case 'RESET_ENH_TREE':
-      return `Enhancement tree "${action.treeName}" reset`
+      // V2 logs the reset too; the refund note is what tells the user where
+      // AP came back from when the tree left the build with their classes.
+      return action.refunded
+        ? `Enhancement tree "${action.treeName}" is no longer available to this build — ${action.refunded} AP refunded`
+        : `Enhancement tree "${action.treeName}" reset`
 
     case 'SET_ENH_CHOICES':
       return `Enhancement tree "${action.treeName}" updated`
