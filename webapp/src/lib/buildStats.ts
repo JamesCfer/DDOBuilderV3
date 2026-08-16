@@ -35,7 +35,7 @@ import {
   divineGraceCap, halfElfLesserDivineGraceCap,
 } from './v2Formulas'
 import { getLevelClasses, tomeCapAtLevel } from './levelProgression'
-import { buildFeatCountMap } from './treeAvailability'
+import { buildFeatCountMap, orphanedEnhancementTrees } from './treeAvailability'
 import { displaySlotsForItemKey } from './gearSlots'
 
 // ---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ export function buildRuntimeGroupAdds(
     }
   }
 
-  for (const [treeName, choices] of Object.entries(build.enhancementChoices)) {
+  for (const [treeName, choices] of Object.entries(accessibleEnhancementChoices(input, build))) {
     collectEnhTree(treeName, choices, build.enhancementSelections[treeName] ?? {})
   }
   for (const [treeName, choices] of Object.entries(build.destinyChoices)) {
@@ -549,6 +549,44 @@ function accumulateClasses(
       source: `Constitution × ${totalChar}`,
     })
   }
+}
+
+/**
+ * The build's enhancement spend, minus any tree it can no longer reach.
+ *
+ * V2 refunds those points the moment its enhancements pane re-determines the
+ * tree list (EnhancementsPane.cpp:340-374 → `Enhancement_ResetEnhancementTree`),
+ * so a build that swapped a class out never keeps the old tree's effects. V3's
+ * pane only pruned the pinned list, so the spend survived in the document and
+ * kept feeding this engine — a Rogue's Assassin sneak dice still applying to a
+ * Monk / Sacred Fist rebuild. The pane now refunds them (same V2 rule), and
+ * this filter makes the numbers honest for a build whose pane has not been
+ * opened since the change.
+ *
+ * Conservative by construction: with no tree catalogue loaded
+ * `orphanedEnhancementTrees` returns nothing, and availability is evaluated
+ * with account-unlock feats assumed — the permissive reading — so a tree is
+ * only dropped when its class/race/level requirements genuinely fail.
+ */
+function accessibleEnhancementChoices(
+  input: BuildStatsInput,
+  build: CharacterBuild,
+): Record<string, Record<string, number>> {
+  const all = build.enhancementChoices ?? {}
+  const orphaned = orphanedEnhancementTrees(
+    input.allTrees ?? [],
+    build,
+    input.allClasses ?? [],
+    (input.allRaces ?? []).find(r => r.Name === build.race),
+    input.specialFeats ?? [],
+  )
+  if (orphaned.length === 0) return all
+  const dropped = new Set(orphaned.map(o => o.name))
+  const out: Record<string, Record<string, number>> = {}
+  for (const [name, choices] of Object.entries(all)) {
+    if (!dropped.has(name)) out[name] = choices
+  }
+  return out
 }
 
 function accumulateFeat(map: StatMap, feat: Feat, rank: number, source: string, totalLevel = 0, ctx?: EffectContext): void {
@@ -1324,7 +1362,8 @@ function buildStatMapOnce(
       ctxFeatCounts[name] = (ctxFeatCounts[name] ?? 0) + Math.min(raw, cap)
     }
     const ctxEnhancements = new Set<string>()
-    for (const choices of Object.values(build.enhancementChoices)) {
+    const accessibleEnhChoices = accessibleEnhancementChoices(input, build)
+    for (const choices of Object.values(accessibleEnhChoices)) {
       for (const [name, rank] of Object.entries(choices)) {
         if (rank > 0) ctxEnhancements.add(name)
       }
@@ -2177,7 +2216,7 @@ function buildStatMapOnce(
     }
 
     // ── Heroic enhancements ───────────────────────────────────────────────
-    for (const [treeName, choices] of Object.entries(build.enhancementChoices)) {
+    for (const [treeName, choices] of Object.entries(accessibleEnhChoices)) {
       const tree = allTrees.find(t => t.Name === treeName)
       if (!tree) continue
       const selections = build.enhancementSelections[treeName] ?? {}
@@ -3040,7 +3079,7 @@ function buildStatMapOnce(
         ]
         for (const treeName of halfElfTreeNames) {
           const sels = build.enhancementSelections[treeName] ?? {}
-          const choices = build.enhancementChoices[treeName] ?? {}
+          const choices = accessibleEnhChoices[treeName] ?? {}
           const heTree = allTrees.find(t => t.Name === treeName)
           for (const enhName of dilettanteEnhNames) {
             const item = heTree?.EnhancementTreeItem?.find(i => i.Name === enhName)

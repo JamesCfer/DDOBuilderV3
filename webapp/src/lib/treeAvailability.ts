@@ -22,6 +22,7 @@
 
 import type { CharacterBuild, DDOClass, EnhancementTree, Race } from '../types/ddo'
 import { meetsRequirements } from './requirements'
+import { computeTreeSpent } from './enhancementSpend'
 
 export function isEnhancementTree(tree: EnhancementTree): boolean {
   return tree.IsReaperTree !== true && tree.IsEpicDestiny !== true
@@ -162,4 +163,54 @@ export function availableEnhancementTrees(
     if (!assumeUnlockFeats || treeUnlockFeats(tree).length === 0) return false
     return meetsRequirements(tree.Requirements, withUnlocks(tree, featCounts, build, allClasses, race))
   })
+}
+
+/**
+ * Enhancement trees the build has AP sunk into but can no longer reach —
+ * what's left behind when a class is swapped out or a level is re-assigned
+ * (a Rogue's Assassin spend surviving a rebuild into Monk / Sacred Fist).
+ *
+ * V2 does not let those points linger: `CEnhancementsPane::DetermineTrees`
+ * (EnhancementsPane.cpp:340-374) walks the selected trees, and for any that
+ * is no longer compatible with the race/class setup calls
+ * `Build::Enhancement_ResetEnhancementTree` — "no user confirmation for this
+ * as they have already changed the base requirement that included the tree.
+ * All APs spent in this tree have to be returned to the pool of those
+ * available."
+ *
+ * V3 pruned only the PINNED list, so the spend stayed in the document:
+ * invisible (no tree on screen owns it), still counted in the "N / 80 AP"
+ * header, and still feeding its effects into the build.
+ *
+ * Returns the tree names, each with the AP it is holding. Availability is
+ * evaluated with unlock feats assumed — the same list the picker shows — so a
+ * favor-unlock tree is never treated as orphaned.
+ */
+export function orphanedEnhancementTrees(
+  trees: EnhancementTree[],
+  build: CharacterBuild,
+  allClasses: DDOClass[],
+  race: Race | undefined,
+  specialFeats: string[] = [],
+): Array<{ name: string; spent: number }> {
+  // No catalogue, no judgement. A still-loading tree list would make every
+  // tree look unavailable, and without the class catalogue every class-gated
+  // tree's requirement fails — either would orphan a whole build's spend
+  // (the failure mode of the V2-import regression in PARITY_TODO #142).
+  if (trees.length === 0 || allClasses.length === 0) return []
+  const pinned = build.enhancementPinned ?? []
+  const available = new Set(
+    availableEnhancementTrees(trees, build, allClasses, race, pinned, specialFeats).map(t => t.Name),
+  )
+  const out: Array<{ name: string; spent: number }> = []
+  for (const [name, choices] of Object.entries(build.enhancementChoices ?? {})) {
+    if (available.has(name)) continue
+    const tree = trees.find(t => t.Name === name)
+    // A tree that isn't in the catalogue at all is left alone — that is a
+    // data-version mismatch, not a build the user changed.
+    if (!tree || !isEnhancementTree(tree)) continue
+    const spent = computeTreeSpent(tree, choices ?? {})
+    if (spent > 0) out.push({ name, spent })
+  }
+  return out
 }

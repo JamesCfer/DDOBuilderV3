@@ -4,8 +4,12 @@ import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { findActiveLife } from '../../lib/multiLife'
 import { enhancementAPBudget } from '../../lib/actionPoints'
-import { availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible, isUnlockGatedTree } from '../../lib/treeAvailability'
-import type { DDOClass, EnhancementTree, EnhancementTreeItem, Race, Feat } from '../../types/ddo'
+import {
+  availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible, isUnlockGatedTree,
+  orphanedEnhancementTrees,
+} from '../../lib/treeAvailability'
+import { computeTreeSpent } from '../../lib/enhancementSpend'
+import type { DDOClass, EnhancementTree, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
 import styles from './EnhancementTreePanel.module.css'
@@ -19,37 +23,6 @@ const MAX_VISIBLE = 6
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function normalizeCostPerRank(raw: unknown): string {
-  if (raw == null) return '1'
-  if (typeof raw === 'number' && isFinite(raw)) return String(raw)
-  if (typeof raw === 'string') return raw || '1'
-  if (typeof raw === 'object' && !Array.isArray(raw) && '#text' in (raw as object)) {
-    const t = (raw as Record<string, unknown>)['#text']
-    if (t != null) return String(t) || '1'
-  }
-  return '1'
-}
-
-function costUpToRank(item: EnhancementTreeItem, rank: number): number {
-  if (rank <= 0) return 0
-  const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
-  const str = normalizeCostPerRank(item.CostPerRank)
-  const parts = str.trim().split(/\s+/).map(Number).filter(isFinite)
-  const costs = parts.length === 0
-    ? Array(maxRanks).fill(1)
-    : parts.length === 1
-    ? Array(maxRanks).fill(parts[0])
-    : Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
-  return costs.slice(0, rank).reduce((a: number, b: number) => a + b, 0)
-}
-
-function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): number {
-  return (tree.EnhancementTreeItem ?? []).reduce((sum, item) => {
-    const key = item.InternalName ?? item.Name
-    return sum + costUpToRank(item, choices[key] ?? choices[item.Name] ?? 0)
-  }, 0)
-}
 
 function isUniversalTree(tree: EnhancementTree): boolean {
   return tree.IsUniversalTree === true || (!tree.IsRacialTree && !tree.Requirements)
@@ -224,6 +197,19 @@ export default function EnhancementTreePanel() {
     }
     if (next.join(',') !== pinned.join(',')) {
       dispatch({ type: 'SET_ENH_PINNED', pinned: next })
+    }
+    // …and refund AP still sunk into trees this build can no longer reach.
+    // V2 EnhancementsPane.cpp:340-374 does exactly this when it re-determines
+    // the tree list: any selected tree that no longer meets its requirements
+    // has its spend reset, "no user confirmation for this as they have
+    // already changed the base requirement that included the tree". Pruning
+    // only the pinned list (above) left the points in the document, where
+    // they still counted against the AP budget — a header reading "16 / 84
+    // AP" with no tree on screen holding a single point.
+    for (const { name, spent } of orphanedEnhancementTrees(
+      enhTrees, build, allClasses, currentRace, specialFeats,
+    )) {
+      dispatch({ type: 'RESET_ENH_TREE', treeName: name, refunded: spent })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableTrees])
