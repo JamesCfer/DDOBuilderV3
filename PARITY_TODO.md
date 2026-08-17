@@ -844,6 +844,63 @@ occurrences confirmed), so no change is needed there.
 - ✅ **E1 — `SLA` (Spell-Like Ability)** — done (#74/#69).
 - ✅ **Non-stance runtime gates** — done (#73).
 
+### Sixth review pass (2026-08-17) — five parallel scans, full methodology below
+
+- ❌ **N15 — Vorpal Range has no base value and the wrong display format.**
+  V2 (`Build.cpp:5591-5600`) seeds every weapon with a base
+  `Effect_Weapon_VorpalRange` of `1` per hand ("Base Vorpal Range"), then
+  `BreakdownItemWeaponVorpalRange::Value()`
+  (`BreakdownItemWeaponVorpalRange.cpp:27-40`) formats the **total** as a
+  threat-range string: total `>` 1 → `"%d-20"` (`21-total`), else `"20"`.
+  A weapon with one Vorpal source (e.g. Rogue Mechanic's crossbow
+  enhancement, or the universal epic feat "Perfect Single Weapon Fighting",
+  both `Amount=1`) reads `"19-20"` in V2. V3's `weapon.vorpalRange`
+  (`effectParser.ts:1682-1683`/`2654-2655`) has no base-1 seed anywhere in
+  `buildStats.ts`/`useBuildStats.ts`, and `breakdownSections.ts:383-384`
+  displays the raw signed total (`+1`) instead of the `N-20` string. Not
+  covered by the oracle harness (`oracleParityRows.ts` has no `vorpal`
+  entry, unlike the neighboring `critThreatRange`/`critMultiplier` rows
+  which do carry a `base ?? …` term) — display-only impact (no estimator
+  code reads `weapon.vorpalRange`), but a live, wrong number/format on the
+  Combat breakdown for any build with a vorpal-range source.
+- ❌ **N16 — Off-hand-only gear weapon buffs (Alacrity/Keen/Vorpal
+  Range/Crit Multiplier 19-20/Crit Range) are evaluated against the
+  main-hand weapon type only.** V2 tracks a separate
+  `BreakdownItemWeapon` per hand, each fed via
+  `NotifyItemWeaponEffect(item.Name(), effect, item.Weapon(), ist)` so a
+  type-restricted item buff (e.g. `ItemBuffs.xml`'s `RangedAlacrity` →
+  `Weapon_Alacrity`, restricted to `Item=Dart/Longbow/…crossbows`) only
+  ever attaches to the weapon actually carrying it. V3's `accumulateGear`
+  (`buildStats.ts:642-652`) parses every gear slot's item buffs through
+  ONE shared `ctx`, and `weaponScopeMatches` (`effectParser.ts:379-385`,
+  gating `Weapon_Alacrity`/`Weapon_Keen`/`Weapon_VorpalRange`/
+  `Weapon_CriticalMultiplier`/`Weapon_CriticalMultiplier19To20`/
+  `Weapon_CriticalRange` at `effectParser.ts:1678-1695`) only ever tests
+  `ctx.weaponTypeMain` — `ctx.weaponTypeOffhand` exists
+  (`effectParser.ts:74`) but is wired only into the `WeaponTypesEquipped`
+  *requirement* check, never into `weaponScopeMatches`. Concretely: an
+  off-hand Dart carrying "Ranged Alacrity" has its `Weapon_Alacrity` effect
+  silently dropped (main hand isn't a Dart), and symmetrically
+  `breakdownSections.ts`'s off-hand "Crit Multiplier 19-20" row reads the
+  same global `weapon.critMultiplier19to20` key as the main-hand row, so a
+  main-hand-only vorpal/crit-mult property wrongly echoes onto the
+  off-hand display too. Distinct from the already-documented main-hand-only
+  simplification for feat/enhancement "Class" weapon effects
+  (`effectParser.ts:1704-1740`, an intentional estimator simplification) —
+  this is a gear-buff *parsing* bug reachable by any dual-wield build with
+  a type-restricted off-hand item buff.
+
+Confirmed **no new gaps** by this pass: **effect parser coverage**
+(`Effect.h`/`Effect.cpp`'s full `EffectType`/`AmountType` enums re-diffed
+case-by-case against `effectParser.ts`'s 360 case labels — every XML string
+has a live, non-trivial handler; the "Fifth review pass" conclusion at line
+802 above independently reproduced) and **data-loading edge cases** (every
+presence-only `DL_FLAG` in `Item.h`/`Race.h`/`Stance.h`/`Augment.h`/
+`SetBonus.h`/`Dice.h`/`Effect.h` re-traced against `dataLoaders.ts`/
+`buildStats.ts`/`v2Import.ts`; duplicate top-level item names checked and
+found to be zero across `Output/DataFiles/Items/*.item`, so V2's
+first-match-wins load order has no real data to bite on).
+
 ---
 
 ## Medium-priority remaining
@@ -965,6 +1022,29 @@ consistent with the existing #71 sentient-gem finding.
   found **no new gaps**: every feature maps to an existing V3 component or a
   legitimate out-of-scope MFC/dev-tool detail (see "Out-of-scope by design"
   below). U1–U11 (see Done table) remain the complete list of ported UI work.
+- ❌ **U12 — "Ignore Raid Items" filter missing from both item pickers.**
+  V2's `ItemSelectDialog.cpp` (`m_buttonIgnoreRaidItems`,
+  `OnButtonIgnoreRaidItems`, checked in `PopulateAvailableItemList:293`)
+  and `FindGearDialog.cpp:216` both let the player exclude raid-drop items
+  (`Item::IsRaidItem()`) from the gear-slot picker and the "Find Gear by
+  Effect" dialog. V3's `GearPanel.tsx` slot picker and `FindGearDialog.tsx`
+  have search/level/buff-type/item-type filters but nothing for raid
+  origin — a repo-wide grep for `RaidItem`/`IsRaidItem` in `webapp/src/`
+  returns zero hits, so the concept isn't modeled at all (not even in
+  `itemFilters.ts`). A real, non-cosmetic filter players use to model
+  "no raid loot" builds.
+- ❌ **U13 — "Match Augments by Colour Only" toggle missing from the
+  augment picker.** V2's `ItemSelectDialog.cpp`
+  (`m_buttonAugmentsMatchColoursOnly`,
+  `OnAugmentsMatchSpecificColourOnly`) narrows an augment slot's offered
+  list to augments whose *first* listed `<Type>` matches the slot color
+  exactly (`GlobalSupportFunctions.cpp:2364`, `Augment.cpp:63-89`), instead
+  of the default, more permissive "type list includes the slot color"
+  match. `webapp/src/lib/gearSlotUpgrades.ts`'s `augmentMatchesSlotType()`
+  only implements the permissive default — no narrowing toggle exists in
+  `GearPanel.tsx`'s augment-slot UI. Minor: V3's default behavior already
+  matches V2's default (unchecked) behavior, so results aren't wrong, just
+  the opt-in narrowing convenience is absent.
 
 ### Forum export gaps
 
@@ -1136,6 +1216,70 @@ already closed; these are new, some content gaps (not just formatting):
   columns remain out, both undocumented in V3's data model — noted in the
   Done entry as a future-pass candidate.
 
+### Sixth review pass (2026-08-17) — full `Add*`-method re-diff of `ForumExportDlg.cpp`
+
+All 38 `Add*`/helper methods in `ForumExportDlg.cpp` were re-enumerated and
+matched against `sections.ts`. Three new, materially-incomplete sections
+found (not accounted for by X1–X18's writeups above):
+
+- ❌ **X19 — `AddBonuses` emits a raw stat-map dump, not V2's per-type
+  breakdown table.** V2 (`ForumExportDlg.cpp:1093-1165`) emits a fixed
+  `[TABLE]` — one row per stat in `Life::MonitoredBonuses()`, columns
+  Statistic/Enhancement/Insightful/Artifact/Quality/Profane/Equipment/
+  Competence/Exceptional/Festive/Fortune (bonus-type breakdown per stat).
+  V3's `bonusesDump` section (`sections.ts:1058-1072`, id `'Bonuses'`)
+  instead prints `key: total` for every non-zero key across the entire
+  stat map — no table, no bonus-type columns, no `MonitoredBonuses`
+  filtering. The code's own comment admits it's a debug export, not V2
+  parity.
+- ❌ **X20 — `AddGear`/`AddSimpleGear` (V2's shared `ExportGear`) are far
+  short of V2 despite Done-table item #29 covering only slot order +
+  augment choices.** V2's `ExportGear` (`ForumExportDlg.cpp:1758-1929`)
+  emits a colored `[SIZE=6]` header (AP-style set name), a
+  `[SIZE=3][TABLE]`, per-slot color coding (green slot/yellow item),
+  restricted-slot warnings, drop-location text, buff-description lines
+  (non-simple only), per-augment configurable value/level text, set-bonus
+  rows with `[S]`-strikethrough suppression, artifact-filigree slots, and
+  sentient-weapon personality/filigree-upgrade text. V3's `gear` section
+  (`sections.ts:831-841`) is plain `slot: item` text lines — no augments,
+  set bonuses, colors, or table. `simpleGear` (`sections.ts:988-1010`)
+  adds augment-choice lines but still has none of the rest.
+- ❌ **X21 — `AddSelfAndPartyBuffs` reads the wrong V3 field.** V2 source
+  is `Life::SelfAndPartyBuffs()`; pass #107(e) added a dedicated
+  `CharacterBuild.selfBuffs` field specifically to separate self/party
+  buffs from stances (`buildStats.ts:2279` already uses it for stat
+  computation). The export section (`sections.ts:427-444`) still filters
+  `build.activeBuffs` by catalogue membership instead of reading
+  `build.selfBuffs` — inconsistent with the #107(e) fix, liable to show
+  wrong/missing entries.
+- ❌ **X22 — `AddActiveStances` drops per-group labeling.** V2
+  (`ForumExportDlg.cpp:846-872`) emits `GroupName: StanceName` per
+  selected stance across every `StanceGroup`. V3's `stances` section
+  (`sections.ts:409-423`) joins stance names into one flat comma list with
+  no group prefix. Minor relative to X19–X21.
+- ❌ **X23 — `AddPastLives` bucketing is a name-matching heuristic, not
+  V2's `TrainedFeat::Type()` filter.** V2 groups strictly by each feat's
+  stored `Type` string (`HeroicPastLife`/`RacialPastLife`/
+  `IconicPastLife`/`EpicPastLife`). V3 (`sections.ts:129-174`) instead
+  infers the bucket by matching the past-life name against
+  `allClasses`/`allRaces`/`epicPastLifeFeats` catalogues, with an extra
+  "Other Past Lives" bucket V2 has no concept of, and alphabetical sort
+  where V2 uses `TrainedFeat::operator<`. Already flagged in the code's own
+  comment as an approximation; low risk since it's data-driven, but not
+  byte-exact.
+
+Confirmed still-open (accepted, smaller-scope) sub-items from earlier
+passes, re-verified present in the current `sections.ts`:
+- X12 (`consolidatedFeats`): `TrainedFeat::HasFeatSwapWarning` (hypothetical
+  feat-swap prereq re-check) and per-level interleaving of
+  `AutomaticAcquisition`-derived automatic feats — both still unmodeled.
+- X13 (`weaponDamage`): per-weapon effects breakdown
+  (`BreakdownItemWeaponEffects::AddForumExportData` — On Hit/Critical/
+  Critical 19-20 damage lines, DR Bypass, Ghost Touch/True Seeing notes) —
+  no V3 per-weapon DR-bypass/Ghost-Touch/True-Seeing tracking at all.
+- X18 (`spells`): fixed/auto-known spells (`Build::FixedSpells`) and the
+  Average/Critical Damage dice-formula columns — both always render "-".
+
 ---
 
 ## Random-build parity fuzzer
@@ -1194,22 +1338,24 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#120 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-07 (fifth pass) —
+*Maintained by the parity-pass series. See PRs #53–#209 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-08-17 (sixth pass) —
 five parallel scans covering numerical correctness (`Breakdown*.cpp` vs.
 `useBuildStats.ts`/`buildStats.ts`), effect parser coverage (`Effect.cpp` vs.
 `effectParser.ts`), UI features (`*Pane.cpp`/`*Dialog.cpp` vs.
 `webapp/src/components/`), forum export (`ForumExportDlg.cpp` vs.
 `sections.ts`), and data-loading edge cases (`Item.h`/`Build.cpp` vs.
-`dataLoaders.ts`/`buildStats.ts`). New gaps found: N10/N11 (percent-effect
-rounding mode and `Temporary` bonus-type exclusion in `BreakdownItem.cpp`'s
-percentage math), N12/N13 (`<Rank>` gate and `<ApplyAsItemEffect/>` flag on
-`Effect` — both honored only at one narrow call site instead of universally),
-D3–D7 (Minor Artifact single-equip + gated Artifact Filigree, Docent
-Mithral/Adamantine Body armor feat requirement, Legendary Green Steel
-auto-stances, `RestrictedSlots`), and X10–X17 (eight forum-export sections
-with dead/missing/wrong content: SpecialFeats, Skills grid, Consolidated
-Feats semantics, Weapon Damage fields, Energy Resistances type list,
-Spell Powers/Tactical DCs table formatting, Enhancement/Destiny/Reaper
-section headers). UI-feature parity (U1–U11) and effect-parser Type/AType
-switch-case coverage were both reconfirmed complete with no new gaps.*
+`dataLoaders.ts`/`buildStats.ts`). New gaps found this pass: N15/N16 (Vorpal
+Range missing its base-1 seed and V2's `N-20` display format; off-hand gear
+weapon buffs like Alacrity/Keen/Vorpal Range/Crit Multiplier evaluated
+against the main-hand weapon type only), U12/U13 ("Ignore Raid Items" filter
+and "Match Augments by Colour Only" toggle missing from the item/augment
+pickers), and X19–X23 (forum export `AddBonuses` is a raw debug dump instead
+of V2's per-type table, `AddGear`/`AddSimpleGear` are far short of V2's
+`ExportGear` content, `AddSelfAndPartyBuffs` reads the wrong build field,
+`AddActiveStances` drops per-group labels, `AddPastLives` bucketing is a
+name-matching heuristic not V2's `Type` filter). Effect-parser Type/AType
+switch-case coverage and data-loading edge cases (presence-only flags,
+duplicate-name load order) were both reconfirmed complete with no new gaps
+this pass — see the fifth-pass note below for the prior round's findings
+(N10–N13, D3–D7, X10–X18, all since closed).
