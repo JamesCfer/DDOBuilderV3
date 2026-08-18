@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 //
 // Quality-of-life features from user (Pepper) feedback:
-//  1. Class grid: per-class "Clear" chips + "Clear all" (previously the only
-//     way to remove a class was to change every level dropdown one by one).
+//  1. Class window: one box per level with a drag-and-drop class palette
+//     (drag a class onto a box, drag boxes to swap), plus "Clear all"; epic
+//     and legendary levels are always present, defaulting to level 36.
 //  2. Reaper trees render side by side like Epic Destinies (all 3 at once).
 //  3. Past Lives: "+1 all" completionist buttons per group — clicking a
 //     3-max group's button three times trains full completionist — plus a
@@ -126,10 +127,30 @@ function findButton(container: HTMLElement, label: string, title?: string): HTML
 }
 
 // ---------------------------------------------------------------------------
-// 1. ClassSelector clear buttons
+// 1. ClassSelector level boxes (drag-and-drop rework)
 // ---------------------------------------------------------------------------
 
-describe('ClassSelector clear buttons', () => {
+/** Dispatch a drag event React's synthetic system will pick up. */
+async function fireDrag(el: Element, type: 'dragstart' | 'dragover' | 'drop' | 'dragend') {
+  await act(async () => {
+    el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }))
+  })
+}
+
+/** The 20 heroic level boxes, in level order. */
+function levelBoxes(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll('[data-level]')) as HTMLElement[]
+}
+
+/** A palette tile by full class name (the tile shows only the 3-letter tag). */
+function paletteTile(container: HTMLElement, name: string): HTMLButtonElement {
+  const tiles = Array.from(container.querySelectorAll('button[class*="classTile"]'))
+  const tile = tiles.find(t => t.querySelector('span[class*="classRowName"]')?.textContent === name)
+  if (!tile) throw new Error(`palette tile "${name}" not found`)
+  return tile as HTMLButtonElement
+}
+
+describe('ClassSelector level boxes', () => {
   function pepperBuild(): CharacterBuild {
     const levels = Array.from({ length: 20 }, () => 'Fighter')
     levels[0] = 'Dragon Lord'
@@ -147,16 +168,57 @@ describe('ClassSelector clear buttons', () => {
     }
   }
 
-  it('per-class clear removes only that class from the heroic grid', async () => {
+  it('renders one box per heroic level, tagged with the class short name', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const container = await mount(React.createElement(mod.default), pepperBuild())
-    // New vertical class list: each selected row has a ✕ remove button.
-    const clearFighter = findButton(container, '✕', 'Remove Fighter')
-    await act(async () => { clearFighter.click() })
-    const lc = latestBuild!.levelClasses
-    expect(lc.filter(c => c === 'Fighter')).toHaveLength(0)
-    expect(lc[0]).toBe('Dragon Lord')
-    expect(lc[4]).toBe('Rogue')
+    const boxes = levelBoxes(container)
+    expect(boxes).toHaveLength(20)
+    expect(boxes[0].textContent).toContain('DRL')   // Dragon Lord
+    expect(boxes[1].textContent).toContain('FTR')   // Fighter
+    expect(boxes[4].textContent).toContain('ROG')   // Rogue
+  })
+
+  it('dragging a palette class onto a box assigns that level', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const build = pepperBuild()
+    build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Fighter' : ''))
+    build.classes = [{ name: 'Fighter', levels: 4 }, { name: '', levels: 0 }, { name: '', levels: 0 }]
+    build.totalLevel = 4
+    const container = await mount(React.createElement(mod.default), build)
+    await fireDrag(paletteTile(container, 'Rogue'), 'dragstart')
+    await fireDrag(levelBoxes(container)[7], 'drop')
+    expect(latestBuild!.levelClasses[7]).toBe('Rogue')
+  })
+
+  it('dragging one box onto another swaps the two levels', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const container = await mount(React.createElement(mod.default), pepperBuild())
+    const boxes = levelBoxes(container)
+    await fireDrag(boxes[0], 'dragstart')     // Dragon Lord at level 1
+    await fireDrag(boxes[4], 'drop')          // Rogue at level 5
+    expect(latestBuild!.levelClasses[0]).toBe('Rogue')
+    expect(latestBuild!.levelClasses[4]).toBe('Dragon Lord')
+  })
+
+  it('click-arms a palette class and places it on the next clicked box', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const build = pepperBuild()
+    build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Fighter' : ''))
+    build.classes = [{ name: 'Fighter', levels: 4 }, { name: '', levels: 0 }, { name: '', levels: 0 }]
+    build.totalLevel = 4
+    const container = await mount(React.createElement(mod.default), build)
+    await act(async () => { paletteTile(container, 'Wizard').click() })
+    await act(async () => { levelBoxes(container)[10].click() })
+    expect(latestBuild!.levelClasses[10]).toBe('Wizard')
+  })
+
+  it('the eraser tile clears the box it is dropped on', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const container = await mount(React.createElement(mod.default), pepperBuild())
+    const eraser = Array.from(container.querySelectorAll('button[class*="eraserTile"]'))[0]
+    await fireDrag(eraser, 'dragstart')
+    await fireDrag(levelBoxes(container)[4], 'drop')   // Rogue at level 5
+    expect(latestBuild!.levelClasses[4]).toBe('')
   })
 
   it('Clear all empties every heroic level', async () => {
@@ -165,6 +227,17 @@ describe('ClassSelector clear buttons', () => {
     const clearAll = findButton(container, 'Clear all', 'Clear all 20 heroic level assignments')
     await act(async () => { clearAll.click() })
     expect(latestBuild!.levelClasses.filter(Boolean)).toHaveLength(0)
+  })
+
+  it('shows epic and legendary levels automatically, defaulting to level 36', async () => {
+    const mod = await import('../components/builder/ClassSelector')
+    const container = await mount(React.createElement(mod.default), pepperBuild())
+    expect(container.querySelectorAll('[data-epic]')).toHaveLength(10)
+    expect(container.querySelectorAll('[data-legendary]')).toHaveLength(10)
+    // emptyBuild() → 20 heroic + 10 epic + 6 legendary
+    expect(latestBuild!.epicLevels).toBe(10)
+    expect(latestBuild!.legendaryLevels).toBe(6)
+    expect(container.querySelector('[class*="levelTotal"]')?.textContent).toBe('Lv 36')
   })
 })
 
@@ -188,26 +261,17 @@ describe('ClassSelector archetype exclusion', () => {
     }
   }
 
-  function pickRow(container: HTMLElement, name: string): HTMLButtonElement {
-    const rows = Array.from(container.querySelectorAll('button[class*="classRow"]'))
-    // Match the name span exactly — an archetype's "<Base> archetype" tag
-    // would otherwise make its row match its base class's name too.
-    const row = rows.find(r => r.querySelector('span[class*="classRowName"]')?.textContent === name)
-    if (!row) throw new Error(`pick-list row "${name}" not found`)
-    return row as HTMLButtonElement
-  }
-
-  it('greys the archetype in the pick list when its base class is taken', async () => {
+  it('greys the archetype in the palette when its base class is taken', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const container = await mount(React.createElement(mod.default), fighterBuild())
-    const dragonLord = pickRow(container, 'Dragon Lord')
+    const dragonLord = paletteTile(container, 'Dragon Lord')
     expect(dragonLord.disabled).toBe(true)
     expect(dragonLord.title).toContain('archetype of Fighter')
     // An unrelated archetype (Sacred Fist / Paladin) stays available.
-    expect(pickRow(container, 'Sacred Fist').disabled).toBe(false)
+    expect(paletteTile(container, 'Sacred Fist').disabled).toBe(false)
   })
 
-  it('greys the base class when its archetype is taken, and blocks it in the level grid', async () => {
+  it('greys the base class when its archetype is taken, and refuses it on a box', async () => {
     const mod = await import('../components/builder/ClassSelector')
     const build = fighterBuild()
     build.levelClasses = Array.from({ length: 20 }, (_, i) => (i < 4 ? 'Dragon Lord' : ''))
@@ -217,19 +281,18 @@ describe('ClassSelector archetype exclusion', () => {
       { name: '', levels: 0 },
     ]
     const container = await mount(React.createElement(mod.default), build)
-    const fighter = pickRow(container, 'Fighter')
+    const fighter = paletteTile(container, 'Fighter')
     expect(fighter.disabled).toBe(true)
     expect(fighter.title).toContain('Dragon Lord is an archetype of Fighter')
 
-    // The per-level grid dropdowns must not offer Fighter either.
-    const selects = Array.from(container.querySelectorAll('select[class*="levelSelect"]'))
-    expect(selects.length).toBe(20)
-    const emptyLevel = selects[5] as HTMLSelectElement
-    const fighterOption = Array.from(emptyLevel.options).find(o => o.value === 'Fighter')
-    expect(fighterOption?.disabled).toBe(true)
-    // Its own class stays selectable.
-    const dlOption = Array.from(emptyLevel.options).find(o => o.value === 'Dragon Lord')
-    expect(dlOption?.disabled).toBe(false)
+    // Even if the drag starts anyway, the box must refuse the blocked class.
+    await fireDrag(fighter, 'dragstart')
+    await fireDrag(levelBoxes(container)[5], 'drop')
+    expect(latestBuild!.levelClasses[5]).toBe('')
+    // Its own class still drops fine.
+    await fireDrag(paletteTile(container, 'Dragon Lord'), 'dragstart')
+    await fireDrag(levelBoxes(container)[5], 'drop')
+    expect(latestBuild!.levelClasses[5]).toBe('Dragon Lord')
   })
 
   it('allows multiple archetypes of different base classes', async () => {
@@ -244,9 +307,9 @@ describe('ClassSelector archetype exclusion', () => {
     const container = await mount(React.createElement(mod.default), build)
     // Dragon Lord (Fighter archetype) can join a Sacred Fist (Paladin
     // archetype) build — each counts as one of the 3 classes.
-    expect(pickRow(container, 'Dragon Lord').disabled).toBe(false)
+    expect(paletteTile(container, 'Dragon Lord').disabled).toBe(false)
     // Paladin (Sacred Fist's base) is blocked with the pair reason.
-    const paladin = pickRow(container, 'Paladin')
+    const paladin = paletteTile(container, 'Paladin')
     expect(paladin.disabled).toBe(true)
     expect(paladin.title).toContain('Sacred Fist is an archetype of Paladin')
   })
@@ -261,7 +324,7 @@ describe('ClassSelector archetype exclusion', () => {
       { name: '', levels: 0 },
     ]
     const container = await mount(React.createElement(mod.default), build)
-    const ironVanguard = pickRow(container, 'Iron Vanguard')
+    const ironVanguard = paletteTile(container, 'Iron Vanguard')
     expect(ironVanguard.disabled).toBe(true)
     expect(ironVanguard.title).toContain('Dragon Lord is also a Fighter archetype')
   })

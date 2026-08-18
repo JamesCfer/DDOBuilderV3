@@ -3,7 +3,10 @@ import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { DDOClass } from '../../types/ddo'
 import DdoIcon from '../DdoIcon'
-import { HEROIC_MAX_LEVEL, EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../../lib/gamedata'
+import {
+  HEROIC_MAX_LEVEL, EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS,
+  LEGENDARY_DEFAULT_LEVELS, classShortName,
+} from '../../lib/gamedata'
 import { getLevelClasses } from '../../lib/levelProgression'
 import styles from './ClassSelector.module.css'
 
@@ -11,6 +14,9 @@ const HEROIC_LEVELS = HEROIC_MAX_LEVEL
 const EPIC_MAX = EPIC_MAX_LEVELS
 const LEGENDARY_MAX = LEGENDARY_MAX_LEVELS
 const CLASS_COLORS = ['#c88a2a', '#6ab0de', '#8acd6a']
+
+/** Payload marker for the palette's "erase" tile. */
+const ERASER = ''
 
 function classIndex(name: string, assigned: string[]): number {
   const idx = assigned.indexOf(name)
@@ -37,8 +43,13 @@ export default function ClassSelector() {
   const { build, dispatch } = useCharacter()
   const [classes, setClasses] = useState<DDOClass[]>([])
   const [loading, setLoading] = useState(true)
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  /** Class picked up by click ('' = eraser, null = nothing armed). */
+  const [armed, setArmed] = useState<string | null>(null)
+  /** Class being dragged out of the palette ('' = eraser). */
+  const [dragClass, setDragClass] = useState<string | null>(null)
+  /** Heroic level box being dragged (0-based). */
+  const [dragLevel, setDragLevel] = useState<number | null>(null)
+  const [dragOverLevel, setDragOverLevel] = useState<number | null>(null)
 
   useEffect(() => {
     api.classes()
@@ -57,8 +68,8 @@ export default function ClassSelector() {
     if (cls) totals[cls] = (totals[cls] ?? 0) + 1
   }
 
-  const epicLevels = build.epicLevels ?? 10
-  const legendaryLevels = build.legendaryLevels ?? 4
+  const epicLevels = build.epicLevels ?? EPIC_MAX
+  const legendaryLevels = build.legendaryLevels ?? LEGENDARY_DEFAULT_LEVELS
   const heroicAssigned = levelClasses.filter(Boolean).length
   const grandTotal = heroicAssigned + epicLevels + legendaryLevels
   const emptySlots = HEROIC_LEVELS - heroicAssigned
@@ -73,7 +84,7 @@ export default function ClassSelector() {
     .filter((c): c is DDOClass => !!c)
 
   function setLevelClass(levelIndex: number, className: string) {
-    // V2 parity: edit only the per-level slot the user clicked. The reducer
+    // V2 parity: edit only the per-level slot the user changed. The reducer
     // re-derives the `classes` aggregate from the updated array, so order
     // (e.g. Wizard at L1 then Fighter at L2) is preserved.
     dispatch({ type: 'SET_LEVEL_CLASS', level: levelIndex, name: className })
@@ -91,67 +102,11 @@ export default function ClassSelector() {
     dispatch({ type: 'SET_LEVEL_CLASSES', levels: Array.from({ length: HEROIC_LEVELS }, () => '') })
   }
 
-  function clearClass(className: string) {
-    dispatch({
-      type: 'SET_LEVEL_CLASSES',
-      levels: levelClasses.slice(0, HEROIC_LEVELS).map(c => (c === className ? '' : c)),
-    })
-  }
-
-  /** Add one level of a class (first empty slot). */
-  function addLevel(className: string) {
-    const idx = levelClasses.findIndex(c => !c)
-    if (idx < 0 || idx >= HEROIC_LEVELS) return
-    setLevelClass(idx, className)
-  }
-
-  /**
-   * Set a class's total heroic levels directly: extra levels fill empty
-   * slots from the front, removed levels are blanked from the end (the same
-   * reconciliation the SET_CLASS_LEVELS reducer uses).
-   */
-  function setCount(className: string, target: number) {
-    const current = totals[className] ?? 0
-    const clamped = Math.max(0, Math.min(HEROIC_LEVELS, Math.min(target, current + emptySlots)))
-    if (clamped === current) return
-    const next = [...levelClasses].slice(0, HEROIC_LEVELS)
-    if (clamped > current) {
-      let toAdd = clamped - current
-      for (let i = 0; i < next.length && toAdd > 0; i++) {
-        if (!next[i]) { next[i] = className; toAdd-- }
-      }
-    } else {
-      let toRemove = current - clamped
-      for (let i = next.length - 1; i >= 0 && toRemove > 0; i--) {
-        if (next[i] === className) { next[i] = ''; toRemove-- }
-      }
-    }
-    dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
-  }
-
-  /**
-   * Drag-and-drop reorder of the selected classes. Order = which class is
-   * class 1/2/3 (first appearance in the level plan), so the plan is
-   * rewritten as grouped blocks in the new order.
-   */
-  function reorder(from: number, to: number) {
-    if (from === to) return
-    const order = [...usedClassNames]
-    const [moved] = order.splice(from, 1)
-    order.splice(to, 0, moved)
-    const next: string[] = []
-    for (const name of order) {
-      for (let i = 0; i < (totals[name] ?? 0); i++) next.push(name)
-    }
-    while (next.length < HEROIC_LEVELS) next.push('')
-    dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
-  }
-
   /**
    * Why a class NOT yet in the build can't join it (null = allowed, and
-   * always null for classes already in the build). Shared by the pick list
-   * and the per-level grid so an illegal combo (e.g. Dragon Lord + Fighter,
-   * Sacred Fist + Paladin) can't sneak in through either path.
+   * always null for classes already in the build). Shared by the palette and
+   * the level boxes so an illegal combo (e.g. Dragon Lord + Fighter, Sacred
+   * Fist + Paladin) can't sneak in through either path.
    */
   function joinBlockReason(cls: DDOClass): string | null {
     if (usedClassNames.includes(cls.Name)) return null
@@ -175,16 +130,76 @@ export default function ClassSelector() {
     return null
   }
 
-  /** Why a pick-list row is unpickable right now (null = pickable). */
+  /** Why a palette tile can't be dropped anywhere right now (null = usable). */
   function disabledReason(cls: DDOClass): string | null {
     if (!alignmentAllows(cls, build.alignment)) {
       return `Requires alignment: ${allowedAlignments(cls).join(', ')}`
     }
-    const join = joinBlockReason(cls)
-    if (join) return join
-    if (emptySlots <= 0) return 'All 20 heroic levels are assigned'
-    return null
+    return joinBlockReason(cls)
   }
+
+  /**
+   * Put `className` ('' clears) into heroic level box `idx`, refusing a class
+   * that cannot legally join the build. Dropping onto the box it already
+   * holds is a no-op.
+   */
+  function assignLevel(idx: number, className: string) {
+    if (idx < 0 || idx >= HEROIC_LEVELS) return
+    if (levelClasses[idx] === className) return
+    if (className) {
+      const cls = classes.find(c => c.Name === className)
+      if (!cls || joinBlockReason(cls)) return
+    }
+    setLevelClass(idx, className)
+  }
+
+  /** Swap two heroic level boxes (drag a box onto another box). */
+  function swapLevels(from: number, to: number) {
+    if (from === to) return
+    const next = levelClasses.slice(0, HEROIC_LEVELS)
+    const tmp = next[from]
+    next[from] = next[to]
+    next[to] = tmp
+    dispatch({ type: 'SET_LEVEL_CLASSES', levels: next })
+  }
+
+  /** A box click: drop the armed class, or pick this box's class up. */
+  function boxClick(idx: number) {
+    if (armed !== null) {
+      assignLevel(idx, armed)
+      return
+    }
+    const cur = levelClasses[idx]
+    if (cur) setArmed(cur)
+  }
+
+  function endDrag() {
+    setDragClass(null)
+    setDragLevel(null)
+    setDragOverLevel(null)
+  }
+
+  /** Drop onto heroic box `idx` — from the palette or from another box. */
+  function dropOnLevel(idx: number) {
+    if (dragLevel !== null) swapLevels(dragLevel, idx)
+    else if (dragClass !== null) assignLevel(idx, dragClass)
+    endDrag()
+  }
+
+  function setEpic(count: number) {
+    dispatch({ type: 'SET_EPIC_LEVELS', levels: Math.max(0, Math.min(EPIC_MAX, count)) })
+  }
+
+  function setLegendary(count: number) {
+    dispatch({ type: 'SET_LEGENDARY_LEVELS', levels: Math.max(0, Math.min(LEGENDARY_MAX, count)) })
+  }
+
+  /** Epic/legendary boxes toggle: clicking the last filled one removes it. */
+  function toggleTail(index: number, current: number, set: (n: number) => void) {
+    set(index + 1 === current ? index : index + 1)
+  }
+
+  const armedLabel = armed === null ? '' : armed === ERASER ? 'Erase' : armed
 
   return (
     <div className="panel">
@@ -197,183 +212,162 @@ export default function ClassSelector() {
           <span className={styles.loading}>Loading classes…</span>
         ) : (
           <>
-            {/* ── Selected classes: vertical, draggable, editable at once ── */}
-            <div className={styles.selectedList}>
-              {usedClassNames.length === 0 && (
-                <div className={styles.selectedEmpty}>
-                  Pick classes from the list below — up to 3.
-                </div>
-              )}
-              {usedClassNames.map((name, i) => {
-                const cls = classes.find(c => c.Name === name)
-                const misaligned = cls && !alignmentAllows(cls, build.alignment)
-                const count = totals[name] ?? 0
-                return (
-                  <div
-                    key={name}
-                    className={`${styles.selectedRow} ${dragOverIndex === i ? styles.selectedRowDragOver : ''}`}
-                    style={{ borderLeftColor: CLASS_COLORS[i] }}
-                    draggable
-                    onDragStart={() => setDragIndex(i)}
-                    onDragOver={e => { e.preventDefault(); setDragOverIndex(i) }}
-                    onDragLeave={() => setDragOverIndex(cur => (cur === i ? null : cur))}
-                    onDrop={e => {
-                      e.preventDefault()
-                      if (dragIndex !== null) reorder(dragIndex, i)
-                      setDragIndex(null)
-                      setDragOverIndex(null)
-                    }}
-                    onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
-                    title="Drag to reorder classes — levels are regrouped in the new class order"
-                  >
-                    <span className={styles.dragHandle}>⠿</span>
-                    <DdoIcon category="ClassImages" name={name} size={24} />
-                    <span className={styles.selectedName} style={{ color: CLASS_COLORS[i] }}>{name}</span>
-                    {misaligned && (
-                      <span
-                        className={styles.alignWarnBadge}
-                        title={`${name} does not allow ${build.alignment} (requires: ${cls ? allowedAlignments(cls).join(', ') : ''})`}
-                      >⚠️</span>
-                    )}
-                    <button className={styles.rowBtn} disabled={count <= 0}
-                      onClick={() => setCount(name, count - 1)} title="Remove one level">−</button>
-                    <input
-                      type="number"
-                      className={styles.countInput}
-                      value={count}
-                      min={0}
-                      max={HEROIC_LEVELS}
-                      onChange={e => setCount(name, Number(e.target.value) || 0)}
-                      title={`${name} heroic levels`}
-                    />
-                    <button className={styles.rowBtn} disabled={emptySlots <= 0}
-                      onClick={() => setCount(name, count + 1)} title="Add one level">+</button>
-                    <button className={`${styles.rowBtn} ${styles.rowBtnWide}`} disabled={emptySlots <= 0}
-                      onClick={() => fillEmpty(name)} title={`Assign all remaining levels to ${name}`}>Fill</button>
-                    <button className={styles.rowBtn}
-                      onClick={() => clearClass(name)} title={`Remove ${name} (clears its levels)`}>✕</button>
-                  </div>
-                )
-              })}
-              <span className={`${styles.classCountBadge} ${classCountFull ? styles.classCountFull : ''}`}>
-                {usedClassNames.length}/3 classes · {heroicAssigned}/20 levels
-              </span>
-            </div>
-
-            {/* ── All classes: vertical pick list, greyed by alignment ───── */}
-            <div className={styles.classList}>
+            {/* ── Class palette: drag a tile onto a level box ───────────── */}
+            <div className={styles.palette} role="list" aria-label="Classes">
+              <button
+                type="button"
+                role="listitem"
+                className={`${styles.classTile} ${styles.eraserTile} ${armed === ERASER ? styles.classTileArmed : ''}`}
+                draggable
+                onDragStart={() => { setDragClass(ERASER); setDragLevel(null) }}
+                onDragEnd={endDrag}
+                onClick={() => setArmed(a => (a === ERASER ? null : ERASER))}
+                title="Drag onto a level box (or click, then click a box) to clear it"
+              >
+                <span className={styles.eraserGlyph}>✕</span>
+                <span className={styles.classTileShort}>CLR</span>
+              </button>
               {heroicClasses.map(cls => {
                 const selected = usedClassNames.includes(cls.Name)
                 const reason = disabledReason(cls)
-                const aligned = alignmentAllows(cls, build.alignment)
+                const count = totals[cls.Name] ?? 0
+                const colour = selected ? CLASS_COLORS[classIndex(cls.Name, usedClassNames)] : undefined
                 return (
                   <button
+                    type="button"
+                    role="listitem"
                     key={cls.Name}
-                    className={`${styles.classRow} ${selected ? styles.classRowSelected : ''}`}
+                    data-class={cls.Name}
+                    className={`${styles.classTile} ${selected ? styles.classTileSelected : ''} ${armed === cls.Name ? styles.classTileArmed : ''}`}
+                    style={colour ? { borderColor: colour } : undefined}
+                    draggable={!reason}
                     disabled={!!reason}
-                    onClick={() => addLevel(cls.Name)}
-                    title={reason ?? (selected
-                      ? `Add one more ${cls.Name} level`
-                      : `Add ${cls.Name}${!aligned ? '' : ' (click to take level 1 of it)'}`)}
+                    onDragStart={() => { setDragClass(cls.Name); setDragLevel(null) }}
+                    onDragEnd={endDrag}
+                    onClick={() => setArmed(a => (a === cls.Name ? null : cls.Name))}
+                    title={reason ?? `${cls.Name}${cls.BaseClass ? ` (${cls.BaseClass} archetype)` : ''} — drag onto a level box, or click then click a box`}
                   >
-                    <DdoIcon category="ClassImages" name={cls.Name} size={24} />
+                    <DdoIcon category="ClassImages" name={cls.Name} size={26} />
+                    <span className={styles.classTileShort} style={colour ? { color: colour } : undefined}>
+                      {classShortName(cls.Name)}
+                    </span>
                     <span className={styles.classRowName}>{cls.Name}</span>
-                    {cls.BaseClass && <span className={styles.archetypeTag}>{cls.BaseClass} archetype</span>}
-                    {selected && <span className={styles.classRowCount}>{totals[cls.Name] ?? 0} ✓</span>}
+                    {count > 0 && <span className={styles.classTileCount}>{count}</span>}
                   </button>
                 )
               })}
             </div>
 
-            {/* ── Heroic levels 1–20 ── */}
-            <div className={styles.sectionHeader}>
-              <span>Heroic</span>
-              <span className={styles.sectionCount}>
-                {heroicAssigned}/20
-                {heroicAssigned > 0 && (
-                  <button className={`${styles.rowBtn} ${styles.rowBtnWide}`}
-                    style={{ display: 'inline-flex', marginLeft: 6 }}
-                    onClick={clearAll}
-                    title="Clear all 20 heroic level assignments">Clear all</button>
-                )}
+            <div className={styles.toolbar}>
+              <span className={styles.hint}>
+                {armed === null
+                  ? 'Drag a class onto a level box — or drag boxes to swap them.'
+                  : `${armedLabel} armed — click a level box to place it.`}
+              </span>
+              {armed !== null && armed !== ERASER && (
+                <button className={styles.toolBtn} disabled={emptySlots <= 0}
+                  onClick={() => fillEmpty(armed)}
+                  title={`Assign all remaining heroic levels to ${armed}`}>Fill empty</button>
+              )}
+              {heroicAssigned > 0 && (
+                <button className={styles.toolBtn} onClick={clearAll}
+                  title="Clear all 20 heroic level assignments">Clear all</button>
+              )}
+              <span className={`${styles.classCountBadge} ${classCountFull ? styles.classCountFull : ''}`}>
+                {usedClassNames.length}/3 classes · {heroicAssigned}/20 levels
               </span>
             </div>
-            <div className={styles.levelGrid}>
+
+            {/* ── Heroic level boxes 1–20 ──────────────────────────────── */}
+            <div className={styles.sectionHeader}>
+              <span>Heroic <span className={styles.sectionRange}>(Lv 1–20)</span></span>
+              <span className={styles.sectionCount}>{heroicAssigned}/20</span>
+            </div>
+            <div className={styles.boxGrid}>
               {Array.from({ length: HEROIC_LEVELS }, (_, i) => {
-                const lvl = i + 1
                 const cls = levelClasses[i] ?? ''
-                const clsIdx = classIndex(cls, usedClassNames)
+                const colour = cls ? CLASS_COLORS[classIndex(cls, usedClassNames)] : undefined
                 return (
-                  <div key={lvl} className={styles.levelCell}>
-                    <span className={styles.levelNum}>{lvl}</span>
-                    <select
-                      className={styles.levelSelect}
-                      value={cls}
-                      onChange={e => setLevelClass(i, e.target.value)}
-                      style={cls ? { borderColor: CLASS_COLORS[clsIdx], color: CLASS_COLORS[clsIdx] } : {}}
-                    >
-                      <option value="">—</option>
-                      {heroicClasses.map(c => {
-                        // Same join rules as the pick list — a class that
-                        // can't legally join the build is disabled here too
-                        // (the level's current value always stays enabled).
-                        const blocked = c.Name !== cls && joinBlockReason(c) !== null
-                        return (
-                          <option key={c.Name} value={c.Name} disabled={blocked}>{c.Name}</option>
-                        )
-                      })}
-                    </select>
+                  <div
+                    key={i}
+                    data-level={i + 1}
+                    className={`${styles.levelBox} ${cls ? styles.levelBoxFilled : ''} ${dragOverLevel === i ? styles.levelBoxDragOver : ''}`}
+                    style={colour ? { borderColor: colour } : undefined}
+                    draggable={!!cls}
+                    onDragStart={() => { setDragLevel(i); setDragClass(null) }}
+                    onDragOver={e => { e.preventDefault(); setDragOverLevel(i) }}
+                    onDragLeave={() => setDragOverLevel(cur => (cur === i ? null : cur))}
+                    onDrop={e => { e.preventDefault(); dropOnLevel(i) }}
+                    onDragEnd={endDrag}
+                    onClick={() => boxClick(i)}
+                    title={cls
+                      ? `Level ${i + 1}: ${cls} — drag onto another box to swap`
+                      : `Level ${i + 1}: empty — drop a class here`}
+                  >
+                    <span className={styles.boxNum}>{i + 1}</span>
+                    {cls ? (
+                      <>
+                        <DdoIcon category="ClassImages" name={cls} size={22} />
+                        <span className={styles.boxShort} style={colour ? { color: colour } : undefined}>
+                          {classShortName(cls)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className={styles.boxEmpty}>+</span>
+                    )}
                   </div>
                 )
               })}
             </div>
 
-            {/* ── Epic levels 21–30 ── */}
+            {/* ── Epic levels 21–30: present automatically ──────────────── */}
             <div className={styles.sectionHeader}>
               <span>Epic <span className={styles.sectionRange}>(Lv 21–30)</span></span>
-              <span className={styles.sectionCount}>{epicLevels}/10</span>
+              <span className={styles.sectionCount}>{epicLevels}/{EPIC_MAX}</span>
             </div>
-            <div className={styles.progressionRow}>
-              <button className={styles.adjBtn}
-                disabled={epicLevels <= 0}
-                onClick={() => dispatch({ type: 'SET_EPIC_LEVELS', levels: epicLevels - 1 })}>−</button>
-              <div className={styles.progressPips}>
-                {Array.from({ length: EPIC_MAX }, (_, i) => (
+            <div className={styles.boxGrid}>
+              {Array.from({ length: EPIC_MAX }, (_, i) => {
+                const on = i < epicLevels
+                return (
                   <button
+                    type="button"
                     key={i}
-                    className={`${styles.pip} ${i < epicLevels ? styles.pipFilled : ''}`}
-                    onClick={() => dispatch({ type: 'SET_EPIC_LEVELS', levels: i + 1 })}
-                    title={`Epic level ${i + 1} (character level ${21 + i})`}
-                  />
-                ))}
-              </div>
-              <button className={styles.adjBtn}
-                disabled={epicLevels >= EPIC_MAX}
-                onClick={() => dispatch({ type: 'SET_EPIC_LEVELS', levels: epicLevels + 1 })}>+</button>
+                    data-epic={i + 1}
+                    className={`${styles.levelBox} ${styles.epicBox} ${on ? styles.levelBoxFilled : styles.levelBoxOff}`}
+                    onClick={() => toggleTail(i, epicLevels, setEpic)}
+                    title={`Epic level ${i + 1} (character level ${21 + i})${on ? ' — click to drop back to here' : ' — click to take it'}`}
+                  >
+                    <span className={styles.boxNum}>{21 + i}</span>
+                    <span className={styles.boxShort}>{classShortName('Epic')}</span>
+                  </button>
+                )
+              })}
             </div>
 
-            {/* ── Legendary levels 31+ (game cap is level 36; data defines to 40) ── */}
+            {/* ── Legendary levels 31+: present automatically to the live
+                 game cap of 36; 37–40 stay available for imported builds ── */}
             <div className={styles.sectionHeader}>
               <span>Legendary <span className={styles.sectionRange}>(Lv 31–{30 + LEGENDARY_MAX})</span></span>
               <span className={styles.sectionCount}>{legendaryLevels}/{LEGENDARY_MAX}</span>
             </div>
-            <div className={styles.progressionRow}>
-              <button className={styles.adjBtn}
-                disabled={legendaryLevels <= 0}
-                onClick={() => dispatch({ type: 'SET_LEGENDARY_LEVELS', levels: legendaryLevels - 1 })}>−</button>
-              <div className={styles.progressPips}>
-                {Array.from({ length: LEGENDARY_MAX }, (_, i) => (
+            <div className={styles.boxGrid}>
+              {Array.from({ length: LEGENDARY_MAX }, (_, i) => {
+                const on = i < legendaryLevels
+                const pastCap = i >= LEGENDARY_DEFAULT_LEVELS
+                return (
                   <button
+                    type="button"
                     key={i}
-                    className={`${styles.pip} ${i < legendaryLevels ? styles.pipFilled : ''}`}
-                    onClick={() => dispatch({ type: 'SET_LEGENDARY_LEVELS', levels: i + 1 })}
-                    title={`Legendary level ${i + 1} (character level ${31 + i})`}
-                  />
-                ))}
-              </div>
-              <button className={styles.adjBtn}
-                disabled={legendaryLevels >= LEGENDARY_MAX}
-                onClick={() => dispatch({ type: 'SET_LEGENDARY_LEVELS', levels: legendaryLevels + 1 })}>+</button>
+                    data-legendary={i + 1}
+                    className={`${styles.levelBox} ${styles.legendaryBox} ${on ? styles.levelBoxFilled : styles.levelBoxOff} ${pastCap ? styles.levelBoxPastCap : ''}`}
+                    onClick={() => toggleTail(i, legendaryLevels, setLegendary)}
+                    title={`Legendary level ${i + 1} (character level ${31 + i})${pastCap ? ' — beyond the live game cap of 36' : ''}${on ? ' — click to drop back to here' : ' — click to take it'}`}
+                  >
+                    <span className={styles.boxNum}>{31 + i}</span>
+                    <span className={styles.boxShort}>{classShortName('Legendary')}</span>
+                  </button>
+                )
+              })}
             </div>
           </>
         )}
