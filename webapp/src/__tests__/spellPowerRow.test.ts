@@ -61,6 +61,33 @@ describe('spellPowerRowValues', () => {
     const total = r.critMultiplierBonuses.filter(b => b.active).reduce((s, b) => s + b.value, 0)
     expect(total).toBe(Math.round(r.critMultiplier * 100))
   })
+
+  // N15 (PARITY_TODO): V2 BreakdownItemSpellPower::ReplacementTotal lets a
+  // trained "Infernal Sovereign" style effect use the higher of two elemental
+  // spell powers. Tiefling trains this as a pair of Acid<->Fire markers.
+  it('substitutes a higher alternate spell power when a replacement marker is present (N15)', () => {
+    const r = spellPowerRowValues(fakeStats({
+      'sp.Acid': 20, 'sp.Fire': 120, 'sp.Universal': 10,
+      'spellPowerReplacement.Acid.Fire': 1,
+    }), 'Acid')
+    // V2: max(Acid, Fire) + Universal = max(20, 120) + 10 = 130, not 20+10=30.
+    expect(r.power).toBe(130)
+  })
+
+  it('keeps its own spell power when no alternate is higher', () => {
+    const r = spellPowerRowValues(fakeStats({
+      'sp.Acid': 200, 'sp.Fire': 20, 'sp.Universal': 10,
+      'spellPowerReplacement.Acid.Fire': 1,
+    }), 'Acid')
+    expect(r.power).toBe(210)
+  })
+
+  it('ignores an alternate with no replacement marker trained', () => {
+    const r = spellPowerRowValues(fakeStats({
+      'sp.Acid': 20, 'sp.Fire': 120, 'sp.Universal': 10,
+    }), 'Acid')
+    expect(r.power).toBe(30)
+  })
 })
 
 // ---------------------------------------------------------------------------

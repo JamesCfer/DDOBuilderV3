@@ -103,4 +103,16 @@ describe('Forum export spellPowers section — table + Critical Multiplier colum
     // 0.75 + 0.25 + 0.5 = 1.5, truncated to 1 (V2 casts the multiplier to int)
     expect(fireLine).toBe('[TR][TD]Fire           [/TD][TD]0[/TD][TD]0%[/TD][TD]1[/TD][/TR]')
   })
+
+  // N15 (PARITY_TODO): Tiefling's "Infernal Sovereign" trains a
+  // SpellPowerReplacement marker that lets a higher alternate elemental
+  // spell power substitute in (V2 BreakdownItemSpellPower::ReplacementTotal).
+  it('substitutes a higher alternate spell power (Infernal Sovereign, N15)', () => {
+    const stats = mockStats({
+      'sp.Acid': 20, 'sp.Fire': 120, 'spellPowerReplacement.Acid.Fire': 1,
+    })
+    const lines = section.emit({ build, stats })
+    const acidLine = lines.find(l => l.includes('Acid'))!
+    expect(acidLine).toBe('[TR][TD]Acid           [/TD][TD]120[/TD][TD]0%[/TD][TD]0[/TD][/TR]')
+  })
 })

@@ -20,6 +20,36 @@ import type { ResolvedBonus } from './bonus'
 /** A spell crit deals double damage before any SpellCriticalDamage effect. */
 export const SPELL_CRIT_MULT_BASE = 2
 
+// The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
+// pseudo-entries) — mirrors effectParser.ts's SP_ALL_TYPES. Used to discover
+// which alternates a SpellPowerReplacement marker (e.g. Tiefling's "Infernal
+// Sovereign") was trained for, since SpellPowerStatSource only exposes lookup
+// by exact key, not enumeration.
+const SPELL_POWER_ELEMENTS = [
+  'Acid', 'Chaos', 'Cold', 'Electric', 'Evil', 'Fire', 'Force', 'Lawful',
+  'LightAlignment', 'Negative', 'Physical', 'Poison', 'Positive', 'Repair',
+  'Rust', 'Sonic', 'Untyped',
+]
+
+/**
+ * V2 BreakdownItemSpellPower::ReplacementTotal (SpellDamage.cpp): a trained
+ * SpellPowerReplacement effect (Tiefling's "Infernal Sovereign") lets one
+ * elemental spell power substitute for another whenever the other is higher.
+ * Only spell POWER is affected — V2 registers the replacement listener solely
+ * on the Effect_SpellPower breakdown, not critical chance or multiplier.
+ */
+export function replacementSpellPower(stats: SpellPowerStatSource, key: string): number {
+  const universal = stats.total('sp.Universal')
+  let best = stats.total(`sp.${key}`) + universal
+  for (const alt of SPELL_POWER_ELEMENTS) {
+    if (alt === key) continue
+    if (stats.total(`spellPowerReplacement.${key}.${alt}`) <= 0) continue
+    const altPower = stats.total(`sp.${alt}`) + universal
+    if (altPower > best) best = altPower
+  }
+  return best
+}
+
 /** The slice of BuildStats this module needs — keeps it React/hook free. */
 export interface SpellPowerStatSource {
   total(key: string): number
@@ -48,7 +78,7 @@ export function spellPowerRowValues(
     + stats.total('spCritDmg.All')
 
   return {
-    power: stats.total(`sp.${spKey}`) + stats.total('sp.Universal'),
+    power: replacementSpellPower(stats, spKey),
     critChance: Math.trunc(
       stats.total(`spCrit.${spKey}`) + stats.total('spCrit.Universal')),
     critMultiplier: SPELL_CRIT_MULT_BASE + critDmg / 100,

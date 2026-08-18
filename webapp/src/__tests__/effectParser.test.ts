@@ -65,9 +65,24 @@ describe('parseEffect — niche V2 effects', () => {
     expect(out[0].statKey).toBe('implementInHands.Orb')
   })
 
-  it('SpellPowerReplacement maps element via normalizer', () => {
-    const out = parseEffect(mk('SpellPowerReplacement', { Amount: 1, Item: 'Fire' }), 1, 'Test', 0, 0, ctx)
-    expect(out[0].statKey).toBe('spellPowerReplacement.Fire')
+  it('SpellPowerReplacement emits a self.alternate marker (V2 data uses AType=NotNeeded)', () => {
+    // Real data (Tiefling.tree.xml "Infernal Sovereign"): AType=NotNeeded,
+    // Item[0] is the type this effect is declared under, Item[1] the
+    // alternate that may substitute in if it is higher.
+    const out = parseEffect(
+      mk('SpellPowerReplacement', { AType: 'NotNeeded', Item: ['Acid', 'Fire'] as unknown as string }),
+      1, 'Test', 0, 0, ctx,
+    )
+    expect(out).toHaveLength(1)
+    expect(out[0].statKey).toBe('spellPowerReplacement.Acid.Fire')
+  })
+
+  it('SpellPowerReplacement normalizes Light/Alignment on both sides', () => {
+    const out = parseEffect(
+      mk('SpellPowerReplacement', { AType: 'NotNeeded', Item: ['Light/Alignment', 'Fire'] as unknown as string }),
+      1, 'Test', 0, 0, ctx,
+    )
+    expect(out[0].statKey).toBe('spellPowerReplacement.LightAlignment.Fire')
   })
 })
 
