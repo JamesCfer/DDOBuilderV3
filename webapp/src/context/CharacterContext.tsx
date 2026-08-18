@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useReducer } from 'react
 import type { CharacterBuild, Ability, FiligreeSlot, QuestDifficulty } from '../types/ddo'
 import { emptyBuild, migrateSentientGem } from '../types/ddo'
 import { aggregateLevelClasses, getLevelClasses, HEROIC_CAP } from '../lib/levelProgression'
-import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS } from '../lib/gamedata'
+import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS, LEGENDARY_DEFAULT_LEVELS } from '../lib/gamedata'
 import { useBuildLog } from './BuildLogContext'
 import { trainSpecialFeat, revokeSpecialFeat, trainFavorFeat, revokeFavorFeat } from '../lib/specialFeats'
 
@@ -138,7 +138,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     enhancementChoices: raw.enhancementChoices ?? {},
     enhancementSelections: raw.enhancementSelections ?? {},
     enhancementPinned: raw.enhancementPinned ?? [],
-    legendaryLevels: raw.legendaryLevels ?? 4,
+    legendaryLevels: raw.legendaryLevels ?? LEGENDARY_DEFAULT_LEVELS,
     skillRanks: raw.skillRanks ?? {},
     skillRanksByLevel: (raw as unknown as { skillRanksByLevel?: Record<number, Record<string, number>> }).skillRanksByLevel ?? {},
     gear: raw.gear ?? {},

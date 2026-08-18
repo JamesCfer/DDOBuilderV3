@@ -787,7 +787,10 @@ export function emptyBuild(): CharacterBuild {
     levelClasses: Array.from({ length: 20 }, () => 'Fighter'),
     totalLevel: 20,
     epicLevels: 10,
-    legendaryLevels: 4,
+    // 20 heroic + 10 epic + 6 legendary = the live game's level-36 cap
+    // (gamedata's LEGENDARY_DEFAULT_LEVELS; inlined to keep this module
+    // free of lib imports).
+    legendaryLevels: 6,
     baseAbilities: { Strength: 8, Dexterity: 8, Constitution: 8, Intelligence: 8, Wisdom: 8, Charisma: 8 },
     abilityLevelUps: {},
     purchasedPoints: 0,

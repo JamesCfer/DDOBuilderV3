@@ -71,7 +71,11 @@ export default function AbilityScores() {
             // V2 Life::TomeAtLevel — cap is shared across the codebase via levelProgression
             const totalCharLevel = build.totalLevel + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
             const tomeMod = Math.min(rawTome, tomeCapAtLevel(Math.max(1, totalCharLevel)))
-            const total = score + (races.find(r => r.Name === build.race)?.[ab] ?? 0) + lvlUp + tomeMod
+            // Racial ability modifier straight off the race file (Human 0,
+            // Dwarf +2 CON / -2 CHA, …). Shown as its own chip so the total
+            // is traceable: base + race + level-ups + tome.
+            const raceMod = race?.[ab] ?? 0
+            const total = score + raceMod + lvlUp + tomeMod
             const mod = Math.floor((total - 10) / 2)
             const canIncrease = score < MAX_SCORE && pointBuyCost(score + 1) - pointBuyCost(score) <= remaining
             const canDecrease = score > MIN_SCORE
@@ -85,11 +89,23 @@ export default function AbilityScores() {
                   {mod >= 0 ? '+' : ''}{mod}
                 </span>
                 <span className={styles.cost}>{pointBuyCost(score)} pts</span>
+                {raceMod !== 0 && (
+                  <span
+                    className={raceMod > 0 ? styles.racePos : styles.raceNeg}
+                    title={`${build.race} racial ${ab} modifier`}
+                  >{raceMod > 0 ? '+' : ''}{raceMod}R</span>
+                )}
+                {lvlUp > 0 && (
+                  <span className={styles.levelUp} title={`${lvlUp} level-up point${lvlUp === 1 ? '' : 's'} spent on ${ab}`}>+{lvlUp}L</span>
+                )}
                 {tomeMod > 0 && (
                   <span className={styles.tome} title="Tome bonus">+{tomeMod}T</span>
                 )}
                 {total !== score && (
-                  <span className={styles.total} title="Total score">=&nbsp;{total}</span>
+                  <span
+                    className={styles.total}
+                    title={`Total ${ab}: ${score} base${raceMod !== 0 ? ` ${raceMod > 0 ? '+' : '−'} ${Math.abs(raceMod)} race` : ''}${lvlUp > 0 ? ` + ${lvlUp} level-ups` : ''}${tomeMod > 0 ? ` + ${tomeMod} tome` : ''} = ${total}`}
+                  >=&nbsp;{total}</span>
                 )}
               </div>
             )
