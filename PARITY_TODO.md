@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 159 | **N15 — `Effect_SpellPowerReplacement` was parsed but never consumed, so cross-element spell power substitution never happened** — V2 (`BreakdownItemSpellPower.cpp:68-79,296-333` `ReplacementTotal()`/`IterateList()`) lets a trained effect declare that one spell-power element substitutes for another whenever the alternate is higher (Tiefling's "Infernal Sovereign" — "use Fire Spell Power in place of Acid if it is higher, and vice versa"), and only the raw spell-power breakdown is affected (crit chance/multiplier breakdowns never register the replacement listener in V2, so they are untouched). Two bugs: (1) real V2 data always tags this effect `AType=NotNeeded`, so `resolveValue` returned `null` and the effect was dropped before ever reaching the `SpellPowerReplacement` case in `effectParser.ts`'s switch — it never even parsed. (2) the parsing itself collapsed each effect's `Item[0]` (the type this effect is declared under) and `Item[1]` (its alternate) into two independent `spellPowerReplacement.<element>` markers with no pairing, so even if reached there was no way to know which element could substitute for which. Fixed by intercepting `SpellPowerReplacement` before the AType-null gate (matching the pattern already used for `SaveBonusAbility`/`GrantFeat`/etc.) and emitting a paired `spellPowerReplacement.<self>.<alt>` marker; added `replacementSpellPower()` (`lib/spellPowerRow.ts`, exported) that takes `max(own, ...alternates) + Universal` and is now used by both the Breakdowns panel (`spellPowerRowValues`) and the forum export's `SpellPowers` section (`sections.ts`), replacing their previous identical-but-incomplete `sp.<key> + sp.Universal` inline math. 9 new regression tests across `effectParser.test.ts`, `spellPowerRow.test.ts`, `parityPassX15SpellPowers.test.ts`. | this PR |
 | 158 | **AP spent in a tree the build can no longer reach stayed on the books** — swap a class out (a Rogue/Alchemist rebuilt into Monk / Sacred Fist) and the points spent in Assassin and Vile Chemist have nowhere to live. V2 refunds them the moment `CEnhancementsPane::DetermineTrees` (EnhancementsPane.cpp:340-374) re-determines the tree list — any selected tree that no longer meets its requirements gets `Build::Enhancement_ResetEnhancementTree`, "no user confirmation for this as they have already changed the base requirement that included the tree. All APs spent in this tree have to be returned to the pool of those available." V3's panel pruned only the PINNED list, so the spend survived in the document: invisible (no tree on screen owned it), still counted in the panel's "N / 80 AP" header (a user-reported build read 16 AP spent with nothing to show for it — Assassin 9 + Vile Chemist 7), and still feeding its effects into the engine (that build kept the Assassin sneak-attack die). New `lib/enhancementSpend.ts` holds the one copy of the AP-cost arithmetic that `EnhancementTreePanel`/`EpicDestiniesPanel`/`ReaperPanel` had each duplicated (and which the engine could not see at all); new `treeAvailability.orphanedEnhancementTrees` reports trees holding spend the build cannot reach, evaluated with account-unlock feats assumed and returning nothing when the tree or class catalogue is empty (the #142 guard — a still-loading catalogue must never orphan a whole build). The panel now refunds them exactly as V2 does, logging "…no longer available to this build — N AP refunded", and `buildStats` ignores their effects for a build whose panel has not been opened since the change. 12 new tests in `orphanedEnhancementSpend.test.ts` + `orphanedSpendPanel.test.tsx`. | this PR |
 | 157 | **Iconic past-life stances had no toggle, and their name collided with the race auto-stance** — every iconic race file carries an `Acquire=IconicPastLife` feat hosting a `Group="Iconic"` stance (V2 `Life::AllSpecialFeats` → `NotifyNewStance`) whose toggle is what applies that past life's bonus: the effects are gated on `Requirement Type="Stance"` (+2/4/6% Doublestrike for Aasimar Scourge, +10/20/30 spell power for Bladeforged/Morninglord/Deep Gnome, Razorclaw Shifter's attack/damage, Tabaxi's tactical DCs, …). V3 recorded the past lives but `collectDynamicStances` only scanned trees/items/spells/`featChoices`, so no toggle existed and none of those bonuses could ever apply. Worse, V2 names these stances `"<Race> "` with a TRAILING SPACE precisely so they stay distinct from the auto-stance V2 generates for the race itself, and fast-xml-parser's `trimValues` collapsed the two onto one name — so BEING an iconic race silently granted that race's past-life stance bonus with no past life and no toggle. `dataLoaders.restoreIconicStanceNames` puts the space back on the stance and, together with it, on the `Stance` requirement items inside the same feat; `collectDynamicStances` now surfaces one toggle per acquired iconic past life (accepting both `pastLives` key conventions — the panel writes the race name, the V2 importer the whole feat name); and the engine maps a persisted/imported trimmed name onto the iconic stance so existing saves keep their bonus (the build's own race name is still filtered out by `autoFamily`, so being the race grants nothing). V2's "Iconic" group is single-selection, which V3's existing group rule already enforces — lighting one puts the others out. 15 new tests in `iconicPastLifeStances.test.ts` + `iconicStancePanel.test.tsx`. | this PR |
 | 156 | **Auto stances never showed as active, and could not be tried on** — `<AutoControlled/>` is an XML FLAG that fast-xml-parser turns into `""`, so `StancesPanel`'s `s.AutoControlled` filter matched none of Stances.xml's 30 entries: the pane's "Automatic" section was permanently empty and every auto stance (Single Weapon Fighting, Light Armor, Sword and Board, …) rendered as an unlit hand-toggle whose clicks the engine's auto-stance families then discarded. Three fixes. (a) `isAutoControlled()` (flag semantics, same rule as `effectParser`'s `flagSet`) classifies them correctly, and `BuildStats.activeStances` publishes the settled stance set — the same one every stance-gated effect is evaluated against — so the pane shows what is actually live, including the derived stances V2 generates buttons for (wielded weapon type, race, Green Steel dominance, alignment). (b) `useStaticBundle` now fetches `/api/stances`, which nothing in the app did: `BuildStatsInput.allStances` was always `undefined` outside tests, so the data-driven `Group=Auto` pass (V2 `CStanceButton::Evaluate`) never ran in the live app at all. With it wired, and with `GroupMember`/`GroupMember2`/`ItemTypeInSlot`/`WeaponTypesEquipped` promoted to honestly-evaluated requirement types (the stance context now carries the per-slot item types, moved ahead of the stance pass), the gear-gated half of the catalogue — Staff, Sword and Board, Axe, Thrown Weapon, Unarmed, Swashbuckling — auto-activates as it does in V2 instead of being skipped as unmodelled. Verified no-change against the golden `exampledps` build/export. (c) New `build.stanceOverrides` (V3-only; V2's Auto buttons are read-only) forces an auto stance on or off for testing — applied both before the fighting-style/Centered derivation, so a forced stance feeds the stances derived from it, and after every auto pass, so a forced-off one stays off. 18 new tests in `autoStanceToggles.test.ts` + `stancesPanelAuto.test.tsx`. | this PR |
@@ -292,6 +293,42 @@ Remaining read/write-fidelity gaps:
 ---
 
 ## High-priority remaining — numerical correctness & effect parser coverage
+
+### New gaps — 2026-08-16 full V2/V3 scan
+
+Sixth review pass (five parallel scans: `Breakdown*.cpp` vs `buildStats.ts`/
+`useBuildStats.ts`, `Effect.cpp`/`Effect.h`'s full 233-value `EffectType` +
+24-value `AmountType` enums vs `effectParser.ts`, `*Pane.cpp`/`*Dialog.cpp` vs
+`webapp/src/components/`, `ForumExportDlg.cpp` vs `sections.ts`, and
+`Item.cpp`/`EquippedGear.cpp`/`Augment.cpp`/`Build.cpp` vs
+`dataLoaders.ts`/`buildStats.ts`). Effect Type/AType parser coverage and the
+`Breakdown*.cpp` numerical surface are otherwise confirmed still complete —
+one new numerical gap found:
+
+- ✅ **N15 — CLOSED (#159): `Effect_SpellPowerReplacement` is now parsed AND
+  consumed — spell power substitution applies on cross-element builds.** V2
+  (`BreakdownItemSpellPower.cpp:68-79, 296-333`, `ReplacementTotal()`/
+  `IterateList()`) lets an effect declare that one spell-power element
+  substitutes for another whenever the other is higher (e.g. "use Fire Spell
+  Power in place of Cold Spell Power if it is higher, and vice versa"), and
+  only the raw spell-power breakdown is affected (crit chance/multiplier
+  never register the replacement listener in V2). Two bugs, both fixed:
+  (1) real data always tags this effect `AType=NotNeeded`, so the null-Amount
+  gate in `effectParser.ts` dropped it before it ever reached the
+  `SpellPowerReplacement` case — it never even parsed; now intercepted
+  earlier, alongside `SaveBonusAbility`/`GrantFeat`/etc. (2) parsing collapsed
+  `Item[0]` (self) and `Item[1]` (alternate) into two independent
+  `spellPowerReplacement.<element>` markers with no pairing; now emits a
+  paired `spellPowerReplacement.<self>.<alt>` marker. New
+  `replacementSpellPower()` (`lib/spellPowerRow.ts`) computes
+  `max(own, ...alternates) + Universal` and is used by both the Breakdowns
+  panel and the forum export's `SpellPowers` section. Confirmed real-data
+  impact: Tiefling's "Infernal Sovereign" racial enhancement line
+  (`Output/DataFiles/EnhancementTrees/Tiefling.tree.xml`,
+  `TieflingScoundrel.tree.xml`) depends entirely on this mechanic for
+  Acid/Cold/Electric/Sonic spell power. 9 new regression tests across
+  `effectParser.test.ts`, `spellPowerRow.test.ts`,
+  `parityPassX15SpellPowers.test.ts`.
 
 ### Golden-build residue (user-supplied V2 breakdown export, 2026-07-17)
 
@@ -938,6 +975,45 @@ occurrences confirmed), so no change is needed there.
   (via `gearSlots.ts`'s `displaySlotsForItemKey`) through the existing
   `gearSlotsRemovedByV2` mechanism, so a cleared slot's augments/set-bonus
   contributions die with it too — same pattern as D3/D4.
+- ❌ **D8 — 2026-08-16 scan: `Build::VerifyGear`'s item-revocation pass has no
+  V3 equivalent.** V2 (`Build.cpp:2623-2665`) re-checks every equipped item on
+  every level-up, race/class change, or feat-training event, and force-
+  unequips (with a log entry) any item whose `item.MinLevel() > Level()` OR
+  whose `<Requirements>` block (race/class/feat/alignment gates) is no longer
+  met. 1,473 of the shipped `.item` files carry a `<Requirements>` block, and
+  `dataLoaders.ts` parses `item.Requirements` fine, but nothing in
+  `buildStats.ts` ever gates on it before applying the item's effects (only
+  `GearPanel.tsx` reads it, for display). A build can equip — or import from a
+  V2 save, or reach via level-down/race-swap — a race/class/feat-restricted or
+  too-high-level item, and V3 will keep applying its full effects/set-bonus/
+  augment contributions forever, where V2 would silently strip them. Distinct
+  from D3/D4/D7 (Minor Artifact, Artifact-Filigree gate, `RestrictedSlots`) —
+  none of those cover per-item usability requirements or level gating.
+- ❌ **D9 — 2026-08-16 scan: `Augment`'s cascading extra-slot fields
+  (`<AddAugment>`, `<GrantAugment>`, `<GrantConditionalAugment>`) are
+  entirely unmodeled.** V2 (`Augment.h:41-44`, applied via the shared
+  `AddAugment()` helper in `GlobalSupportFunctions.cpp:1967-2010`, called from
+  `FindGearDialog.cpp:589-638`/`ItemSelectDialog.cpp`) lets selecting certain
+  augments append one or more *new* augment slots to the host item (before
+  any trailing Mythic slot) — the mechanic behind Legendary Alchemical
+  crafting (`Alchemical.Augments.xml`, 62 uses — e.g. picking "Adamantine" in
+  the Material slot adds a "Legendary Alchemical Tier 1" slot, cascading
+  further), Thunderforged (32 uses), and Legendary Green Steel Heroic (147
+  uses). `gearSlotUpgrades.ts` only implements the unrelated `<SlotUpgrade>`/
+  `UpgradeType` mechanism (D2) — no consumer of `AddAugment`/`GrantAugment`/
+  `GrantConditionalAugment` exists anywhere in `webapp/`. Any Alchemical/
+  Thunderforged/Greensteel-Heroic item in V3 exposes only its native slot(s)
+  and can never reach its higher-tier slots or effects; a V2-imported save
+  with tiered augments already chosen has nowhere in V3's model to attach
+  them (silently dropped on import).
+- ❌ **D10 — 2026-08-16 scan: augment `ReplacedDynamically` weapon-type
+  substitution not handled.** One augment (`DeckOfManyCurses.Augments.xml`,
+  "Favored Weapon") uses `Effect_AddGroupWeapon` with a trailing
+  `<Item>ReplacedDynamically</Item>` that V2 substitutes with the host item's
+  actual weapon type at apply time (`Build.cpp:5024-5031`). No V3 code path
+  handles `ReplacedDynamically` for augment effects (only feat/enhancement
+  `AddGroupWeapon` adds are modeled). Low-impact — a single augment file —
+  but a genuine silent drop.
 
 Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
 Crafting-style systems don't exist in V2's data model (no crafting XML
@@ -965,6 +1041,23 @@ consistent with the existing #71 sentient-gem finding.
   found **no new gaps**: every feature maps to an existing V3 component or a
   legitimate out-of-scope MFC/dev-tool detail (see "Out-of-scope by design"
   below). U1–U11 (see Done table) remain the complete list of ported UI work.
+- ❌ **U12 — 2026-08-16 scan: per-tree save/load to a standalone file has no
+  V3 equivalent.** `EnhancementsPane.cpp::OnSaveTree`/`OnLoadTree`
+  (~lines 932-1200) and `DestinyPane.cpp::OnSaveTree`/`OnLoadTree`
+  (~lines 984-1120) let a V2 player export just the currently-selected
+  Enhancement tree's spend to a standalone `*.DDOETree` file, or a Destiny
+  tree's spend to `*.DDODestinyTree`, via a `CFileDialog` — separate from the
+  full-build `.DDOBuild` export and distinct from gear's "named set"
+  clipboard export/import (which V3 did port — `SAVE_GEAR_SET`/
+  `GearImportDialog.tsx`). Lets a V2 player share "just my Assassin tree" on
+  the forums without exposing/overwriting the rest of their build. No
+  clipboard/file/download logic analogous to the gear-set feature exists in
+  `EnhancementTreePanel.tsx`/`TreeGrid.tsx`/`EpicDestiniesPanel.tsx`.
+  `ReaperEnhancementsPane.cpp` has no such feature in V2 either, so no gap
+  there. Missed by all five prior UI sweeps because the bulk of
+  `EnhancementsPane`/`DestinyPane`'s functionality (the tree-spending UI
+  itself) is correctly ported — this is a secondary save/load-to-file
+  feature buried in the same files rather than its own dialog class.
 
 ### Forum export gaps
 
@@ -1136,6 +1229,37 @@ already closed; these are new, some content gaps (not just formatting):
   columns remain out, both undocumented in V3's data model — noted in the
   Done entry as a future-pass candidate.
 
+2026-08-16 scan diffed every remaining `Add*`/`Export*` method against
+`sections.ts`; two new gaps beyond X1–X18:
+
+- ❌ **X19 — `AddGear`/`ExportGear`/`AddAlternateGear` (`ForumExportDlg.cpp:
+  1758-1943`) have no real V3 equivalent — only a bare slot list.** V2's full
+  Gear section emits a colored `[SIZE=6]` gear-set-name header, a
+  `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>"
+  cell, a red "Restricted by another item" row for slot conflicts, per-item
+  buff-description lines (`bSimple=false` only), augment-slot lines
+  (including a yellow "Empty augment slot" warning and `ChooseLevel` `+N`
+  suffixes), set-bonus lines (`[S]…[/S]` strikethrough when suppressed by an
+  augment), and minor-artifact/weapon filigree lines. V3's `gear` section
+  (`sections.ts`, id `'Gear'`) emits only a bare `[b]Gear[/b]:` heading with
+  flat `  slot: item` lines. `simpleGear` (V2's `bSimple=true` path, i.e.
+  `AddSimpleGear`) does add slot-sorted augment lines (from #33/pass 29) but
+  still lacks the table wrap, colors, header, drop-location text, restricted-
+  slot warning, set-bonus lines, and filigree lines V2's simple variant still
+  includes. `AddAlternateGear`, which calls the same `bSimple=true` exporter
+  per non-active gear setup, has the identical gap in `alternateGearLayouts`.
+- ❌ **X20 — `AddBonuses` has different semantics from V3's `bonusesDump`, not
+  just formatting (`ForumExportDlg.cpp:1093-1165`).** V2 emits a `[TABLE]`
+  with a fixed 10-column header (Statistic | Enhancement | Insightful |
+  Artifact | Quality | Profane | Equipment | Competence | Exceptional |
+  Festive | Fortune), one row per breakdown named in `Life::MonitoredBonuses()`
+  (a small, user-curated watch-list), each cell showing that bonus-type's
+  contribution to that stat (blank if 0). V3's `bonusesDump`
+  (`sections.ts`, id `'Bonuses'`) instead dumps every non-zero accumulated
+  stat key with its total — a generic debug listing unrelated to V2's
+  per-bonus-type table or the monitored-list filter (the section's own code
+  comment already concedes this is a debug export, not real parity).
+
 ---
 
 ## Random-build parity fuzzer
@@ -1194,22 +1318,25 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#120 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-07 (fifth pass) —
+*Maintained by the parity-pass series. See PRs #53–#233 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-08-16 (sixth pass) —
 five parallel scans covering numerical correctness (`Breakdown*.cpp` vs.
-`useBuildStats.ts`/`buildStats.ts`), effect parser coverage (`Effect.cpp` vs.
-`effectParser.ts`), UI features (`*Pane.cpp`/`*Dialog.cpp` vs.
-`webapp/src/components/`), forum export (`ForumExportDlg.cpp` vs.
-`sections.ts`), and data-loading edge cases (`Item.h`/`Build.cpp` vs.
-`dataLoaders.ts`/`buildStats.ts`). New gaps found: N10/N11 (percent-effect
-rounding mode and `Temporary` bonus-type exclusion in `BreakdownItem.cpp`'s
-percentage math), N12/N13 (`<Rank>` gate and `<ApplyAsItemEffect/>` flag on
-`Effect` — both honored only at one narrow call site instead of universally),
-D3–D7 (Minor Artifact single-equip + gated Artifact Filigree, Docent
-Mithral/Adamantine Body armor feat requirement, Legendary Green Steel
-auto-stances, `RestrictedSlots`), and X10–X17 (eight forum-export sections
-with dead/missing/wrong content: SpecialFeats, Skills grid, Consolidated
-Feats semantics, Weapon Damage fields, Energy Resistances type list,
-Spell Powers/Tactical DCs table formatting, Enhancement/Destiny/Reaper
-section headers). UI-feature parity (U1–U11) and effect-parser Type/AType
-switch-case coverage were both reconfirmed complete with no new gaps.*
+`useBuildStats.ts`/`buildStats.ts`), effect parser coverage (`Effect.cpp`/
+`Effect.h`'s full `EffectType`/`AmountType` enums vs. `effectParser.ts`), UI
+features (`*Pane.cpp`/`*Dialog.cpp` vs. `webapp/src/components/`), forum
+export (`ForumExportDlg.cpp` vs. `sections.ts`), and data-loading edge cases
+(`Item.cpp`/`EquippedGear.cpp`/`Augment.cpp`/`Build.cpp` vs.
+`dataLoaders.ts`/`buildStats.ts`). New gaps found: N15
+(`Effect_SpellPowerReplacement` parsed but never consumed, Tiefling
+cross-element spell power), D8–D10 (`Build::VerifyGear` item-requirement/
+level revocation unmodeled, `Augment` cascading extra-slot fields
+`AddAugment`/`GrantAugment`/`GrantConditionalAugment` unmodeled,
+`ReplacedDynamically` weapon-type substitution on augment effects), U12
+(per-tree save/load to a standalone `.DDOETree`/`.DDODestinyTree` file), and
+X19–X20 (forum-export Gear section reduced to a bare slot list — no table,
+colors, drop-location, set-bonus, or filigree lines — and `AddBonuses`'s
+per-bonus-type monitored-stat table replaced by an unrelated generic debug
+dump). Effect-parser Type/AType switch-case coverage (233 EffectTypes, 24
+AmountTypes) was reconfirmed complete with no new gaps; the fifth pass's
+UI-feature sweep (U1–U11) was reconfirmed correct except for the one U12 miss
+above.*

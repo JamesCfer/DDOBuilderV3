@@ -825,6 +825,20 @@ export function parseEffect(
     return [{ statKey: `melee.${kind}.${its[0]}`, value: 1, bonusType: effect.Bonus ?? 'Enhancement', source }]
   }
 
+  // V2 parity (BreakdownItemSpellPower::IterateList/ReplacementTotal): lets one
+  // spell power type substitute for another when the other is higher (Tiefling
+  // "Infernal Sovereign" — "use Fire Spell Power in place of Acid if higher, and
+  // vice versa"). Item[0] is the type this effect is declared under, Item[1..]
+  // are alternates. AType is always NotNeeded in real data (no Amount), so this
+  // must fire regardless of resolved value, like the other marker effects above.
+  if (effect.Type === 'SpellPowerReplacement') {
+    const its = toStringArray(effect.Item).map(normalizeSpellElement)
+    if (its.length < 2) return []
+    const [self, ...alts] = its
+    const bt = effect.Bonus ?? 'Enhancement'
+    return alts.map(alt => ({ statKey: `spellPowerReplacement.${self}.${alt}`, value: 1, bonusType: bt, source }))
+  }
+
   if (resolved === null) {
     // Marker effects whose AType (NotNeeded / SpellInfo) yields no Amount but
     // which V2 still consumes: immunities and DR bypasses feed display
@@ -1811,11 +1825,6 @@ export function parseEffect(
       return items.length > 0
         ? items.map(item => make(`implementInHands.${item}`))
         : [make('implementInHands.Any')]
-
-    case 'SpellPowerReplacement':
-      return items.length > 0
-        ? items.map(item => make(`spellPowerReplacement.${normalizeSpellElement(item)}`))
-        : []
 
     // -----------------------------------------------------------------------
     // Control-flow / UI-only effects (no flat stat contribution)

@@ -18,6 +18,7 @@ import { destinyPoolForBuild } from '../destiny'
 import { SKILL_NAMES } from '../gamedata'
 import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown'
 import { computeSpellDC, computeCasterLevel, computeMaxCasterLevel } from '../spells/spellMath'
+import { replacementSpellPower } from '../spellPowerRow'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -669,7 +670,6 @@ const spellPowers: SectionDef = {
     // V2 has no "Universal" row — BreakdownItemSpellPower::CreateOtherEffects
     // folds the universal spell power/lore/crit-multiplier breakdowns into
     // every concrete type's total instead.
-    const universalPower = stats.total('sp.Universal')
     const universalCrit = stats.total('spCrit.Universal')
     const universalMult = stats.total('spCritDmg.Universal') + stats.total('spCritDmg.All')
     const lines: string[] = [
@@ -680,7 +680,7 @@ const spellPowers: SectionDef = {
       '[TD][COLOR=rgb(65, 168, 95)]Critical Multiplier[/COLOR][/TD][/COLOR][/TR]',
     ]
     for (const [label, key] of V2_SPELL_POWER_ROWS) {
-      const power = stats.total(`sp.${key}`) + universalPower
+      const power = replacementSpellPower(stats, key)
       const crit = Math.trunc(stats.total(`spCrit.${key}`) + universalCrit)
       const mult = Math.trunc(stats.total(`spCritDmg.${key}`) + universalMult)
       lines.push(`[TR][TD]${label}[/TD][TD]${power}[/TD][TD]${crit}%[/TD][TD]${mult}[/TD][/TR]`)
