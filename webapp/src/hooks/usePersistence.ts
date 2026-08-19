@@ -9,6 +9,9 @@ import {
   emptyDocument,
   syncBuildIntoDocument,
   findActiveBuild,
+  applyCharacterName,
+  characterNameOf,
+  DEFAULT_CHARACTER_NAME,
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
 import { runBackgroundParityCheck } from '../lib/parityClient'
@@ -59,7 +62,7 @@ function writeDocs(docs: CharacterDocument[]): void {
  * not only when one is dispatched through LOAD_BUILD. Stamps `_v: 2`.
  */
 export function migrateDocument(doc: CharacterDocument): CharacterDocument {
-  return {
+  const migrated: CharacterDocument = {
     ...doc,
     lives: doc.lives.map(life => ({
       ...life,
@@ -67,6 +70,15 @@ export function migrateDocument(doc: CharacterDocument): CharacterDocument {
     })),
     _v: 2,
   }
+  // Naming migration: saves are named after the character. Documents stored
+  // before that (or with the placeholder name still on them) take the name
+  // from their active build's Name field, and any life still carrying a
+  // generated "Life N" label is re-derived from it.
+  const stored = migrated.name?.trim()
+  const name = stored && stored !== DEFAULT_CHARACTER_NAME
+    ? stored
+    : characterNameOf(findActiveBuild(migrated))
+  return applyCharacterName(migrated, name)
 }
 
 /**

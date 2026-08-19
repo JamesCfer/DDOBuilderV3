@@ -105,7 +105,9 @@ describe('U1 — addLifeToDocument / addBuildToLife', () => {
     expect(next.lives).toHaveLength(2)
     expect(next.activeLifeId).toBe(next.lives[1].id)
     expect(next.activeBuildId).toBe(next.lives[1].builds[0].id)
-    expect(next.lives[1].name).toBe('Life 2')
+    // Lives are named after the character, not by position alone.
+    expect(next.lives[1].name).toBe('New Character \u2014 Life 2')
+    expect(next.lives[1].builds[0].name).toBe('New Character')
   })
 
   it('clones the source build into the life with a fresh id (level snapshot)', () => {
@@ -173,7 +175,7 @@ describe('U1 — renameLife', () => {
     doc = addLifeToDocument(doc)
     const next = renameLife(doc, doc.lives[0].id, 'Past Life: Monk')
     expect(next.lives[0].name).toBe('Past Life: Monk')
-    expect(next.lives[1].name).toBe('Life 2')
+    expect(next.lives[1].name).toBe('New Character \u2014 Life 2')
   })
 })
 

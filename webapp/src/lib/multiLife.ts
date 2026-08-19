@@ -26,15 +26,72 @@ function generateId(): string {
   })
 }
 
+// ---------------------------------------------------------------------------
+// Character naming
+//
+// A save is identified by the character's name (CharacterInfo's "Name" field,
+// stored on every build) — not by a positional "Life N" label. `doc.name` is a
+// mirror of the active build's name, and every life the app named itself
+// follows it too, so renaming the character renames its save, its life tabs
+// and its export filenames. Lives the user renamed by hand are left alone.
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_CHARACTER_NAME = 'New Character'
+
+/** The character name carried by a build, or the default when it is blank. */
+export function characterNameOf(build?: CharacterBuild | null): string {
+  return build?.name?.trim() || DEFAULT_CHARACTER_NAME
+}
+
+/**
+ * True when a life carries an app-generated name rather than one the user
+ * typed. Documents saved before auto-naming have no `autoName` flag: their
+ * generated names were "Life 1", "Life 2", … so anything else was user-typed.
+ */
+export function hasAutoLifeName(life: Life): boolean {
+  if (typeof life.autoName === 'boolean') return life.autoName
+  const name = life.name.trim()
+  return name === '' || /^life \d+$/i.test(name)
+}
+
+/**
+ * The generated name for the life at `index` of a character with `total`
+ * lives: the character's name, with a life number appended only when there is
+ * more than one life to tell apart.
+ */
+export function defaultLifeName(characterName: string, index: number, total: number): string {
+  return total > 1 ? `${characterName} \u2014 Life ${index + 1}` : characterName
+}
+
+/**
+ * Names the document after the character and re-derives the name of every
+ * auto-named life. Returns `doc` unchanged when nothing moves, so it is safe
+ * to call from an effect.
+ */
+export function applyCharacterName(doc: CharacterDocument, name: string): CharacterDocument {
+  const character = name.trim() || DEFAULT_CHARACTER_NAME
+  let changed = doc.name !== character
+  const lives = doc.lives.map((life, i) => {
+    if (!hasAutoLifeName(life)) return life
+    const lifeName = defaultLifeName(character, i, doc.lives.length)
+    if (life.name === lifeName && life.autoName === true) return life
+    changed = true
+    return { ...life, name: lifeName, autoName: true }
+  })
+  return changed ? { ...doc, name: character, lives } : doc
+}
+
 /**
  * Wraps a flat CharacterBuild[] into a single Character with one Life
  * containing all builds. Used to migrate legacy v1 saves.
  */
-export function wrapLegacy(builds: CharacterBuild[], characterName = 'Imported'): CharacterDocument {
+export function wrapLegacy(builds: CharacterBuild[], characterName?: string): CharacterDocument {
+  const name = characterName?.trim() || characterNameOf(builds[0])
   const lifeId = generateId()
   const life: Life = {
     id: lifeId,
-    name: 'Life 1',
+    name: defaultLifeName(name, 0, 1),
+    autoName: true,
     race: builds[0]?.race ?? '',
     alignment: builds[0]?.alignment ?? 'True Neutral',
     abilityTomes: builds[0]?.abilityTomes ?? {},
@@ -45,7 +102,7 @@ export function wrapLegacy(builds: CharacterBuild[], characterName = 'Imported')
   }
   return {
     id: generateId(),
-    name: characterName,
+    name,
     guildLevel: 0,
     applyGuildBuffs: false,
     characterTomes: {},
@@ -86,10 +143,12 @@ export function isCharacterDocument(parsed: unknown): parsed is CharacterDocumen
  */
 export function emptyDocument(build?: CharacterBuild): CharacterDocument {
   const b = build ?? emptyBuild()
+  const name = characterNameOf(b)
   const lifeId = generateId()
   const life: Life = {
     id: lifeId,
-    name: 'Life 1',
+    name: defaultLifeName(name, 0, 1),
+    autoName: true,
     race: b.race,
     alignment: b.alignment,
     abilityTomes: { ...b.abilityTomes } as Partial<Record<Ability, number>>,
@@ -100,7 +159,7 @@ export function emptyDocument(build?: CharacterBuild): CharacterDocument {
   }
   return {
     id: generateId(),
-    name: b.name || 'New Character',
+    name,
     guildLevel: b.guildLevel ?? 0,
     applyGuildBuffs: b.applyGuildBuffs ?? false,
     characterTomes: { ...b.abilityTomes } as Partial<Record<Ability, number>>,
@@ -158,7 +217,9 @@ export function syncBuildIntoDocument(doc: CharacterDocument, build: CharacterBu
       builds,
     }
   })
-  return { ...doc, lives, activeBuildId: build.id }
+  // The save is named after the character, so the document (and any auto-named
+  // life) follows the live build's Name field on every sync.
+  return applyCharacterName({ ...doc, lives, activeBuildId: build.id }, build.name)
 }
 
 /** Points the document's active life/build at the given ids (if they exist). */
@@ -175,10 +236,14 @@ export function setActiveBuild(doc: CharacterDocument, lifeId: string, buildId: 
  * makes it active.
  */
 export function addLifeToDocument(doc: CharacterDocument): CharacterDocument {
-  const b = emptyBuild()
+  // A new life is the same character over again: it keeps the character name
+  // rather than resetting the build to the "New Character" placeholder.
+  const b = { ...emptyBuild(), name: doc.name }
+  const total = doc.lives.length + 1
   const life: Life = {
     id: generateId(),
-    name: `Life ${doc.lives.length + 1}`,
+    name: defaultLifeName(doc.name, doc.lives.length, total),
+    autoName: true,
     race: b.race,
     alignment: b.alignment,
     abilityTomes: {},
@@ -187,7 +252,12 @@ export function addLifeToDocument(doc: CharacterDocument): CharacterDocument {
     specialFeats: [],
     builds: [b],
   }
-  return { ...doc, lives: [...doc.lives, life], activeLifeId: life.id, activeBuildId: b.id }
+  // Adding a second life makes the existing auto-named lives ambiguous, so
+  // re-derive every generated name against the new life count.
+  return applyCharacterName(
+    { ...doc, lives: [...doc.lives, life], activeLifeId: life.id, activeBuildId: b.id },
+    doc.name,
+  )
 }
 
 /**
@@ -198,7 +268,7 @@ export function addLifeToDocument(doc: CharacterDocument): CharacterDocument {
 export function addBuildToLife(doc: CharacterDocument, lifeId: string, source?: CharacterBuild): CharacterDocument {
   const lifeIdx = doc.lives.findIndex(l => l.id === lifeId)
   if (lifeIdx < 0) return doc
-  const next = source ? cloneBuild(source) : emptyBuild()
+  const next = source ? cloneBuild(source) : { ...emptyBuild(), name: doc.name }
   if (source) next.name = source.name
   const lives = [...doc.lives]
   lives[lifeIdx] = { ...lives[lifeIdx], builds: [...lives[lifeIdx].builds, next] }
@@ -214,14 +284,14 @@ export function deleteLifeFromDocument(doc: CharacterDocument, lifeId: string): 
   const idx = doc.lives.findIndex(l => l.id === lifeId)
   if (idx < 0) return doc
   const lives = doc.lives.filter(l => l.id !== lifeId)
-  if (doc.activeLifeId !== lifeId) return { ...doc, lives }
+  if (doc.activeLifeId !== lifeId) return applyCharacterName({ ...doc, lives }, doc.name)
   const fallback = lives[Math.max(0, idx - 1)]
-  return {
+  return applyCharacterName({
     ...doc,
     lives,
     activeLifeId: fallback.id,
     activeBuildId: fallback.builds[0]?.id ?? '',
-  }
+  }, doc.name)
 }
 
 /**
@@ -244,11 +314,23 @@ export function deleteBuildFromDocument(doc: CharacterDocument, lifeId: string, 
   return { ...doc, lives, activeLifeId: lifeId, activeBuildId: fallback.id }
 }
 
-/** Renames a life. */
+/**
+ * Renames a life. The typed name is the user's own, so it is pinned
+ * (`autoName: false`) and no longer follows the character name; clearing it
+ * hands the life back to auto-naming.
+ */
 export function renameLife(doc: CharacterDocument, lifeId: string, name: string): CharacterDocument {
+  const trimmed = name.trim()
+  if (trimmed === '') {
+    const cleared = {
+      ...doc,
+      lives: doc.lives.map(l => (l.id === lifeId ? { ...l, name: '', autoName: true } : l)),
+    }
+    return applyCharacterName(cleared, doc.name)
+  }
   return {
     ...doc,
-    lives: doc.lives.map(l => (l.id === lifeId ? { ...l, name } : l)),
+    lives: doc.lives.map(l => (l.id === lifeId ? { ...l, name: trimmed, autoName: false } : l)),
   }
 }
 
@@ -263,9 +345,11 @@ export function promoteBuildToLife(
 ): Life {
   const cloned: CharacterBuild = JSON.parse(JSON.stringify(source))
   cloned.id = generateId()
+  const named = options.name?.trim()
   return {
     id: generateId(),
-    name: options.name ?? `Life of ${source.name}`,
+    name: named || characterNameOf(source),
+    autoName: !named,
     race: source.race,
     alignment: source.alignment,
     abilityTomes: { ...source.abilityTomes } as Partial<Record<Ability, number>>,

@@ -740,6 +740,10 @@ export type QuestDifficulty =
 export interface Life {
   id: string
   name: string
+  /** True when `name` was generated from the character name rather than typed
+   *  by the user; such names are re-derived whenever the character is renamed.
+   *  Absent on documents saved before auto-naming (see hasAutoLifeName). */
+  autoName?: boolean
   race: string
   alignment: string
   abilityTomes: Partial<Record<Ability, number>>
