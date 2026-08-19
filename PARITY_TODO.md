@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 160 | **D8 — `Build::VerifyGear` item-revocation pass** — V2 (`Build.cpp:2623-2665`) force-unequips any equipped item whose `MinLevel` exceeds the build's character level or whose `<Requirements>` (race/class/feat/alignment gates) are no longer met, stripping its effects/augments/set-bonus contributions too. V3 had no equivalent; a race/level-restricted item (e.g. an imported V2 save, or one reachable via a race/level change) kept contributing forever. New `buildStats.ts` block reuses the `gearSlotsRemovedByV2` mechanism (same pattern as D3/D4/D7) and the shared `meetsRequirements` engine. 5 new tests in `parityPassD8VerifyGear.test.ts`. | this PR |
 | 159 | **N15 — `Effect_SpellPowerReplacement` was parsed but never consumed, so cross-element spell power substitution never happened** — V2 (`BreakdownItemSpellPower.cpp:68-79,296-333` `ReplacementTotal()`/`IterateList()`) lets a trained effect declare that one spell-power element substitutes for another whenever the alternate is higher (Tiefling's "Infernal Sovereign" — "use Fire Spell Power in place of Acid if it is higher, and vice versa"), and only the raw spell-power breakdown is affected (crit chance/multiplier breakdowns never register the replacement listener in V2, so they are untouched). Two bugs: (1) real V2 data always tags this effect `AType=NotNeeded`, so `resolveValue` returned `null` and the effect was dropped before ever reaching the `SpellPowerReplacement` case in `effectParser.ts`'s switch — it never even parsed. (2) the parsing itself collapsed each effect's `Item[0]` (the type this effect is declared under) and `Item[1]` (its alternate) into two independent `spellPowerReplacement.<element>` markers with no pairing, so even if reached there was no way to know which element could substitute for which. Fixed by intercepting `SpellPowerReplacement` before the AType-null gate (matching the pattern already used for `SaveBonusAbility`/`GrantFeat`/etc.) and emitting a paired `spellPowerReplacement.<self>.<alt>` marker; added `replacementSpellPower()` (`lib/spellPowerRow.ts`, exported) that takes `max(own, ...alternates) + Universal` and is now used by both the Breakdowns panel (`spellPowerRowValues`) and the forum export's `SpellPowers` section (`sections.ts`), replacing their previous identical-but-incomplete `sp.<key> + sp.Universal` inline math. 9 new regression tests across `effectParser.test.ts`, `spellPowerRow.test.ts`, `parityPassX15SpellPowers.test.ts`. | this PR |
 | 158 | **AP spent in a tree the build can no longer reach stayed on the books** — swap a class out (a Rogue/Alchemist rebuilt into Monk / Sacred Fist) and the points spent in Assassin and Vile Chemist have nowhere to live. V2 refunds them the moment `CEnhancementsPane::DetermineTrees` (EnhancementsPane.cpp:340-374) re-determines the tree list — any selected tree that no longer meets its requirements gets `Build::Enhancement_ResetEnhancementTree`, "no user confirmation for this as they have already changed the base requirement that included the tree. All APs spent in this tree have to be returned to the pool of those available." V3's panel pruned only the PINNED list, so the spend survived in the document: invisible (no tree on screen owned it), still counted in the panel's "N / 80 AP" header (a user-reported build read 16 AP spent with nothing to show for it — Assassin 9 + Vile Chemist 7), and still feeding its effects into the engine (that build kept the Assassin sneak-attack die). New `lib/enhancementSpend.ts` holds the one copy of the AP-cost arithmetic that `EnhancementTreePanel`/`EpicDestiniesPanel`/`ReaperPanel` had each duplicated (and which the engine could not see at all); new `treeAvailability.orphanedEnhancementTrees` reports trees holding spend the build cannot reach, evaluated with account-unlock feats assumed and returning nothing when the tree or class catalogue is empty (the #142 guard — a still-loading catalogue must never orphan a whole build). The panel now refunds them exactly as V2 does, logging "…no longer available to this build — N AP refunded", and `buildStats` ignores their effects for a build whose panel has not been opened since the change. 12 new tests in `orphanedEnhancementSpend.test.ts` + `orphanedSpendPanel.test.tsx`. | this PR |
 | 157 | **Iconic past-life stances had no toggle, and their name collided with the race auto-stance** — every iconic race file carries an `Acquire=IconicPastLife` feat hosting a `Group="Iconic"` stance (V2 `Life::AllSpecialFeats` → `NotifyNewStance`) whose toggle is what applies that past life's bonus: the effects are gated on `Requirement Type="Stance"` (+2/4/6% Doublestrike for Aasimar Scourge, +10/20/30 spell power for Bladeforged/Morninglord/Deep Gnome, Razorclaw Shifter's attack/damage, Tabaxi's tactical DCs, …). V3 recorded the past lives but `collectDynamicStances` only scanned trees/items/spells/`featChoices`, so no toggle existed and none of those bonuses could ever apply. Worse, V2 names these stances `"<Race> "` with a TRAILING SPACE precisely so they stay distinct from the auto-stance V2 generates for the race itself, and fast-xml-parser's `trimValues` collapsed the two onto one name — so BEING an iconic race silently granted that race's past-life stance bonus with no past life and no toggle. `dataLoaders.restoreIconicStanceNames` puts the space back on the stance and, together with it, on the `Stance` requirement items inside the same feat; `collectDynamicStances` now surfaces one toggle per acquired iconic past life (accepting both `pastLives` key conventions — the panel writes the race name, the V2 importer the whole feat name); and the engine maps a persisted/imported trimmed name onto the iconic stance so existing saves keep their bonus (the build's own race name is still filtered out by `autoFamily`, so being the race grants nothing). V2's "Iconic" group is single-selection, which V3's existing group rule already enforces — lighting one puts the others out. 15 new tests in `iconicPastLifeStances.test.ts` + `iconicStancePanel.test.tsx`. | this PR |
@@ -975,20 +976,27 @@ occurrences confirmed), so no change is needed there.
   (via `gearSlots.ts`'s `displaySlotsForItemKey`) through the existing
   `gearSlotsRemovedByV2` mechanism, so a cleared slot's augments/set-bonus
   contributions die with it too — same pattern as D3/D4.
-- ❌ **D8 — 2026-08-16 scan: `Build::VerifyGear`'s item-revocation pass has no
-  V3 equivalent.** V2 (`Build.cpp:2623-2665`) re-checks every equipped item on
-  every level-up, race/class change, or feat-training event, and force-
+- ✅ **D8 — CLOSED (#160): `Build::VerifyGear`'s item-revocation pass now has
+  a V3 equivalent.** V2 (`Build.cpp:2623-2665`) re-checks every equipped item
+  on every level-up, race/class change, or feat-training event, and force-
   unequips (with a log entry) any item whose `item.MinLevel() > Level()` OR
   whose `<Requirements>` block (race/class/feat/alignment gates) is no longer
-  met. 1,473 of the shipped `.item` files carry a `<Requirements>` block, and
-  `dataLoaders.ts` parses `item.Requirements` fine, but nothing in
-  `buildStats.ts` ever gates on it before applying the item's effects (only
-  `GearPanel.tsx` reads it, for display). A build can equip — or import from a
-  V2 save, or reach via level-down/race-swap — a race/class/feat-restricted or
-  too-high-level item, and V3 will keep applying its full effects/set-bonus/
-  augment contributions forever, where V2 would silently strip them. Distinct
-  from D3/D4/D7 (Minor Artifact, Artifact-Filigree gate, `RestrictedSlots`) —
-  none of those cover per-item usability requirements or level gating.
+  met. 1,473 of the shipped `.item` files carry a `<Requirements>` block
+  (top-level Requirement types in real data: `Race`/`NotConstruct`/
+  `RaceConstruct`/`FeatAnySource`, all already handled by
+  `meetsSingleRequirement`), and `dataLoaders.ts` parses `item.Requirements`
+  fine, but nothing in `buildStats.ts` gated on it before applying the item's
+  effects (only `GearPanel.tsx` read it, for display) — a build could equip,
+  or import from a V2 save, or reach via level-down/race-swap, a race/class/
+  feat-restricted or too-high-level item and V3 would keep applying its full
+  effects/set-bonus/augment contributions forever, where V2 silently strips
+  them. Fixed with a new block in `buildStats.ts` (same `gearSlotsRemovedByV2`
+  mechanism as D3/D4/D7) that evaluates `item.MinLevel` against the build's
+  character level (heroic+epic+legendary, matching the existing `Level`/
+  `SpecificLevel` requirement-type convention) and `item.Requirements` via the
+  shared `meetsRequirements` engine, stripping any item that fails either —
+  its augments and set-bonus contributions die with it, same as the other
+  three rules. 5 new regression tests in `parityPassD8VerifyGear.test.ts`.
 - ❌ **D9 — 2026-08-16 scan: `Augment`'s cascading extra-slot fields
   (`<AddAugment>`, `<GrantAugment>`, `<GrantConditionalAugment>`) are
   entirely unmodeled.** V2 (`Augment.h:41-44`, applied via the shared
