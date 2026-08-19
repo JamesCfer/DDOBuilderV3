@@ -780,7 +780,9 @@ export function exportV2Document(doc: ExportDocument, itemCatalogue?: ItemCatalo
   // ── Lives ────────────────────────────────────────────────────────────────
   for (const life of doc.lives) {
     xml.open('Life', 'version="1"')
-    xml.leaf('Name', life.name || 'Imported V3 Build')
+    // V2 shows the life's name in its life tree; fall back to the character
+    // name rather than a generic placeholder.
+    xml.leaf('Name', life.name || doc.name || 'Imported V3 Build')
     xml.leaf('Race', life.race || 'Human')
     xml.leaf('Alignment', life.alignment || 'True Neutral')
     // Life-level SpecialFeats (F4): universal-tree access, Granted feats, …

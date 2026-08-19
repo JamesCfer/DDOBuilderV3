@@ -1095,7 +1095,13 @@ export function importV2Document(xml: string, opts?: {
 
   const document: CharacterDocument = {
     id: generateId(),
-    name: asStr(character.Name) || docLives[0]?.name || 'Imported V2 Character',
+    // The character's own name first, then the name on its first build (V2
+    // files often leave the Character unnamed but name every build), and only
+    // then the life's positional "Life 1" label.
+    name: asStr(character.Name) ||
+      docLives[0]?.builds[0]?.name?.trim() ||
+      docLives[0]?.name ||
+      'Imported V2 Character',
     guildLevel: asNum(character.GuildLevel),
     applyGuildBuffs: Boolean(character.ApplyGuildBuffs),
     characterTomes: {

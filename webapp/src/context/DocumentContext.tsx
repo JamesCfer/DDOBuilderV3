@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { CharacterDocument } from '../types/ddo'
-import { emptyDocument } from '../lib/multiLife'
+import { applyCharacterName, emptyDocument } from '../lib/multiLife'
 import { useCharacter } from './CharacterContext'
 
 // U1 — V2 Character → Life → Build document layer.
@@ -26,6 +26,14 @@ export function DocumentProvider({ children }: { children: React.ReactNode }) {
   // already-mounted active build so the two contexts agree on its id.
   const { build } = useCharacter()
   const [doc, setDoc] = useState<CharacterDocument>(() => emptyDocument(build))
+  // The document is named after the character, so typing in CharacterInfo's
+  // Name field renames the save and its auto-named life tabs straight away
+  // rather than waiting for the next save/switch sync. applyCharacterName
+  // returns the same object when nothing changes, so this settles in one pass.
+  const characterName = build.name
+  useEffect(() => {
+    setDoc(d => applyCharacterName(d, characterName))
+  }, [characterName])
   return (
     <DocumentContext.Provider value={{ doc, setDoc }}>
       {children}
