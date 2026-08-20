@@ -225,7 +225,7 @@ export function buildRuntimeGroupAdds(
   input: BuildStatsInput,
   build: CharacterBuild,
 ): { adds: RuntimeGroupAdd[], merges: RuntimeGroupMerge[] } {
-  const { allFeats, allTrees, allClasses, allRaces } = input
+  const { allFeats, allTrees, allClasses, allRaces, allAugments, gearItems } = input
   const adds: RuntimeGroupAdd[] = []
   const merges: RuntimeGroupMerge[] = []
 
@@ -338,6 +338,28 @@ export function buildRuntimeGroupAdds(
   }
   for (const [treeName, choices] of Object.entries(build.reaperChoices ?? {})) {
     collectEnhTree(treeName, choices, build.reaperSelections?.[treeName] ?? {})
+  }
+
+  // Augments (D10). V2 Build::ApplyAugment/RevokeAugment (Build.cpp:5024-5031,
+  // 5210-5217): an AddGroupWeapon effect whose trailing Item is the literal
+  // "ReplacedDynamically" placeholder is substituted with the HOST item's own
+  // weapon type before being applied — e.g. "Curse of Divine Fortune"
+  // (DeckOfManyCurses.Augments.xml, "If this item is a weapon, it is
+  // considered a Favored Weapon") adds the augmented weapon's own type to the
+  // "Favored Weapon" group, which GroupMember/GroupMember2-gated effects
+  // (Divine Crusader implement bonus, etc.) key off.
+  for (const [key, augName] of Object.entries(build.augmentChoices)) {
+    if (!augName) continue
+    const aug = resolveAugment(key, augName, gearItems, allAugments)
+    if (!aug) continue
+    const hostItem = gearItems[key.split(':')[0]]
+    const weaponType = typeof hostItem?.Weapon === 'string' ? hostItem.Weapon : 'Unknown'
+    extractFromEffects(toArray(aug.Effect).map(eff => {
+      if (eff.Type !== 'AddGroupWeapon') return eff
+      const its = toArray(eff.Item) as string[]
+      if (its.length === 0 || its[its.length - 1] !== 'ReplacedDynamically') return eff
+      return { ...eff, Item: [...its.slice(0, -1), weaponType] }
+    }))
   }
 
   return { adds, merges }

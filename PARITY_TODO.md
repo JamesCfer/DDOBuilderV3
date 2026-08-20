@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 161 | **D10 — augment `Effect_AddGroupWeapon`'s `ReplacedDynamically` placeholder is now substituted with the host item's weapon type.** V2 (`Build.cpp:5024-5031`/`5210-5217`) substitutes the trailing `ReplacedDynamically` `<Item>` of an augment's `AddGroupWeapon` effect with the augmented item's own weapon type at apply time — the mechanism behind `DeckOfManyCurses.Augments.xml`'s "Curse of Divine Fortune" ("considered a Favored Weapon"). `buildRuntimeGroupAdds` never scanned augment effects at all (only feats/enhancements), so this silently did nothing. Fixed by scanning `build.augmentChoices` alongside feats/enhancements and substituting the placeholder with `gearItems[slot].Weapon` before parsing. 4 new tests in `parityPassD10AugmentGroupWeapon.test.ts`. | this PR |
 | 160 | **D8 — `Build::VerifyGear` item-revocation pass** — V2 (`Build.cpp:2623-2665`) force-unequips any equipped item whose `MinLevel` exceeds the build's character level or whose `<Requirements>` (race/class/feat/alignment gates) are no longer met, stripping its effects/augments/set-bonus contributions too. V3 had no equivalent; a race/level-restricted item (e.g. an imported V2 save, or one reachable via a race/level change) kept contributing forever. New `buildStats.ts` block reuses the `gearSlotsRemovedByV2` mechanism (same pattern as D3/D4/D7) and the shared `meetsRequirements` engine. 5 new tests in `parityPassD8VerifyGear.test.ts`. | this PR |
 | 159 | **N15 — `Effect_SpellPowerReplacement` was parsed but never consumed, so cross-element spell power substitution never happened** — V2 (`BreakdownItemSpellPower.cpp:68-79,296-333` `ReplacementTotal()`/`IterateList()`) lets a trained effect declare that one spell-power element substitutes for another whenever the alternate is higher (Tiefling's "Infernal Sovereign" — "use Fire Spell Power in place of Acid if it is higher, and vice versa"), and only the raw spell-power breakdown is affected (crit chance/multiplier breakdowns never register the replacement listener in V2, so they are untouched). Two bugs: (1) real V2 data always tags this effect `AType=NotNeeded`, so `resolveValue` returned `null` and the effect was dropped before ever reaching the `SpellPowerReplacement` case in `effectParser.ts`'s switch — it never even parsed. (2) the parsing itself collapsed each effect's `Item[0]` (the type this effect is declared under) and `Item[1]` (its alternate) into two independent `spellPowerReplacement.<element>` markers with no pairing, so even if reached there was no way to know which element could substitute for which. Fixed by intercepting `SpellPowerReplacement` before the AType-null gate (matching the pattern already used for `SaveBonusAbility`/`GrantFeat`/etc.) and emitting a paired `spellPowerReplacement.<self>.<alt>` marker; added `replacementSpellPower()` (`lib/spellPowerRow.ts`, exported) that takes `max(own, ...alternates) + Universal` and is now used by both the Breakdowns panel (`spellPowerRowValues`) and the forum export's `SpellPowers` section (`sections.ts`), replacing their previous identical-but-incomplete `sp.<key> + sp.Universal` inline math. 9 new regression tests across `effectParser.test.ts`, `spellPowerRow.test.ts`, `parityPassX15SpellPowers.test.ts`. | this PR |
 | 158 | **AP spent in a tree the build can no longer reach stayed on the books** — swap a class out (a Rogue/Alchemist rebuilt into Monk / Sacred Fist) and the points spent in Assassin and Vile Chemist have nowhere to live. V2 refunds them the moment `CEnhancementsPane::DetermineTrees` (EnhancementsPane.cpp:340-374) re-determines the tree list — any selected tree that no longer meets its requirements gets `Build::Enhancement_ResetEnhancementTree`, "no user confirmation for this as they have already changed the base requirement that included the tree. All APs spent in this tree have to be returned to the pool of those available." V3's panel pruned only the PINNED list, so the spend survived in the document: invisible (no tree on screen owned it), still counted in the panel's "N / 80 AP" header (a user-reported build read 16 AP spent with nothing to show for it — Assassin 9 + Vile Chemist 7), and still feeding its effects into the engine (that build kept the Assassin sneak-attack die). New `lib/enhancementSpend.ts` holds the one copy of the AP-cost arithmetic that `EnhancementTreePanel`/`EpicDestiniesPanel`/`ReaperPanel` had each duplicated (and which the engine could not see at all); new `treeAvailability.orphanedEnhancementTrees` reports trees holding spend the build cannot reach, evaluated with account-unlock feats assumed and returning nothing when the tree or class catalogue is empty (the #142 guard — a still-loading catalogue must never orphan a whole build). The panel now refunds them exactly as V2 does, logging "…no longer available to this build — N AP refunded", and `buildStats` ignores their effects for a build whose panel has not been opened since the change. 12 new tests in `orphanedEnhancementSpend.test.ts` + `orphanedSpendPanel.test.tsx`. | this PR |
@@ -1014,14 +1015,26 @@ occurrences confirmed), so no change is needed there.
   and can never reach its higher-tier slots or effects; a V2-imported save
   with tiered augments already chosen has nowhere in V3's model to attach
   them (silently dropped on import).
-- ❌ **D10 — 2026-08-16 scan: augment `ReplacedDynamically` weapon-type
-  substitution not handled.** One augment (`DeckOfManyCurses.Augments.xml`,
-  "Favored Weapon") uses `Effect_AddGroupWeapon` with a trailing
+- ✅ **D10 — CLOSED (#239): augment `ReplacedDynamically` weapon-type
+  substitution now handled.** One augment (`DeckOfManyCurses.Augments.xml`,
+  "Curse of Divine Fortune" — "If this item is a weapon, it is considered a
+  Favored Weapon") uses `Effect_AddGroupWeapon` with a trailing
   `<Item>ReplacedDynamically</Item>` that V2 substitutes with the host item's
-  actual weapon type at apply time (`Build.cpp:5024-5031`). No V3 code path
-  handles `ReplacedDynamically` for augment effects (only feat/enhancement
-  `AddGroupWeapon` adds are modeled). Low-impact — a single augment file —
-  but a genuine silent drop.
+  actual weapon type at apply time (`Build.cpp:5024-5031` `ApplyAugment` /
+  `5210-5217` `RevokeAugment`). `buildRuntimeGroupAdds` (`buildStats.ts`) only
+  ever scanned trained feats and enhancements for `AddGroupWeapon` effects —
+  augment effects were never scanned at all, so this augment silently did
+  nothing (no downstream `GroupMember`/`GroupMember2`-gated effect, e.g. the
+  Divine Crusader implement bonus, could ever see the host weapon as a member
+  of the "Favored Weapon" group). Fixed: `buildRuntimeGroupAdds` now also
+  iterates `build.augmentChoices`, resolves each via the existing
+  `resolveAugment` helper, and — for any `AddGroupWeapon` effect whose Item
+  list ends in the literal `"ReplacedDynamically"` placeholder — substitutes
+  it with the host item's own `Weapon` type (or the literal `"Unknown"` when
+  the host isn't a weapon, matching V2's `Weapon_Unknown` fallback) before
+  feeding it through the same `extractFromEffects` path already used for
+  feats/enhancements. 4 new regression tests in
+  `parityPassD10AugmentGroupWeapon.test.ts`.
 
 Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
 Crafting-style systems don't exist in V2's data model (no crafting XML
