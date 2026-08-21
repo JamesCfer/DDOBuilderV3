@@ -450,6 +450,7 @@ export default function GearPanel() {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
   const itemHover = useHoverCard<{ item: Item; fills: AugmentFill[] }>()
+  const { allAugments, allWeaponGroups } = useStaticBundle()
 
   const [slotItems, setSlotItems] = useState<Record<string, Item[] | null>>({})
   const [itemDetails, setItemDetails] = useState<Record<string, Item | null>>({})
@@ -522,7 +523,9 @@ export default function GearPanel() {
     const cachedDetail = equipped ? (itemDetails[slot] ?? null) : null
     // Only use cached details if they match the equipped item (guard against stale entries during reload)
     const detail = cachedDetail && (cachedDetail as Item).Name === equipped ? cachedDetail : null
-    const augSlots = detail ? resolveAugmentSlots(detail, slot, build.slotUpgradeChoices) : []
+    const augSlots = detail
+      ? resolveAugmentSlots(detail, slot, build.slotUpgradeChoices, augmentChoices, allAugments, allWeaponGroups)
+      : []
     const pendingUpgrades = detail ? pendingSlotUpgrades(detail, slot, build.slotUpgradeChoices) : []
     const icon = detail?.Icon
 

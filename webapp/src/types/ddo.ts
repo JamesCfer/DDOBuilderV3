@@ -403,6 +403,32 @@ export interface Augment {
    * from ChooseLevel (Build.cpp:4948-4990 `Build::ApplyAugment`).
    */
   EnterValue?: boolean | string
+  /**
+   * V2 Augment::AddAugment (Augment.h, applied via the shared `AddAugment()`
+   * helper — GlobalSupportFunctions.cpp:1967-2010, called from
+   * `ItemSelectDialog.cpp:730-741`/`FindGearDialog.cpp:608-618`): slot type
+   * name(s) this augment appends to its host item once selected — the
+   * mechanic behind tiered Legendary Alchemical / Thunderforged / Greensteel
+   * Heroic crafting.
+   */
+  AddAugment?: string | string[]
+  /**
+   * V2 Augment::GrantAugment — a single slot type appended while this
+   * augment is selected (`ItemSelectDialog.cpp:742-746`). Unlike
+   * `AddAugment`, V2 also removes the granted slot when the player picks a
+   * different augment (`ItemSelectDialog.cpp:711-714`) — not modeled: V3
+   * only ever grows an item's slot list, matching `AddAugment`'s behaviour.
+   */
+  GrantAugment?: string
+  /**
+   * V2 Augment::GrantConditionalAugment — like `GrantAugment`, but only
+   * granted when the host item's weapon type is a member of the `WeaponClass`
+   * group (`ItemSelectDialog.cpp:748-760`; e.g. Thunderforged augments grant
+   * a bonus Red slot only on Two Handed weapons).
+   */
+  GrantConditionalAugment?: string
+  /** V2 Augment::WeaponClass — the weapon group gating `GrantConditionalAugment`. */
+  WeaponClass?: string
 }
 
 // ---------------------------------------------------------------------------
