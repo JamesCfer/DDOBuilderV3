@@ -13,6 +13,7 @@ import {
   loadAllCatalogues,
 } from './src/server/dataLoaders'
 import { augmentMatchesSlotType } from './src/lib/gearSlotUpgrades'
+import { loadCraftingSystems, craftingSummaries } from './src/server/crafting'
 import { CommunityStore } from './src/server/communityStore'
 import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
 import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
@@ -270,6 +271,30 @@ app.get('/api/ignored-list', (_req, res) => res.json(cached('ignored-list', igno
 app.get('/api/adventure-packs', (_req, res) => res.json(cached('adventure-packs', adventurePacks)))
 app.get('/api/item-buffs', (_req, res) => res.json(cached('item-buffs', itemBuffs)))
 app.get('/api/item-clickies', (_req, res) => res.json(cached('item-clickies', itemClickies)))
+
+// ---------------------------------------------------------------------------
+// Crafting systems — the Crafting page's catalogue.
+//
+// Two shapes on purpose: the hub only ever renders the cards, and shipping
+// every recipe of every system to draw twenty cards would be ~1.5 MB of JSON
+// for text nobody has asked to see yet. The detail route serves one system's
+// recipes when the user opens it.
+// ---------------------------------------------------------------------------
+
+const craftingSystems = () => loadCraftingSystems(DATA_DIR)
+
+app.get('/api/crafting', (_req, res) => {
+  res.json(craftingSummaries(cached('crafting', craftingSystems)))
+})
+
+app.get('/api/crafting/:key', (req, res) => {
+  const system = cached('crafting', craftingSystems).find(s => s.key === req.params.key)
+  if (!system) {
+    res.status(404).json({ error: `Unknown crafting system '${req.params.key}'` })
+    return
+  }
+  res.json(system)
+})
 
 // ---------------------------------------------------------------------------
 // V2 parity check — every .DDOBuild upload is verified in the background

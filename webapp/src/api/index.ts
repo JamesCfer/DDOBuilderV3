@@ -1,6 +1,7 @@
 import type { Race, DDOClass, Feat, EnhancementTree, Item, Augment, SetBonus, Stance, GuildBuff, Filigree, FiligreeSetBonus, OptionalBuff, Patron, Quest, SentientGem, Spell } from '../types/ddo'
 import type { WeaponGroupSpec } from '../lib/weapons/groups'
 import type { AttackRate, BonusTypeSpec, Challenge, ItemBuffSpec, ItemClickieSpec } from '../server/dataLoaders'
+import type { CraftingSystemSummary, CraftingSystemDetail } from '../server/crafting'
 
 const BASE = '/api'
 
@@ -23,7 +24,19 @@ const CACHEABLE = new Set([
   '/filigree-bonuses', '/selfbuffs', '/patrons', '/quests', '/gems',
   '/spells', '/weapongroups', '/attack-rates', '/bonus-types', '/challenges',
   '/ignored-list', '/adventure-packs', '/item-buffs', '/item-clickies',
+  '/crafting',
 ])
+
+/**
+ * The crafting catalogue is as static as the rest, but its detail routes
+ * carry the system in the path (`/crafting/greensteel`) rather than a query
+ * string, so the exact-match set above cannot cover them. Browsing the
+ * Crafting page is exactly the "flip between systems" pattern that wants a
+ * cache, so match the prefix.
+ */
+function isCacheable(path: string): boolean {
+  return CACHEABLE.has(path) || path.startsWith('/crafting/')
+}
 
 const responseCache = new Map<string, unknown>()
 const inflight = new Map<string, Promise<unknown>>()
@@ -42,7 +55,7 @@ async function get<T>(path: string, params?: Record<string, string | number>): P
     }
   }
   const key = url.toString()
-  const cacheable = CACHEABLE.has(path)
+  const cacheable = isCacheable(path)
 
   if (cacheable) {
     if (responseCache.has(key)) return responseCache.get(key) as T
@@ -115,6 +128,9 @@ export const api = {
   adventurePacks: () => get<string[]>('/adventure-packs'),
   itemBuffs: () => get<ItemBuffSpec[]>('/item-buffs'),
   itemClickies: () => get<ItemClickieSpec[]>('/item-clickies'),
+  // Crafting systems (Crafting page — reference data, not build data)
+  crafting: () => get<CraftingSystemSummary[]>('/crafting'),
+  craftingSystem: (key: string) => get<CraftingSystemDetail>(`/crafting/${encodeURIComponent(key)}`),
   // In-game DungeonHelper plugins (downloads, not build data)
   plugins: () => get<PluginCatalogue>('/plugins'),
   /** Whether this server can deliver bug reports (Discord bot configured). */

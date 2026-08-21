@@ -24,6 +24,8 @@ import ClickiesPanel from './components/items/ClickiesPanel'
 import StanceBuffDock from './components/layout/StanceBuffDock'
 import AnalysisDock from './components/layout/AnalysisDock'
 import PluginsPanel from './components/plugins/PluginsPanel'
+import CraftingPanel from './components/crafting/CraftingPanel'
+import CannithPlanner from './components/crafting/CannithPlanner'
 import PastLivesPanel from './components/pastlives/PastLivesPanel'
 import SetBonusesPanel from './components/setbonuses/SetBonusesPanel'
 import FiligreePanel from './components/filigree/FiligreePanel'
@@ -58,9 +60,9 @@ import styles from './App.module.css'
 // Analysis is not a page: it is the right-hand rail (AnalysisDock), visible
 // on every page, because every choice made here is only interesting for what
 // it does to those numbers.
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Community' | 'Plugins' | 'Custom'
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Crafting' | 'Community' | 'Plugins' | 'Custom'
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Community', 'Plugins', 'Custom']
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Crafting', 'Community', 'Plugins', 'Custom']
 
 const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
@@ -69,6 +71,10 @@ const PAGE_TABS: Record<Page, string[]> = {
   // the same decision ("what am I wearing"), and set bonuses in particular
   // only make sense next to the gear that grants them.
   Equipment:   ['Gear'],
+  // Crafting sits next to Equipment because it answers the question just
+  // before "what am I wearing" — but like Plugins it is a standalone tool,
+  // not part of the builder (see STANDALONE_PAGES).
+  Crafting:    ['Systems', 'Cannith Planner'],
   Community:   ['Browse', 'My Builds'],
   // Our in-game dungeon-help plugins — a destination of its own so people can
   // actually find them.
@@ -79,8 +85,17 @@ const PAGE_TABS: Record<Page, string[]> = {
 /** Tabs whose content wants the full viewport width (trees, tables). */
 const WIDE_TABS = new Set([
   'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows',
-  'Level Plan', 'Optimizer', 'Dungeon Help',
+  'Level Plan', 'Optimizer', 'Dungeon Help', 'Systems', 'Cannith Planner',
 ])
+
+/**
+ * Pages that are tools in their own right rather than views of the open
+ * character. Neither the plugin downloads nor the crafting reference reads a
+ * build, so flanking them with the stances rail and the analysis rail — both
+ * of which describe a character that has nothing to do with what is on screen
+ * — costs the page most of its width to say nothing.
+ */
+const STANDALONE_PAGES = new Set<Page>(['Crafting', 'Plugins'])
 
 export default function App() {
   return (
@@ -139,6 +154,7 @@ function AppInner() {
   ))
 
   const tab = tabs[page]
+  const standalone = STANDALONE_PAGES.has(page)
 
   function handleLoad(doc: CharacterDocument) {
     setDoc(doc)
@@ -206,6 +222,10 @@ function AppInner() {
           </div>
         )
 
+      // ── Crafting ─────────────────────────────────────────────────────────
+      case 'Crafting/Systems':         return <CraftingPanel />
+      case 'Crafting/Cannith Planner': return <CannithPlanner />
+
       // ── Plugins ──────────────────────────────────────────────────────────
       case 'Plugins/Dungeon Help': return <PluginsPanel />
 
@@ -246,11 +266,13 @@ function AppInner() {
             page. Each region catches its own; the key resets the boundary when
             the user navigates, so a bad tab is never sticky. */}
         <div className={styles.contentRow}>
-          <ErrorBoundary label="Stances & Buffs"><StanceBuffDock /></ErrorBoundary>
+          {!standalone && (
+            <ErrorBoundary label="Stances & Buffs"><StanceBuffDock /></ErrorBoundary>
+          )}
           <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
             <ErrorBoundary key={`${page}/${tab}`} label={tab}>{renderTab()}</ErrorBoundary>
           </div>
-          <ErrorBoundary label="Analysis"><AnalysisDock /></ErrorBoundary>
+          {!standalone && <ErrorBoundary label="Analysis"><AnalysisDock /></ErrorBoundary>}
         </div>
       </Layout>
       <BugReportWidget page={`${page} · ${tab}`} />
