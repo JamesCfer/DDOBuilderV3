@@ -416,6 +416,32 @@
   white-space: pre-line;
 }
 
+/* The ingredient list reads as a shopping list, not as prose: one line per
+   thing to go and find, so it can be checked off against an ingredient bag. */
+.ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ingredient {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  background: var(--tint-accent-faint);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 1px 6px;
+}
+
+.recipeNote {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .recipeMeta {
   display: flex;
   flex-wrap: wrap;

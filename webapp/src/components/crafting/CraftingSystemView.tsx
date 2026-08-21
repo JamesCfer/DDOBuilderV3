@@ -38,7 +38,10 @@ export default function CraftingSystemView({ summary, detail, error, onBack }: P
         recipes: slot.recipes.filter(r =>
           r.name.toLowerCase().includes(q)
           || r.description.toLowerCase().includes(q)
-          || r.setBonuses.some(s => s.toLowerCase().includes(q))),
+          || r.setBonuses.some(s => s.toLowerCase().includes(q))
+          // Ingredients are searchable too: "I have 50 Adhesive Slimes, what
+          // can I make with them" is the question a full ingredient bag asks.
+          || r.ingredients.some(i => i.toLowerCase().includes(q))),
       }))
       .filter(slot => slot.recipes.length > 0 || slot.type.toLowerCase().includes(q))
   }, [detail, query])
@@ -155,6 +158,14 @@ function RecipeRow({ recipe }: { recipe: CraftingRecipe }) {
         {recipe.minLevel > 0 && <span className={styles.recipeLevel}>ML {recipe.minLevel}</span>}
       </div>
       {recipe.description && <p className={styles.recipeDesc}>{recipe.description}</p>}
+      {recipe.ingredients.length > 0 && (
+        <ul className={styles.ingredients}>
+          {recipe.ingredients.map((ingredient, i) => (
+            <li key={`${ingredient}-${i}`} className={styles.ingredient}>{ingredient}</li>
+          ))}
+        </ul>
+      )}
+      {recipe.note && <p className={styles.recipeNote}>{recipe.note}</p>}
       <div className={styles.recipeMeta}>
         {recipe.setBonuses.map(set => (
           <span key={set} className={styles.setTag} title="Adds this set bonus to the item">
