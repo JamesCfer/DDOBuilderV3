@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
-import { api } from '../../api'
+import { useMemo } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
+import { useGearItems } from '../../hooks/useGearItems'
+import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { computeSetBonusCounts, mergeAugmentChoices } from '../../lib/buildStats'
 import type { SetBonus, SetBonusBuff } from '../../types/ddo'
 import styles from './SetBonusesPanel.module.css'
 
@@ -17,32 +19,32 @@ interface ActiveSetBonus {
 
 export default function SetBonusesPanel() {
   const { build } = useCharacter()
-  const [active, setActive] = useState<Array<{ type: string; count: number }>>([])
-  const [definitions, setDefinitions] = useState<SetBonus[]>([])
-  const [loading, setLoading] = useState(false)
+  const gearItems = useGearItems(build.gear)
+  const { allAugments, allSetBonuses, loaded } = useStaticBundle()
 
   const equippedNames = Object.values(build.gear).filter(Boolean)
 
-  // Load set bonus definitions once on mount
-  useEffect(() => {
-    api.setbonuses().then(setDefinitions).catch(() => setDefinitions([]))
-  }, [])
-
-  // Reload active set bonuses when gear changes
-  useEffect(() => {
-    setLoading(true)
-    api.itemSetBonuses(equippedNames)
-      .then(setActive)
-      .catch(() => setActive([]))
-      .finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [build.gear])
+  // Set counts come from the same helper the stat map uses, so augment-granted
+  // sets (the raid "3 pieces equipped" essences, Greensteel, Slave Lords,
+  // Dinosaur Bone …) and each augment's SuppressSetBonus flag are honoured
+  // here exactly as they are when the bonus's effects are applied.
+  const active = useMemo<Array<{ type: string; count: number }>>(() => {
+    const counts = computeSetBonusCounts(
+      gearItems,
+      mergeAugmentChoices(build, gearItems),
+      allAugments,
+    )
+    return Array.from(counts.entries())
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count || a.type.localeCompare(b.type))
+  }, [build, gearItems, allAugments])
 
   const hasGear = equippedNames.length > 0
+  const loading = !loaded
 
   const enriched: ActiveSetBonus[] = active.map(a => ({
     ...a,
-    def: definitions.find(d => d.Type === a.type),
+    def: allSetBonuses.find(d => d.Type === a.type),
   }))
 
   function renderTiers(item: ActiveSetBonus) {

@@ -213,6 +213,11 @@ app.get('/api/setbonuses', (_req, res) => {
   res.json(cached('setbonuses', setBonusesData))
 })
 
+// Item-NATIVE set bonus counts only: this endpoint sees item names, not the
+// build's augment choices, so it cannot count augment-granted sets (the raid
+// "3 pieces equipped" essences, Greensteel, …) or honour an augment's
+// SuppressSetBonus. UI/stat callers use `computeSetBonusCounts`
+// (src/lib/buildStats.ts), which models both.
 app.get('/api/item-setbonuses', (req, res) => {
   const { names } = req.query
   if (!names || typeof names !== 'string') {
