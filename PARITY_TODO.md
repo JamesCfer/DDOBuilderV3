@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 162 | **D9 — an augment's cascading extra-slot fields (`AddAugment`/`GrantAugment`/`GrantConditionalAugment`) now unlock further augment slots.** V2 (`Augment.h:41-44`, applied via the shared `AddAugment()` helper in `GlobalSupportFunctions.cpp:1967-2010`, called from `ItemSelectDialog.cpp:730-760`/`FindGearDialog.cpp:608-635`) lets selecting certain augments append one or more *new* augment slots to the host item — the mechanic behind Legendary Alchemical crafting (`Alchemical.Augments.xml`: picking a material in the "Legendary Alchemical Material" slot adds a "Legendary Alchemical Tier 1" slot, which cascades to Tier 2), Thunderforged (`GrantConditionalAugment` gates a bonus Red slot on Two Handed weapons via `WeaponClass`), and Legendary Green Steel Heroic. `gearSlotUpgrades.ts`'s `resolveAugmentSlots` only implemented the unrelated `<SlotUpgrade>` mechanism (D2) — no consumer of `AddAugment`/`GrantAugment`/`GrantConditionalAugment` existed anywhere in `webapp/`, so any Alchemical/Thunderforged/Greensteel-Heroic item exposed only its native slot(s) and could never reach its higher-tier slots or effects. Fixed: `Augment` gains `AddAugment`/`GrantAugment`/`GrantConditionalAugment`/`WeaponClass` fields (parsed automatically — `loadAugments` already casts the raw XML directly); `resolveAugmentSlots` now takes the build's `augmentChoices` + the Augments/WeaponGroups catalogues and, after computing the native + SlotUpgrade slots, iterates every already-resolved slot's currently-chosen augment and appends one synthetic slot per `AddAugment` entry / `GrantAugment` / weapon-class-gated `GrantConditionalAugment` not already present on the item — looping over its own growing result so a cascade (Material → Tier 1 → Tier 2) resolves in one pass, matching V2's insert-before-Mythic-else-append ordering (V3 models no Mythic slot, so this is always append). `GearPanel.tsx` passes the new context through; since `AugmentSlot` already renders generically from whatever `resolveAugmentSlots` returns (same mechanism the D2 SlotUpgrade slots use), no new UI code was needed — the picker's existing `/api/augments?type=X` lookup already matches synthetic tier-slot type strings generically. 10 new regression tests in `parityPassD9AugmentCascade.test.ts`. | this PR |
 | 161 | **D10 — augment `Effect_AddGroupWeapon`'s `ReplacedDynamically` placeholder is now substituted with the host item's weapon type.** V2 (`Build.cpp:5024-5031`/`5210-5217`) substitutes the trailing `ReplacedDynamically` `<Item>` of an augment's `AddGroupWeapon` effect with the augmented item's own weapon type at apply time — the mechanism behind `DeckOfManyCurses.Augments.xml`'s "Curse of Divine Fortune" ("considered a Favored Weapon"). `buildRuntimeGroupAdds` never scanned augment effects at all (only feats/enhancements), so this silently did nothing. Fixed by scanning `build.augmentChoices` alongside feats/enhancements and substituting the placeholder with `gearItems[slot].Weapon` before parsing. 4 new tests in `parityPassD10AugmentGroupWeapon.test.ts`. | this PR |
 | 160 | **D8 — `Build::VerifyGear` item-revocation pass** — V2 (`Build.cpp:2623-2665`) force-unequips any equipped item whose `MinLevel` exceeds the build's character level or whose `<Requirements>` (race/class/feat/alignment gates) are no longer met, stripping its effects/augments/set-bonus contributions too. V3 had no equivalent; a race/level-restricted item (e.g. an imported V2 save, or one reachable via a race/level change) kept contributing forever. New `buildStats.ts` block reuses the `gearSlotsRemovedByV2` mechanism (same pattern as D3/D4/D7) and the shared `meetsRequirements` engine. 5 new tests in `parityPassD8VerifyGear.test.ts`. | this PR |
 | 159 | **N15 — `Effect_SpellPowerReplacement` was parsed but never consumed, so cross-element spell power substitution never happened** — V2 (`BreakdownItemSpellPower.cpp:68-79,296-333` `ReplacementTotal()`/`IterateList()`) lets a trained effect declare that one spell-power element substitutes for another whenever the alternate is higher (Tiefling's "Infernal Sovereign" — "use Fire Spell Power in place of Acid if it is higher, and vice versa"), and only the raw spell-power breakdown is affected (crit chance/multiplier breakdowns never register the replacement listener in V2, so they are untouched). Two bugs: (1) real V2 data always tags this effect `AType=NotNeeded`, so `resolveValue` returned `null` and the effect was dropped before ever reaching the `SpellPowerReplacement` case in `effectParser.ts`'s switch — it never even parsed. (2) the parsing itself collapsed each effect's `Item[0]` (the type this effect is declared under) and `Item[1]` (its alternate) into two independent `spellPowerReplacement.<element>` markers with no pairing, so even if reached there was no way to know which element could substitute for which. Fixed by intercepting `SpellPowerReplacement` before the AType-null gate (matching the pattern already used for `SaveBonusAbility`/`GrantFeat`/etc.) and emitting a paired `spellPowerReplacement.<self>.<alt>` marker; added `replacementSpellPower()` (`lib/spellPowerRow.ts`, exported) that takes `max(own, ...alternates) + Universal` and is now used by both the Breakdowns panel (`spellPowerRowValues`) and the forum export's `SpellPowers` section (`sections.ts`), replacing their previous identical-but-incomplete `sp.<key> + sp.Universal` inline math. 9 new regression tests across `effectParser.test.ts`, `spellPowerRow.test.ts`, `parityPassX15SpellPowers.test.ts`. | this PR |
@@ -998,23 +999,23 @@ occurrences confirmed), so no change is needed there.
   shared `meetsRequirements` engine, stripping any item that fails either —
   its augments and set-bonus contributions die with it, same as the other
   three rules. 5 new regression tests in `parityPassD8VerifyGear.test.ts`.
-- ❌ **D9 — 2026-08-16 scan: `Augment`'s cascading extra-slot fields
-  (`<AddAugment>`, `<GrantAugment>`, `<GrantConditionalAugment>`) are
-  entirely unmodeled.** V2 (`Augment.h:41-44`, applied via the shared
+- ✅ **D9 — CLOSED (#240): `Augment`'s cascading extra-slot fields now unlock
+  further augment slots.** V2 (`Augment.h:41-44`, applied via the shared
   `AddAugment()` helper in `GlobalSupportFunctions.cpp:1967-2010`, called from
   `FindGearDialog.cpp:589-638`/`ItemSelectDialog.cpp`) lets selecting certain
-  augments append one or more *new* augment slots to the host item (before
-  any trailing Mythic slot) — the mechanic behind Legendary Alchemical
-  crafting (`Alchemical.Augments.xml`, 62 uses — e.g. picking "Adamantine" in
-  the Material slot adds a "Legendary Alchemical Tier 1" slot, cascading
-  further), Thunderforged (32 uses), and Legendary Green Steel Heroic (147
-  uses). `gearSlotUpgrades.ts` only implements the unrelated `<SlotUpgrade>`/
-  `UpgradeType` mechanism (D2) — no consumer of `AddAugment`/`GrantAugment`/
-  `GrantConditionalAugment` exists anywhere in `webapp/`. Any Alchemical/
-  Thunderforged/Greensteel-Heroic item in V3 exposes only its native slot(s)
-  and can never reach its higher-tier slots or effects; a V2-imported save
-  with tiered augments already chosen has nowhere in V3's model to attach
-  them (silently dropped on import).
+  augments append one or more *new* augment slots to the host item — the
+  mechanic behind Legendary Alchemical crafting (`Alchemical.Augments.xml`,
+  62 uses — e.g. picking "Adamantine" in the Material slot adds a "Legendary
+  Alchemical Tier 1" slot, cascading further), Thunderforged (32 uses, via
+  `GrantConditionalAugment`+`WeaponClass`), and Legendary Green Steel Heroic
+  (147 uses). `resolveAugmentSlots` (`gearSlotUpgrades.ts`) now resolves
+  these alongside the existing `<SlotUpgrade>` mechanism (D2), so
+  `GearPanel.tsx`'s already-generic per-slot rendering surfaces the new tiers
+  with no UI changes needed. Note: a V2-imported save with tiered augments
+  already chosen was ALREADY fine — `v2Import.ts` reads every `<ItemAugment>`
+  child of the embedded item generically by array position, cascaded or not
+  — the gap was purely that V3 could never reach a higher tier by editing
+  gear directly. 10 new regression tests in `parityPassD9AugmentCascade.test.ts`.
 - ✅ **D10 — CLOSED (#239): augment `ReplacedDynamically` weapon-type
   substitution now handled.** One augment (`DeckOfManyCurses.Augments.xml`,
   "Curse of Divine Fortune" — "If this item is a weapon, it is considered a

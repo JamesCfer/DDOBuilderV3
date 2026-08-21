@@ -21,7 +21,8 @@
 // (it re-appears as an unresolved SlotUpgrade in V2). It survives V3's own
 // JSON save/reload fine, since `slotUpgradeChoices` is a plain build field.
 
-import type { Item, ItemAugment, SlotUpgrade } from '../types/ddo'
+import type { Augment, Item, ItemAugment, SlotUpgrade } from '../types/ddo'
+import { deriveWeaponClasses, type WeaponGroupSpec } from './weapons/groups'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
@@ -75,16 +76,47 @@ export interface ResolvedAugmentSlot {
 }
 
 /**
- * The item's native augment slots plus one synthetic slot per SlotUpgrade
- * the player has already assigned a color to. Order matches V2's
- * `AddAugment` (GlobalSupportFunctions.cpp:1964-2006) fallback path — append
- * to the end — which is what happens for every real SlotUpgrade item today
- * (none carry a trailing "Mythic" slot, the one case V2 special-cases).
+ * V2 `ItemAugment::GetSelectedAugment()` (ItemAugment.cpp:66-79): a slot's
+ * item-specific options (`ItemAugment.Augment`) are checked before the
+ * global Augments catalogue.
+ */
+function findAugmentDefinition(
+  augment: ItemAugment,
+  name: string,
+  allAugments: Augment[],
+): Augment | undefined {
+  for (const specific of toArray(augment.Augment)) {
+    if (specific.Name === name) return specific
+  }
+  return allAugments.find(a => a.Name === name)
+}
+
+function augmentSlotKey(slot: string, type: string, index: number): string {
+  return `${slot}:${type}:${index}`
+}
+
+/**
+ * The item's native augment slots, plus one synthetic slot per SlotUpgrade
+ * the player has already assigned a color to (D2), plus — D9 — one further
+ * synthetic slot per `AddAugment`/`GrantAugment`/`GrantConditionalAugment`
+ * carried by whatever augment is currently selected in an already-resolved
+ * slot (V2 `ItemSelectDialog.cpp:730-760 OnAugmentSelect`, applied through
+ * the shared `AddAugment()` helper — GlobalSupportFunctions.cpp:1967-2010).
+ * This cascades: a newly-added slot's own chosen augment can add further
+ * slots in turn (Legendary Alchemical's Material → Tier 1 → Tier 2 chain).
+ *
+ * Order matches V2's `AddAugment` fallback path — append to the end — which
+ * is what happens for every real SlotUpgrade/AddAugment item today (none
+ * carry a trailing "Mythic" slot, the one case V2 special-cases and V3 does
+ * not model at all).
  */
 export function resolveAugmentSlots(
   item: Item | undefined,
   slot: string,
   slotUpgradeChoices: Record<string, string>,
+  augmentChoices: Record<string, string> = {},
+  allAugments: Augment[] = [],
+  weaponGroups: WeaponGroupSpec[] = [],
 ): ResolvedAugmentSlot[] {
   const native = toArray(item?.ItemAugment)
   const resolved: ResolvedAugmentSlot[] = native.map((augment, index) => ({ augment, index }))
@@ -95,6 +127,26 @@ export function resolveAugmentSlots(
       resolved.push({ augment: { Type: chosen }, index: native.length + upgradeIndex })
     }
   })
+
+  const weaponClasses = item?.Weapon ? deriveWeaponClasses(item.Weapon, weaponGroups) : undefined
+  for (let i = 0; i < resolved.length; i++) {
+    const { augment, index } = resolved[i]
+    const chosenName = effectiveAugmentChoice(augmentChoices, augmentSlotKey(slot, augment.Type, index), augment)
+    if (!chosenName) continue
+    const def = findAugmentDefinition(augment, chosenName, allAugments)
+    if (!def) continue
+
+    const typesToAdd = toArray(def.AddAugment)
+    if (def.GrantAugment) typesToAdd.push(def.GrantAugment)
+    if (def.GrantConditionalAugment && def.WeaponClass && weaponClasses?.has(def.WeaponClass)) {
+      typesToAdd.push(def.GrantConditionalAugment)
+    }
+    // V2 AddAugment() only adds a slot type not already present on the item.
+    for (const type of typesToAdd) {
+      if (resolved.some(r => r.augment.Type === type)) continue
+      resolved.push({ augment: { Type: type }, index: resolved.length })
+    }
+  }
   return resolved
 }
 
