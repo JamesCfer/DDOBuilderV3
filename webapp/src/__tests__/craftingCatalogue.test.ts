@@ -37,6 +37,16 @@ maybeDescribe('crafting catalogue', () => {
     for (const key of keys) expect(key).toMatch(/^[a-z0-9-]+$/)
   })
 
+  it('links every system to an exact ddowiki page title', () => {
+    // MediaWiki titles are case-sensitive past the first letter, so a link
+    // built by lower-casing a system name ("Slave_Lords_crafting") 404s. These
+    // are transcribed from the wiki, and the shape assertion keeps a
+    // hand-edited one from silently becoming a search URL or a bare domain.
+    for (const system of CRAFTING_SYSTEMS) {
+      expect(system.wiki, system.key).toMatch(/^https:\/\/ddowiki\.com\/page\/[A-Za-z0-9_:'()-]+$/)
+    }
+  })
+
   it('groups a recipe under every slot type it fits', () => {
     // Cannith shards list a dozen slot types each ("this fits belts and
     // boots and trinkets…"); the planner's whole premise is asking per slot.

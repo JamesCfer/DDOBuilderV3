@@ -109,9 +109,17 @@ export interface CraftingSystemDetail extends CraftingSystemSummary {
 // The catalogue
 //
 // `files` ties each entry to real data on disk; everything else is the
-// context the XML does not carry. Where the in-game details are content the
-// data files do not state, the text stays descriptive of what the recipes
-// themselves show and points at the wiki for the rest.
+// context the XML does not carry — where the crafting is actually done, what
+// it consumes, which content drops the blanks. That half is checked against
+// ddowiki.com rather than inferred from the recipe names, because the two
+// disagree more often than you would expect: Cannith Crafting happens in
+// House *Kundarak*, Alchemical items drop from the Master Artificer raid but
+// are crafted in House Cannith Manufactury, and "Legendary Shroud" is really
+// The Codex and the Shroud.
+//
+// `wiki` links are exact page titles. MediaWiki titles are case-sensitive
+// past the first letter, so "Slave_Lords_crafting" is a 404 where
+// "Slave_Lords_Crafting" is the page.
 // ---------------------------------------------------------------------------
 
 export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
@@ -119,18 +127,19 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'cannith',
     name: 'Cannith Crafting',
     category: 'Craft from scratch',
-    blurb: 'Build an item from a blank: one prefix, one suffix and an extra effect, at any level you like.',
+    blurb: 'Build an item from a blank: one prefix, one suffix, and a third effect at ML 10 and up.',
     detail:
       'The only system that makes gear rather than upgrading it. You take a blank '
-      + '(or any unbound item with a free crafting slot), then bind a prefix shard, a '
-      + 'suffix shard and — on most slots — an extra effect shard to it. Every effect '
-      + 'scales with the item level you craft at, so the same shard is worth more on a '
-      + 'level 30 blank than on a level 8 one, and the finished item\'s minimum level '
-      + 'is set by the strongest shard on it. Use the planner tab to pick a slot and a '
-      + 'level and see exactly what each effect is worth there.',
-    where: 'The Cannith Crafting Hall in House Cannith (public instance), or a portable crafting altar.',
-    ingredients: 'Essences (arcane / eldritch) from deconstructing loot, plus collectables for the shard recipes.',
-    source: 'No quest needed — blanks are bought from the crafting vendors or pulled from loot.',
+      + '(or any unbound item with a free crafting slot) and bind a prefix shard and a '
+      + 'suffix shard to it. From minimum level 10 upwards a Mark of House Cannith '
+      + 'opens a third "extra" slot as well — below level 10 there is no such slot, '
+      + 'whatever the effect lists show. Every effect scales with the item level you '
+      + 'craft at, so the same shard is worth far more on a level 30 blank than on a '
+      + 'level 8 one. Use the planner tab to pick a slot and a level and see exactly '
+      + 'what each effect is worth there.',
+    where: 'The Crafting Hall in the House Kundarak enclave — not House Cannith — or a portable crafting altar.',
+    ingredients: 'Cannith essences from deconstructing loot, plus collectables for the shard recipes.',
+    source: 'No quest needed — blanks are bought from the crafting vendors or pulled from loot. Added in Update 9.',
     wiki: 'https://ddowiki.com/page/Cannith_Crafting',
     files: ['CannithAndRandomItem'],
   },
@@ -143,11 +152,14 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
       'The original raid crafting system, and still the one whose planning matters '
       + 'most: each tier is an element / aspect / essence combination, and picking the '
       + 'same combination on several tiers is what turns a stack of small bonuses into '
-      + 'the tier-three effects people actually build for. Weapons and accessories use '
+      + 'the tier-three effects people actually build for. The blank is made first at '
+      + 'the Altar of Fecundity, then upgraded one tier per Shroud run — small '
+      + 'ingredients at the Altar of Invasion after part 1, medium at Subjugation '
+      + 'after part 3, large at Devastation after part 5. Weapons and accessories use '
       + 'separate recipe lists, so a blank of each kind is a separate project.',
-    where: 'The Altar of Fecundity, Subjugation, Invasion and Devastation inside The Shroud.',
-    ingredients: 'Shroud ingredients — small/medium/large scales, chains, bones, stones and the like.',
-    source: 'The Shroud (Vale of Twilight).',
+    where: 'Blanks at the Altar of Fecundity (needs 40 favour with The Twelve); the tier altars — Invasion, Subjugation, Devastation — are inside The Shroud.',
+    ingredients: 'Shroud ingredients in small / medium / large grades, one grade per tier, plus raw ingredients from Vale of Twilight rares.',
+    source: 'The Shroud (Vale of Twilight). Added in Module 6.',
     wiki: 'https://ddowiki.com/page/Green_Steel_items',
     files: ['Greensteel_Heroic'],
     slotOrder: ['Weapon Aspect', 'Weapon Devastation', 'Weapon Invasion', 'Weapon Subjugation'],
@@ -158,15 +170,16 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     category: 'Raid crafting',
     blurb: 'Green Steel at cap: three equipment or weapon tiers, plus the Dominion / Escalation / Opposition stances.',
     detail:
-      'The endgame rebuild of Green Steel. Tiers work the same way, but the set '
-      + 'bonuses each choice stamps on the item — Dominion, Escalation, Opposition, '
-      + 'Ethereal, Material — are counted across everything you are wearing, and the '
+      'The endgame rebuild of Green Steel. Tiers work the same way — Invasion after '
+      + 'part 1, Subjugation after part 2, Devastation after part 5 — but the set '
+      + 'bonuses each choice stamps on the item (Dominion, Escalation, Opposition, '
+      + 'Ethereal, Material) are counted across everything you are wearing, and the '
       + 'highest count decides which mutually exclusive stance you get. That makes '
       + 'Legendary Green Steel a whole-gearset decision rather than a per-item one: '
       + 'two items are enough to start the stances, four for Ethereal / Material.',
-    where: 'The altars in the Legendary Shroud.',
-    ingredients: 'Legendary Shroud ingredients.',
-    source: 'The Legendary Shroud (Vale of Twilight, legendary).',
+    where: 'Blanks at the Altar of Fecundity in Meridia; the legendary tier altars are inside The Codex and the Shroud.',
+    ingredients: '100 Codex Runes and 100 Commendations of Valor for the blank, then Legendary Green Steel ingredients from the raid\'s chests.',
+    source: 'The Codex and the Shroud.',
     wiki: 'https://ddowiki.com/page/Legendary_Green_Steel_items',
     files: ['Greensteel_Legendary'],
     slotOrder: [
@@ -184,12 +197,14 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
       'Alchemical items start by choosing the material the item is made of — which is '
       + 'also what decides the damage reduction it bypasses — and only then open their '
       + 'tier slots. Each tier you complete unlocks the next, so the choice cascades: '
-      + 'material, tier one, tier two, tier three. The legendary versions follow the '
-      + 'same shape at level 29.',
-    where: 'The alchemical altars in the Master Artificer raid.',
-    ingredients: 'Alchemical raid ingredients.',
-    source: 'The Master Artificer (Lordsmarch Plaza / Legendary).',
-    wiki: 'https://ddowiki.com/page/Alchemical_crafting',
+      + 'material, tier one, tier two, tier three. Each step also raises and re-binds '
+      + 'the item: level 12 unbound as it drops, 12 once a material is added, then 16, '
+      + '18 and 20 as tiers one, two and three go on. The legendary versions follow '
+      + 'the same shape at level 29.',
+    where: 'The Cannith crafting stations just inside House Cannith Manufactury — the Melting Station for the item, the Binding Station for its tier upgrades.',
+    ingredients: 'Ingredients gathered inside House Cannith Manufactury.',
+    source: 'The Master Artificer raid — end chest and every fifth reward list. Added in Update 11.',
+    wiki: 'https://ddowiki.com/page/Alchemical_Crafting',
     files: ['Alchemical'],
     slotOrder: [
       'Alchemical Material Type', 'Alchemical Tier 1', 'Alchemical Tier 2', 'Alchemical Tier 3',
@@ -205,12 +220,13 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     detail:
       'Thunder-Forged items are crafted from shadow-touched blanks: you choose the '
       + 'variant that matches the item — cloth, light, medium, heavy or docent — and '
-      + 'the recipe list changes with it. Two-handed weapons additionally get an extra '
-      + 'red augment slot granted by the crafting itself.',
-    where: 'The Thunder-Forge in Thunderholme.',
-    ingredients: 'Thunderholme raid ingredients and commendations.',
-    source: 'Fire on Thunder Peak and Temple of the Deathwyrm.',
-    wiki: 'https://ddowiki.com/page/Thunder-Forged_items',
+      + 'the recipe list changes with it, then work up through three tiers. Two-handed '
+      + 'weapons additionally get an extra red augment slot granted by the crafting '
+      + 'itself.',
+    where: 'The Magma Forge, deep inside the Ruins of Thunderholme.',
+    ingredients: 'Thunder-Forged Dwarven Ingots and Commendations of Valor — 20 and 15 for a base weapon — plus dragon scales and phlogiston for the tiers.',
+    source: 'Fire on Thunder Peak, Temple of the Deathwyrm, and Thunderholme rare chests. Added in Update 21.',
+    wiki: 'https://ddowiki.com/page/Thunder-Forged',
     files: ['Thunderforged'],
     slotOrder: [
       'Shadow Cloth Variant', 'Shadow Light Variant', 'Shadow Medium Variant',
@@ -222,17 +238,18 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'slave-lords',
     name: 'Slave Lords',
     category: 'Quest chain crafting',
-    blurb: 'Prefix, suffix, extra and a set bonus, all crafted from one heroic quest chain.',
+    blurb: 'Prefix, suffix, extra, bonus and a set bonus, all crafted from one heroic quest chain.',
     detail:
       'A self-contained chain-crafting system: run the chain, collect the ingredients, '
-      + 'and fill the item\'s prefix, suffix, extra and set-bonus slots yourself. '
+      + 'and fill the item\'s prefix, suffix, bonus, extra and set-bonus slots yourself. '
       + 'Because the set bonus is one of the slots you choose, you can point a whole '
       + 'set of crafted items at the same bonus deliberately instead of hoping loot '
-      + 'lines up.',
-    where: 'The crafting altar for the Slave Lords chain.',
-    ingredients: 'Ingredients from the Slave Lords of the Shard chain.',
-    source: 'Slave Lords of the Shard (heroic).',
-    wiki: 'https://ddowiki.com/page/Slave_Lords_crafting',
+      + 'lines up — three matching items give the set bonus and five give the superior '
+      + 'version, which is the reason to plan the whole set at once.',
+    where: 'The Slave Lords crafting altar.',
+    ingredients: 'Three common and three uncommon ingredients from the chain — from named chests, end chests and the chain end reward — each unlocking a different kind of effect.',
+    source: 'Against the Slave Lords (heroic). Items come out at ML 8.',
+    wiki: 'https://ddowiki.com/page/Slave_Lords_Crafting',
     files: ['Slavelords_Heroic'],
     slotOrder: ['Slavelords Prefix', 'Slavelords Suffix', 'Slavelords Extra', 'Slavelords Bonus', 'Slavelords Set Bonus'],
   },
@@ -242,12 +259,13 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     category: 'Quest chain crafting',
     blurb: 'The same prefix / suffix / extra / set-bonus crafting, at legendary levels.',
     detail:
-      'Identical in shape to the heroic version — prefix, suffix, extra and a chosen '
-      + 'set bonus — with legendary-scale numbers on every recipe.',
-    where: 'The crafting altar for the legendary Slave Lords chain.',
-    ingredients: 'Ingredients from the legendary Slave Lords chain.',
-    source: 'Slave Lords of the Shard (legendary).',
-    wiki: 'https://ddowiki.com/page/Slave_Lords_crafting',
+      'Identical in shape to the heroic version — prefix, suffix, bonus, extra and a '
+      + 'chosen set bonus, three items for the set and five for the superior one — '
+      + 'with legendary-scale numbers on every recipe.',
+    where: 'The Slave Lords crafting altar.',
+    ingredients: 'Ingredients from the legendary Against the Slave Lords chain.',
+    source: 'Against the Slave Lords (legendary). Items come out at ML 28.',
+    wiki: 'https://ddowiki.com/page/Slave_Lords_Crafting',
     files: ['Slavelords_Legendary'],
     slotOrder: [
       'Legendary Slavelords Prefix', 'Legendary Slavelords Suffix',
@@ -264,11 +282,14 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
       'Dragontouched armor carries three rune slots that are crafted independently: '
       + 'an Eldritch rune, a Sovereign rune and a Tempest rune, each with its own list '
       + 'of effects. The armor itself is the constant; the three runes are what you '
-      + 'plan.',
-    where: 'The Dragontouched altar.',
-    ingredients: 'Runes and dragonshards from the Reign of Madness content.',
-    source: 'Reign of Madness / Sschindylryn.',
-    wiki: 'https://ddowiki.com/page/Dragontouched_Armor',
+      + 'plan. Only Eldritch runes can be bought outright — Tempest and Sovereign are '
+      + 'ground up from them at the altars, three Eldritch to a Tempest and three '
+      + 'Tempest to a Sovereign, which is what makes the Sovereign slot the expensive '
+      + 'decision.',
+    where: 'The Dragontouched altars in Reaver\'s Refuge; Vorace, across from the Stormreaver, trades the armor itself for 50 Draconic Runes.',
+    ingredients: 'Draconic Runes and Eldritch Runes from the Reaver\'s Refuge quests and explorer areas.',
+    source: 'Reaver\'s Refuge. Added in Module 8.',
+    wiki: 'https://ddowiki.com/page/Dragontouched',
     files: ['Dragontouched_EldritchRune', 'Dragontouched_SovereignRune', 'Dragontouched_TempestRune'],
     slotOrder: ['Eldritch Rune', 'Sovereign Rune', 'Tempest Rune'],
   },
@@ -276,16 +297,20 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'lamordia',
     name: 'Lamordia Slots',
     category: 'Item upgrades',
-    blurb: 'Dolorous, Melancholic, Miserable and Woeful slots on Lamordia gear.',
+    blurb: 'Dolorous, Melancholic, Miserable and Woeful slots on Chill of Ravenloft gear.',
     detail:
-      'Lamordia gear exposes four slot families — Dolorous, Melancholic, Miserable and '
-      + 'Woeful — and each one carries a different recipe list depending on whether it '
-      + 'sits on a weapon, on armor or on an accessory. Heroic and legendary versions '
-      + 'of every effect exist, which is why the same slot name appears twice in the '
-      + 'catalogue at very different levels.',
+      'Lamordia crafting is Isle of Dread\'s system in different clothes: collect the '
+      + 'ingredients, craft them into typed augments, and slot them. Its four families '
+      + 'map one for one onto the bone slots — Melancholic to Scale, Dolorous to Fang, '
+      + 'Miserable to Claw, Woeful to Horn — and each carries a different recipe list '
+      + 'for weapons, armor and accessories. Most named items have Melancholic and '
+      + 'Dolorous; rares and minor artifacts add Miserable; only Calamitous weapons '
+      + 'and Downcast armor reach Woeful. Heroic and legendary versions of every '
+      + 'effect exist, which is why the same slot name appears twice in the catalogue '
+      + 'at very different levels.',
     where: 'The Lamordia crafting altar.',
-    ingredients: 'Lamordia crafting ingredients.',
-    source: 'The Lamordia content.',
+    ingredients: 'Lamordia crafting ingredients from the pack.',
+    source: 'The Chill of Ravenloft. Added in Update 75.',
     wiki: 'https://ddowiki.com/page/Crafting',
     files: ['Lamordia_Heroic', 'Lamordia_Legendary'],
   },
@@ -293,31 +318,35 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'isle-of-dread',
     name: 'Isle of Dread Bone Crafting',
     category: 'Item upgrades',
-    blurb: 'Claw, fang, horn and scale slots on Isle of Dread accessories and armor.',
+    blurb: 'Claw, fang, horn and scale slots on Isle of Dread accessories, armor and weapons.',
     detail:
       'Isle of Dread gear is upgraded with dinosaur parts: claws, fangs, horns and '
-      + 'scales, each fitting its own slot on the accessory or armor, with a stronger '
-      + 'artifact tier of every slot on the artifact pieces.',
-    where: 'The Isle of Dread crafting altar.',
-    ingredients: 'Dinosaur bones, claws, fangs, horns and scales from the Isle of Dread.',
-    source: 'Isle of Dread (Update 55).',
-    wiki: 'https://ddowiki.com/page/Isle_of_Dread',
+      + 'scales, each fitting its own slot, with a stronger artifact tier of every '
+      + 'slot on the artifact pieces and a separate set-bonus slot. Fully customisable '
+      + 'Dinosaur Bone items carry four of the slots at once, which is what makes them '
+      + 'worth building deliberately rather than taking what drops.',
+    where: 'Barter with Sharpened Bone to make both the augments and the Dinosaur Bone items.',
+    ingredients: 'Fossilised raptor claws, triceratops horns, pteranodon vertebrae and ankylosaur ribs — 25 of each for a weapon.',
+    source: 'Isle of Dread. Added in Update 55.',
+    wiki: 'https://ddowiki.com/page/Dinosaur_Bone_crafting',
     files: ['DinosaurBone'],
   },
   {
     key: 'sun-and-moon',
     name: 'Sun and Moon Gems',
     category: 'Item upgrades',
-    blurb: 'Myth Drannor solar and lunar gems — artifact bonuses against profane ones.',
+    blurb: 'Myth Drannor\'s solar and lunar gems — artifact bonuses against profane ones.',
     detail:
-      'The Myth Drannor gems come in matched solar and lunar pairs: the solar gem of '
-      + 'an effect grants it as an artifact bonus, the lunar gem as a profane one, so '
-      + 'which one you want depends entirely on what the rest of your gear already '
-      + 'occupies. Heroic and legendary versions of each exist.',
-    where: 'Slotted directly into Sun and Moon slots on Myth Drannor gear.',
-    ingredients: 'Gems from the Myth Drannor content.',
-    source: 'Myth Drannor.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+      'The Myth Drannor gems come in matched solar and lunar pairs, and the pairing is '
+      + 'the whole point: the solar gem of an effect grants it as an artifact bonus and '
+      + 'the lunar gem as a profane one, so which you want depends entirely on what the '
+      + 'rest of your gear already occupies. They replace the pack\'s primary and '
+      + 'secondary item sets rather than sitting alongside them. Heroic gems come out '
+      + 'at ML 1 and legendary at ML 30, with an epic ML 20 range added later.',
+    where: 'Slotted into the Sun and Moon slots on Myth Drannor gear.',
+    ingredients: 'None — the gems drop as loot rather than being crafted from ingredients.',
+    source: 'Magic of Myth Drannor (Update 69); epic gems arrived with Tavern Tales in Update 73.',
+    wiki: 'https://ddowiki.com/page/Lunar_and_Solar_Gems',
     files: ['SunAndMoon'],
   },
   {
@@ -330,23 +359,27 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
       + 'effect, from minor to major across the ability scores and combat stats.',
     where: 'Slotted into a Deck Curse slot.',
     ingredients: 'Cards from the Deck of Many Curses.',
-    source: 'Vecna Unleashed.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+    source: 'Vecna Unleashed (Update 61).',
+    wiki: 'https://ddowiki.com/page/Vecna_Unleashed',
     files: ['DeckOfManyCurses'],
   },
   {
     key: 'reaper',
     name: 'Reaper Crafting',
     category: 'Item upgrades',
-    blurb: 'Reaper-slot effects on armor, accessories and weapons, bought with reaper XP.',
+    blurb: 'Move a reaper bonus onto the item you actually wear, paid for in fragments.',
     detail:
-      'Reaper crafting fills a per-slot reaper socket — armor, belt, boots, bracers, '
-      + 'cloak, gloves, goggles, helmet, necklace, ring and so on each have their own '
-      + 'list — with defensive and power bonuses paid for out of reaper experience.',
-    where: 'The reaper crafting interface.',
-    ingredients: 'Reaper experience.',
-    source: 'Any reaper-difficulty content.',
-    wiki: 'https://ddowiki.com/page/Reaper_crafting',
+      'The Reaper Forge crunches reaper-bonus items you already own into Fragments of '
+      + 'Reaper Power, and spends those fragments putting a reaper bonus on a different '
+      + 'item — which is how a bonus you rolled on gear you will never wear becomes one '
+      + 'on gear you will. Armor, belt, boots, bracers, cloak, gloves, goggles, helmet, '
+      + 'necklace, ring and the rest each have their own list, and a slot-specific '
+      + 'bonus costs 75 fragments. It is gated hard: 2,500,000 reaper experience — '
+      + 'about 50 reaper points — before you can spend anything at all.',
+    where: 'The Reaper Forge — talk to the Raven Queen Augur in the Eberron Hall of Heroes.',
+    ingredients: 'Fragments of Reaper Power, obtained by destroying existing reaper-bonus items.',
+    source: 'Any reaper-difficulty content. Added in Update 52.',
+    wiki: 'https://ddowiki.com/page/Reaper_Forge',
     files: ['Reaper'],
   },
   {
@@ -355,13 +388,13 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     category: 'Item upgrades',
     blurb: 'The mythic slot: flat PRR, MRR, melee, ranged and spell power added to an item.',
     detail:
-      'A mythic boost is slotted into the mythic socket found on much of the endgame '
-      + 'loot table and simply adds a rank-scaled block of power to the item. The rank '
-      + 'is a number you enter rather than a recipe you pick.',
-    where: 'Slotted into an item\'s mythic slot.',
-    ingredients: 'Mythic boost items from endgame loot.',
-    source: 'Endgame loot.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+      'A mythic boost is added to raid-level gear and simply stacks a rank-scaled block '
+      + 'of power onto the item. The rank is a number you enter rather than a recipe '
+      + 'you pick, which is why this system has one slot and four entries.',
+    where: 'Schism Shard crafting, using a Thread of Fate.',
+    ingredients: 'A Thread of Fate and the mythic boost item itself.',
+    source: 'Raid-level endgame loot.',
+    wiki: 'https://ddowiki.com/page/Mythic_Boost',
     files: ['Mythic'],
   },
   {
@@ -371,12 +404,12 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     blurb: 'Sealed in Fire / Mist / Undeath / Gloom — unsealing a weapon\'s hidden effect.',
     detail:
       'Sealed items arrive with their real effect locked behind a seal; the crafting '
-      + 'step chooses which of the sealed powers is released. It is a one-slot decision '
-      + 'per item, but an irreversible one.',
-    where: 'The relevant unsealing altar.',
-    ingredients: 'The sealing ingredients for the item\'s content.',
-    source: 'Endgame raids and chains.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+      + 'step chooses which of the sealed powers is released. One slot per item, and '
+      + 'an irreversible choice.',
+    where: 'The Esoteric Table, at the entrance to Fire Over Morgrave in Morgrave University — Upper Commons. Reachable before the raid starts or after it ends, but locked during the fight.',
+    ingredients: 'Vecna Unleashed upgrade ingredients.',
+    source: 'Vecna Unleashed quests and the Fire Over Morgrave raid (Update 61).',
+    wiki: 'https://ddowiki.com/page/Sealed_in_Undeath',
     files: ['SealedInFire', 'SealedInUndeath'],
   },
   {
@@ -386,9 +419,10 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     blurb: 'Choose the unleashed effect on a planar-searing weapon.',
     detail:
       'A planar-searing weapon holds a burn that has to be pointed somewhere: the '
-      + 'crafting slot picks which unleashed effect it becomes, or leaves it unupgraded.',
-    where: 'The planar altar.',
-    ingredients: 'Planar ingredients.',
+      + 'crafting slot picks which unleashed effect it becomes, or leaves it '
+      + 'unupgraded. Every recipe here is level 32.',
+    where: 'The planar upgrade altar.',
+    ingredients: 'Planar upgrade ingredients.',
     source: 'Endgame planar content.',
     wiki: 'https://ddowiki.com/page/Crafting',
     files: ['PlanarSearing'],
@@ -397,16 +431,17 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'lost-purpose',
     name: 'Lost Purpose',
     category: 'Item upgrades',
-    blurb: 'Stamp a chosen legendary set bonus onto an item.',
+    blurb: 'Give an item a set bonus of your choosing.',
     detail:
       'Lost Purpose is unusual: rather than an effect, the slot grants a *set bonus* '
-      + 'of your choosing to the item — Legendary Heart of Blades, Vol\'s Influence, '
-      + 'The Fury\'s Rage and the rest — which is how you finish a set you are one '
-      + 'piece short of.',
-    where: 'The Lost Purpose altar.',
-    ingredients: 'Lost Purpose ingredients.',
-    source: 'Endgame content.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+      + 'you pick — Legendary Heart of Blades, Vol\'s Influence, The Fury\'s Rage and '
+      + 'the rest. Vecna Unleashed puts no sets natively on any of its items, so this '
+      + 'is how its gear joins a set at all, and how you finish a set you are one piece '
+      + 'short of.',
+    where: 'The Cannith Repurposing Station.',
+    ingredients: 'Vecna Unleashed upgrade ingredients.',
+    source: 'Vecna Unleashed (Update 61).',
+    wiki: 'https://ddowiki.com/page/Lost_Purpose',
     files: ['LostPurpose'],
   },
   {
@@ -418,7 +453,7 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
       'Facets are single-choice upgrade slots on endgame gear, each granting one '
       + 'substantial slotted effect rather than a numeric bonus.',
     where: 'Slotted into a facet slot.',
-    ingredients: 'Facet ingredients.',
+    ingredients: 'Facet upgrade ingredients.',
     source: 'Endgame content.',
     wiki: 'https://ddowiki.com/page/Crafting',
     files: ['Facets'],
@@ -427,15 +462,16 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     key: 'nearly-complete',
     name: 'Nearly Complete',
     category: 'Item upgrades',
-    blurb: 'Finish an incomplete item by choosing which bonus family completes it.',
+    blurb: 'Finish an unfinished item by choosing which bonus family completes it.',
     detail:
-      'A "nearly complete" item asks you which effect finishes it — an ability score, '
+      'A nearly finished item asks you which effect completes it — an ability score, '
       + 'insightful or quality ability score, exceptional skills, healing amplification '
-      + 'or spell focus — with separate heroic and legendary slot families.',
-    where: 'The completion altar.',
+      + 'or spell focus — with separate heroic and legendary slot families. The wiki '
+      + 'files this one under "Nearly Finished".',
+    where: 'The item\'s completion altar.',
     ingredients: 'The item\'s completion ingredients.',
-    source: 'Various.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+    source: 'Added in Update 11.',
+    wiki: 'https://ddowiki.com/page/Nearly_Finished',
     files: ['NearlyComplete'],
   },
   {
@@ -446,10 +482,10 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     detail:
       'One slot, one large effect: spell powers, damage bonuses, healing amplification '
       + 'and the like, at a fixed high value rather than a scaling one.',
-    where: 'The relevant altar.',
+    where: 'The relevant upgrade altar.',
     ingredients: 'The item\'s upgrade ingredients.',
-    source: 'Various.',
-    wiki: 'https://ddowiki.com/page/Crafting',
+    source: 'Added in Module 9.',
+    wiki: 'https://ddowiki.com/page/Incredible_Potential',
     files: ['IncrediblePotential'],
   },
 ]

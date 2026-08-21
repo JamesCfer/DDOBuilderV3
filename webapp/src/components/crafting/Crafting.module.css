@@ -529,6 +529,11 @@
   color: var(--color-gold-light);
 }
 
+.slotNote {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 .shardList {
   display: flex;
   flex-direction: column;

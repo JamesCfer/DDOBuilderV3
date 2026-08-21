@@ -21,6 +21,14 @@ import type { CraftingSystemDetail, CraftingRecipe } from '../../server/crafting
 const PARTS = ['Prefix', 'Suffix', 'Extra'] as const
 type Part = typeof PARTS[number]
 
+/**
+ * The extra slot is not free: it is the Mark of House Cannith slot, and the
+ * game does not offer it below minimum level 10. The shard tables say nothing
+ * about that, so a planner reading only the data would happily offer an extra
+ * effect on a level 4 item that cannot hold one.
+ */
+const EXTRA_SLOT_MIN_LEVEL = 10
+
 /** Where a slot family's effects come from — crafted, or rolled by the game. */
 type Source = 'Cannith' | 'Random'
 
@@ -226,7 +234,8 @@ export default function CannithPlanner() {
           <p className={styles.introBlurb}>
             Choose the item and the level you want to craft at, and every shard
             shows what it is actually worth there. A crafted item takes one
-            prefix and one suffix, plus an extra effect on most slots.
+            prefix and one suffix, plus — from item level 10 up, with a Mark of
+            House Cannith — a third extra effect.
           </p>
         </div>
         <a
@@ -294,6 +303,13 @@ export default function CannithPlanner() {
                 {part}
                 <span className={styles.slotCount}>{recipes.length}</span>
               </h3>
+              {part === 'Extra' && (
+                <p className={styles.slotNote}>
+                  {level < EXTRA_SLOT_MIN_LEVEL
+                    ? `No extra slot below item level ${EXTRA_SLOT_MIN_LEVEL} — raise the level to use one.`
+                    : 'Needs a Mark of House Cannith to open this slot.'}
+                </p>
+              )}
               {recipes.length === 0 ? (
                 <p className={styles.status}>
                   {query.trim() ? 'No match here.' : `${kind} has no ${part.toLowerCase()} slot.`}
@@ -371,6 +387,11 @@ export default function CannithPlanner() {
               Minimum level {level}. Crafting at a lower level costs less and
               lowers every value on the item together — the slider is the whole
               trade-off.
+              {level < EXTRA_SLOT_MIN_LEVEL && chosen.some(c => c.part === 'Extra') && (
+                <> {' '}<strong>At level {level} this item has no extra slot</strong>, so
+                the extra effect above cannot go on it — the Mark of House Cannith
+                slot starts at level {EXTRA_SLOT_MIN_LEVEL}.</>
+              )}
             </p>
           </>
         )}

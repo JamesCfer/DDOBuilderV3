@@ -153,6 +153,55 @@ describe('Cannith slot parsing', () => {
 })
 
 // ---------------------------------------------------------------------------
+// The Mark of House Cannith slot
+// ---------------------------------------------------------------------------
+
+describe('the extra slot', () => {
+  async function planner(): Promise<HTMLElement> {
+    stubFetch({ '/api/crafting/cannith': cannithDetail([
+      'Cannith Boots Prefix', 'Cannith Boots Suffix', 'Cannith Boots Extra',
+    ]) })
+    const { default: CannithPlanner } = await import('../components/crafting/CannithPlanner')
+    return mount(React.createElement(CannithPlanner))
+  }
+
+  async function setLevel(container: HTMLElement, level: number) {
+    const slider = container.querySelector('input[type="range"]') as HTMLInputElement
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value')!.set!
+      setter.call(slider, String(level))
+      slider.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+  }
+
+  it('names the Mark of House Cannith at a level that can hold one', async () => {
+    const container = await planner()
+    expect(container.textContent).toContain('Needs a Mark of House Cannith')
+  })
+
+  it('says the slot does not exist below level 10', async () => {
+    // The shard tables carry no level gate, so a planner reading only the data
+    // would offer an extra effect on a level 4 item that cannot hold one.
+    const container = await planner()
+    await setLevel(container, 4)
+    expect(container.textContent).toContain('No extra slot below item level 10')
+    expect(container.textContent).not.toContain('Needs a Mark of House Cannith')
+  })
+
+  it('warns when a picked extra effect cannot go on the item at this level', async () => {
+    const container = await planner()
+    // The same effect name appears in all three columns, so pick from the
+    // Extra section specifically rather than taking the first match.
+    const extra = [...container.querySelectorAll('section')]
+      .find(sec => sec.querySelector('h3')?.textContent?.startsWith('Extra'))!
+    await act(async () => { extra.querySelector('button')!.click() })
+    await setLevel(container, 4)
+    expect(container.textContent).toContain('this item has no extra slot')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // The hub
 // ---------------------------------------------------------------------------
 
