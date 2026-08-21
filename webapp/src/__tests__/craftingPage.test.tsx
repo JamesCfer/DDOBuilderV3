@@ -70,7 +70,7 @@ function recipe(over: Partial<CraftingRecipe> = {}): CraftingRecipe {
   return {
     name: 'Balance', description: 'Competence bonus to Balance', minLevel: 0,
     slots: ['Cannith Boots Prefix'], setBonuses: [], unlocks: [],
-    levels: [], values: [], scalesWithLevel: false, ...over,
+    levels: [], values: [], scalesWithLevel: false, ingredients: [], ...over,
   }
 }
 

@@ -26,6 +26,12 @@ import path from 'path'
 import fs from 'fs'
 import { xmlParser } from './dataLoaders'
 import type { Augment } from '../types/ddo'
+import { MANUAL_CRAFTING_SYSTEMS } from './craftingManual'
+import { UPGRADE_CRAFTING_SYSTEMS } from './craftingUpgrades'
+import { NAMED_UPGRADE_SYSTEMS } from './craftingNamed'
+import { AUGMENT_CRAFTING_SYSTEMS } from './craftingAugments'
+import { BARTER_CRAFTING_SYSTEMS } from './craftingBarter'
+import { VIKTRANIUM } from './craftingViktranium'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,6 +43,9 @@ export type CraftingCategory =
   | 'Raid crafting'
   | 'Quest chain crafting'
   | 'Item upgrades'
+  // Crafting that makes something other than gear — a ritual laid on an item
+  // you keep, a stack of mines, a barter list you spend challenge tokens on.
+  | 'Rituals & consumables'
 
 export interface CraftingSystemMeta {
   /** URL-safe id — the `/api/crafting/:key` path segment. */
@@ -57,6 +66,17 @@ export interface CraftingSystemMeta {
   wiki: string
   /** Augment file basenames (without the `.Augments.xml` suffix). */
   files: string[]
+  /**
+   * Recipes transcribed from ddowiki rather than read from the game data.
+   *
+   * Most of DDO's crafting systems never reach V2's augment files at all:
+   * a Stone of Change ritual, a Trapmaking mine, or a Catalyst upgrade
+   * produces a *new item* instead of filling an augment slot, so there is no
+   * `<Augment>` anywhere to describe it. Those systems are carried here, in
+   * the same slot-then-recipes shape the XML ones collapse into, so the page
+   * renders both without knowing which is which.
+   */
+  manual?: ManualSlot[]
   /**
    * Slot types that are only reachable by first filling another slot (V2
    * `AddAugment`), listed here so the UI can present the tier order the way
@@ -82,6 +102,39 @@ export interface CraftingRecipe {
   values: number[]
   /** True when the amount scales with level rather than being fixed. */
   scalesWithLevel: boolean
+  /**
+   * What the recipe consumes, one line per ingredient ("10 Watcher's Eyes").
+   *
+   * Always empty for recipes read out of the augment XML: V2 stores what an
+   * augment *does*, never what it costs, because the builder only ever asks
+   * the first question. Hand-authored recipes carry the cost, which for most
+   * of the systems on this page is the whole point of looking them up.
+   */
+  ingredients: string[]
+  /** A caveat that belongs to this recipe alone rather than to the system. */
+  note?: string
+}
+
+/**
+ * A hand-authored recipe. Everything the XML supplies automatically is
+ * optional here, because the wiki does not always state it: a Stone of Change
+ * ritual has no minimum level, and a Trapmaking mine has no set bonus.
+ */
+export interface ManualRecipe {
+  name: string
+  description: string
+  /** Item level, where the system has one. Omit rather than guessing. */
+  minLevel?: number
+  ingredients?: string[]
+  setBonuses?: string[]
+  unlocks?: string[]
+  note?: string
+}
+
+/** One hand-authored slot — a step, a tier, or a category of output. */
+export interface ManualSlot {
+  type: string
+  recipes: ManualRecipe[]
 }
 
 /** One crafting slot, with every recipe that fits it. */
@@ -122,7 +175,7 @@ export interface CraftingSystemDetail extends CraftingSystemSummary {
 // "Slave_Lords_Crafting" is the page.
 // ---------------------------------------------------------------------------
 
-export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
+const AUGMENT_DATA_SYSTEMS: CraftingSystemMeta[] = [
   {
     key: 'cannith',
     name: 'Cannith Crafting',
@@ -140,7 +193,7 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
     where: 'The Crafting Hall in the House Kundarak enclave — not House Cannith — or a portable crafting altar.',
     ingredients: 'Cannith essences from deconstructing loot, plus collectables for the shard recipes.',
     source: 'No quest needed — blanks are bought from the crafting vendors or pulled from loot. Added in Update 9.',
-    wiki: 'https://ddowiki.com/page/Cannith_Crafting',
+    wiki: 'https://ddowiki.com/page/Essence_Crafting',
     files: ['CannithAndRandomItem'],
   },
   {
@@ -399,16 +452,23 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
   },
   {
     key: 'sealed',
-    name: 'Sealed Power',
+    name: 'Sealed in Fire and Undeath',
     category: 'Item upgrades',
-    blurb: 'Sealed in Fire / Mist / Undeath / Gloom — unsealing a weapon\'s hidden effect.',
+    blurb: 'Every effect the Sealed tags unseal into, read straight out of the game data.',
     detail:
-      'Sealed items arrive with their real effect locked behind a seal; the crafting '
-      + 'step chooses which of the sealed powers is released. One slot per item, and '
-      + 'an irreversible choice.',
-    where: 'The Esoteric Table, at the entrance to Fire Over Morgrave in Morgrave University — Upper Commons. Reachable before the raid starts or after it ends, but locked during the fight.',
-    ingredients: 'Vecna Unleashed upgrade ingredients.',
-    source: 'Vecna Unleashed quests and the Fire Over Morgrave raid (Update 61).',
+      'A Sealed item arrives with its real effect locked behind the seal, and the '
+      + 'crafting step chooses which effect is released — one per item. This card is the '
+      + 'game data\'s own view of those choices, which is why the lists here are exact: '
+      + 'they are the same records the builder consults when it shows you what a sealed '
+      + 'item can become. Where the unsealing is actually done depends on which seal it '
+      + 'is, and each of those altars has its own card here with its own ingredient '
+      + 'costs — Sealed in Fire and Sealed in Undeath at the Ritual Table inside Threats '
+      + 'Old and New, Sealed in Mist and Sealed in Gloom at the Augmentation Altar '
+      + 'inside Den of Vipers. Not to be confused with the Sealed Altar, which is an '
+      + 'unrelated system in Gravenhollow.',
+    where: 'The Ritual Table for Fire and Undeath; the Augmentation Altar for Mist and Gloom.',
+    ingredients: 'Barrier Fragments at the Ritual Table, Hydra Scales at the Augmentation Altar.',
+    source: 'Magic of Myth Drannor and the Den of Vipers raid.',
     wiki: 'https://ddowiki.com/page/Sealed_in_Undeath',
     files: ['SealedInFire', 'SealedInUndeath'],
   },
@@ -490,6 +550,26 @@ export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
   },
 ]
 
+/**
+ * Every crafting system the page offers.
+ *
+ * Two halves, joined here. `AUGMENT_DATA_SYSTEMS` are the ones V2 already
+ * models — they fill an augment slot, so their recipes are read out of the
+ * shipped XML and stay correct for free as the data files are updated. The
+ * other two lists are transcribed from ddowiki, because the systems in them
+ * make new items rather than slot fillers and so appear nowhere in the game
+ * data the builder ships.
+ */
+export const CRAFTING_SYSTEMS: CraftingSystemMeta[] = [
+  ...AUGMENT_DATA_SYSTEMS,
+  ...MANUAL_CRAFTING_SYSTEMS,
+  ...UPGRADE_CRAFTING_SYSTEMS,
+  ...NAMED_UPGRADE_SYSTEMS,
+  ...AUGMENT_CRAFTING_SYSTEMS,
+  ...BARTER_CRAFTING_SYSTEMS,
+  VIKTRANIUM,
+]
+
 // ---------------------------------------------------------------------------
 // Loading
 // ---------------------------------------------------------------------------
@@ -542,6 +622,24 @@ function toRecipe(aug: Augment): CraftingRecipe {
     levels: numberTable(raw['Levels']),
     values,
     scalesWithLevel: raw['ChooseLevel'] !== undefined && values.length > 1,
+    ingredients: [],
+  }
+}
+
+/** Fills a hand-authored recipe out to the shape the page renders. */
+function fromManual(recipe: ManualRecipe): CraftingRecipe {
+  return {
+    name: recipe.name,
+    description: recipe.description,
+    minLevel: recipe.minLevel ?? 0,
+    slots: [],
+    setBonuses: recipe.setBonuses ?? [],
+    unlocks: recipe.unlocks ?? [],
+    levels: [],
+    values: [],
+    scalesWithLevel: false,
+    ingredients: recipe.ingredients ?? [],
+    ...(recipe.note ? { note: recipe.note } : {}),
   }
 }
 
@@ -588,13 +686,13 @@ function levelRange(recipes: CraftingRecipe[]): [number | null, number | null] {
  * what lets the Cannith planner answer "what can go on boots" directly.
  */
 export function buildCraftingSystem(dataDir: string, meta: CraftingSystemMeta): CraftingSystemDetail {
-  const recipes = meta.files
+  const fromData = meta.files
     .flatMap(f => readAugmentFile(dataDir, f))
     .map(toRecipe)
     .filter(r => r.name.length > 0)
 
   const bySlot = new Map<string, CraftingRecipe[]>()
-  for (const recipe of recipes) {
+  for (const recipe of fromData) {
     for (const slot of recipe.slots) {
       const list = bySlot.get(slot)
       if (list) list.push(recipe)
@@ -602,12 +700,23 @@ export function buildCraftingSystem(dataDir: string, meta: CraftingSystemMeta): 
     }
   }
 
-  const slots: CraftingSlotGroup[] = orderSlots([...bySlot.keys()], meta.slotOrder)
+  const dataSlots: CraftingSlotGroup[] = orderSlots([...bySlot.keys()], meta.slotOrder)
     .map(type => ({
       type,
       recipes: (bySlot.get(type) ?? []).sort((a, b) =>
         a.minLevel - b.minLevel || a.name.localeCompare(b.name)),
     }))
+
+  // Hand-authored slots keep the order they were written in, and are never
+  // re-sorted: that order *is* the information. "Adamantine Ritual I" before
+  // "II" is a prerequisite chain, and sorting the mines by name would split
+  // "Weak Fire Trap" from "Small Fire Trap" while claiming to be tidier.
+  const manualSlots: CraftingSlotGroup[] = (meta.manual ?? [])
+    .map(slot => ({ type: slot.type, recipes: slot.recipes.map(fromManual) }))
+    .filter(slot => slot.recipes.length > 0)
+
+  const slots = [...dataSlots, ...manualSlots]
+  const recipes = [...fromData, ...manualSlots.flatMap(s => s.recipes)]
 
   const [minLevel, maxLevel] = levelRange(recipes)
 

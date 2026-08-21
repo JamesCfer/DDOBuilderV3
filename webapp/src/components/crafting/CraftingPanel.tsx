@@ -17,6 +17,7 @@ import CraftingSystemView from './CraftingSystemView'
 /** Card order on the hub — the order people actually meet these systems in. */
 const CATEGORY_ORDER: CraftingCategory[] = [
   'Craft from scratch', 'Raid crafting', 'Quest chain crafting', 'Item upgrades',
+  'Rituals & consumables',
 ]
 
 const CATEGORY_BLURB: Record<CraftingCategory, string> = {
@@ -24,6 +25,7 @@ const CATEGORY_BLURB: Record<CraftingCategory, string> = {
   'Raid crafting': 'Raid ingredients turned into the game\'s strongest planned gear.',
   'Quest chain crafting': 'Run a chain, collect its ingredients, craft the set you want.',
   'Item upgrades': 'Slots on gear you already have, filled with a choice you make once.',
+  'Rituals & consumables': 'Crafting that makes something other than gear — rituals, mines, barter lists.',
 }
 
 export default function CraftingPanel() {
@@ -90,15 +92,18 @@ export default function CraftingPanel() {
         <div className={styles.introText}>
           <h2 className={styles.introTitle}>Crafting</h2>
           <p className={styles.introBlurb}>
-            Every crafting system in DDO, with the recipes each one offers read
-            straight out of the game data. This is a reference and a planner —
-            it is separate from the builder, so nothing you do here touches the
-            character you have open.
+            Every crafting system in DDO — everything on the wiki&rsquo;s own
+            crafting index — with what each one makes, where you make it, and
+            what it costs. This is a reference and a planner: it is separate
+            from the builder, so nothing you do here touches the character you
+            have open.
           </p>
           <p className={styles.introHint}>
-            Pick a system to see its slots and every effect that fits them.
-            Cannith Crafting has its own planner tab, because its values change
-            with the level you craft at.
+            Pick a system to see its slots and every recipe that fits them.
+            Systems that fill an augment slot are read straight out of the game
+            data; the rest are transcribed from ddowiki, and carry their
+            ingredients with them. Cannith Crafting has its own planner tab,
+            because its values change with the level you craft at.
           </p>
         </div>
         <a
