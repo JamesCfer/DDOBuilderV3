@@ -808,6 +808,50 @@ function applyStanceOverrides(
 export const ACTIVE_STANCE_KEY_PREFIX = 'activeStance.'
 
 /**
+ * The augment choices actually in effect for a build: the player's stored
+ * per-slot picks (cosmetic slots, and slots whose host item V2 stripped,
+ * dropped) plus each catalogue item's pre-slotted `ItemAugment::
+ * SelectedAugment` default and the sentient gem's major/minor augments.
+ *
+ * Shared by `buildStatMap` (which feeds it to accumulateAugments /
+ * accumulateSetBonuses) and by the Set Bonuses panel, so the set counts the
+ * UI shows are the same ones the stat map applied.
+ */
+export function mergeAugmentChoices(
+  build: CharacterBuild,
+  gearItems: Record<string, Item>,
+  removedSlots?: Set<string>,
+): Record<string, string> {
+  const merged = {} as Record<string, string>
+  for (const [key, name] of Object.entries(build.augmentChoices)) {
+    if (key.startsWith('Cosmetic')) continue
+    // host item stripped by V2's off-hand rule → its augments die with it
+    if (removedSlots?.has(key.split(':')[0])) continue
+    merged[key] = name
+  }
+  // V2 `ItemAugment::SelectedAugment` on the CATALOGUE item — some items
+  // ship with an augment pre-slotted (e.g. Kindling's "Sealed in Fire").
+  // The default applies unless the player stored ANY choice for that slot;
+  // the explicit '' written when clearing a pre-filled slot counts as an
+  // override, so `in` (key presence), not truthiness.
+  for (const [slot, item] of Object.entries(gearItems)) {
+    if (slot.startsWith('Cosmetic')) continue
+    toArray(item.ItemAugment).forEach((ia, index) => {
+      if (!ia?.SelectedAugment) return
+      const key = `${slot}:${ia.Type}:${index}`
+      if (!(key in build.augmentChoices)) merged[key] = ia.SelectedAugment
+    })
+  }
+  if (build.sentientGem?.majorAugment) {
+    merged['SentientMajor'] = build.sentientGem.majorAugment
+  }
+  if (build.sentientGem?.minorAugment) {
+    merged['SentientMinor'] = build.sentientGem.minorAugment
+  }
+  return merged
+}
+
+/**
  * V2 `Build::SetBonusCount` — the number of equipped items/augments
  * contributing a given named Set Bonus (`Item::HasSetBonus`, Item.cpp:
  * 508-548 / `Augment::SetBonus`). Shared by `accumulateSetBonuses` (applies
@@ -815,7 +859,7 @@ export const ACTIVE_STANCE_KEY_PREFIX = 'activeStance.'
  * `deriveGreensteelStances` (V2 queries the same counts independently from
  * `StancesPane::UpdateGreensteelStances`).
  */
-function computeSetBonusCounts(
+export function computeSetBonusCounts(
   gearItems: Record<string, Item>,
   augmentChoices: Record<string, string>,
   allAugments: Augment[],
@@ -1559,32 +1603,7 @@ function buildStatMapOnce(
     // Merged augment choices (regular slots + sentient gem, cosmetic/removed
     // slots dropped) — needed both for the Greensteel dominance-stance
     // derivation below and for accumulateAugments/accumulateSetBonuses later.
-    const allAugmentChoices = {} as Record<string, string>
-    for (const [key, name] of Object.entries(build.augmentChoices)) {
-      if (key.startsWith('Cosmetic')) continue
-      // host item stripped by V2's off-hand rule → its augments die with it
-      if (gearSlotsRemovedByV2.has(key.split(':')[0])) continue
-      allAugmentChoices[key] = name
-    }
-    // V2 `ItemAugment::SelectedAugment` on the CATALOGUE item — some items
-    // ship with an augment pre-slotted (e.g. Kindling's "Sealed in Fire").
-    // The default applies unless the player stored ANY choice for that slot;
-    // the explicit '' written when clearing a pre-filled slot counts as an
-    // override, so `in` (key presence), not truthiness.
-    for (const [slot, item] of Object.entries(gearItems)) {
-      if (slot.startsWith('Cosmetic')) continue
-      toArray(item.ItemAugment).forEach((ia, index) => {
-        if (!ia?.SelectedAugment) return
-        const key = `${slot}:${ia.Type}:${index}`
-        if (!(key in build.augmentChoices)) allAugmentChoices[key] = ia.SelectedAugment
-      })
-    }
-    if (build.sentientGem.majorAugment) {
-      allAugmentChoices['SentientMajor'] = build.sentientGem.majorAugment
-    }
-    if (build.sentientGem.minorAugment) {
-      allAugmentChoices['SentientMinor'] = build.sentientGem.minorAugment
-    }
+    const allAugmentChoices = mergeAugmentChoices(build, gearItems, gearSlotsRemovedByV2)
 
     // V2 Requirement::EvaluateMaterialType inputs: equipped item Material per
     // V2 slot name (Requirement.cpp:1083-1100).
