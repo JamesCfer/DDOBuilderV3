@@ -4,7 +4,6 @@ import { useCharacter } from '../../context/CharacterContext'
 import type { DDOClass, Race, Feat } from '../../types/ddo'
 import {
   specialFeatTrainedCount, canTrainSpecialFeat, canRevokeSpecialFeat,
-  favorFeatTrainedCount, canTrainFavorFeat, canRevokeFavorFeat,
 } from '../../lib/specialFeats'
 import CollapsibleCard from '../common/CollapsibleCard'
 import styles from './PastLivesPanel.module.css'
@@ -77,7 +76,6 @@ function PastLivesBody() {
   const [allRaces, setAllRaces] = useState<Race[]>([])
   const [epicFeats, setEpicFeats] = useState<Feat[]>([])
   const [specialFeatsData, setSpecialFeatsData] = useState<Feat[]>([])
-  const [favorFeatsData, setFavorFeatsData] = useState<Feat[]>([])
   const [destinyClaimFeats, setDestinyClaimFeats] = useState<Feat[]>([])
 
   useEffect(() => {
@@ -85,7 +83,6 @@ function PastLivesBody() {
     api.races().then(setAllRaces)
     api.feats({ acquire: 'EpicPastLife' }).then(setEpicFeats).catch(() => setEpicFeats([]))
     api.feats({ acquire: 'Special' }).then(setSpecialFeatsData).catch(() => setSpecialFeatsData([]))
-    api.feats({ acquire: 'Favor' }).then(setFavorFeatsData).catch(() => setFavorFeatsData([]))
     api.feats({ acquire: 'EpicDestinyTree' }).then(setDestinyClaimFeats).catch(() => setDestinyClaimFeats([]))
   }, [])
 
@@ -158,21 +155,6 @@ function PastLivesBody() {
       onDecrement: name => dispatch({ type: 'REVOKE_SPECIAL_FEAT', featName: name }),
       canIncrement: (name, max) => canTrainSpecialFeat(build, name, max),
       canDecrement: name => canRevokeSpecialFeat(build, name),
-    })
-  }
-
-  // V2 SpecialFeatsPane "Favor" group (FeatAcquisition_Favor): House favor
-  // reward feats. Trained as a flat repeatable list in `build.favorFeats`
-  // (Build::m_FavorFeats), distinct from the life-level pastLives counters.
-  if (favorFeatsData.length > 0) {
-    groups.push({
-      title: 'Favor Feats',
-      entries: favorFeatsData.map(f => ({ name: f.Name, max: f.MaxTimesAcquire ?? ACQUIRE_MAX_DEFAULT })),
-      getCount: name => favorFeatTrainedCount(build, name),
-      onIncrement: name => dispatch({ type: 'TRAIN_FAVOR_FEAT', featName: name }),
-      onDecrement: name => dispatch({ type: 'REVOKE_FAVOR_FEAT', featName: name }),
-      canIncrement: (name, max) => canTrainFavorFeat(build, name, max),
-      canDecrement: name => canRevokeFavorFeat(build, name),
     })
   }
 
