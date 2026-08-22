@@ -24,9 +24,13 @@ interface LevelCardProps {
 }
 
 function LevelCard({ entry, allFeats, collapsed, onToggle }: LevelCardProps) {
-  const { charLevel, className, featSlotKeys, featChoices, skillPointsAvailable, skillPointsSpent, skillRanks } = entry
+  const {
+    charLevel, className, featSlotKeys, featChoices,
+    skillPointsAvailable, skillPointsSpent, skillRanks, automaticFeats,
+  } = entry
   const hasFeats = featSlotKeys.some(k => featChoices[k])
   const hasSkills = Object.keys(skillRanks).length > 0
+  const hasAutomatic = automaticFeats.length > 0
   const spOver = skillPointsSpent > skillPointsAvailable
 
   return (
@@ -107,7 +111,23 @@ function LevelCard({ entry, allFeats, collapsed, onToggle }: LevelCardProps) {
             </section>
           )}
 
-          {!hasFeats && !hasSkills && (
+          {/* Automatic feats granted at this level (V2 CAutomaticFeatsPane) */}
+          {hasAutomatic && (
+            <section className={styles.section}>
+              <div className={styles.sectionLabel}>Automatic feats</div>
+              {automaticFeats.map(name => {
+                const feat = allFeats.find(f => f.Name === name)
+                return (
+                  <div key={name} className={styles.slotRow}>
+                    <span className={styles.slotType}>Granted</span>
+                    <span className={styles.featName} title={feat?.Description ?? name}>{name}</span>
+                  </div>
+                )
+              })}
+            </section>
+          )}
+
+          {!hasFeats && !hasSkills && !hasAutomatic && (
             <div className={styles.emptyCard}>Nothing trained at this level.</div>
           )}
         </div>
