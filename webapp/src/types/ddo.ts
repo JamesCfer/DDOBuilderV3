@@ -102,6 +102,9 @@ export interface DDOClass {
   SkillPoints?: number
   HitPoints?: number
   ClassSkill?: string | string[]
+  /** V2 Class::AutoBuySkill — skills the level-up planner spends points on
+   *  first. Carried through the loader (normalised) for future use. */
+  AutoBuySkill?: string | string[]
   Alignment?: string | string[]
   Fortitude?: SaveType
   Reflex?: SaveType

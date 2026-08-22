@@ -15,6 +15,7 @@ import type {
   Patron, Quest, SentientGem,
 } from '../types/ddo'
 import type { WeaponGroupSpec } from '../lib/weapons/groups'
+import { normalizeSkillName } from '../lib/gamedata'
 
 // ---------------------------------------------------------------------------
 // XML parser
@@ -153,6 +154,11 @@ export function loadRaces(dataDir: string): Race[] {
   })
 }
 
+/** Canonicalise a class file's skill-name list (V2 SkillTypes.h aliases). */
+function normalizeSkillNames(raw: string | string[]): string | string[] {
+  return Array.isArray(raw) ? raw.map(normalizeSkillName) : normalizeSkillName(raw)
+}
+
 export function loadClasses(dataDir: string): DDOClass[] {
   const dir = path.join(dataDir, 'Classes')
   if (!fs.existsSync(dir)) return []
@@ -165,7 +171,15 @@ export function loadClasses(dataDir: string): DDOClass[] {
       // delivers it as "" which is falsy, so `!c.NotHeroic` wrongly treated
       // Epic/Legendary as heroic. Normalise to an explicit boolean (matches the
       // tree-flag normalisation below).
-      return classes.map(c => ({ ...c, NotHeroic: 'NotHeroic' in (c as object) ? true : undefined }))
+      return classes.map(c => ({
+        ...c,
+        NotHeroic: 'NotHeroic' in (c as object) ? true : undefined,
+        // V2 reads either spelling of Spellcraft (SkillTypes.h:57,63 alias);
+        // V3 keys skills by canonical name, so Arcane Trickster's
+        // "<ClassSkill>Spell Craft</ClassSkill>" was no class skill at all.
+        ...(c.ClassSkill ? { ClassSkill: normalizeSkillNames(c.ClassSkill) } : {}),
+        ...(c.AutoBuySkill ? { AutoBuySkill: normalizeSkillNames(c.AutoBuySkill) } : {}),
+      }))
     } catch { return [] }
   })
 }

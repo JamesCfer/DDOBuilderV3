@@ -38,6 +38,28 @@ export const SKILLS: SkillDef[] = [
 
 export const SKILL_NAMES = SKILLS.map(s => s.name)
 
+/**
+ * V2 `skillTypeMap` (SkillTypes.h:57,63) maps BOTH "Spellcraft" and the older
+ * "Spell Craft" onto `Skill_SpellCraft` ("translate old builds"), so either
+ * spelling is valid anywhere a data file names a skill. V3 keys skills by the
+ * canonical display name, so an un-normalised "Spell Craft" silently misses:
+ * Arcane Trickster's class-skill list dropped Spellcraft, and the Festival:
+ * Icy Pumpkin Coffee buff's +10 landed in a `skill.Spell Craft` bucket no
+ * breakdown reads. Normalise on the way in instead of chasing spellings.
+ */
+const SKILL_NAME_ALIASES: Record<string, string> = {
+  'spell craft': 'Spellcraft',
+}
+const SKILL_NAMES_BY_LOWER = new Map(SKILL_NAMES.map(n => [n.toLowerCase(), n]))
+
+/** Canonical display name for a skill named by a data file, or the input
+ *  unchanged when it names no known skill (e.g. "All"). */
+export function normalizeSkillName(name: string): string {
+  const trimmed = name.trim()
+  const lower = trimmed.toLowerCase()
+  return SKILL_NAMES_BY_LOWER.get(lower) ?? SKILL_NAME_ALIASES[lower] ?? trimmed
+}
+
 // ---------------------------------------------------------------------------
 // Level caps
 // ---------------------------------------------------------------------------
