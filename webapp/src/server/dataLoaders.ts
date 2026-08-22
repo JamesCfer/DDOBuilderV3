@@ -544,10 +544,29 @@ export function loadPatrons(dataDir: string): Patron[] {
   } catch { return [] }
 }
 
+/**
+ * A quest's (or challenge's) `<Patron>` names ONE patron, but 'Patron' is on
+ * the parser's isArray list — Patrons.xml's root holds a list of them — so it
+ * arrives here as a one-element array. Consumers key patrons by name, and an
+ * array key matches nothing (every quest grouped under its own array
+ * identity, so the Favor page showed "0/0 quests" for every patron and had no
+ * quest to tick). Flatten it to the plain string the field means.
+ */
+function patronName(raw: unknown): string | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  if (typeof value === 'string') return value
+  if (typeof value === 'object' && value !== null) {
+    const text = (value as Record<string, unknown>)['#text']
+    if (typeof text === 'string') return text
+  }
+  return undefined
+}
+
 export function loadQuests(dataDir: string): Quest[] {
   try {
     const parsed = readXml(path.join(dataDir, 'Quests.xml')) as { Quests?: { Quest?: unknown[] } }
-    return (parsed?.Quests?.Quest ?? []) as Quest[]
+    const quests = (parsed?.Quests?.Quest ?? []) as Quest[]
+    return quests.map(q => ({ ...q, Patron: patronName(q.Patron) }))
   } catch { return [] }
 }
 
@@ -649,7 +668,8 @@ export function loadIgnoredList(dataDir: string): string[] {
 export function loadChallenges(dataDir: string): Challenge[] {
   try {
     const parsed = readXml(path.join(dataDir, 'Challenges.xml')) as { Challenges?: { Challenge?: unknown[] } }
-    return (parsed?.Challenges?.Challenge ?? []) as Challenge[]
+    const challenges = (parsed?.Challenges?.Challenge ?? []) as Challenge[]
+    return challenges.map(c => ({ ...c, Patron: patronName(c.Patron) }))
   } catch { return [] }
 }
 
