@@ -26,7 +26,7 @@ aid in battle, and disable traps from a distance! </Description>
     <ClassSkill>Open Lock</ClassSkill>
     <ClassSkill>Repair</ClassSkill>
     <ClassSkill>Search</ClassSkill>
-    <ClassSkill>Spell Craft</ClassSkill>
+    <ClassSkill>Spellcraft</ClassSkill>
     <ClassSkill>Spot</ClassSkill>
     <ClassSkill>Tumble</ClassSkill>
     <ClassSkill>Use Magic Device</ClassSkill>
@@ -40,7 +40,7 @@ aid in battle, and disable traps from a distance! </Description>
     <AutoBuySkill>Search</AutoBuySkill>
     <AutoBuySkill>Open Lock</AutoBuySkill>
     <AutoBuySkill>Spot</AutoBuySkill>
-    <AutoBuySkill>Spell Craft</AutoBuySkill>
+    <AutoBuySkill>Spellcraft</AutoBuySkill>
     <AutoBuySkill>Use Magic Device</AutoBuySkill>
     <AutoBuySkill>Hide</AutoBuySkill>
     <AutoBuySkill>Move Silently</AutoBuySkill>

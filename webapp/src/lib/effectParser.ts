@@ -5,7 +5,7 @@
 // (e.g. "ability.Strength", "save.Fort", "skill.Heal", "sp.Fire", …).
 
 import type { Effect, ItemBuff, Requirements, Requirement } from '../types/ddo'
-import { SKILLS } from './gamedata'
+import { SKILLS, normalizeSkillName } from './gamedata'
 
 // The six ability scores — used to expand Item="All" ability effects (V2 applies
 // an AbilityBonus with ability "All" to every ability, e.g. Completionist +2).
@@ -943,7 +943,9 @@ export function parseEffect(
     // -----------------------------------------------------------------------
     case 'SkillBonus':
       if (items.length > 0) {
-        return items.map(item => make(`skill.${item}`))
+        // V2 accepts either spelling of Spellcraft (SkillTypes.h alias) —
+        // normalise so "Spell Craft" doesn't land in a bucket nobody reads.
+        return items.map(item => make(`skill.${normalizeSkillName(item)}`))
       }
       return []
 
@@ -2168,7 +2170,9 @@ export function parseItemBuff(
     // -----------------------------------------------------------------------
     case 'SkillBonus':
       if (items.length > 0) {
-        return items.map(item => make(`skill.${item}`))
+        // V2 accepts either spelling of Spellcraft (SkillTypes.h alias) —
+        // normalise so "Spell Craft" doesn't land in a bucket nobody reads.
+        return items.map(item => make(`skill.${normalizeSkillName(item)}`))
       }
       return []
 

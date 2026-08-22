@@ -1872,7 +1872,7 @@ Until then, it can used infinitely, with a 2 hour cooldown.</Description>
       <AType>Simple</AType>
       <Amount size="1">10</Amount>
       <Item>Jump</Item>
-      <Item>Spell Craft</Item>
+      <Item>Spellcraft</Item>
       <Item>Balance</Item>
     </Effect>
   </OptionalBuff>
