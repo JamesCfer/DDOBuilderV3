@@ -54,6 +54,9 @@ const parser = new XMLParser({
     if (name === 'ArtifactFiligree' && /SentientGem|Filigrees/.test(jpath)) return true
     // SelfAndPartyBuffs are at Life level, multiple sibling elements
     if (name === 'SelfAndPartyBuffs') return true
+    // MonitoredBonuses (Life::MonitoredBonuses, a DL_STRING_LIST) — same
+    // repeated-sibling shape as SelfAndPartyBuffs.
+    if (name === 'MonitoredBonuses') return true
     // ContentIDontOwn is a Character-level DL_STRING_LIST (repeated element).
     if (name === 'ContentIDontOwn') return true
     // <Attacks> inside an <AttackChain> is a DL_STRING_LIST.
@@ -1083,6 +1086,9 @@ export function importV2Document(xml: string, opts?: {
       // F4: Life-level SpecialFeats beyond past lives (universal-tree access,
       // Granted feats, …) — previously dropped.
       specialFeats: lifeSpecial.feats,
+      // Life::MonitoredBonuses — user-curated Bonuses-table watch list
+      // (CBonusesPane / ForumExportDlg::AddBonuses).
+      monitoredBonuses: arr(lifeNode.MonitoredBonuses as string | string[] | undefined).map(asStr).filter(Boolean),
       builds,
     })
   }

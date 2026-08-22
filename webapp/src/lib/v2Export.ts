@@ -725,6 +725,8 @@ export interface ExportLife {
   alignment: string
   /** Life-level SpecialFeats beyond past lives (F4). */
   specialFeats: string[]
+  /** Life::MonitoredBonuses — user-curated Bonuses-table watch list. */
+  monitoredBonuses: string[]
   builds: CharacterBuild[]
 }
 
@@ -791,6 +793,9 @@ export function exportV2Document(doc: ExportDocument, itemCatalogue?: ItemCatalo
     for (const build of life.builds) emitBuild(xml, build, itemCatalogue)
     // Life-level self/party buffs round-trip via each build's activeBuffs /
     // ActiveStances; no separate list emitted.
+    for (const name of life.monitoredBonuses ?? []) {
+      if (name) xml.leaf('MonitoredBonuses', name)
+    }
     xml.close('Life')
   }
 
@@ -827,6 +832,7 @@ export function exportV2DocumentModel(doc: CharacterDocument, itemCatalogue?: It
       race: l.race,
       alignment: l.alignment,
       specialFeats: l.specialFeats ?? [],
+      monitoredBonuses: l.monitoredBonuses ?? [],
       builds: l.builds,
     })),
     guildLevel: doc.guildLevel ?? 0,
@@ -851,6 +857,7 @@ export function exportV2Build(build: CharacterBuild, itemCatalogue?: ItemCatalog
       race: build.race || 'Human',
       alignment: build.alignment || 'True Neutral',
       specialFeats: [],
+      monitoredBonuses: [],
       builds: [build],
     }],
     guildLevel: build.guildLevel ?? 0,

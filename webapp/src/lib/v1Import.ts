@@ -714,6 +714,7 @@ export function importV1Build(xml: string): V1ImportResult {
     skillTomes: { ...out.skillTomes },
     selfBuffs: [],
     specialFeats: special.feats,
+    monitoredBonuses: [],
     builds: [out],
   }
 

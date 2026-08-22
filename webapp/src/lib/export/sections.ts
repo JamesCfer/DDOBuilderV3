@@ -19,6 +19,7 @@ import { SKILL_NAMES } from '../gamedata'
 import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown'
 import { computeSpellDC, computeCasterLevel, computeMaxCasterLevel } from '../spells/spellMath'
 import { replacementSpellPower } from '../spellPowerRow'
+import { MONITORED_BONUS_KEYS, BONUS_TYPE_COLUMNS, monitoredBonusValue } from '../bonusesTable'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -61,6 +62,10 @@ export interface SectionContext {
   /** Full spell catalogue — required to resolve School/CL/MCL/DC columns in
    *  the spells section (X18). */
   allSpells?: Spell[]
+  /** Active Life's `Life::MonitoredBonuses()` watch list — the Bonuses
+   *  section's row list (X20). Resolved by the caller from the active
+   *  `Life`, same pattern as `specialFeats`. */
+  monitoredBonuses?: string[]
 }
 
 export interface SectionDef {
@@ -1050,24 +1055,36 @@ const featSelectionsNoSkills: SectionDef = {
   emit: ctx => featSelectionsTable(ctx, false),
 }
 
-/**
- * V2 ForumExportDlg.cpp FES_Bonuses — dump every accumulated stat with a
- * non-zero total. Useful as a "what's contributing to my numbers" debug
- * export.
- */
+// V2 ForumExportDlg.cpp:1093-1165 (AddBonuses) — a [TABLE] with a fixed
+// 10-column header (Statistic + the 10 bonus types) and one row per name in
+// `Life::MonitoredBonuses()` (CBonusesPane's user-curated watch list) that
+// resolves to a known breakdown. Each cell is that breakdown's GEAR-sourced
+// (bItemEffectsOnly) contribution from that bonus type, blank when 0. V3
+// previously had no such list at all and dumped every non-zero accumulated
+// stat instead — an unrelated, V3-invented debug export. See
+// lib/bonusesTable.ts for the name→stat-key catalogue and value formula.
 const bonusesDump: SectionDef = {
   id: 'Bonuses',
   label: 'Bonuses',
-  emit: ({ stats }) => {
-    if (!stats) return []
-    const keys = stats.keys().sort()
+  emit: ({ stats, monitoredBonuses }) => {
+    if (!stats || !monitoredBonuses || monitoredBonuses.length === 0) return []
     const rows: string[] = []
-    for (const k of keys) {
-      const total = stats.total(k)
-      if (total === 0) continue
-      rows.push(`  ${k}: ${total >= 0 ? '+' : ''}${total}`)
+    for (const name of monitoredBonuses) {
+      const statKey = MONITORED_BONUS_KEYS[name]
+      if (!statKey) continue
+      const cells = BONUS_TYPE_COLUMNS.map(type => {
+        const value = monitoredBonusValue(stats, statKey, type)
+        return value !== 0 ? `[TD]${value >= 0 ? '+' : ''}${value}[/TD]` : '[TD][/TD]'
+      })
+      rows.push(`[TR][TD]${name}[/TD]${cells.join('')}[/TR]`)
     }
-    return rows.length > 0 ? ['[b]Accumulated Bonuses[/b]:', ...rows] : []
+    if (rows.length === 0) return []
+    return [
+      '[TABLE]',
+      `[TR][TD]Statistic[/TD]${BONUS_TYPE_COLUMNS.map(t => `[TD]${t}[/TD]`).join('')}[/TR]`,
+      ...rows,
+      '[/TABLE]',
+    ]
   },
 }
 
