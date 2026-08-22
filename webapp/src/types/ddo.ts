@@ -772,6 +772,9 @@ export interface Life {
   skillTomes: Record<string, number>
   selfBuffs: string[]
   specialFeats: string[]
+  /** V2 Life::MonitoredBonuses — user-curated list of breakdown names shown
+   *  in the forum export's Bonuses table (CBonusesPane / AddBonuses). */
+  monitoredBonuses: string[]
   builds: CharacterBuild[]
 }
 

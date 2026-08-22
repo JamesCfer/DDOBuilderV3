@@ -41,6 +41,7 @@ export function wrapLegacy(builds: CharacterBuild[], characterName = 'Imported')
     skillTomes: builds[0]?.skillTomes ?? {},
     selfBuffs: builds[0]?.activeBuffs ?? [],
     specialFeats: [],
+    monitoredBonuses: [],
     builds,
   }
   return {
@@ -96,6 +97,7 @@ export function emptyDocument(build?: CharacterBuild): CharacterDocument {
     skillTomes: { ...b.skillTomes },
     selfBuffs: [...b.activeBuffs],
     specialFeats: [],
+    monitoredBonuses: [],
     builds: [b],
   }
   return {
@@ -185,6 +187,7 @@ export function addLifeToDocument(doc: CharacterDocument): CharacterDocument {
     skillTomes: {},
     selfBuffs: [],
     specialFeats: [],
+    monitoredBonuses: [],
     builds: [b],
   }
   return { ...doc, lives: [...doc.lives, life], activeLifeId: life.id, activeBuildId: b.id }
@@ -272,6 +275,7 @@ export function promoteBuildToLife(
     skillTomes: { ...source.skillTomes },
     selfBuffs: [...source.activeBuffs],
     specialFeats: [],
+    monitoredBonuses: [],
     builds: [cloned],
   }
 }

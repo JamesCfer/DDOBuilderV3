@@ -32,6 +32,7 @@ export default function ForumExportPanel() {
   const statsInput = useMemo(() => ({ ...bundle, gearItems }), [bundle, gearItems])
   const stats = useBuildStats(statsInput)
   const specialFeats = findActiveLife(doc)?.specialFeats
+  const monitoredBonuses = findActiveLife(doc)?.monitoredBonuses
 
   const sections: SectionDef[] = useMemo(
     () => DEFAULT_SECTIONS.filter(s => enabled.has(s.id)),
@@ -39,10 +40,10 @@ export default function ForumExportPanel() {
   )
   const exportText = useMemo(
     () => emitForumExport(
-      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats, allTrees, allSpells },
+      { build, stats, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats, allTrees, allSpells, monitoredBonuses },
       sections,
     ),
-    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats, allTrees, allSpells],
+    [build, stats, sections, allClasses, allRaces, allStances, allSelfBuffs, epicPastLifeFeats, allFeats, specialFeats, allTrees, allSpells, monitoredBonuses],
   )
 
   async function handleCopy() {

@@ -153,13 +153,25 @@ describe('Parity pass 5 — forum export sections (V2 ForumExportDlg parity)', (
     expect(noSkillsSection).toContain('Toughness')
   })
 
-  it('emits a Bonuses section listing every accumulated stat with non-zero total', () => {
-    const stats = fakeStats({ 'ability.Strength': 18, 'save.Fort': 5, 'ac': 0 })
-    const out = emitForumExport({ build: baseBuild, allClasses: [], allRaces: [], stats }, DEFAULT_SECTIONS)
-    expect(out).toContain('Accumulated Bonuses')
-    expect(out).toContain('ability.Strength: +18')
-    expect(out).toContain('save.Fort: +5')
-    // Zero values are dropped
-    expect(out).not.toMatch(/^\s*ac: \+0/m)
+  it('emits a Bonuses table for the monitored-bonus watch list (V2 AddBonuses, parity pass X20)', () => {
+    // V2's Bonuses section is Life::MonitoredBonuses()-driven (a per-life
+    // user-curated watch list), not a dump of every accumulated stat — see
+    // parityPassX20Bonuses.test.ts for full column/quirk coverage.
+    const stats: BuildStats = {
+      resolve: (k: string) => ({
+        total: 0,
+        bonuses: k === 'ability.Strength'
+          ? [{ value: 6, type: 'Enhancement', source: 'Item', fromGear: true, active: true }]
+          : [],
+      }),
+      total: () => 0,
+      keys: () => [],
+      weapon: null,
+      armorMaxDex: null,
+    } as unknown as BuildStats
+    const out = emitForumExport({
+      build: baseBuild, allClasses: [], allRaces: [], stats, monitoredBonuses: ['Strength'],
+    }, DEFAULT_SECTIONS)
+    expect(out).toContain('[TR][TD]Strength[/TD][TD]+6[/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][TD][/TD][/TR]')
   })
 })
