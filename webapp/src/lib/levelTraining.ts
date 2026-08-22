@@ -15,6 +15,7 @@
 
 import type { CharacterBuild, DDOClass, Race } from '../types/ddo'
 import { getLevelClasses } from './levelProgression'
+import { buildAutomaticFeatGroups } from './automaticFeats'
 
 // ---------------------------------------------------------------------------
 // Slot entries (shared type used by FeatSlots.tsx and LevelTrainingPanel.tsx)
@@ -59,6 +60,13 @@ export interface LevelTrainingEntry {
   skillPointsSpent: number
   /** Skills trained at this level (`build.skillRanksByLevel[charLevel]`). */
   skillRanks: Record<string, number>
+  /**
+   * Feats auto-granted at this character level — the race's GrantedFeats at
+   * level 1 and each class's <AutomaticFeats> for the class level reached
+   * here (V2 `Build::AutomaticFeats`, Build.cpp:2502-2581, shown per level by
+   * `CAutomaticFeatsPane::SetAutofeats`). Alphabetical, as V2 sorts them.
+   */
+  automaticFeats: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -273,6 +281,23 @@ export function getLevelTrainingEntries(
   const heroicLevel = Math.min(20, build.totalLevel)
   const slots = buildSlots(build, allClasses, allRaces)
 
+  // Auto-granted feats keyed by the character level that grants them. The
+  // shared helper already resolves each class grant to its character level
+  // (race grants carry charLevel 0 = level 1, as V2 hands them to level 1's
+  // LevelTraining). Completionist / Racial Completionist are life-wide, not
+  // level grants, so they stay in the Automatic Feats panel only.
+  const automaticByLevel = new Map<number, string[]>()
+  for (const g of buildAutomaticFeatGroups(build, allClasses, allRaces)) {
+    if (g.source === 'Completionist' || g.source === 'Racial Completionist') continue
+    const lvl = g.charLevel || 1
+    const list = automaticByLevel.get(lvl) ?? []
+    list.push(...g.feats)
+    automaticByLevel.set(lvl, list)
+  }
+  for (const [lvl, list] of automaticByLevel) {
+    automaticByLevel.set(lvl, list.slice().sort((a, b) => a.localeCompare(b)))
+  }
+
   const entries: LevelTrainingEntry[] = []
   for (let charLevel = 1; charLevel <= heroicLevel; charLevel++) {
     const className = lc[charLevel - 1] ?? ''
@@ -303,6 +328,7 @@ export function getLevelTrainingEntries(
       skillPointsAvailable,
       skillPointsSpent,
       skillRanks,
+      automaticFeats: automaticByLevel.get(charLevel) ?? [],
     })
   }
 
