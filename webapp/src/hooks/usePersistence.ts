@@ -9,6 +9,7 @@ import {
   emptyDocument,
   syncBuildIntoDocument,
   findActiveBuild,
+  characterFileName,
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
 import { runBackgroundParityCheck } from '../lib/parityClient'
@@ -93,6 +94,16 @@ function readDocs(): CharacterDocument[] {
   const docs = legacy.map(b => migrateDocument(emptyDocument(b)))
   writeDocs(docs)
   return docs
+}
+
+/** Strip a path and extension: "My Builds/Bob.DDOBuild" → "Bob". */
+function baseFileName(fileName: string): string {
+  return fileName.replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '').trim()
+}
+
+/** Keep a character name usable as a download file name. */
+function safeFileName(name: string): string {
+  return name.replace(/[^a-z0-9_\- ]/gi, '_')
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +198,7 @@ export function usePersistence(): PersistenceAPI {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${doc.name.replace(/[^a-z0-9_\- ]/gi, '_')}.json`
+      a.download = `${safeFileName(characterFileName(doc))}.json`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -219,7 +230,7 @@ export function usePersistence(): PersistenceAPI {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${doc.name.replace(/[^a-z0-9_\- ]/gi, '_')}.DDOBuild`
+      a.download = `${safeFileName(characterFileName(doc))}.DDOBuild`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -271,7 +282,13 @@ export function usePersistence(): PersistenceAPI {
             const trees = allTrees.length > 0
               ? allTrees
               : await preloadStaticBundle().then(b => b.allTrees).catch(() => [])
-            const result = importV2Build(text, { allTrees: trees })
+            const result = importV2Build(text, {
+              allTrees: trees,
+              // V2 stores no character name — the file IS the character
+              // (Character.h has no Name property), so its base name is the
+              // name to show and to save back under.
+              characterName: baseFileName(file.name),
+            })
             if (result.document.lives.length === 0) {
               reject(new Error('V2 file contained no lives'))
               return

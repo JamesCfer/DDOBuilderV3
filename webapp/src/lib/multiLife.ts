@@ -160,7 +160,37 @@ export function syncBuildIntoDocument(doc: CharacterDocument, build: CharacterBu
       builds,
     }
   })
-  return { ...doc, lives, activeBuildId: build.id }
+  // The document's name is what the saves list shows and what a saved file is
+  // named. It is set once when the document is created or imported, so a
+  // character renamed on the Character page afterwards kept its placeholder —
+  // follow the rename while the name is still one of those placeholders (a
+  // name the user typed on the document itself is never overwritten).
+  const name = isPlaceholderName(doc, targetLifeId) && build.name.trim()
+    ? build.name.trim()
+    : doc.name
+  return { ...doc, name, lives, activeBuildId: build.id }
+}
+
+/** Document names nobody chose: the defaults, and the life-name fallback a V2
+ *  import used before the file's own name was available ("Life 1"). */
+function isPlaceholderName(doc: CharacterDocument, activeLifeId?: string): boolean {
+  const name = (doc.name ?? '').trim()
+  if (name === '' || name === 'New Character' || name === 'Imported V2 Character') return true
+  const life = doc.lives.find(l => l.id === activeLifeId) ?? doc.lives[0]
+  return !!life && name === (life.name ?? '').trim()
+}
+
+/**
+ * The name to save a character's file under: the Character page's Name field
+ * (the active build's `name`), falling back to the document's own name.
+ *
+ * Saved files used to be named from `doc.name`, which a V2 import filled in
+ * from the first LIFE's name — so every imported character's file came out
+ * "Life 1" and the next save overwrote the last.
+ */
+export function characterFileName(doc: CharacterDocument): string {
+  const build = findActiveBuild(doc)
+  return (build?.name ?? '').trim() || (doc.name ?? '').trim() || 'Character'
 }
 
 /** Points the document's active life/build at the given ids (if they exist). */
