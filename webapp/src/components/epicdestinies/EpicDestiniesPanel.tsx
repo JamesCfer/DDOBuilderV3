@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
 import type { EnhancementTree } from '../../types/ddo'
 import TreeGrid, { type TreeChoices } from '../enhancements/TreeGrid'
@@ -7,6 +7,8 @@ import { useGearItems } from '../../hooks/useGearItems'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import { tier5LockedTree, availableDestinyTrees, destinyPoolForBuild } from '../../lib/destiny'
 import { computeTreeSpent } from '../../lib/enhancementSpend'
+import { exportDestinyTreeFile, parseTreeFile } from '../../lib/treeFileIO'
+import { downloadTextFile } from '../../lib/browserDownload'
 import styles from './EpicDestiniesPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -15,6 +17,8 @@ import styles from './EpicDestiniesPanel.module.css'
 
 export default function EpicDestiniesPanel() {
   const { build, dispatch } = useCharacter()
+  const [loadTreeError, setLoadTreeError] = useState<string | null>(null)
+  const loadTreeFileRef = useRef<HTMLInputElement>(null)
 
   // Static data + full build stats. Stats give us the aggregated fate-point and
   // destiny-AP-bonus effect totals (FatePoint / DestinyAPBonus), exactly the
@@ -127,6 +131,40 @@ export default function EpicDestiniesPanel() {
     dispatch({ type: 'RESET_DESTINY_TREE', treeName })
   }
 
+  // V2 DestinyPane::OnSaveTree (~984-1043) — export just this tree's spend
+  // to a standalone .DDODestinyTree file (U12).
+  function handleSaveTree(treeName: string) {
+    const xml = exportDestinyTreeFile({
+      treeName, choices: destinyChoices[treeName] ?? {}, selections: build.destinySelections?.[treeName] ?? {},
+    })
+    downloadTextFile(xml, `${treeName}.DDODestinyTree`)
+  }
+
+  // V2 DestinyPane::OnLoadTree (~1074+) — import a standalone tree file,
+  // replacing that tree's spend and claiming an empty slot if not selected.
+  function handleLoadTreeFile(file: File) {
+    file.text().then(text => {
+      const parsed = parseTreeFile(text)
+      if ('error' in parsed) {
+        setLoadTreeError(parsed.error)
+        return
+      }
+      if (parsed.kind !== 'destiny') {
+        setLoadTreeError(`"${file.name}" is an Enhancement tree file — load it from the Enhancements panel instead.`)
+        return
+      }
+      if (!selectedDestinyTrees.includes(parsed.treeName) && !selectedDestinyTrees.includes('')) {
+        setLoadTreeError(`All 3 destiny slots are full — remove a tree before loading "${parsed.treeName}".`)
+        return
+      }
+      setLoadTreeError(null)
+      dispatch({
+        type: 'LOAD_DESTINY_TREE_FILE', treeName: parsed.treeName,
+        choices: parsed.choices, selections: parsed.selections,
+      })
+    })
+  }
+
   // ── Render guard ──────────────────────────────────────────────────────────
 
   const tooLow = build.totalLevel < 20
@@ -143,7 +181,22 @@ export default function EpicDestiniesPanel() {
 
         {/* ── Destiny slot selectors ────────────────────────────────────── */}
         <div className={styles.slotSection}>
-          <div className={styles.slotSectionTitle}>Select Destiny Trees (up to 3)</div>
+          <div className={styles.slotSectionTitle}>
+            Select Destiny Trees (up to 3)
+            <button onClick={() => loadTreeFileRef.current?.click()} title="Load a previously saved destiny tree layout">
+              Load Tree…
+            </button>
+            <input
+              ref={loadTreeFileRef}
+              type="file"
+              accept=".DDODestinyTree,text/xml,application/xml"
+              style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleLoadTreeFile(f) }}
+            />
+          </div>
+          {loadTreeError && (
+            <div className={styles.slotSectionTitle} style={{ color: 'var(--color-red, #d66)' }}>{loadTreeError}</div>
+          )}
           <div className={styles.slotRows}>
             {([0, 1, 2] as const).map(slot => {
               const currentName = selectedDestinyTrees[slot]
@@ -218,6 +271,9 @@ export default function EpicDestiniesPanel() {
                         <div className={styles.treeAP}>
                           <span className={styles.apCurrent}>{spent}</span>
                           <span className={styles.apLabel}>&nbsp;spent</span>
+                          <button className={styles.resetBtn} onClick={() => handleSaveTree(name)} title="Save this destiny tree layout to a file">
+                            💾
+                          </button>
                           {spent > 0 && (
                             <button className={styles.resetBtn} onClick={() => handleReset(name)}>
                               Reset

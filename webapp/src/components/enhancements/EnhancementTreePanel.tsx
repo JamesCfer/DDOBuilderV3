@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
@@ -9,6 +9,8 @@ import {
   orphanedEnhancementTrees,
 } from '../../lib/treeAvailability'
 import { computeTreeSpent } from '../../lib/enhancementSpend'
+import { exportEnhancementTreeFile, parseTreeFile } from '../../lib/treeFileIO'
+import { downloadTextFile } from '../../lib/browserDownload'
 import type { DDOClass, EnhancementTree, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
@@ -138,6 +140,8 @@ export default function EnhancementTreePanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [loadTreeError, setLoadTreeError] = useState<string | null>(null)
+  const loadTreeFileRef = useRef<HTMLInputElement>(null)
 
   // Enhancement state lives in the build (so Analysis can read it)
   const pinned = build.enhancementPinned
@@ -238,6 +242,40 @@ export default function EnhancementTreePanel() {
     dispatch({ type: 'RESET_ENH_TREE', treeName })
   }
 
+  // V2 EnhancementsPane::OnSaveTree (~932-992) — export just this tree's
+  // spend to a standalone .DDOETree file (U12).
+  function handleSaveTree(treeName: string) {
+    const xml = exportEnhancementTreeFile({
+      treeName, choices: enhChoices[treeName] ?? {}, selections: enhSelections[treeName] ?? {},
+    })
+    downloadTextFile(xml, `${treeName}.DDOETree`)
+  }
+
+  // V2 EnhancementsPane::OnLoadTree (~1174-1270) — import a standalone tree
+  // file, replacing that tree's spend and pinning it if it isn't visible yet.
+  function handleLoadTreeFile(file: File) {
+    file.text().then(text => {
+      const parsed = parseTreeFile(text)
+      if ('error' in parsed) {
+        setLoadTreeError(parsed.error)
+        return
+      }
+      if (parsed.kind !== 'enhancement') {
+        setLoadTreeError(`"${file.name}" is a Destiny tree file — load it from the Epic Destinies panel instead.`)
+        return
+      }
+      if (!pinned.includes(parsed.treeName) && pinned.length >= MAX_VISIBLE) {
+        setLoadTreeError(`All ${MAX_VISIBLE} tree slots are full — remove a tree before loading "${parsed.treeName}".`)
+        return
+      }
+      setLoadTreeError(null)
+      dispatch({
+        type: 'LOAD_ENH_TREE_FILE', treeName: parsed.treeName,
+        choices: parsed.choices, selections: parsed.selections,
+      })
+    })
+  }
+
   function toggleTree(name: string) {
     if (pinned.includes(name)) {
       dispatch({ type: 'SET_ENH_PINNED', pinned: pinned.filter(n => n !== name) })
@@ -296,8 +334,21 @@ export default function EnhancementTreePanel() {
               <button className={styles.addTreeBtn} onClick={() => setPickerOpen(true)}>
                 + Add Tree ({pinned.length}/{MAX_VISIBLE})
               </button>
+              <button onClick={() => loadTreeFileRef.current?.click()} title="Load a previously saved enhancement tree layout">
+                Load Tree…
+              </button>
+              <input
+                ref={loadTreeFileRef}
+                type="file"
+                accept=".DDOETree,text/xml,application/xml"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleLoadTreeFile(f) }}
+              />
               <span className={styles.toolbarHint}>{apBudget - totalSpent} AP remaining</span>
             </div>
+            {loadTreeError && (
+              <div className={`${styles.statusMsg} ${styles.errorMsg}`}>{loadTreeError}</div>
+            )}
 
             {visibleTrees.length === 0 ? (
               <div className={styles.statusMsg}>
@@ -323,6 +374,8 @@ export default function EnhancementTreePanel() {
                             {tree.Name}
                           </span>
                           <span className={styles.treeHeaderAP}>{spent} AP</span>
+                          <button className={styles.resetBtn}
+                            onClick={() => handleSaveTree(tree.Name)} title="Save this enhancement tree layout to a file">💾</button>
                           {spent > 0 && (
                             <button className={styles.resetBtn}
                               onClick={() => handleReset(tree.Name)} title="Reset">↺</button>
