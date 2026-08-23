@@ -641,11 +641,17 @@ function parseBuildNode(
   character: AnyRec,
   versionPolicy?: V2TreeVersionPolicy,
   warnings?: string[],
+  characterName?: string,
 ): CharacterBuild {
   const out = emptyBuild()
 
   // ── Top-level character fields ───────────────────────────────────────────
-  out.name = asStr(life.Name) || asStr(character.Name) || 'Imported V2 Build'
+  // The Character page's Name field. V2 keeps the character's name in the
+  // FILE name (its <Character> has none), so an imported file's base name is
+  // the best answer; the life's name is the last resort, and using it first
+  // is why every import came in called "Life 1".
+  out.name = (characterName ?? '').trim() || asStr(character.Name)
+    || asStr(life.Name) || 'Imported V2 Build'
   out.race = asStr(life.Race) || 'Human'
   out.alignment = asStr(life.Alignment) || 'True Neutral'
   out.guildLevel = asNum(character.GuildLevel)
@@ -1019,6 +1025,14 @@ export function importV2Document(xml: string, opts?: {
   /** Enhancement/destiny/reaper tree catalogue: enables the V2 tree-version
    *  gate (spends in out-of-version trees are revoked, matching V2's load). */
   allTrees?: { Name?: string; Version?: number; Legacy?: boolean }[]
+  /**
+   * The character's name. V2's <Character> has NO name of its own
+   * (Character.h Character_PROPERTIES) — the character IS its file, so the
+   * file's base name is the name V2 shows. Callers reading a file pass it
+   * here; without it the character name falls back to the first life's, which
+   * is how every imported build ended up called "Life 1".
+   */
+  characterName?: string
 }): {
   document: CharacterDocument
   warnings: string[]
@@ -1043,6 +1057,8 @@ export function importV2Document(xml: string, opts?: {
     versionPolicy = { allTrees: opts.allTrees, spacedTreeNames }
   }
 
+  const fileCharacterName = (opts?.characterName ?? '').trim()
+
   const docLives: Life[] = []
   let activeLifeId = ''
   let activeBuildId = ''
@@ -1055,7 +1071,9 @@ export function importV2Document(xml: string, opts?: {
     const lifeSpecial = parseFeatsListObject(getRec(lifeNode, 'SpecialFeats'))
     const builds: CharacterBuild[] = []
     for (let bi = 0; bi < buildNodes.length; bi++) {
-      const build = parseBuildNode(buildNodes[bi], lifeNode, character, versionPolicy, warnings)
+      const build = parseBuildNode(
+        buildNodes[bi], lifeNode, character, versionPolicy, warnings, fileCharacterName,
+      )
       builds.push(build)
       // The active build is the one at (ActiveLifeIndex, ActiveBuildIndex).
       if (li === activeLifeIdx && bi === activeBuildIdx) {
@@ -1101,7 +1119,8 @@ export function importV2Document(xml: string, opts?: {
 
   const document: CharacterDocument = {
     id: generateId(),
-    name: asStr(character.Name) || docLives[0]?.name || 'Imported V2 Character',
+    name: fileCharacterName || asStr(character.Name) || docLives[0]?.name
+      || 'Imported V2 Character',
     guildLevel: asNum(character.GuildLevel),
     applyGuildBuffs: Boolean(character.ApplyGuildBuffs),
     characterTomes: {
@@ -1133,6 +1152,8 @@ export function importV2Document(xml: string, opts?: {
  */
 export function importV2Build(xml: string, opts?: {
   allTrees?: { Name?: string; Version?: number; Legacy?: boolean }[]
+  /** The character's name — normally the imported file's base name. */
+  characterName?: string
 }): ImportResult {
   const { document, warnings } = importV2Document(xml, opts)
   const life = document.lives.find(l => l.id === document.activeLifeId) ?? document.lives[0]
