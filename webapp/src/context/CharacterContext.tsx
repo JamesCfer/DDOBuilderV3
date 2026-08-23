@@ -63,6 +63,14 @@ type Action =
   | { type: 'SET_ENH_SELECTIONS'; treeName: string; selections: Record<string, string> }
   | { type: 'SET_ENH_PINNED'; pinned: string[] }
   | { type: 'RESET_ENH_TREE'; treeName: string; /** AP handed back, for the build log. */ refunded?: number }
+  | {
+      type: 'LOAD_ENH_TREE_FILE'; treeName: string
+      choices: Record<string, number>; selections: Record<string, string>
+    }
+  | {
+      type: 'LOAD_DESTINY_TREE_FILE'; treeName: string
+      choices: Record<string, number>; selections: Record<string, string>
+    }
   | { type: 'SAVE_GEAR_SET'; setName: string }
   | { type: 'LOAD_GEAR_SET'; setName: string }
   | { type: 'DELETE_GEAR_SET'; setName: string }
@@ -414,6 +422,24 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       delete destinySelections[action.treeName]
       return { ...state, destinyChoices, destinySelections }
     }
+    // V2 DestinyPane::OnLoadTree (~1174-1270): a loaded tree that's not
+    // already in one of the 3 slots claims the first empty one; if all 3 are
+    // full and it's not already selected, the load is a no-op on the slots
+    // (the caller still gets its choices/selections applied, mirroring V2's
+    // "already selected" merge path).
+    case 'LOAD_DESTINY_TREE_FILE': {
+      const selectedDestinyTrees = [...state.selectedDestinyTrees] as CharacterBuild['selectedDestinyTrees']
+      if (!selectedDestinyTrees.includes(action.treeName)) {
+        const emptySlot = selectedDestinyTrees.findIndex(name => !name)
+        if (emptySlot >= 0) selectedDestinyTrees[emptySlot] = action.treeName
+      }
+      return {
+        ...state,
+        selectedDestinyTrees,
+        destinyChoices: { ...state.destinyChoices, [action.treeName]: action.choices },
+        destinySelections: { ...state.destinySelections, [action.treeName]: action.selections },
+      }
+    }
     case 'SET_ACTIVE_DESTINY':
       return { ...state, activeEpicDestiny: action.name }
     case 'SET_SELECTED_DESTINY': {
@@ -601,6 +627,20 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       delete enhancementChoices[action.treeName]
       delete enhancementSelections[action.treeName]
       return { ...state, enhancementChoices, enhancementSelections }
+    }
+    // V2 EnhancementsPane::OnLoadTree (~1174-1270): pins the loaded tree into
+    // an empty slot if it isn't pinned already (the caller enforces the
+    // 6-visible-tree cap before dispatching, same as the "+ Add Tree" picker).
+    case 'LOAD_ENH_TREE_FILE': {
+      const enhancementPinned = state.enhancementPinned.includes(action.treeName)
+        ? state.enhancementPinned
+        : [...state.enhancementPinned, action.treeName]
+      return {
+        ...state,
+        enhancementPinned,
+        enhancementChoices: { ...state.enhancementChoices, [action.treeName]: action.choices },
+        enhancementSelections: { ...state.enhancementSelections, [action.treeName]: action.selections },
+      }
     }
     case 'SAVE_GEAR_SET': {
       const augments = { ...(state.namedGearAugments ?? {}), [action.setName]: { ...state.augmentChoices } }
