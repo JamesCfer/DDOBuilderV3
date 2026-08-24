@@ -6,7 +6,7 @@
 
 import type {
   CharacterBuild, Ability, DDOClass, Race, Stance, OptionalBuff, Feat, Spell,
-  EnhancementTree, EnhancementTreeItem, EnhancementSelection,
+  EnhancementTree, EnhancementTreeItem, EnhancementSelection, Item, Augment, FiligreeSlot,
 } from '../../types/ddo'
 import type { BuildStats } from '../../hooks/useBuildStats'
 import { buildAutomaticFeatGroups, automaticAcquisitionFeatGroup } from '../automaticFeats'
@@ -20,6 +20,9 @@ import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown
 import { computeSpellDC, computeCasterLevel, computeMaxCasterLevel } from '../spells/spellMath'
 import { replacementSpellPower } from '../spellPowerRow'
 import { MONITORED_BONUS_KEYS, BONUS_TYPE_COLUMNS, monitoredBonusValue } from '../bonusesTable'
+import { describeBuff, hasSelectableLevels, augmentValueAtIndex } from '../itemDisplay'
+import { resolveAugmentSlots, effectiveAugmentChoice } from '../gearSlotUpgrades'
+import { displaySlotsForItemKey } from '../gearSlots'
 
 const ABILITY_ABBREVS: Record<Ability, string> = {
   Strength: 'STR', Dexterity: 'DEX', Constitution: 'CON',
@@ -66,6 +69,13 @@ export interface SectionContext {
    *  section's row list (X20). Resolved by the caller from the active
    *  `Life`, same pattern as `specialFeats`. */
   monitoredBonuses?: string[]
+  /** slot → resolved `Item` for the active gear set (`build.gear`) — required
+   *  to render the full Gear/SimpleGear tables (X19). Same shape as
+   *  `useGearItems(build.gear)`. */
+  gearItems?: Record<string, Item>
+  /** Full augment catalogue — required to resolve augment level values and
+   *  `SuppressSetBonus` in the Gear/SimpleGear tables (X19). */
+  allAugments?: Augment[]
 }
 
 export interface SectionDef {
@@ -832,17 +842,155 @@ const tacticalDCs: SectionDef = {
   },
 }
 
+function toArr<T>(v: T | T[] | undefined): T[] {
+  if (v == null) return []
+  return Array.isArray(v) ? v : [v]
+}
+
+function flagSet(v: unknown): boolean {
+  return v === true || v === ''
+}
+
+const GEAR_HEADER_COLOR = 'rgb(184, 49, 47)'
+const GEAR_SLOT_COLOR = 'rgb(65,168,95)'
+const GEAR_ITEM_COLOR = 'rgb(250, 197, 28)'
+
+/** V2 `Build::SetGear` (Build.cpp:4674-4692) / `EquippedGear::IsSlotRestricted`
+ *  (EquippedGear.cpp:308-309): the set of display slots any OTHER equipped
+ *  item's `RestrictedSlots` currently disables. */
+function restrictedGearSlots(gearItems: Record<string, Item>): Set<string> {
+  const restricted = new Set<string>()
+  for (const item of Object.values(gearItems)) {
+    if (!item?.RestrictedSlots) continue
+    for (const itemKey of Object.keys(item.RestrictedSlots)) {
+      for (const slot of displaySlotsForItemKey(itemKey)) restricted.add(slot)
+    }
+  }
+  return restricted
+}
+
+/**
+ * V2 `ForumExportDlg.cpp:1758-1943 ExportGear` — shared by `AddGear`
+ * (`bSimple=false`) and `AddSimpleGear`/`AddAlternateGear` (`bSimple=true`).
+ * One `[TABLE]` row per canonical inventory slot: a red "Restricted by
+ * another item" row when another equipped item disables the slot, else a
+ * colored slot/item-name row with a "Drops in:" cell. `bSimple=false`
+ * additionally lists each buff's truncated description, augment-slot lines
+ * (with a yellow "Empty augment slot" warning on an unused combined
+ * Mythic+Reaper slot), set-bonus lines (struck through + "(Suppressed)"
+ * when an augment on the item suppresses them), and — main-hand/artifact
+ * items only — filigree lines (sentient weapon personality first).
+ */
+function exportGearTable(
+  setName: string,
+  gear: Record<string, string>,
+  gearItems: Record<string, Item>,
+  augmentChoices: Record<string, string>,
+  augmentLevelChoices: Record<string, number>,
+  augmentValueChoices: Record<string, number>,
+  allAugments: Augment[],
+  filigreeSlots: FiligreeSlot[],
+  artifactFiligreeSlots: FiligreeSlot[],
+  personality: string,
+  bSimple: boolean,
+): string[] {
+  const out = [
+    `[COLOR=${GEAR_HEADER_COLOR}][SIZE=6]Equipped Gear Set: ${setName}[/SIZE][/COLOR]`,
+    '[SIZE=3][TABLE]',
+  ]
+  const restricted = restrictedGearSlots(gearItems)
+  for (const slot of V2_SLOT_ORDER) {
+    if (restricted.has(slot)) {
+      out.push(`[TR][TD]${slot}[/TD][TD][COLOR=${GEAR_HEADER_COLOR}]Restricted by another item in this gear set[/COLOR][/TD][TD][/TD][/TR]`)
+      continue
+    }
+    const itemName = gear[slot]
+    if (!itemName) continue
+    const item = gearItems[slot]
+    const dropText = item?.DropLocation ? `Drops in: ${item.DropLocation}` : ''
+    out.push(`[TR][TD][COLOR=${GEAR_SLOT_COLOR}]${slot}[/COLOR][/TD][TD][COLOR=${GEAR_ITEM_COLOR}]${itemName}[/COLOR][/TD][TD]${dropText}[/TD][/TR]`)
+    if (!item) continue
+
+    if (!bSimple) {
+      for (const buff of toArr(item.Buff)) {
+        out.push(`[TR][TD][/TD][TD]${describeBuff(buff).label}[/TD][TD][/TD][/TR]`)
+      }
+    }
+
+    let setBonusSuppressed = false
+    for (const { augment, index } of resolveAugmentSlots(item, slot, {}, augmentChoices, allAugments)) {
+      const key = `${slot}:${augment.Type}:${index}`
+      const chosen = effectiveAugmentChoice(augmentChoices, key, augment)
+      if (chosen) {
+        const def = allAugments.find(a => a.Name === chosen)
+        let line = `${augment.Type}: `
+        if (def && flagSet(def.EnterValue)) {
+          const value = augmentValueChoices[key]
+          if (value != null) line += `${value >= 0 ? '+' : ''}${value} `
+        }
+        line += chosen
+        if (def && hasSelectableLevels(def)) {
+          const levelIndex = augmentLevelChoices[key] ?? 0
+          const value = augmentValueAtIndex(def, levelIndex)
+          if (value != null) line += ` +${value}`
+        }
+        if (def && flagSet(def.SuppressSetBonus)) setBonusSuppressed = true
+        out.push(`[TR][TD][/TD][TD]${line}[/TD][TD][/TD][/TR]`)
+      } else {
+        const type = String(augment.Type)
+        if (type.includes('Mythic') && type.includes('Reaper')) {
+          out.push(`[TR][TD][/TD][TD]${type}: [COLOR=${GEAR_ITEM_COLOR}]Empty augment slot[/COLOR][/TD][TD][/TD][/TR]`)
+        }
+      }
+    }
+
+    for (const setBonusName of toArr(item.SetBonus)) {
+      const label = setBonusSuppressed ? `[S]${setBonusName}[/S] (Suppressed)` : setBonusName
+      out.push(`[TR][TD][/TD][TD][COLOR=${GEAR_SLOT_COLOR}]${label}[/COLOR][/TD][TD][/TD][/TR]`)
+    }
+
+    if ('MinorArtifact' in item) {
+      artifactFiligreeSlots.forEach((f, i) => {
+        if (!f.name) return
+        out.push(`[TR][TD][/TD][TD]Filigree ${i + 1}: ${f.name}${f.rare ? '(Rare)' : ''}[/TD][TD][/TD][/TR]`)
+      })
+    }
+
+    if (slot === 'Main Hand') {
+      let hadGem = false
+      filigreeSlots.forEach((f, i) => {
+        if (!f.name) return
+        if (!hadGem && personality) {
+          out.push(`[TR][TD][/TD][TD]Sentient Weapon Personality: ${personality}[/TD][TD][/TD][/TR]`)
+          hadGem = true
+        }
+        out.push(`[TR][TD][/TD][TD]Filigree ${i + 1}: ${f.name}${f.rare ? '(Rare)' : ''}[/TD][TD][/TD][/TR]`)
+      })
+    }
+  }
+  out.push('[/TABLE][/SIZE]')
+  return out
+}
+
 const gear: SectionDef = {
   id: 'Gear',
   label: 'Gear',
-  emit: ({ build }) => {
+  emit: ({ build, gearItems, allAugments }) => {
     const entries = Object.entries(build.gear).filter(([, v]) => v)
-    if (entries.length === 0) return []
-    const lines = ['[b]Gear[/b]:']
-    entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([slot, item]) => {
-      lines.push(`  ${slot}: ${item}`)
-    })
-    return lines
+    if (entries.length === 0 || !gearItems) return []
+    return exportGearTable(
+      build.activeGearSetName || 'Standard',
+      build.gear,
+      gearItems,
+      build.augmentChoices,
+      build.augmentLevelChoices ?? {},
+      build.augmentValueChoices ?? {},
+      allAugments ?? [],
+      build.filigreeSlots,
+      build.artifactFiligreeSlots,
+      build.sentientGem?.personality ?? '',
+      false,
+    )
   },
 }
 
@@ -993,24 +1141,22 @@ function slotSortKey(slot: string): number {
 const simpleGear: SectionDef = {
   id: 'SimpleGear',
   label: 'Gear (simple)',
-  emit: ({ build }) => {
+  emit: ({ build, gearItems, allAugments }) => {
     const entries = Object.entries(build.gear).filter(([, v]) => v)
-    if (entries.length === 0) return []
-    const lines: string[] = ['[b]Gear (simple)[/b]:']
-    const sorted = [...entries].sort(([a], [b]) => slotSortKey(a) - slotSortKey(b))
-    for (const [slot, item] of sorted) {
-      lines.push(`  ${slot}: ${item}`)
-      // V2 ForumExportDlg.cpp:1816-1857: emit augment choices per item
-      const augPrefix = `${slot}:`
-      const augEntries = Object.entries(build.augmentChoices)
-        .filter(([k]) => k.startsWith(augPrefix))
-      for (const [key, augName] of augEntries) {
-        const parts = key.split(':')
-        const augType = parts[1] ?? ''
-        lines.push(`    ${augType}: ${augName}`)
-      }
-    }
-    return lines
+    if (entries.length === 0 || !gearItems) return []
+    return exportGearTable(
+      build.activeGearSetName || 'Standard',
+      build.gear,
+      gearItems,
+      build.augmentChoices,
+      build.augmentLevelChoices ?? {},
+      build.augmentValueChoices ?? {},
+      allAugments ?? [],
+      build.filigreeSlots,
+      build.artifactFiligreeSlots,
+      build.sentientGem?.personality ?? '',
+      true,
+    )
   },
 }
 

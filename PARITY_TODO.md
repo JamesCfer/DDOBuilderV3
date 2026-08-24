@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 165 | **X19 — CLOSED (for `AddGear`/`AddSimpleGear`): forum-export Gear section now reproduces V2's real per-slot `[TABLE]`, not a bare slot list.** V2 `ForumExportDlg.cpp:1758-1943 ExportGear` (shared by `AddGear`/`AddSimpleGear`) emits a colored `[SIZE=6]` gear-set-name header, a `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>" cell, a red "Restricted by another item" row for slot conflicts, per-item buff-description lines (`AddGear` only), augment-slot lines (a yellow "Empty augment slot" warning on an unfilled slot whose type names both Mythic and Reaper, and a selectable-level `+N` suffix), set-bonus lines (struck through + "(Suppressed)" when an augment on the item suppresses them), and minor-artifact/weapon filigree lines (sentient weapon personality first). V3's `gear`/`simpleGear` sections (`sections.ts`) previously emitted only a bare `[b]Gear[/b]:`/`[b]Gear (simple)[/b]:` heading with flat `  slot: item` lines. New shared `exportGearTable()` reproduces V2's exact row shape for both, driven by a new `SectionContext.gearItems` (the resolved gear `Item` catalogue, same shape as the existing `useGearItems(build.gear)` hook, now also passed by `ForumExportPanel.tsx`) and `SectionContext.allAugments` (from `useStaticBundle`) — reusing `gearSlotUpgrades.ts`'s already-exact `resolveAugmentSlots`/`effectiveAugmentChoice` (D2/D9) for the augment-slot list and `itemDisplay.ts`'s already-exact `describeBuff`/`hasSelectableLevels`/`augmentValueAtIndex` (gear hover cards) for buff descriptions and augment tier values — no new stat computation needed. Residual, left out of this pass: `AddAlternateGear` (V3's `alternateGearLayouts` section) shares the same `bSimple=true` exporter per non-active named gear setup in V2, but V3 has no resolved `Item` catalogue for named gear sets yet (only the active `build.gear` is resolved) — `alternateGearLayouts` keeps its pre-existing slot-order + augment-line behaviour (#33) unchanged. 18 new regression tests in `parityPassX19Gear.test.ts`; `forumExport.test.ts`'s SimpleGear-format assertions updated to the new table row shape. | this PR |
 | 164 | **U12 — CLOSED: standalone per-tree save/load files.** V2 (`EnhancementsPane.cpp::OnSaveTree`/`OnLoadTree`, ~932-1200; `DestinyPane.cpp::OnSaveTree`/`OnLoadTree`, ~984-1120) lets a player export just the currently-selected Enhancement tree's spend to a standalone `<DDOBuilderTree>` file (`SpendInTree::Write`, `SpendInTree.cpp:165-170`), or a Destiny tree's spend to a standalone `<DDOBuilderDestinyTree>` file — separate from the full-build `.DDOBuild` export and distinct from gear's "named set" clipboard export/import. V3 had no equivalent: `EnhancementTreePanel.tsx`/`EpicDestiniesPanel.tsx` could only ever share a tree as part of a whole build. New `lib/treeFileIO.ts` reuses the exact `<TreeName>`/`<TreeVersion>`/`<TrainedEnhancement>` element vocabulary `v2Export.ts`'s `emitSpendInTree`/`v2Import.ts`'s `parseEnhancements` already write/read for the full-build format, so an exported file round-trips through V2 itself and a real V2-authored `.DDOETree`/`.DDODestinyTree` file loads here. Wired into both panels via new "💾 Save" buttons per tree column and a "Load Tree…" file picker in each panel's toolbar, dispatching new `LOAD_ENH_TREE_FILE`/`LOAD_DESTINY_TREE_FILE` reducer actions that replace the tree's spend and claim an empty slot if it isn't already pinned/selected. 6 new regression tests in `parityPassU12TreeFileIO.test.ts`, including a hand-authored file matching V2's exact `SpendInTree::Write` output shape. | 164 |
 | 163 | **X20 — CLOSED: forum-export "Bonuses" section now reproduces V2's `Life::MonitoredBonuses`-driven per-bonus-type table instead of a generic accumulated-stat dump.** V2 (`ForumExportDlg.cpp:1093-1165 AddBonuses`) emits a `[TABLE]` with a fixed 10-column header (Statistic / Enhancement / Insightful / Artifact / Quality / Profane / Equipment / Competence / Exceptional / Festive / Fortune) and one row per name in the active Life's `MonitoredBonuses()` list (`CBonusesPane`'s small, user-curated watch list — real V2 saves populate it, e.g. `Maetrim_EndGameHandwrapsMonk.DDOBuild`'s 23-entry list) that resolves against `breakdownNameMap` (`BreakdownTypes.h:338-464`, ~127 fixed names). Each cell is `BreakdownItem::GetEffectValue(bonusType, /*bItemEffectsOnly*/true)` — deliberately GEAR-sourced contributions only (post Highest-Only stacking), matching that all 10 named types are ones DDO items carry. V3's old `bonusesDump` instead printed every non-zero accumulated stat key with its raw total — an unrelated, V3-invented debug listing with no V2 equivalent, and `Life.monitoredBonuses` didn't exist at all so there was nowhere to store the watch list on import. Fixed: `Life` gains `monitoredBonuses: string[]` (parsed/exported round-trip in `v2Import.ts`/`v2Export.ts`, defaulted to `[]` at every other Life-construction site in `multiLife.ts`/`v1Import.ts`); new `lib/bonusesTable.ts` hand-maps all ~127 `breakdownNameMap` display names to their V3 stat keys (reusing the same key conventions already verified by the X11/X14/X15/X16 export passes — `skill.*`, `resist.*`/`absorb.*`, `sp.*`/`spCrit.*`, `dc.*`, `tacticalDC.*`, …) and reproduces two verbatim V2 quirks: "Dodge Cap" aliases the *same* breakdown as "Dodge" (V2 has no separately-tracked dodge-cap breakdown, unlike MRR) and "Spell Craft"'s display name maps to V3's `skill.Spellcraft` key. `sections.ts`'s `bonusesDump` section now reads `SectionContext.monitoredBonuses` (resolved by `ForumExportPanel.tsx` from the active Life, same pattern as X10's `specialFeats`) and emits V2's exact table. 9 new regression tests in `parityPassX20Bonuses.test.ts`; `parityPass5.test.ts`'s stale "Accumulated Bonuses" assertion (written against the old debug-dump format) updated to match. | this PR |
 | 162 | **D9 — an augment's cascading extra-slot fields (`AddAugment`/`GrantAugment`/`GrantConditionalAugment`) now unlock further augment slots.** V2 (`Augment.h:41-44`, applied via the shared `AddAugment()` helper in `GlobalSupportFunctions.cpp:1967-2010`, called from `ItemSelectDialog.cpp:730-760`/`FindGearDialog.cpp:608-635`) lets selecting certain augments append one or more *new* augment slots to the host item — the mechanic behind Legendary Alchemical crafting (`Alchemical.Augments.xml`: picking a material in the "Legendary Alchemical Material" slot adds a "Legendary Alchemical Tier 1" slot, which cascades to Tier 2), Thunderforged (`GrantConditionalAugment` gates a bonus Red slot on Two Handed weapons via `WeaponClass`), and Legendary Green Steel Heroic. `gearSlotUpgrades.ts`'s `resolveAugmentSlots` only implemented the unrelated `<SlotUpgrade>` mechanism (D2) — no consumer of `AddAugment`/`GrantAugment`/`GrantConditionalAugment` existed anywhere in `webapp/`, so any Alchemical/Thunderforged/Greensteel-Heroic item exposed only its native slot(s) and could never reach its higher-tier slots or effects. Fixed: `Augment` gains `AddAugment`/`GrantAugment`/`GrantConditionalAugment`/`WeaponClass` fields (parsed automatically — `loadAugments` already casts the raw XML directly); `resolveAugmentSlots` now takes the build's `augmentChoices` + the Augments/WeaponGroups catalogues and, after computing the native + SlotUpgrade slots, iterates every already-resolved slot's currently-chosen augment and appends one synthetic slot per `AddAugment` entry / `GrantAugment` / weapon-class-gated `GrantConditionalAugment` not already present on the item — looping over its own growing result so a cascade (Material → Tier 1 → Tier 2) resolves in one pass, matching V2's insert-before-Mythic-else-append ordering (V3 models no Mythic slot, so this is always append). `GearPanel.tsx` passes the new context through; since `AugmentSlot` already renders generically from whatever `resolveAugmentSlots` returns (same mechanism the D2 SlotUpgrade slots use), no new UI code was needed — the picker's existing `/api/augments?type=X` lookup already matches synthetic tier-slot type strings generically. 10 new regression tests in `parityPassD9AugmentCascade.test.ts`. | this PR |
@@ -1242,22 +1243,42 @@ already closed; these are new, some content gaps (not just formatting):
 2026-08-16 scan diffed every remaining `Add*`/`Export*` method against
 `sections.ts`; two new gaps beyond X1–X18:
 
-- ❌ **X19 — `AddGear`/`ExportGear`/`AddAlternateGear` (`ForumExportDlg.cpp:
-  1758-1943`) have no real V3 equivalent — only a bare slot list.** V2's full
-  Gear section emits a colored `[SIZE=6]` gear-set-name header, a
+- ✅ **X19 — CLOSED (this pass) for `AddGear`/`AddSimpleGear`;
+  `AddAlternateGear` left as a documented residual.**
+  `ForumExportDlg.cpp:1758-1943`'s shared `ExportGear`
+  (`bSimple=false` for `AddGear`, `bSimple=true` for `AddSimpleGear`/
+  `AddAlternateGear`) emits a colored `[SIZE=6]` gear-set-name header, a
   `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>"
   cell, a red "Restricted by another item" row for slot conflicts, per-item
   buff-description lines (`bSimple=false` only), augment-slot lines
-  (including a yellow "Empty augment slot" warning and `ChooseLevel` `+N`
-  suffixes), set-bonus lines (`[S]…[/S]` strikethrough when suppressed by an
-  augment), and minor-artifact/weapon filigree lines. V3's `gear` section
-  (`sections.ts`, id `'Gear'`) emits only a bare `[b]Gear[/b]:` heading with
-  flat `  slot: item` lines. `simpleGear` (V2's `bSimple=true` path, i.e.
-  `AddSimpleGear`) does add slot-sorted augment lines (from #33/pass 29) but
-  still lacks the table wrap, colors, header, drop-location text, restricted-
-  slot warning, set-bonus lines, and filigree lines V2's simple variant still
-  includes. `AddAlternateGear`, which calls the same `bSimple=true` exporter
-  per non-active gear setup, has the identical gap in `alternateGearLayouts`.
+  (including a yellow "Empty augment slot" warning on an unfilled slot whose
+  type names both Mythic and Reaper, and a selectable-level `+N` suffix),
+  set-bonus lines (`[S]…[/S]` strikethrough + "(Suppressed)" when an
+  augment on the item suppresses them), and minor-artifact/weapon filigree
+  lines (sentient weapon personality first). V3's `gear`/`simpleGear`
+  sections previously emitted only a bare `[b]Gear[/b]:`/`[b]Gear
+  (simple)[/b]:` heading with flat `  slot: item` lines (`simpleGear` did
+  add slot-sorted augment lines from #33/pass 29, but nothing else). Fixed:
+  new shared `exportGearTable()` (`sections.ts`) reproduces V2's exact
+  `ExportGear` row shape for both, driven by the resolved gear `Item`
+  catalogue (`SectionContext.gearItems`, same shape as the existing
+  `useGearItems(build.gear)` hook, now also passed by `ForumExportPanel.tsx`)
+  and the augment catalogue (`SectionContext.allAugments`, from
+  `useStaticBundle`) — reusing `gearSlotUpgrades.ts`'s `resolveAugmentSlots`/
+  `effectiveAugmentChoice` (already exact per D2/D9) for the augment-slot
+  list and `itemDisplay.ts`'s `describeBuff`/`hasSelectableLevels`/
+  `augmentValueAtIndex` (already exact per the gear hover cards) for buff
+  descriptions and augment tier values — no new stat computation needed.
+  Residual, intentionally left out of this pass: `AddAlternateGear` (V3's
+  `alternateGearLayouts` section) calls the same `bSimple=true` exporter per
+  non-active named gear setup, but V3 has no resolved `Item` catalogue for
+  named gear sets (only the active `build.gear` is resolved today) — giving
+  it the same table treatment needs a second `useGearItems`-style resolver
+  keyed per named set, left for a future pass. `alternateGearLayouts` keeps
+  its pre-existing slot-order + augment-line behaviour (#33) unchanged.
+  18 new regression tests in `parityPassX19Gear.test.ts`; `forumExport.
+  test.ts`'s SimpleGear-format assertions (written against the old flat
+  list) updated to the new table row shape.
 - ✅ **X20 — CLOSED (#163, this pass): `AddBonuses` now reproduces V2's
   `Life::MonitoredBonuses`-driven per-bonus-type table.** See the Done-table
   entry above for the full rewrite (`Life.monitoredBonuses` + new
