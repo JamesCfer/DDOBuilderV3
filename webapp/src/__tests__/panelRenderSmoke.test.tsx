@@ -209,6 +209,7 @@ const PANELS: Array<[string, () => Promise<{ default: React.ComponentType<any> }
   ['ClickiesPanel', () => import('../components/items/ClickiesPanel')],
   ['BreakdownsPanel', () => import('../components/breakdowns/BreakdownsPanel')],
   ['CombatPanel', () => import('../components/combat/CombatPanel')],
+  ['DamageCalcPanel', () => import('../components/combat/DamageCalcPanel')],
   ['BuildCompare', () => import('../components/layout/BuildCompare')],
   ['PastLivesPanel', () => import('../components/pastlives/PastLivesPanel')],
   ['GuildBuffsPanel', () => import('../components/guildbuffs/GuildBuffsPanel')],

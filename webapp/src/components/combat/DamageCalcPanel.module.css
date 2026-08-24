@@ -1,0 +1,360 @@
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.2rem 0.9rem 0.9rem;
+}
+
+.card + .card {
+  margin-top: 1rem;
+}
+
+.sectionHead {
+  font-family: var(--font-display, 'Cinzel'), serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent, #d4982a);
+  margin: 1rem 0 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 2px 0;
+  font-size: 12px;
+}
+
+.row label {
+  color: var(--color-text-secondary);
+}
+
+.row input[type='number'],
+.row input[type='text'] {
+  width: 5.5rem;
+  text-align: right;
+  padding: 2px 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row input[type='checkbox'] {
+  width: auto;
+}
+
+.row select {
+  width: 6.5rem;
+  padding: 2px 5px;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pair input {
+  width: 3rem !important;
+}
+
+.pair span {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+/* ── Result stats ──────────────────────────────────────────────────────── */
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.4rem;
+}
+
+.stat {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+}
+
+.statKey {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.statValue {
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  margin-top: 2px;
+}
+
+.statValue small {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-left: 3px;
+}
+
+.hist {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 0.4rem;
+}
+
+.axis {
+  font-size: 10px;
+  fill: var(--color-text-muted);
+}
+
+.railTxt {
+  font-size: 10px;
+  fill: var(--color-text-secondary);
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table td {
+  padding: 2px 6px 2px 0;
+  vertical-align: top;
+}
+
+.table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+}
+
+.table td:first-child {
+  color: var(--color-text-secondary);
+}
+
+.bar {
+  height: 4px;
+  background: var(--color-bg-active);
+  border-radius: 2px;
+  margin-top: 3px;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--color-accent, #d4982a);
+}
+
+/* ── Audit list ────────────────────────────────────────────────────────── */
+
+.auditRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+.auditRow:last-child {
+  border-bottom: 0;
+}
+
+.auditName {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.auditSource {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.auditNote {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  flex: 1;
+}
+
+.tag {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.tagExact {
+  border-color: #2f6b4f;
+  color: #6fc39a;
+}
+
+.tagEstimated {
+  border-color: #7a5a1c;
+  color: #d4982a;
+}
+
+.tagKind {
+  border-color: var(--color-border-light, #2c3454);
+  color: var(--color-text-secondary);
+}
+
+/* ── Effect list editor ────────────────────────────────────────────────── */
+
+.entry {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+  padding: 0.4rem 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.entryHead {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.2rem;
+}
+
+.entryHead input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  padding: 1px 0;
+  font-size: 12px;
+}
+
+.iconBtn {
+  background: none;
+  border: 0;
+  color: var(--color-text-muted);
+  padding: 0 3px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background: none;
+  color: var(--color-text-primary);
+  box-shadow: none;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1px 0;
+  font-size: 11.5px;
+}
+
+.field label {
+  color: var(--color-text-muted);
+}
+
+.field input[type='number'],
+.field input[type='text'] {
+  width: 4.5rem;
+  text-align: right;
+  padding: 1px 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.field input[type='checkbox'] {
+  width: auto;
+}
+
+.field select {
+  width: 7rem;
+  padding: 1px 4px;
+}
+
+.addBtn {
+  padding: 3px 9px;
+  font-size: 11px;
+  margin-top: 0.4rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.actions button {
+  flex: 1;
+}
+
+.status {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 0.4rem;
+  min-height: 1em;
+}
+
+.notes {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.notes li {
+  margin-bottom: 0.35rem;
+}
+
+.notes b {
+  color: var(--color-text-primary);
+}
+
+.warn {
+  color: #d4982a;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.io {
+  width: 100%;
+  min-height: 6rem;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  padding: 6px;
+  resize: vertical;
+}
