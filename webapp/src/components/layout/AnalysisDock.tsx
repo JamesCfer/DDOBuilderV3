@@ -18,7 +18,6 @@
 import { useState } from 'react'
 import BreakdownsPanel from '../breakdowns/BreakdownsPanel'
 import CombatPanel from '../combat/CombatPanel'
-import DamageCalcPanel from '../combat/DamageCalcPanel'
 import DCPanel from '../dc/DCPanel'
 import BonusesPanel from '../bonuses/BonusesPanel'
 import BuildCompare from './BuildCompare'
@@ -28,11 +27,11 @@ const OPEN_KEY = 'ddo-analysis-dock-open'
 const SECTION_KEY = 'ddo-analysis-dock-section'
 const WIDE_KEY = 'ddo-analysis-dock-wide'
 
-const SECTIONS = ['Breakdowns', 'Combat', 'Damage Calc', 'DCs', 'Bonuses', 'Compare'] as const
+const SECTIONS = ['Breakdowns', 'Combat', 'DCs', 'Bonuses', 'Compare'] as const
 type Section = (typeof SECTIONS)[number]
 
 /** Sections whose content is a wide table — they default the rail to wide. */
-const WIDE_SECTIONS = new Set<Section>(['Combat', 'Damage Calc', 'Compare'])
+const WIDE_SECTIONS = new Set<Section>(['Combat', 'Compare'])
 
 function readSection(): Section {
   try {
@@ -132,7 +131,6 @@ export default function AnalysisDock() {
       <div className={styles.dockBody}>
         {section === 'Breakdowns' && <BreakdownsPanel />}
         {section === 'Combat' && <CombatPanel />}
-        {section === 'Damage Calc' && <DamageCalcPanel />}
         {section === 'DCs' && <DCPanel />}
         {section === 'Bonuses' && <BonusesPanel />}
         {section === 'Compare' && <BuildCompare />}

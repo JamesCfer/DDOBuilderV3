@@ -23,6 +23,8 @@ import GearPanel from './components/items/GearPanel'
 import ClickiesPanel from './components/items/ClickiesPanel'
 import StanceBuffDock from './components/layout/StanceBuffDock'
 import AnalysisDock from './components/layout/AnalysisDock'
+import CombatPanel from './components/combat/CombatPanel'
+import DamageCalcPanel from './components/combat/DamageCalcPanel'
 import PluginsPanel from './components/plugins/PluginsPanel'
 import CraftingPanel from './components/crafting/CraftingPanel'
 import CannithPlanner from './components/crafting/CannithPlanner'
@@ -60,10 +62,11 @@ import styles from './App.module.css'
 
 // Analysis is not a page: it is the right-hand rail (AnalysisDock), visible
 // on every page, because every choice made here is only interesting for what
-// it does to those numbers.
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Crafting' | 'Community' | 'Plugins' | 'Custom'
+// it does to those numbers. Combat is the exception -- its damage simulator
+// is something you edit rather than read, so it needs the width of a page.
+type Page = 'Character' | 'Progression' | 'Equipment' | 'Combat' | 'Crafting' | 'Community' | 'Plugins' | 'Custom'
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Crafting', 'Community', 'Plugins', 'Custom']
+const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Combat', 'Crafting', 'Community', 'Plugins', 'Custom']
 
 const PAGE_TABS: Record<Page, string[]> = {
   Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
@@ -72,6 +75,11 @@ const PAGE_TABS: Record<Page, string[]> = {
   // the same decision ("what am I wearing"), and set bonuses in particular
   // only make sense next to the gear that grants them.
   Equipment:   ['Gear'],
+  // Combat earns a page rather than a dock section because the damage
+  // model is a two-column simulator: forty inputs on the left, a
+  // distribution and its breakdown on the right. That never fitted the
+  // right-hand rail, which is sized to read a number off, not to edit one.
+  Combat:      ['Overview', 'Damage Calc'],
   // Crafting sits next to Equipment because it answers the question just
   // before "what am I wearing" — but like Plugins it is a standalone tool,
   // not part of the builder (see STANDALONE_PAGES).
@@ -85,7 +93,7 @@ const PAGE_TABS: Record<Page, string[]> = {
 
 /** Tabs whose content wants the full viewport width (trees, tables). */
 const WIDE_TABS = new Set([
-  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows',
+  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows', 'Damage Calc',
   'Level Plan', 'Optimizer', 'Dungeon Help', 'Systems', 'Cannith Planner',
 ])
 
@@ -227,6 +235,10 @@ function AppInner() {
         )
 
       // ── Crafting ─────────────────────────────────────────────────────────
+      // ── Combat ────────────────────────────────────────────────
+      case 'Combat/Overview':     return <CombatPanel />
+      case 'Combat/Damage Calc':  return <DamageCalcPanel />
+
       case 'Crafting/Systems':         return <CraftingPanel />
       case 'Crafting/Cannith Planner': return <CannithPlanner />
 
