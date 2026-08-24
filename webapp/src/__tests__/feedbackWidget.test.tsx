@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 //
-// Floating bug-report button: appears only when the server can deliver
-// reports, explains itself on hover, and posts the report on Enter.
+// Floating feedback button: appears only when the server can deliver
+// feedback, says "Feedback" in words, and posts the message on Enter.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import React from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 
-import BugReportWidget from '../components/layout/BugReportWidget'
+import FeedbackWidget from '../components/layout/FeedbackWidget'
 import { resetApiCacheForTests } from '../api'
 import { formatBugReport, ReportRateLimiter } from '../server/bugReport'
 
@@ -45,7 +45,7 @@ async function render(page = 'Equipment · Gear') {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(BugReportWidget, { page }))
+    root.render(React.createElement(FeedbackWidget, { page }))
   })
   mounted.push({ root, container })
   return container
@@ -63,14 +63,16 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('BugReportWidget', () => {
-  it('shows a bug button labelled for hover when reporting is configured', async () => {
+describe('FeedbackWidget', () => {
+  it('shows a button that says Feedback when reporting is configured', async () => {
     stubApi({ enabled: true })
     const c = await render()
     const fab = c.querySelector('button')
     expect(fab).not.toBeNull()
-    expect(fab?.getAttribute('aria-label')).toBe('Click to report a bug')
-    expect(c.textContent).toContain('Click to report a bug')
+    // The word is on the button itself — the icon-only version was not
+    // recognised as something to press.
+    expect(c.textContent).toContain('Feedback')
+    expect(fab?.getAttribute('aria-label')).toBe('Send feedback — report a bug or suggest an idea')
     expect(c.querySelector('svg')).not.toBeNull()
   })
 
@@ -86,7 +88,9 @@ describe('BugReportWidget', () => {
     await act(async () => { (c.querySelector('button') as HTMLButtonElement).click() })
     const dialog = document.querySelector('[role="dialog"]')
     expect(dialog).not.toBeNull()
-    expect(dialog?.textContent).toContain('Report a bug')
+    expect(dialog?.textContent).toContain('Send feedback')
+    // Bugs, ideas and anything else all go through the same box.
+    expect(dialog?.textContent).toContain('I have an idea')
     expect(document.querySelector('textarea')).not.toBeNull()
   })
 
@@ -109,7 +113,8 @@ describe('BugReportWidget', () => {
     expect(posted[0].body.text).toBe('Gear picker forgets my filigrees')
     expect(posted[0].body.page).toBe('Equipment · Gear')
     expect(posted[0].body.version).toBe('#221')
-    expect(document.body.textContent).toContain('your report was sent')
+    expect(posted[0].body.kind).toBe('bug')
+    expect(document.body.textContent).toContain('your feedback was sent')
   })
 
   it('does not send an empty report', async () => {
@@ -137,7 +142,30 @@ describe('BugReportWidget', () => {
       textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
     })
     expect(document.body.textContent).toContain('Could not deliver the report')
-    expect(document.body.textContent).not.toContain('your report was sent')
+    expect(document.body.textContent).not.toContain('your feedback was sent')
+  })
+
+  it('sends the chosen kind so an idea is not filed as a bug', async () => {
+    stubApi({ enabled: true })
+    const c = await render()
+    await act(async () => { (c.querySelector('button') as HTMLButtonElement).click() })
+
+    const idea = Array.from(document.querySelectorAll('button'))
+      .find(b => b.textContent?.includes('I have an idea')) as HTMLButtonElement
+    await act(async () => { idea.click() })
+
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!
+      setter.call(textarea, 'Let me pin a gear set')
+      textarea.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await act(async () => {
+      textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    })
+
+    expect(posted).toHaveLength(1)
+    expect(posted[0].body.kind).toBe('idea')
   })
 })
 
@@ -156,6 +184,12 @@ describe('ReportRateLimiter', () => {
 })
 
 describe('formatBugReport', () => {
+  it('labels each kind so ideas are not triaged as bugs', () => {
+    expect(formatBugReport('nice to have', { kind: 'idea' })).toContain('💡 **Idea**')
+    expect(formatBugReport('a question', { kind: 'other' })).toContain('💬 **Feedback**')
+    expect(formatBugReport('broken', { kind: 'bug' })).toContain('🐞 **Bug report**')
+  })
+
   it('fences the report so its text cannot break the message or ping anyone', () => {
     const msg = formatBugReport('```\n@everyone look\n```', { page: 'Equipment', version: '#221' })
     expect(msg).toContain('🐞 **Bug report** (page: Equipment, build: #221)')

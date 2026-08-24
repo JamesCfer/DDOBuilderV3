@@ -10,9 +10,20 @@ export const MAX_REPORT_LENGTH = 1500
 export const REPORT_RATE_LIMIT = 10
 export const REPORT_RATE_WINDOW_MS = 60 * 60 * 1000
 
+/** What a report is about — bugs, ideas and everything else all arrive here. */
+export type FeedbackKind = 'bug' | 'idea' | 'other'
+
 export interface BugReportContext {
   version?: string
   page?: string
+  kind?: FeedbackKind
+}
+
+/** Header shown for each kind, so the maintainer can triage at a glance. */
+const KIND_HEADERS: Record<FeedbackKind, string> = {
+  bug: '🐞 **Bug report**',
+  idea: '💡 **Idea**',
+  other: '💬 **Feedback**',
 }
 
 /**
@@ -28,7 +39,8 @@ export function formatBugReport(text: string, context?: BugReportContext): strin
     context?.page ? `page: ${context.page}` : '',
     context?.version ? `build: ${context.version}` : '',
   ].filter(Boolean)
-  const header = bits.length > 0 ? `🐞 **Bug report** (${bits.join(', ')})` : '🐞 **Bug report**'
+  const lead = KIND_HEADERS[context?.kind ?? 'bug'] ?? KIND_HEADERS.bug
+  const header = bits.length > 0 ? `${lead} (${bits.join(', ')})` : lead
   return `${header}\n\`\`\`\n${safe}\n\`\`\``
 }
 

@@ -42,7 +42,8 @@ import SettingsPanel from './components/layout/SettingsPanel'
 import ContentPanel from './components/layout/ContentPanel'
 import HelpPanel from './components/layout/HelpPanel'
 import AppShortcuts from './components/layout/AppShortcuts'
-import BugReportWidget from './components/layout/BugReportWidget'
+import FeedbackWidget from './components/layout/FeedbackWidget'
+import WelcomeTour, { shouldShowTour } from './components/layout/WelcomeTour'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import Dashboard from './components/layout/Dashboard'
 import OptimizerPanel from './components/optimizer/OptimizerPanel'
@@ -131,6 +132,9 @@ function AppInner() {
   const { dispatch } = useCharacter()
   const { setDoc } = useDocument()
   const [page, setPage] = useState<Page>('Character')
+  // First visit in this browser gets the tutorial; afterwards it only opens
+  // from Help. Read once on mount so a re-render never re-triggers it.
+  const [tourOpen, setTourOpen] = useState(() => shouldShowTour())
 
   // Warm the shared catalogue bundle at startup so every tab — especially
   // Analysis — has the complete dataset ready instead of each tab fetching
@@ -240,7 +244,7 @@ function AppInner() {
       case 'Custom/Forum Export': return <ForumExportPanel />
       case 'Custom/Content':      return <ContentPanel />
       case 'Custom/Settings':     return <SettingsPanel />
-      case 'Custom/Help':         return <HelpPanel />
+      case 'Custom/Help':         return <HelpPanel onStartTour={() => setTourOpen(true)} />
       case 'Custom/Build Log':    return <BuildHistoryPanel />
 
       default: return null
@@ -275,7 +279,8 @@ function AppInner() {
           {!standalone && <ErrorBoundary label="Analysis"><AnalysisDock /></ErrorBoundary>}
         </div>
       </Layout>
-      <BugReportWidget page={`${page} · ${tab}`} />
+      <FeedbackWidget page={`${page} · ${tab}`} />
+      {tourOpen && <WelcomeTour onClose={() => setTourOpen(false)} />}
     </>
   )
 }

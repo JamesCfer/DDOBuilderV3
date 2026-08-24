@@ -669,9 +669,9 @@ app.post('/api/bug-report', async (req, res) => {
     res.status(501).json({ error: 'Bug reporting is not configured on this server' })
     return
   }
-  const { text, page, version } = req.body ?? {}
+  const { text, page, version, kind } = req.body ?? {}
   if (typeof text !== 'string' || text.trim().length === 0) {
-    res.status(400).json({ error: 'Please describe the bug' })
+    res.status(400).json({ error: 'Please write your feedback first' })
     return
   }
   if (text.length > MAX_REPORT_LENGTH) {
@@ -687,6 +687,7 @@ app.post('/api/bug-report', async (req, res) => {
     await sendDiscordDm(DISCORD_BOT_TOKEN, DISCORD_REPORT_USER_ID, formatBugReport(text, {
       page: typeof page === 'string' ? page.slice(0, 40) : undefined,
       version: typeof version === 'string' ? version.slice(0, 20) : undefined,
+      kind: kind === 'idea' || kind === 'other' ? kind : 'bug',
     }), DISCORD_API)
     res.json({ ok: true })
   } catch (err) {

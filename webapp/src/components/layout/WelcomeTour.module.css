@@ -1,0 +1,156 @@
+/* First-run tutorial overlay. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--tint-sink-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  width: min(560px, 100%);
+  max-height: min(84vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.step {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.skip {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.skip:hover {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+.title {
+  margin: 0;
+  padding: 16px 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gold-light);
+}
+
+.body {
+  padding: 8px 20px 16px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.body p {
+  margin: 8px 0;
+}
+
+.body strong {
+  color: var(--color-text-primary);
+}
+
+.body ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+
+.body li {
+  margin: 3px 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border-light);
+}
+
+.dotActive {
+  background: var(--color-gold);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.backBtn,
+.nextBtn {
+  padding: 6px 16px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.backBtn {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.backBtn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+}
+
+.backBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.nextBtn {
+  color: var(--color-bg-primary);
+  background: var(--color-gold);
+  border: 1px solid var(--color-gold-dark);
+}
+
+.nextBtn:hover {
+  background: var(--color-gold-light);
+}
