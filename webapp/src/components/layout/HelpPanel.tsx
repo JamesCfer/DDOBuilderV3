@@ -5,7 +5,12 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
 
-export default function HelpPanel() {
+interface HelpPanelProps {
+  /** Re-opens the first-run tutorial. */
+  onStartTour?: () => void
+}
+
+export default function HelpPanel({ onStartTour }: HelpPanelProps = {}) {
   const [version, setVersion] = useState('')
 
   useEffect(() => {
@@ -34,6 +39,19 @@ export default function HelpPanel() {
         </section>
 
         <section>
+          <strong>New here?</strong>
+          <p style={{ margin: '4px 0' }}>
+            The short tour that runs on your first visit explains where the
+            build, the numbers and the save controls live.
+          </p>
+          {onStartTour && (
+            <button type="button" onClick={onStartTour} style={{ marginTop: '4px' }}>
+              Take the tour
+            </button>
+          )}
+        </section>
+
+        <section>
           <strong>Keyboard shortcuts</strong>
           <table style={{ marginTop: '4px' }}>
             <tbody>
@@ -50,6 +68,7 @@ export default function HelpPanel() {
           <ul style={{ margin: '4px 0 0 16px' }}>
             <li>Drop a .DDOBuild file anywhere on the window to import it.</li>
             <li>Lives and builds within a character are managed from the bar under Save/Load.</li>
+            <li>Found a bug or have an idea? The gold <em>Feedback</em> button in the bottom-right corner sends it straight to the maintainer.</li>
             <li>Hide content you don't own under <em>Content</em>; tune feat list filters under <em>Settings</em>.</li>
           </ul>
         </section>

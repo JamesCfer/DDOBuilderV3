@@ -135,7 +135,7 @@ export const api = {
   plugins: () => get<PluginCatalogue>('/plugins'),
   /** Whether this server can deliver bug reports (Discord bot configured). */
   bugReportConfig: () => get<{ enabled: boolean }>('/bug-report/config'),
-  sendBugReport: (report: { text: string; page?: string; version?: string }) =>
+  sendBugReport: (report: { text: string; page?: string; version?: string; kind?: 'bug' | 'idea' | 'other' }) =>
     post<{ ok: true }>('/bug-report', report),
 }
 

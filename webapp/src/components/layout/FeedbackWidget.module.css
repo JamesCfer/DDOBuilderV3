@@ -1,64 +1,91 @@
-/* Floating bug-report button + report dialog. */
+/* Floating feedback button + feedback dialog. */
 
+/* A labelled pill, not a bare icon: the icon-only button was routinely read
+   as decoration, so the word "Feedback" carries the meaning and the gold
+   trim (the app's "you can press this" colour) makes it look pressable. */
 .fab {
   position: fixed;
   right: 18px;
   bottom: 18px;
   z-index: 900;
-  width: 42px;
-  height: 42px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg-panel);
-  color: var(--color-text-secondary);
+  gap: 7px;
+  padding: 9px 15px 9px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-gold-dark);
+  background: var(--color-gold);
+  color: var(--color-bg-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
-  transition: color 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
 }
 
 .fab:hover {
-  color: var(--color-gold-light);
-  border-color: var(--color-border-focus);
+  background: var(--color-gold-light);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.6);
+}
+
+.fab:active {
+  transform: translateY(0);
 }
 
 .fab:focus-visible {
   outline: none;
-  border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 2px var(--tint-accent-strong);
+  box-shadow: 0 0 0 3px var(--tint-accent-strong), 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+.fabLabel {
+  white-space: nowrap;
+}
+
+/* On a phone-width window the label would crowd the page; the pill keeps its
+   shape but drops to the icon alone, still with its accessible name. */
+@media (max-width: 640px) {
+  .fabLabel { display: none; }
+  .fab { padding: 10px; }
 }
 
 .icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  flex: none;
 }
 
-/* Tooltip — shown on hover and on keyboard focus. */
-.tooltip {
-  position: absolute;
-  right: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 4px 9px;
-  white-space: nowrap;
+/* ── What is this about? ── */
+.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 2px;
+}
+
+.kindBtn {
+  padding: 4px 10px;
+  font-family: inherit;
   font-size: 11px;
-  color: var(--color-text-primary);
-  background: var(--color-bg-panel);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.12s;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
 
-.fab:hover .tooltip,
-.fab:focus-visible .tooltip {
-  opacity: 1;
+.kindBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-light);
+}
+
+.kindBtnActive {
+  color: var(--color-gold-light);
+  border-color: var(--color-border-focus);
+  background: var(--tint-accent);
 }
 
 /* ── Dialog ── */
