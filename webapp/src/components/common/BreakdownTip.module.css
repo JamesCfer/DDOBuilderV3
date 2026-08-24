@@ -1,0 +1,106 @@
+.tipBox {
+  position: fixed;
+  z-index: 1000;
+  min-width: 17rem;
+  max-width: 26rem;
+  overflow-y: auto;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light, #2c3454);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  padding: 0.5rem 0.65rem 0.55rem;
+  pointer-events: auto;
+}
+
+.tipTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0.35rem;
+}
+
+.tipTotal {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent, #d4982a);
+}
+
+.tipSubtitle {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin: -0.15rem 0 0.35rem;
+}
+
+.tipTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.tipTable td {
+  padding: 1px 0;
+  color: var(--color-text-secondary);
+  vertical-align: baseline;
+}
+
+/* Operation column: +N or ×N. */
+.tipOp {
+  text-align: right;
+  padding-left: 0.7rem !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Running-value column. */
+.tipVal {
+  text-align: right;
+  padding-left: 0.7rem !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.tipMultRow td {
+  color: var(--color-text-primary);
+}
+
+.tipMultRow .tipOp {
+  color: var(--color-accent, #d4982a);
+}
+
+.tipSubtotalRow td {
+  border-top: 1px dotted var(--color-border);
+  padding-top: 3px !important;
+  color: var(--color-text-primary);
+  font-style: italic;
+}
+
+.tipRowNote {
+  color: var(--color-text-muted);
+  font-size: 10.5px;
+  margin-left: 0.35rem;
+}
+
+.tipNoteCell {
+  color: var(--color-text-muted) !important;
+  font-size: 10.5px;
+  padding-top: 3px !important;
+  white-space: normal;
+}
+
+.tipTable tfoot td {
+  border-top: 1px solid var(--color-border);
+  padding-top: 3px;
+  color: var(--color-text-primary);
+}
+
+.tipEmpty {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}

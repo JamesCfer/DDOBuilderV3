@@ -5,6 +5,7 @@
 // underneath. Colours come from the app theme rather than being hard-coded.
 
 import { quantile, type SimResult } from '../../lib/combat/damageSim'
+import { fmtDamage as fmt } from '../../lib/combat/format'
 import styles from './DamageCalcPanel.module.css'
 
 const BINS = 44
@@ -15,10 +16,7 @@ const PAD_R = 16
 const PAD_T = 18
 const PAD_B = 74
 
-export const fmt = (n: number): string =>
-  Math.abs(n) >= 10000
-    ? Math.round(n).toLocaleString()
-    : n.toFixed(Math.abs(n) < 10 ? 2 : 1)
+
 
 export default function DamageHistogram({ result }: { result: SimResult }) {
   const { sorted, mean } = result

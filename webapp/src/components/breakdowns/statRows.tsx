@@ -2,7 +2,8 @@
 // panel's ★ Favorites section: the hover tooltip, collapsible section
 // wrapper, and a single stat row with its favorite star.
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import { useTipPosition } from '../common/useTipPosition'
 import type { ResolvedBonus } from '../../lib/bonus'
 import styles from './BreakdownsPanel.module.css'
 
@@ -44,48 +45,7 @@ export function Tooltip({ tip, onHide, openLeft = false }: {
 }) {
   const activeTotal = tip.bonuses.filter(b => b.active).reduce((s, b) => s + b.value, 0)
   const hasBonuses = tip.bonuses.length > 0
-  const ref = useRef<HTMLDivElement>(null)
-  // Start off-screen so the first paint cannot flash in the wrong place: the
-  // layout effect below measures and places it before the browser paints.
-  const [pos, setPos] = useState<{ left: number; top: number; maxHeight?: number }>(
-    { left: -9999, top: -9999 })
-
-  // Clamp into the viewport. The old version placed the box at cursor + 14px
-  // and trusted it to fit — which it does not for a row in the right-hand
-  // Analysis rail (runs off the right edge) or a long bonus list near the
-  // bottom of the screen (runs off the bottom). Measure, flip the side if the
-  // preferred one does not fit, and cap the height so a long list scrolls
-  // inside the box instead of leaving the screen.
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const GAP = 14
-    const MARGIN = 8
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const rect = el.getBoundingClientRect()
-    const width = rect.width
-    const maxHeight = Math.max(120, vh - 2 * MARGIN)
-    const height = Math.min(rect.height, maxHeight)
-
-    // Horizontal: honour the caller's preference when it fits, otherwise take
-    // whichever side has room; if neither does, sit flush inside the edge.
-    const fitsRight = tip.x + GAP + width <= vw - MARGIN
-    const fitsLeft = tip.x - GAP - width >= MARGIN
-    let left: number
-    if (openLeft ? fitsLeft : fitsRight) {
-      left = openLeft ? tip.x - GAP - width : tip.x + GAP
-    } else if (openLeft ? fitsRight : fitsLeft) {
-      left = openLeft ? tip.x + GAP : tip.x - GAP - width
-    } else {
-      left = Math.max(MARGIN, Math.min(tip.x - width / 2, vw - width - MARGIN))
-    }
-
-    // Vertical: prefer aligning near the cursor, then slide up to fit.
-    const top = Math.max(MARGIN, Math.min(tip.y - 8, vh - height - MARGIN))
-
-    setPos({ left: Math.round(left), top: Math.round(top), maxHeight })
-  }, [tip.x, tip.y, tip.label, tip.bonuses.length, openLeft])
+  const { ref, pos } = useTipPosition(tip.x, tip.y, openLeft, [tip.label, tip.bonuses.length])
 
   return (
     <div

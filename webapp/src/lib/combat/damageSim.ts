@@ -297,6 +297,14 @@ export interface SimResult {
   sd: number
   /** Raw (pre-mitigation) damage by source, summed across all trials. */
   buckets: DamageBuckets
+  /**
+   * Raw damage attributed to each named effect, summed across all trials.
+   * Lets the panel say "Dripping with Magma contributed 18%" rather than only
+   * "damage over time contributed 18%".
+   */
+  bySource: Record<string, number>
+  /** Which list each named effect came from, for grouping. */
+  sourceKind: Record<string, 'proc' | 'dot'>
   /** Hit die computed from the unbuffed attack bonus, for display. */
   baseHitDie: HitDie
   atk: number
@@ -386,6 +394,10 @@ export function simulateDamage(params: CoreParams, lists: SimLists): SimResult {
 
   const totals = new Float64Array(P.trials)
   const buckets: DamageBuckets = { critable: 0, sneak: 0, imbue: 0, proc: 0, dot: 0 }
+  const bySource: Record<string, number> = {}
+  const sourceKind: Record<string, 'proc' | 'dot'> = {}
+  for (const p of procs) { bySource[p.name] = 0; sourceKind[p.name] = 'proc' }
+  for (const d of dots) { bySource[d.name] = 0; sourceKind[d.name] = 'dot' }
   let atk = 0, hits = 0, threats = 0, fortStop = 0, confFail = 0
   let crits = 0, nat20 = 0, sneaks = 0
   let vulnSum = 0, vulnN = 0, specialUses = 0
@@ -452,6 +464,7 @@ export function simulateDamage(params: CoreParams, lists: SimLists): SimResult {
       d *= (1 + (pr.rpRate * P.rp) / 10000) * (pr.dsScale ? 1 + P.ds / 100 : 1)
       const m = mods()
       buckets.proc += d
+      bySource[pr.name] = (bySource[pr.name] ?? 0) + d
       total += d * mit(P.mrr - m.tgtMRR) * vFor(m, pr.tag)
       applyRider(pr.rider)
     }
@@ -625,6 +638,7 @@ export function simulateDamage(params: CoreParams, lists: SimLists): SimResult {
           for (let k = 0; k < (dt.dice || 0); k++) per += roll(dt.sides)
           const d = dTimer[i].n * per * (1 + (dt.rpRate * (P.rp + mNow.rp)) / 10000)
           buckets.dot += d
+          bySource[dt.name] = (bySource[dt.name] ?? 0) + d
           total += d * mit(P.mrr - mNow.tgtMRR) * vFor(mNow, dt.tag)
           dTimer[i].next = t + dt.tick
         }
@@ -670,7 +684,7 @@ export function simulateDamage(params: CoreParams, lists: SimLists): SimResult {
   const sd = Math.sqrt(sorted.reduce((a, b) => a + (b - mean) ** 2, 0) / sorted.length)
 
   return {
-    params: P, sorted, mean, sd, buckets,
+    params: P, sorted, mean, sd, buckets, bySource, sourceKind,
     baseHitDie: hitDie(P.atk, P.ac, P.prof + P.prec),
     atk, hits, threats, fortStop, confFail, crits, nat20, sneaks,
     vulnAvg: vulnN ? vulnSum / vulnN : 0,

@@ -92,7 +92,20 @@
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 0.5rem 0.7rem;
+  padding: 0.6rem 0.8rem 0.55rem;
+}
+
+/* A tile whose number decomposes into sources. */
+.statHoverable {
+  cursor: help;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.statHoverable:hover,
+.statHoverable:focus-visible {
+  border-color: var(--color-accent, #d4982a);
+  background: var(--color-bg-hover);
+  outline: none;
 }
 
 .statKey {
@@ -103,16 +116,24 @@
 }
 
 .statValue {
-  font-size: 19px;
+  /* These run from three figures to seven. Tabular numerals keep the tiles
+     from jittering as the simulation reruns, and the size is the one thing on
+     the page meant to be read from across the room. */
+  font-size: 22px;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
   color: var(--color-text-primary);
-  margin-top: 2px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 
-.statValue small {
-  font-size: 11px;
+/* The unit sits under the number rather than beside it, so a long value
+   cannot push it out of the tile. */
+.statSub {
+  font-size: 10.5px;
   color: var(--color-text-muted);
-  margin-left: 3px;
+  margin-top: 2px;
 }
 
 .hist {
@@ -357,4 +378,27 @@
   font-size: 11px;
   padding: 6px;
   resize: vertical;
+}
+
+/* A bucket row that expands into its named sources. */
+.hoverRow {
+  cursor: help;
+  transition: background 0.12s;
+}
+
+.hoverRow:hover,
+.hoverRow:focus-visible {
+  background: var(--color-bg-hover);
+  outline: none;
+}
+
+.hoverRow:hover td:first-child,
+.hoverRow:focus-visible td:first-child {
+  color: var(--color-accent, #d4982a);
+}
+
+.hoverHint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin: 0 0 0.4rem;
 }

@@ -42,7 +42,12 @@
   border-collapse: collapse;
   font-size: 12px;
   width: 100%;
-  max-width: 24rem;
+  max-width: 26rem;
+}
+
+.statsTable tr + tr th,
+.statsTable tr + tr td {
+  border-top: 1px solid var(--color-border);
 }
 
 .statsTable th {
@@ -56,6 +61,44 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-primary);
+  /* Numbers here run from "0" to seven figures. A fixed column stops the
+     labels shifting sideways every time a value crosses a digit boundary. */
+  min-width: 7.5rem;
+  padding: 3px 0 3px 8px;
+  font-size: 13px;
+}
+
+.statsTable th {
+  padding: 3px 8px 3px 0;
+  white-space: nowrap;
+}
+
+/* A value with a breakdown behind it. */
+.hoverVal {
+  cursor: help;
+  border-radius: var(--radius-sm);
+  /* The dotted rule is the affordance: it says "there is more here" without
+     the weight of a link or a button. */
+  border-bottom: 1px dotted var(--color-text-muted);
+  transition: background 0.12s, color 0.12s;
+}
+
+.hoverVal:hover,
+.hoverVal:focus-visible {
+  background: var(--color-bg-hover);
+  color: var(--color-accent, #d4982a);
+  outline: none;
+}
+
+/* A value with nothing behind it — chances are already self-explanatory. */
+.plainVal {
+  color: var(--color-text-secondary);
+}
+
+.hoverHint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 0.45rem;
 }
 
 .chainsBlock {

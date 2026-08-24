@@ -29,7 +29,10 @@ import {
   buildAutoDamage, isRangedWeapon,
   type AuditEntry,
 } from '../../lib/combat/autoDamage'
-import DamageHistogram, { fmt } from './DamageHistogram'
+import DamageHistogram from './DamageHistogram'
+import BreakdownTip, { type BreakdownTipState } from '../common/BreakdownTip'
+import { sourceShareRows, bucketSourceRows } from '../../lib/combat/damageRows'
+import { fmtDamage as fmt, fmtPercentValue } from '../../lib/combat/format'
 import styles from './DamageCalcPanel.module.css'
 
 function pickTwfTier(featChoices: Record<string, string>): 0 | 1 | 2 | 3 | 4 {
@@ -322,6 +325,7 @@ export default function DamageCalcPanel() {
   const [result, setResult] = useState<SimResult | null>(null)
   const [status, setStatus] = useState('')
   const [io, setIo] = useState('')
+  const [tip, setTip] = useState<BreakdownTipState | null>(null)
 
   const core = edits?.core ?? auto?.core ?? null
   const lists = edits?.lists ?? auto?.lists ?? null
@@ -546,7 +550,7 @@ export default function DamageCalcPanel() {
           <h3 className={styles.sectionHead}>Encounter damage</h3>
           {result ? (
             <>
-              <ResultStats result={result} />
+              <ResultStats result={result} onTip={setTip} onHide={() => setTip(null)} />
               <DamageHistogram result={result} />
             </>
           ) : (
@@ -565,7 +569,10 @@ export default function DamageCalcPanel() {
           <>
             <div className={styles.card}>
               <h3 className={styles.sectionHead}>Where the damage came from</h3>
-              <BucketTable result={result} />
+              <p className={styles.hoverHint}>
+                Hover Procs or Damage over time to see which item each share came from.
+              </p>
+              <BucketTable result={result} onTip={setTip} onHide={() => setTip(null)} />
             </div>
             <div className={styles.card}>
               <h3 className={styles.sectionHead}>Attack diagnostics</h3>
@@ -578,6 +585,8 @@ export default function DamageCalcPanel() {
           <h3 className={styles.sectionHead}>Model notes</h3>
           <ModelNotes />
         </div>
+
+        {tip && <BreakdownTip tip={tip} onHide={() => setTip(null)} openLeft />}
       </main>
     </div>
   )
@@ -587,49 +596,107 @@ export default function DamageCalcPanel() {
 // Result sub-views
 // ---------------------------------------------------------------------------
 
-function ResultStats({ result }: { result: SimResult }) {
+function ResultStats({ result, onTip, onHide }: {
+  result: SimResult
+  onTip: (t: BreakdownTipState) => void
+  onHide: () => void
+}) {
   const { sorted, mean } = result
   const q = (f: number) => sorted[Math.min(sorted.length - 1, Math.floor(f * sorted.length))]
-  const cells: Array<[string, string, string]> = [
-    ['Mean damage', fmt(mean), ''],
-    ['DPS', fmt(mean / result.dur), 'per second'],
-    ['Median', fmt(q(0.5)), ''],
-    ['Spread', `${fmt(q(0.05))} – ${fmt(q(0.95))}`, '5th–95th'],
+  // Mean and DPS are the same distribution scaled by encounter length, so both
+  // decompose the same way. Median and spread describe the shape of the
+  // distribution rather than its sources, so they carry no breakdown.
+  const cells: Array<{ key: string; value: string; sub: string; rows?: boolean }> = [
+    { key: 'Mean damage', value: fmt(mean), sub: 'per encounter', rows: true },
+    { key: 'DPS', value: fmt(mean / result.dur), sub: 'per second', rows: true },
+    { key: 'Median', value: fmt(q(0.5)), sub: '' },
+    { key: 'Spread', value: `${fmt(q(0.05))} – ${fmt(q(0.95))}`, sub: '5th–95th' },
   ]
   return (
     <div className={styles.statGrid}>
-      {cells.map(([k, v, s]) => (
-        <div className={styles.stat} key={k}>
-          <div className={styles.statKey}>{k}</div>
-          <div className={styles.statValue}>{v}{s && <small>{s}</small>}</div>
+      {cells.map(c => (
+        <div
+          className={`${styles.stat} ${c.rows ? styles.statHoverable : ''}`}
+          key={c.key}
+          tabIndex={c.rows ? 0 : undefined}
+          onMouseEnter={c.rows ? e => {
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+            onTip({
+              label: c.key, display: c.value, rows: sourceShareRows(result),
+              subtitle: 'Share of raw damage, before mitigation',
+              x: r.right, y: r.top,
+            })
+          } : undefined}
+          onFocus={c.rows ? e => {
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+            onTip({
+              label: c.key, display: c.value, rows: sourceShareRows(result),
+              subtitle: 'Share of raw damage, before mitigation',
+              x: r.right, y: r.top,
+            })
+          } : undefined}
+          onMouseLeave={c.rows ? onHide : undefined}
+          onBlur={c.rows ? onHide : undefined}
+        >
+          <div className={styles.statKey}>{c.key}</div>
+          <div className={styles.statValue}>{c.value}</div>
+          {c.sub && <div className={styles.statSub}>{c.sub}</div>}
         </div>
       ))}
     </div>
   )
 }
 
-function BucketTable({ result }: { result: SimResult }) {
+function BucketTable({ result, onTip, onHide }: {
+  result: SimResult
+  onTip: (t: BreakdownTipState) => void
+  onHide: () => void
+}) {
   const b = result.buckets
   const total = Object.values(b).reduce((a, v) => a + v, 0) || 1
-  const rows: Array<[string, number]> = [
-    ['Critable bucket', b.critable],
-    ['Sneak dice', b.sneak],
-    ['Imbue', b.imbue],
-    ['Procs', b.proc],
-    ['Damage over time', b.dot],
+  // Procs and DoTs are the two categories that can hold several named effects,
+  // so those are the two worth expanding into their sources on hover.
+  const rows: Array<{ label: string; value: number; kind?: 'proc' | 'dot' }> = [
+    { label: 'Critable bucket', value: b.critable },
+    { label: 'Sneak dice', value: b.sneak },
+    { label: 'Imbue', value: b.imbue },
+    { label: 'Procs', value: b.proc, kind: 'proc' },
+    { label: 'Damage over time', value: b.dot, kind: 'dot' },
   ]
   return (
     <table className={styles.table}>
       <tbody>
-        {rows.map(([k, v]) => (
-          <tr key={k}>
-            <td>
-              {k}
-              <div className={styles.bar}><i style={{ width: `${(v / total * 100).toFixed(1)}%` }} /></div>
-            </td>
-            <td>{(v / total * 100).toFixed(1)}%</td>
-          </tr>
-        ))}
+        {rows.map(r => {
+          const pct = (r.value / total) * 100
+          const show = (e: React.SyntheticEvent) => {
+            if (!r.kind) return
+            const box = (e.currentTarget as HTMLElement).getBoundingClientRect()
+            onTip({
+              label: r.label,
+              display: fmtPercentValue(pct),
+              rows: bucketSourceRows(result, r.kind),
+              subtitle: 'Share of raw damage within this category',
+              x: box.right, y: box.top,
+            })
+          }
+          return (
+            <tr
+              key={r.label}
+              className={r.kind ? styles.hoverRow : ''}
+              tabIndex={r.kind ? 0 : undefined}
+              onMouseEnter={show}
+              onFocus={show}
+              onMouseLeave={r.kind ? onHide : undefined}
+              onBlur={r.kind ? onHide : undefined}
+            >
+              <td>
+                {r.label}
+                <div className={styles.bar}><i style={{ width: `${pct.toFixed(1)}%` }} /></div>
+              </td>
+              <td>{fmtPercentValue(pct)}</td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )

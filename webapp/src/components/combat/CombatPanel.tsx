@@ -14,6 +14,12 @@ import {
 } from '../../lib/combat/attackChain'
 import { lookupAttacksPerMinute, pickCombatStyleName } from '../../lib/combat/attackRate'
 import { deriveWeaponClasses, type WeaponGroupSpec } from '../../lib/weapons/groups'
+import BreakdownTip, { type BreakdownTipState } from '../common/BreakdownTip'
+import {
+  hitDamageRows, critDamageRows, mainDprRows, offhandDprRows,
+  totalDprRows, dpsRows,
+} from '../../lib/combat/damageRows'
+import { fmtDamage, fmtPercent } from '../../lib/combat/format'
 import styles from './CombatPanel.module.css'
 
 function pickTwfTier(featChoices: Record<string, string>): 0 | 1 | 2 | 3 | 4 {
@@ -41,6 +47,7 @@ export default function CombatPanel() {
   const [foePRR, setFoePRR] = useState(DEFAULT_FOE_PRR)
   const [foeFort, setFoeFort] = useState(DEFAULT_FOE_FORT)
   const [helpless, setHelpless] = useState(false)
+  const [tip, setTip] = useState<BreakdownTipState | null>(null)
 
   useEffect(() => {
     api.attackRates().then(setAllAttackRates).catch(() => setAllAttackRates([]))
@@ -163,18 +170,56 @@ export default function CombatPanel() {
             </div>
 
             {result && (
-              <table className={styles.statsTable}>
-                <tbody>
-                  <tr><th>Hit chance</th><td>{(result.hitChance * 100).toFixed(1)}%</td></tr>
-                  <tr><th>Crit chance</th><td>{(result.critChance * 100).toFixed(1)}%</td></tr>
-                  <tr><th>Hit damage</th><td>{result.hitDamage.toFixed(1)}</td></tr>
-                  <tr><th>Crit damage</th><td>{result.critDamage.toFixed(1)}</td></tr>
-                  <tr><th>Main DPR</th><td>{result.mainDPR.toFixed(1)}</td></tr>
-                  <tr><th>Off-hand DPR</th><td>{result.offhandDPR.toFixed(1)}</td></tr>
-                  <tr><th>Total DPR</th><td>{result.totalDPR.toFixed(1)}</td></tr>
-                  <tr><th>Estimated DPS</th><td>{result.dps.toFixed(1)}</td></tr>
-                </tbody>
-              </table>
+              <>
+                <table className={styles.statsTable}>
+                  <tbody>
+                    <tr>
+                      <th>Hit chance</th>
+                      <td className={styles.plainVal}>{fmtPercent(result.hitChance)}</td>
+                    </tr>
+                    <tr>
+                      <th>Crit chance</th>
+                      <td className={styles.plainVal}>{fmtPercent(result.critChance)}</td>
+                    </tr>
+                    {([
+                      ['Hit damage', result.hitDamage, hitDamageRows],
+                      ['Crit damage', result.critDamage, critDamageRows],
+                      ['Main DPR', result.mainDPR, mainDprRows],
+                      ['Off-hand DPR', result.offhandDPR, offhandDprRows],
+                      ['Total DPR', result.totalDPR, totalDprRows],
+                      ['Estimated DPS', result.dps, dpsRows],
+                    ] as const).map(([label, value, rows]) => (
+                      <tr key={label}>
+                        <th>{label}</th>
+                        <td
+                          className={styles.hoverVal}
+                          tabIndex={0}
+                          onMouseEnter={e => {
+                            const r = (e.target as HTMLElement).getBoundingClientRect()
+                            setTip({
+                              label, display: fmtDamage(value), rows: rows(result),
+                              x: r.right, y: r.top,
+                            })
+                          }}
+                          onFocus={e => {
+                            const r = (e.target as HTMLElement).getBoundingClientRect()
+                            setTip({
+                              label, display: fmtDamage(value), rows: rows(result),
+                              x: r.right, y: r.top,
+                            })
+                          }}
+                          onMouseLeave={() => setTip(null)}
+                          onBlur={() => setTip(null)}
+                        >
+                          {fmtDamage(value)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className={styles.hoverHint}>Hover any damage number to see where it comes from.</div>
+                {tip && <BreakdownTip tip={tip} onHide={() => setTip(null)} openLeft />}
+              </>
             )}
 
             <AttackChainsEditor

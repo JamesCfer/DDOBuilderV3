@@ -34,6 +34,71 @@ export interface AttackEntryOptions {
   nonProficient?: boolean
 }
 
+/**
+ * The intermediate values behind the headline numbers.
+ *
+ * The panel shows a handful of figures that are each the end of a chain --
+ * dice plus flat bonuses, multiplied by a crit multiplier, then by Melee
+ * Power, then by doublestrike. Returning the steps lets the UI explain a
+ * number on hover without recomputing it and risking the two drifting apart.
+ */
+export interface AttackEntryBreakdown {
+  /** Average roll of the weapon's dice, including bonus [W]. */
+  weaponDie: number
+  /** Extra [W] dice from effects. */
+  bonusW: number
+  diceNum: number
+  diceSides: number
+  /** Flat melee damage bonuses off the stat map. */
+  meleeDamage: number
+  /** Ability modifier, before the damage-ability multiplier. */
+  abilityMod: number
+  /** 1x, 1.5x for two-handed, 0.5x off-hand. */
+  damageAbilMult: number
+  /** abilityMod * damageAbilMult. */
+  abilityDamage: number
+  /** Sneak dice count and their average contribution. */
+  sneakDice: number
+  sneakBonus: number
+  /** Melee/Ranged Power and the multiplier it produces. */
+  meleePower: number
+  meleePowerMult: number
+  /** Dice + flat, before any multiplier. */
+  baseDamage: number
+  /** Damage that only applies on a confirmed crit. */
+  critOnlyDamage: number
+  /** Crit multipliers and how the threat faces split between them. */
+  stdMult: number
+  mult19to20: number
+  threatFaces: number
+  faces19to20: number
+  facesStandard: number
+  critDmgStd: number
+  critDmg19to20: number
+  /** Per-swing expectation and the multipliers stacked on top of it. */
+  expectedRaw: number
+  doublestrike: number
+  strikethrough: number
+  twoHanded: boolean
+  helplessDmg: number
+  helplessFactor: number
+  /** Fortification fraction and the crit rate that survives it. */
+  fortFraction: number
+  effectiveCritChance: number
+  /** Target PRR and the mitigation multiplier it produces. */
+  foePRR: number
+  prrMult: number
+  /** Swings per 6-second round. */
+  attacksPerRound: number
+  /** Off-hand pieces, absent when nothing is equipped there. */
+  offhand?: {
+    chance: number
+    die: number
+    raw: number
+    hitChance: number
+  }
+}
+
 export interface AttackEntryResult {
   /** Per-round average main-hand damage (before fortification mitigation). */
   mainDPR: number
@@ -51,6 +116,8 @@ export interface AttackEntryResult {
   hitDamage: number
   /** Average critical-hit damage for a single confirmed crit. */
   critDamage: number
+  /** Intermediate values, for the hover breakdowns. */
+  breakdown: AttackEntryBreakdown
 }
 
 const TWF_OFFHAND_CHANCE = [0, 0.20, 0.40, 0.60, 0.80, 1.00] // tier 0..4 (Perfect = 100%)
@@ -199,6 +266,7 @@ export function buildAttackEntry(
 
   // Off-hand
   let offhandDPR = 0
+  let offhandParts: AttackEntryBreakdown['offhand']
   if (opts.offhand) {
     const offhandTier = opts.twoWeaponFightingTier ?? 0
     // `offhand.doublestrike` already carries V2's derived base — 50% of the
@@ -216,6 +284,12 @@ export function buildAttackEntry(
     // Off-hand swings roll against the off-hand attack bonus (larger TWF penalty).
     const offhandHitC = hitChanceVsAC(rawAttackBonus + offhandTwfPenalty, opts.foeAC)
     offhandDPR = ohRaw * offhandHitC * offhandChance * helplessFactor
+    offhandParts = {
+      chance: offhandChance,
+      die: ohDie,
+      raw: ohRaw,
+      hitChance: offhandHitC,
+    }
   }
 
   // Fortification is already applied at the per-swing expected-damage level
@@ -226,6 +300,8 @@ export function buildAttackEntry(
   // Heuristic: 1.5 attacks/sec baseline (V2 displays per-attack & per-second)
   const dps = totalDPR * (attacksPerRound / 6) * 1.0 // 6-second round → DPS = DPR / 6 * APR
 
+  const foePRR = opts.foePRR ?? 0
+
   return {
     mainDPR,
     offhandDPR,
@@ -235,5 +311,40 @@ export function buildAttackEntry(
     critChance: critC,
     hitDamage: hitDmgRaw,
     critDamage: critDmgScaled,
+    breakdown: {
+      weaponDie,
+      bonusW,
+      diceNum: weapon.diceNum,
+      diceSides: weapon.diceSides,
+      meleeDamage,
+      abilityMod,
+      damageAbilMult,
+      abilityDamage: abilityMod * damageAbilMult,
+      sneakDice,
+      sneakBonus,
+      meleePower,
+      meleePowerMult,
+      baseDamage,
+      critOnlyDamage,
+      stdMult,
+      mult19to20,
+      threatFaces,
+      faces19to20,
+      facesStandard: facesStd,
+      critDmgStd,
+      critDmg19to20,
+      expectedRaw,
+      doublestrike,
+      strikethrough,
+      twoHanded: !!opts.twoHanded,
+      helplessDmg,
+      helplessFactor,
+      fortFraction: fortF,
+      effectiveCritChance: effCritC,
+      foePRR,
+      prrMult: foePRR > 0 ? 100 / (100 + foePRR) : 1,
+      attacksPerRound,
+      offhand: offhandParts,
+    },
   }
 }
