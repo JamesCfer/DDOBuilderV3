@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 166 | **D11 — CLOSED: `Quest.DoNotShow` is now normalized, so the Favor panel's placeholder-quest filter actually works.** V2 `Quest.h:59` (`DL_FLAG(_, DoNotShow)`) marks 7 placeholder `Quests.xml` entries (e.g. "Land of Lamordia", "Ruins of Myth Drannor", "Ritual Table" — all `Favor=0`) hidden from every quest list. `loadQuests` (`webapp/src/server/dataLoaders.ts`) spread the raw XML with no presence-flag promotion (the same bug class already fixed for `NoPastLife`/`NotHeroic`/`MinorArtifact`/`IsGreensteel`), so `quest.DoNotShow` parsed to `""` instead of `true`; `FavorPanel.tsx`'s `quests.filter(quest => !quest.DoNotShow)` was therefore always true and never filtered anything. Fixed by normalizing the flag to an explicit boolean in `loadQuests`, same pattern as the other presence-only flags. No favor-total impact (all 7 flagged quests are 0-favor). 2 new regression tests in `parityPassD11QuestFlags.test.ts`. | this PR |
 | 165 | **X19 — CLOSED (for `AddGear`/`AddSimpleGear`): forum-export Gear section now reproduces V2's real per-slot `[TABLE]`, not a bare slot list.** V2 `ForumExportDlg.cpp:1758-1943 ExportGear` (shared by `AddGear`/`AddSimpleGear`) emits a colored `[SIZE=6]` gear-set-name header, a `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>" cell, a red "Restricted by another item" row for slot conflicts, per-item buff-description lines (`AddGear` only), augment-slot lines (a yellow "Empty augment slot" warning on an unfilled slot whose type names both Mythic and Reaper, and a selectable-level `+N` suffix), set-bonus lines (struck through + "(Suppressed)" when an augment on the item suppresses them), and minor-artifact/weapon filigree lines (sentient weapon personality first). V3's `gear`/`simpleGear` sections (`sections.ts`) previously emitted only a bare `[b]Gear[/b]:`/`[b]Gear (simple)[/b]:` heading with flat `  slot: item` lines. New shared `exportGearTable()` reproduces V2's exact row shape for both, driven by a new `SectionContext.gearItems` (the resolved gear `Item` catalogue, same shape as the existing `useGearItems(build.gear)` hook, now also passed by `ForumExportPanel.tsx`) and `SectionContext.allAugments` (from `useStaticBundle`) — reusing `gearSlotUpgrades.ts`'s already-exact `resolveAugmentSlots`/`effectiveAugmentChoice` (D2/D9) for the augment-slot list and `itemDisplay.ts`'s already-exact `describeBuff`/`hasSelectableLevels`/`augmentValueAtIndex` (gear hover cards) for buff descriptions and augment tier values — no new stat computation needed. Residual, left out of this pass: `AddAlternateGear` (V3's `alternateGearLayouts` section) shares the same `bSimple=true` exporter per non-active named gear setup in V2, but V3 has no resolved `Item` catalogue for named gear sets yet (only the active `build.gear` is resolved) — `alternateGearLayouts` keeps its pre-existing slot-order + augment-line behaviour (#33) unchanged. 18 new regression tests in `parityPassX19Gear.test.ts`; `forumExport.test.ts`'s SimpleGear-format assertions updated to the new table row shape. | this PR |
 | 164 | **U12 — CLOSED: standalone per-tree save/load files.** V2 (`EnhancementsPane.cpp::OnSaveTree`/`OnLoadTree`, ~932-1200; `DestinyPane.cpp::OnSaveTree`/`OnLoadTree`, ~984-1120) lets a player export just the currently-selected Enhancement tree's spend to a standalone `<DDOBuilderTree>` file (`SpendInTree::Write`, `SpendInTree.cpp:165-170`), or a Destiny tree's spend to a standalone `<DDOBuilderDestinyTree>` file — separate from the full-build `.DDOBuild` export and distinct from gear's "named set" clipboard export/import. V3 had no equivalent: `EnhancementTreePanel.tsx`/`EpicDestiniesPanel.tsx` could only ever share a tree as part of a whole build. New `lib/treeFileIO.ts` reuses the exact `<TreeName>`/`<TreeVersion>`/`<TrainedEnhancement>` element vocabulary `v2Export.ts`'s `emitSpendInTree`/`v2Import.ts`'s `parseEnhancements` already write/read for the full-build format, so an exported file round-trips through V2 itself and a real V2-authored `.DDOETree`/`.DDODestinyTree` file loads here. Wired into both panels via new "💾 Save" buttons per tree column and a "Load Tree…" file picker in each panel's toolbar, dispatching new `LOAD_ENH_TREE_FILE`/`LOAD_DESTINY_TREE_FILE` reducer actions that replace the tree's spend and claim an empty slot if it isn't already pinned/selected. 6 new regression tests in `parityPassU12TreeFileIO.test.ts`, including a hand-authored file matching V2's exact `SpendInTree::Write` output shape. | 164 |
 | 163 | **X20 — CLOSED: forum-export "Bonuses" section now reproduces V2's `Life::MonitoredBonuses`-driven per-bonus-type table instead of a generic accumulated-stat dump.** V2 (`ForumExportDlg.cpp:1093-1165 AddBonuses`) emits a `[TABLE]` with a fixed 10-column header (Statistic / Enhancement / Insightful / Artifact / Quality / Profane / Equipment / Competence / Exceptional / Festive / Fortune) and one row per name in the active Life's `MonitoredBonuses()` list (`CBonusesPane`'s small, user-curated watch list — real V2 saves populate it, e.g. `Maetrim_EndGameHandwrapsMonk.DDOBuild`'s 23-entry list) that resolves against `breakdownNameMap` (`BreakdownTypes.h:338-464`, ~127 fixed names). Each cell is `BreakdownItem::GetEffectValue(bonusType, /*bItemEffectsOnly*/true)` — deliberately GEAR-sourced contributions only (post Highest-Only stacking), matching that all 10 named types are ones DDO items carry. V3's old `bonusesDump` instead printed every non-zero accumulated stat key with its raw total — an unrelated, V3-invented debug listing with no V2 equivalent, and `Life.monitoredBonuses` didn't exist at all so there was nowhere to store the watch list on import. Fixed: `Life` gains `monitoredBonuses: string[]` (parsed/exported round-trip in `v2Import.ts`/`v2Export.ts`, defaulted to `[]` at every other Life-construction site in `multiLife.ts`/`v1Import.ts`); new `lib/bonusesTable.ts` hand-maps all ~127 `breakdownNameMap` display names to their V3 stat keys (reusing the same key conventions already verified by the X11/X14/X15/X16 export passes — `skill.*`, `resist.*`/`absorb.*`, `sp.*`/`spCrit.*`, `dc.*`, `tacticalDC.*`, …) and reproduces two verbatim V2 quirks: "Dodge Cap" aliases the *same* breakdown as "Dodge" (V2 has no separately-tracked dodge-cap breakdown, unlike MRR) and "Spell Craft"'s display name maps to V3's `skill.Spellcraft` key. `sections.ts`'s `bonusesDump` section now reads `SectionContext.monitoredBonuses` (resolved by `ForumExportPanel.tsx` from the active Life, same pattern as X10's `specialFeats`) and emits V2's exact table. 9 new regression tests in `parityPassX20Bonuses.test.ts`; `parityPass5.test.ts`'s stale "Accumulated Bonuses" assertion (written against the old debug-dump format) updated to match. | this PR |
@@ -299,6 +300,31 @@ Remaining read/write-fidelity gaps:
 ---
 
 ## High-priority remaining — numerical correctness & effect parser coverage
+
+### Seventh review pass — 2026-08-26 full V2/V3 scan
+
+Five independent parallel scans (numerical correctness across every
+`Breakdown*.cpp` class not already named elsewhere in this file, effect
+parser coverage re-derived from scratch against `Effect.h`/`Effect.cpp`'s
+full `TotalAmount()` switch and `Requirement.cpp`'s ~30 evaluators, UI
+panels, forum export, and data-loading edge cases) reconfirmed the
+numerical-correctness and effect-parser surfaces as complete — **no new
+numerical or effect-parser gaps found**. Two V2-internal bugs were noted as
+confirmed-but-not-triggerable with real data (`Effect_AbilityTotalIndex`'s
+off-by-one array clamp in `Effect.cpp:1348`, harmless because every real
+`Amount` table is sized far beyond any realistic ability score;
+`Requirement::EvaluateStance`/`EvaluateAlignment`/`EvaluateAlignmentType`
+in `Requirement.cpp` testing only the first `<Item>` of a multi-item list,
+harmless because no shipped requirement lists more than one `<Item>` for
+those three types) — neither is a V3 parity gap. This pass's real findings
+are all in UI/export/data-loading and are filed under Medium/Low-priority
+below: **D11–D13** (Quest `DoNotShow`/`IgnoreForTotalFavor` flags never
+parsed; an item's own inherent Arcane Spell Failure % never surfaced
+anywhere in V3), **U13** (Granted Feats panel missing V2's "Inactive
+Granted Feats" section), and **X21–X24** (forum-export
+`SelfAndPartyBuffs` reads the wrong build field and likely emits nothing
+for real builds; `PastLives`/`ActiveStances`/`AutomaticFeats` formatting
+diverges from V2's exact output shape).
 
 ### New gaps — 2026-08-16 full V2/V3 scan
 
@@ -1039,6 +1065,50 @@ occurrences confirmed), so no change is needed there.
   feeding it through the same `extractFromEffects` path already used for
   feats/enhancements. 4 new regression tests in
   `parityPassD10AugmentGroupWeapon.test.ts`.
+- ✅ **D11 — CLOSED (#166): `Quest.DoNotShow` is now normalized, so the V3
+  filter meant to hide placeholder quests actually works.** V2 `Quest.h:59`
+  (`DL_FLAG(_, DoNotShow)`) marks 7 placeholder `Quests.xml` entries (e.g.
+  "Land of Lamordia", "Ruins of Myth Drannor", "Ritual Table" — all
+  `Favor=0`) hidden from every quest list. `loadQuests` (`webapp/src/server/
+  dataLoaders.ts:565-571`) spread the raw XML with no presence-flag
+  promotion (unlike the already-fixed `NoPastLife`/`NotHeroic`/
+  `MinorArtifact`/`IsGreensteel` flags — same bug class), so
+  `quest.DoNotShow` parsed to `""` instead of `true`; `FavorPanel.tsx:227`'s
+  `quests.filter(quest => !quest.DoNotShow)` was therefore always true and
+  never filtered anything, so those 7 zero-favor placeholder quests showed up
+  in the Favor panel where V2 hides them. Fixed by promoting the flag to an
+  explicit boolean in `loadQuests`, same pattern as the other presence-only
+  flags. No favor-total impact (all are 0-favor). 2 new regression tests in
+  `parityPassD11QuestFlags.test.ts`.
+- ❌ **D12 — `Quest.IgnoreForTotalFavor` not parsed at all, inflating the
+  Favor panel's max-favor totals on duplicate quest entries.** V2
+  `Quest.h:62` + `DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`)
+  excludes `IgnoreForTotalFavor`-flagged duplicate entries from both the
+  per-patron and grand "Total Favor" max-favor tallies, to avoid
+  double-counting quests that appear more than once (`Quests.xml` has
+  "Devil Assault (Normal)" and "Devil Assault (Hard)", each `Favor=5`, both
+  flagged). V3's `Quest` type (`types/ddo.ts:496-503`) has no
+  `IgnoreForTotalFavor` field, `loadQuests` doesn't parse it, and
+  `FavorPanel.tsx`'s `totalAvailable`/`totalFavor` reducers sum every
+  quest's `Favor` unconditionally — overstating the Coin Lords'/grand-total
+  favor denominator (and overstating achieved favor too, if both entries
+  get ticked complete).
+- ❌ **D13 — an item's own inherent `<ArcaneSpellFailure>` is parsed onto
+  `Item` but never turned into a stat.** V2 `Build::ApplyArmorEffects`/
+  `ApplyWeaponEffects` (`Build.cpp:5944-5951` armor, `Build.cpp:5660-5668`
+  shields) synthesizes `Effect_ArcaneSpellFailure`/
+  `Effect_ArcaneSpellFailureShields` from the equipped item's own
+  `<ArcaneSpellFailure>` field (e.g. plate armor's inherent ASF%) whenever
+  `item.HasArcaneSpellFailure()`. `effectParser.ts:1284-1288`/`2323-2326`
+  already map those effect *types* to stat keys `arcaneSpellFailure`/
+  `arcaneSpellFailureShield` for feat/enhancement-granted ASF effects, but
+  `buildStats.ts`'s `accumulateGear` (alongside its already-handled
+  `ArmorCheckPenalty`/`ShieldBonus`/`ArmorBonus` synthesis) never reads
+  `item.ArcaneSpellFailure` at all, so an item's own inherent ASF% never
+  reaches either stat key — and neither key is read anywhere else in
+  `webapp/src` (not the Breakdowns panel, not any export section), so V3
+  has no Arcane Spell Failure % surfaced anywhere for an armored/shielded
+  arcane caster.
 
 Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
 Crafting-style systems don't exist in V2's data model (no crafting XML
@@ -1069,6 +1139,23 @@ consistent with the existing #71 sentient-gem finding.
 - ✅ **U12 — CLOSED (#164): per-tree save/load to a standalone file.** See the
   Done-table entry above for the full writeup. `ReaperEnhancementsPane.cpp`
   has no such feature in V2 either, so no gap there.
+- ❌ **U13 — Granted Feats panel is missing V2's "Inactive Granted Feats"
+  section.** V2 `CGrantedFeatsPane::PopulateGrantedFeatsList()`
+  (`GrantedFeatsPane.cpp:250-360`) keeps every feat ever granted by an
+  effect (`m_grantedFeats`) and, re-run on every stat/stance change (it
+  explicitly hooks `StanceActivated`/`StanceDeactivated`), splits them into
+  two displayed sections: "Granted Feats" (activation requirement
+  currently met) and "Inactive Granted Feats" (granted by some source but
+  not currently active — e.g. gated behind a stance the player hasn't
+  toggled on). V3's `webapp/src/components/builder/AutomaticFeats.tsx`
+  (lines 52-63) renders only a single "Granted Feats" list sourced from
+  `stats.grantedFeatsList` (`buildStats.ts:3516-3519`), derived purely from
+  which `grantedFeat.<Name>` keys resolved in the current stat pass — there
+  is no code path anywhere that tracks or surfaces inactive/potential
+  granted feats. A player with a stance-gated feat grant (the same
+  `Effect_GrantFeat` class already shown to be stance-conditioned in real
+  builds by Done item #124, e.g. Fury of the Wild's Rage grant) has no way
+  to see that potential feat until they actually activate the stance.
 
 ### Forum export gaps
 
@@ -1286,6 +1373,55 @@ already closed; these are new, some content gaps (not just formatting):
   semantics, and the "Dodge Cap"/"Spell Craft" V2 quirks reproduced
   verbatim).
 
+2026-08-26 scan diffed every remaining `Add*` method against `sections.ts`
+once more; four new gaps beyond X1–X20:
+
+- ❌ **X21 — `SelfAndPartyBuffs` reads the wrong build field — likely emits
+  nothing for real builds.** V2 `ForumExportDlg.cpp:874-887
+  AddSelfAndPartyBuffs` prints `Life::SelfAndPartyBuffs()`, the list the
+  dedicated Buffs pane toggles. V3's `sections.ts:444-460`
+  (`selfAndPartyBuffs`) instead reads `build.activeBuffs` — the *Stances*
+  toggle array written by `TOGGLE_STANCE` — filtered to exclude catalogued
+  stance names. The real self/party-buffs list lives in the separate
+  `build.selfBuffs` field (written by `TOGGLE_BUFF` in
+  `CharacterContext.tsx:473-480`, consumed by `SelfBuffsPanel.tsx`/
+  `buildStats.ts`'s `accumulateSelfBuffs`), which this section never reads.
+  Done item #107(e) split `selfBuffs` out of `activeBuffs` for the *stats
+  engine* but never updated the exporter, so this bug survived that fix.
+  Since the two arrays are populated by disjoint UI panels, the section
+  will almost always render empty (or print stance names) for a real
+  build.
+- ❌ **X22 — `PastLives` doesn't reproduce V2's per-feat-line format, and
+  invents an "Other Past Lives" bucket.** V2 `ForumExportDlg.cpp:393-433
+  AddPastLives` calls the shared `AddFeats` helper (`:475-507`) once per
+  category (Heroic, Racial, Iconic, Epic, in that order), each producing
+  one line per feat as `FeatName(Count)` under a plain heading + `[HR][/HR]`.
+  V3's `sections.ts:146-191` instead comma-joins all entries per bucket on
+  a single line as `Name x2`, reorders the buckets (Heroic, Iconic, Epic,
+  Racial), and adds a catch-all "Other Past Lives" bucket V2 has no
+  equivalent for (V2 silently drops anything not matching one of the 4
+  known `<Type>`s). The sibling `SpecialFeats`/`FavorFeats` section
+  (`sections.ts:1174-1191`, closed under X10) already reproduces V2's
+  `Name(N)` per-line convention off the same `AddFeats` V2 function —
+  `PastLives` should have gotten the same treatment but didn't.
+- ❌ **X23 — `ActiveStances` drops V2's per-group label.** V2
+  `ForumExportDlg.cpp:846-872 AddActiveStances` emits one line per selected
+  stance as `GroupName: StanceName`, iterating `CStancesPane::Groups()`.
+  V3's `sections.ts:426-439` instead comma-joins all active stance names
+  onto a single line with no group prefix. The catalogue data needed to
+  reproduce this is already present (`Stance.Group`, `types/ddo.ts:354`,
+  exposed via `SectionContext.allStances`) but unused for this purpose.
+- ❌ **X24 — `AutomaticFeats` uses a grouped-by-source list, not V2's
+  per-level table (lower confidence — may be an accepted design choice, see
+  Done item #111).** V2 `ForumExportDlg.cpp:691-733 AddAutomaticFeats`
+  emits a `[TABLE]` with one row per character level (Level | Class |
+  Feats), the same shape as `FeatSelections`/`ConsolidatedFeats`. V3's
+  `sections.ts:465-480` instead reuses `buildAutomaticFeatGroups` (shared
+  with the live Automatic Feats panel per #111) to print
+  `  Source: Feat1, Feat2` with no level/class columns. #111 frames this
+  sharing as intentional, so this may not be a real gap — flagged here for
+  a maintainer decision rather than closed outright.
+
 ---
 
 ## Random-build parity fuzzer
@@ -1344,25 +1480,24 @@ These V2 features won't be ported because they don't make sense in a webapp:
 
 ---
 
-*Maintained by the parity-pass series. See PRs #53–#233 and the Done table
-above for completed items. Last full V2↔V3 review: 2026-08-16 (sixth pass) —
-five parallel scans covering numerical correctness (`Breakdown*.cpp` vs.
-`useBuildStats.ts`/`buildStats.ts`), effect parser coverage (`Effect.cpp`/
-`Effect.h`'s full `EffectType`/`AmountType` enums vs. `effectParser.ts`), UI
-features (`*Pane.cpp`/`*Dialog.cpp` vs. `webapp/src/components/`), forum
-export (`ForumExportDlg.cpp` vs. `sections.ts`), and data-loading edge cases
-(`Item.cpp`/`EquippedGear.cpp`/`Augment.cpp`/`Build.cpp` vs.
-`dataLoaders.ts`/`buildStats.ts`). New gaps found: N15
-(`Effect_SpellPowerReplacement` parsed but never consumed, Tiefling
-cross-element spell power), D8–D10 (`Build::VerifyGear` item-requirement/
-level revocation unmodeled, `Augment` cascading extra-slot fields
-`AddAugment`/`GrantAugment`/`GrantConditionalAugment` unmodeled,
-`ReplacedDynamically` weapon-type substitution on augment effects), U12
-(per-tree save/load to a standalone `.DDOETree`/`.DDODestinyTree` file), and
-X19–X20 (forum-export Gear section reduced to a bare slot list — no table,
-colors, drop-location, set-bonus, or filigree lines — and `AddBonuses`'s
-per-bonus-type monitored-stat table replaced by an unrelated generic debug
-dump). Effect-parser Type/AType switch-case coverage (233 EffectTypes, 24
-AmountTypes) was reconfirmed complete with no new gaps; the fifth pass's
-UI-feature sweep (U1–U11) was reconfirmed correct except for the one U12 miss
-above.*
+*Maintained by the parity-pass series. See PRs #53–#249 and the Done table
+above for completed items. Last full V2↔V3 review: 2026-08-26 (seventh
+pass) — five independent parallel scans covering numerical correctness
+(`Breakdown*.cpp` vs. `useBuildStats.ts`/`buildStats.ts`), effect parser
+coverage (`Effect.cpp`/`Effect.h`'s full `EffectType`/`AmountType` enums +
+`Requirement.cpp`'s evaluators vs. `effectParser.ts`), UI features
+(`*Pane.cpp`/`*Dialog.cpp` vs. `webapp/src/components/`), forum export
+(`ForumExportDlg.cpp` vs. `sections.ts`), and data-loading edge cases
+(`Quest.h`/`Item.h`/`Build.cpp` vs. `dataLoaders.ts`/`buildStats.ts`).
+Numerical correctness and effect-parser Type/AType/Requirement coverage
+were both reconfirmed complete with **no new gaps** (two V2-internal bugs
+noted as confirmed-but-not-triggerable with any real data file — see the
+"Seventh review pass" note under High-priority remaining). New gaps found,
+all in UI/export/data-loading: D11–D12 (`Quest.DoNotShow`/
+`IgnoreForTotalFavor` flags never parsed — a dead favor-list filter and an
+inflated max-favor total), D13 (an item's own inherent Arcane Spell
+Failure % is parsed but never turned into a stat), U13 (Granted Feats panel
+missing V2's "Inactive Granted Feats" section), and X21–X24 (forum-export
+`SelfAndPartyBuffs` reads the wrong build field and likely emits nothing for
+real builds; `PastLives`/`ActiveStances`/`AutomaticFeats` formatting
+diverges from V2's exact output shape, the last of these lower-confidence).*
