@@ -566,7 +566,15 @@ export function loadQuests(dataDir: string): Quest[] {
   try {
     const parsed = readXml(path.join(dataDir, 'Quests.xml')) as { Quests?: { Quest?: unknown[] } }
     const quests = (parsed?.Quests?.Quest ?? []) as Quest[]
-    return quests.map(q => ({ ...q, Patron: patronName(q.Patron) }))
+    // <DoNotShow/> is a presence-only flag (Quest.h DL_FLAG), same class of
+    // bug as <NoPastLife/>/<NotHeroic/> above — the XML parser delivers it
+    // as "" which is falsy, so FavorPanel's `!quest.DoNotShow` filter never
+    // actually hid the placeholder quests (Land of Lamordia, etc.).
+    return quests.map(q => ({
+      ...q,
+      Patron: patronName(q.Patron),
+      DoNotShow: 'DoNotShow' in (q as object) ? true : undefined,
+    }))
   } catch { return [] }
 }
 
