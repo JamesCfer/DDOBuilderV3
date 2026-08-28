@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 167 | **D12 — CLOSED: `Quest.IgnoreForTotalFavor` is now normalized and excluded from the Favor panel's max-favor totals.** V2 `Quest.h:62`/`DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`) excludes `IgnoreForTotalFavor`-flagged duplicate entries (`Quests.xml`'s "Devil Assault (Normal)"/"(Hard)", each `Favor=5`, both flagged, vs. the unflagged "Devil Assault (Elite)") from both the per-patron and grand "Total Favor" max-favor tallies, to avoid double-counting a quest that appears more than once. `<IgnoreForTotalFavor/>` is a presence-only flag (same bug class as `DoNotShow`/`NoPastLife`/etc. — the XML parser delivers it as `""`), so `loadQuests` now promotes it to an explicit boolean; new `favorMaxTotal()` helper in `FavorPanel.tsx` applies V2's exact exclusion rule to both the grand-total sum and `PatronRow`'s per-patron `totalAvailable` (the achieved/current-favor tally is untouched — V2's numerator uses a separate per-name-deduped run-quest mechanism V3 doesn't model, out of scope here). The Coin Lords' max favor drops from 233 to V2-correct 223. 5 new regression tests in `parityPassD12IgnoreForTotalFavor.test.tsx`. | this PR |
 | 166 | **D11 — CLOSED: `Quest.DoNotShow` is now normalized, so the Favor panel's placeholder-quest filter actually works.** V2 `Quest.h:59` (`DL_FLAG(_, DoNotShow)`) marks 7 placeholder `Quests.xml` entries (e.g. "Land of Lamordia", "Ruins of Myth Drannor", "Ritual Table" — all `Favor=0`) hidden from every quest list. `loadQuests` (`webapp/src/server/dataLoaders.ts`) spread the raw XML with no presence-flag promotion (the same bug class already fixed for `NoPastLife`/`NotHeroic`/`MinorArtifact`/`IsGreensteel`), so `quest.DoNotShow` parsed to `""` instead of `true`; `FavorPanel.tsx`'s `quests.filter(quest => !quest.DoNotShow)` was therefore always true and never filtered anything. Fixed by normalizing the flag to an explicit boolean in `loadQuests`, same pattern as the other presence-only flags. No favor-total impact (all 7 flagged quests are 0-favor). 2 new regression tests in `parityPassD11QuestFlags.test.ts`. | this PR |
 | 165 | **X19 — CLOSED (for `AddGear`/`AddSimpleGear`): forum-export Gear section now reproduces V2's real per-slot `[TABLE]`, not a bare slot list.** V2 `ForumExportDlg.cpp:1758-1943 ExportGear` (shared by `AddGear`/`AddSimpleGear`) emits a colored `[SIZE=6]` gear-set-name header, a `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>" cell, a red "Restricted by another item" row for slot conflicts, per-item buff-description lines (`AddGear` only), augment-slot lines (a yellow "Empty augment slot" warning on an unfilled slot whose type names both Mythic and Reaper, and a selectable-level `+N` suffix), set-bonus lines (struck through + "(Suppressed)" when an augment on the item suppresses them), and minor-artifact/weapon filigree lines (sentient weapon personality first). V3's `gear`/`simpleGear` sections (`sections.ts`) previously emitted only a bare `[b]Gear[/b]:`/`[b]Gear (simple)[/b]:` heading with flat `  slot: item` lines. New shared `exportGearTable()` reproduces V2's exact row shape for both, driven by a new `SectionContext.gearItems` (the resolved gear `Item` catalogue, same shape as the existing `useGearItems(build.gear)` hook, now also passed by `ForumExportPanel.tsx`) and `SectionContext.allAugments` (from `useStaticBundle`) — reusing `gearSlotUpgrades.ts`'s already-exact `resolveAugmentSlots`/`effectiveAugmentChoice` (D2/D9) for the augment-slot list and `itemDisplay.ts`'s already-exact `describeBuff`/`hasSelectableLevels`/`augmentValueAtIndex` (gear hover cards) for buff descriptions and augment tier values — no new stat computation needed. Residual, left out of this pass: `AddAlternateGear` (V3's `alternateGearLayouts` section) shares the same `bSimple=true` exporter per non-active named gear setup in V2, but V3 has no resolved `Item` catalogue for named gear sets yet (only the active `build.gear` is resolved) — `alternateGearLayouts` keeps its pre-existing slot-order + augment-line behaviour (#33) unchanged. 18 new regression tests in `parityPassX19Gear.test.ts`; `forumExport.test.ts`'s SimpleGear-format assertions updated to the new table row shape. | this PR |
 | 164 | **U12 — CLOSED: standalone per-tree save/load files.** V2 (`EnhancementsPane.cpp::OnSaveTree`/`OnLoadTree`, ~932-1200; `DestinyPane.cpp::OnSaveTree`/`OnLoadTree`, ~984-1120) lets a player export just the currently-selected Enhancement tree's spend to a standalone `<DDOBuilderTree>` file (`SpendInTree::Write`, `SpendInTree.cpp:165-170`), or a Destiny tree's spend to a standalone `<DDOBuilderDestinyTree>` file — separate from the full-build `.DDOBuild` export and distinct from gear's "named set" clipboard export/import. V3 had no equivalent: `EnhancementTreePanel.tsx`/`EpicDestiniesPanel.tsx` could only ever share a tree as part of a whole build. New `lib/treeFileIO.ts` reuses the exact `<TreeName>`/`<TreeVersion>`/`<TrainedEnhancement>` element vocabulary `v2Export.ts`'s `emitSpendInTree`/`v2Import.ts`'s `parseEnhancements` already write/read for the full-build format, so an exported file round-trips through V2 itself and a real V2-authored `.DDOETree`/`.DDODestinyTree` file loads here. Wired into both panels via new "💾 Save" buttons per tree column and a "Load Tree…" file picker in each panel's toolbar, dispatching new `LOAD_ENH_TREE_FILE`/`LOAD_DESTINY_TREE_FILE` reducer actions that replace the tree's spend and claim an empty slot if it isn't already pinned/selected. 6 new regression tests in `parityPassU12TreeFileIO.test.ts`, including a hand-authored file matching V2's exact `SpendInTree::Write` output shape. | 164 |
@@ -1080,19 +1081,27 @@ occurrences confirmed), so no change is needed there.
   explicit boolean in `loadQuests`, same pattern as the other presence-only
   flags. No favor-total impact (all are 0-favor). 2 new regression tests in
   `parityPassD11QuestFlags.test.ts`.
-- ❌ **D12 — `Quest.IgnoreForTotalFavor` not parsed at all, inflating the
-  Favor panel's max-favor totals on duplicate quest entries.** V2
-  `Quest.h:62` + `DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`)
-  excludes `IgnoreForTotalFavor`-flagged duplicate entries from both the
-  per-patron and grand "Total Favor" max-favor tallies, to avoid
-  double-counting quests that appear more than once (`Quests.xml` has
-  "Devil Assault (Normal)" and "Devil Assault (Hard)", each `Favor=5`, both
-  flagged). V3's `Quest` type (`types/ddo.ts:496-503`) has no
-  `IgnoreForTotalFavor` field, `loadQuests` doesn't parse it, and
-  `FavorPanel.tsx`'s `totalAvailable`/`totalFavor` reducers sum every
-  quest's `Favor` unconditionally — overstating the Coin Lords'/grand-total
-  favor denominator (and overstating achieved favor too, if both entries
-  get ticked complete).
+- ✅ **D12 — CLOSED (this PR): `Quest.IgnoreForTotalFavor` is now normalized
+  and excluded from the Favor panel's max-favor totals.** V2 `Quest.h:62` +
+  `DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`) excludes
+  `IgnoreForTotalFavor`-flagged duplicate entries from both the per-patron
+  and grand "Total Favor" max-favor tallies, to avoid double-counting quests
+  that appear more than once (`Quests.xml` has "Devil Assault (Normal)" and
+  "Devil Assault (Hard)", each `Favor=5` and both flagged, vs. the unflagged
+  "Devil Assault (Elite)" which is the one that counts). `<IgnoreForTotalFavor/>`
+  is a presence-only flag (same class of bug as `DoNotShow`/`NoPastLife`/etc.
+  — the XML parser delivers it as `""`, which is falsy), so `loadQuests` now
+  promotes it to an explicit boolean, same pattern as D11's `DoNotShow` fix.
+  `FavorPanel.tsx` gains a shared `favorMaxTotal()` helper (V2's exact
+  exclusion rule) used by both the grand-total sum and `PatronRow`'s
+  per-patron default `totalAvailable` — the achieved/current-favor tally is
+  left unchanged, since V2's numerator is driven by a wholly separate
+  per-name-deduped run-quest mechanism (`FavorPane.cpp`'s
+  `RemoveQuestDuplicates`) that V3 has no equivalent model for at all (out of
+  this narrow fix's scope). Confirmed real-data impact: The Coin Lords' max
+  favor drops from 233 to the V2-correct 223 (Devil Assault Normal+Hard's
+  10 double-counted favor removed). 5 new regression tests in
+  `parityPassD12IgnoreForTotalFavor.test.tsx`.
 - ❌ **D13 — an item's own inherent `<ArcaneSpellFailure>` is parsed onto
   `Item` but never turned into a stat.** V2 `Build::ApplyArmorEffects`/
   `ApplyWeaponEffects` (`Build.cpp:5944-5951` armor, `Build.cpp:5660-5668`

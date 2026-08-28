@@ -500,6 +500,7 @@ export interface Quest {
   Favor?: number
   Levels?: unknown
   DoNotShow?: boolean
+  IgnoreForTotalFavor?: boolean
 }
 
 // ---------------------------------------------------------------------------

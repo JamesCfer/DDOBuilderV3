@@ -566,14 +566,17 @@ export function loadQuests(dataDir: string): Quest[] {
   try {
     const parsed = readXml(path.join(dataDir, 'Quests.xml')) as { Quests?: { Quest?: unknown[] } }
     const quests = (parsed?.Quests?.Quest ?? []) as Quest[]
-    // <DoNotShow/> is a presence-only flag (Quest.h DL_FLAG), same class of
-    // bug as <NoPastLife/>/<NotHeroic/> above — the XML parser delivers it
-    // as "" which is falsy, so FavorPanel's `!quest.DoNotShow` filter never
-    // actually hid the placeholder quests (Land of Lamordia, etc.).
+    // <DoNotShow/> and <IgnoreForTotalFavor/> are presence-only flags (Quest.h
+    // DL_FLAG), same class of bug as <NoPastLife/>/<NotHeroic/> above — the
+    // XML parser delivers them as "" which is falsy, so FavorPanel's
+    // `!quest.DoNotShow` filter never actually hid the placeholder quests
+    // (Land of Lamordia, etc.), and `quest.IgnoreForTotalFavor` never excluded
+    // duplicate quest entries (Devil Assault Normal/Hard) from favor totals.
     return quests.map(q => ({
       ...q,
       Patron: patronName(q.Patron),
       DoNotShow: 'DoNotShow' in (q as object) ? true : undefined,
+      IgnoreForTotalFavor: 'IgnoreForTotalFavor' in (q as object) ? true : undefined,
     }))
   } catch { return [] }
 }
