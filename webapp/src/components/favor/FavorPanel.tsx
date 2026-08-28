@@ -34,6 +34,17 @@ function questFavor(q: Quest): number {
   return typeof q.Favor === 'number' ? q.Favor : 0
 }
 
+/**
+ * V2 `CDDOBuilderApp::LoadQuests` (`DDOBuilder.cpp:1136-1144`) excludes
+ * `IgnoreForTotalFavor`-flagged entries from the per-patron and grand max-
+ * favor tallies, so a quest appearing more than once for different level
+ * brackets (`Quests.xml`'s "Devil Assault (Normal)"/"(Hard)", each flagged,
+ * vs. the unflagged "Devil Assault (Elite)") isn't double-counted.
+ */
+function favorMaxTotal(quests: Quest[]): number {
+  return quests.reduce((sum, q) => sum + (q.IgnoreForTotalFavor ? 0 : questFavor(q)), 0)
+}
+
 // ---------------------------------------------------------------------------
 // PatronRow sub-component
 // ---------------------------------------------------------------------------
@@ -69,7 +80,7 @@ function PatronRow({
   const tiers = parseFavorTiers(patron.FavorTiers)
   const totalAvailable = favorTotals
     ? favorTotals.available
-    : quests.reduce((sum, q) => sum + questFavor(q), 0)
+    : favorMaxTotal(quests)
   const currentFavor = favorTotals
     ? favorTotals.current
     : quests
@@ -277,7 +288,7 @@ export default function FavorPanel() {
     .filter(q => build.completedQuests[q.Name])
     .reduce((sum, q) => sum + questFavor(q), 0)
 
-  const totalAvailable = quests.reduce((sum, q) => sum + questFavor(q), 0)
+  const totalAvailable = favorMaxTotal(quests)
 
   return (
     <div className="panel">
