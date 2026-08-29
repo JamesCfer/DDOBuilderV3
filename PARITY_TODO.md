@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 168 | **D13 — CLOSED: an item's own inherent `ArcaneSpellFailure` field now synthesizes a stat.** V2 `Build::ApplyArmorEffects`/`ApplyWeaponEffects` (`Build.cpp:5663-5670`/`5944-5951`) synthesizes `Effect_ArcaneSpellFailure` (Armor slot) / `Effect_ArcaneSpellFailureShields` (Weapon1/Weapon2 slots) from an equipped item's own `<ArcaneSpellFailure>` field, unconditionally. `buildStats.ts`'s `accumulateGear` never read this field at all — present on 990 shipped `.item` files — so it never reached either of the already-mapped `arcaneSpellFailure`/`arcaneSpellFailureShield` stat keys. Fixed by routing the field through the same per-slot split V2 uses, reusing the existing weapon-slot-alias set. Left out: neither stat key is surfaced in any UI panel or export section yet (a pre-existing gap affecting the feat/enhancement-granted path too, out of this narrow fix's scope). 5 new regression tests in `parityPassD13ArcaneSpellFailure.test.ts`. | this PR |
 | 167 | **D12 — CLOSED: `Quest.IgnoreForTotalFavor` is now normalized and excluded from the Favor panel's max-favor totals.** V2 `Quest.h:62`/`DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`) excludes `IgnoreForTotalFavor`-flagged duplicate entries (`Quests.xml`'s "Devil Assault (Normal)"/"(Hard)", each `Favor=5`, both flagged, vs. the unflagged "Devil Assault (Elite)") from both the per-patron and grand "Total Favor" max-favor tallies, to avoid double-counting a quest that appears more than once. `<IgnoreForTotalFavor/>` is a presence-only flag (same bug class as `DoNotShow`/`NoPastLife`/etc. — the XML parser delivers it as `""`), so `loadQuests` now promotes it to an explicit boolean; new `favorMaxTotal()` helper in `FavorPanel.tsx` applies V2's exact exclusion rule to both the grand-total sum and `PatronRow`'s per-patron `totalAvailable` (the achieved/current-favor tally is untouched — V2's numerator uses a separate per-name-deduped run-quest mechanism V3 doesn't model, out of scope here). The Coin Lords' max favor drops from 233 to V2-correct 223. 5 new regression tests in `parityPassD12IgnoreForTotalFavor.test.tsx`. | this PR |
 | 166 | **D11 — CLOSED: `Quest.DoNotShow` is now normalized, so the Favor panel's placeholder-quest filter actually works.** V2 `Quest.h:59` (`DL_FLAG(_, DoNotShow)`) marks 7 placeholder `Quests.xml` entries (e.g. "Land of Lamordia", "Ruins of Myth Drannor", "Ritual Table" — all `Favor=0`) hidden from every quest list. `loadQuests` (`webapp/src/server/dataLoaders.ts`) spread the raw XML with no presence-flag promotion (the same bug class already fixed for `NoPastLife`/`NotHeroic`/`MinorArtifact`/`IsGreensteel`), so `quest.DoNotShow` parsed to `""` instead of `true`; `FavorPanel.tsx`'s `quests.filter(quest => !quest.DoNotShow)` was therefore always true and never filtered anything. Fixed by normalizing the flag to an explicit boolean in `loadQuests`, same pattern as the other presence-only flags. No favor-total impact (all 7 flagged quests are 0-favor). 2 new regression tests in `parityPassD11QuestFlags.test.ts`. | this PR |
 | 165 | **X19 — CLOSED (for `AddGear`/`AddSimpleGear`): forum-export Gear section now reproduces V2's real per-slot `[TABLE]`, not a bare slot list.** V2 `ForumExportDlg.cpp:1758-1943 ExportGear` (shared by `AddGear`/`AddSimpleGear`) emits a colored `[SIZE=6]` gear-set-name header, a `[SIZE=3][TABLE]` with colored per-slot rows, a "Drops in: <location>" cell, a red "Restricted by another item" row for slot conflicts, per-item buff-description lines (`AddGear` only), augment-slot lines (a yellow "Empty augment slot" warning on an unfilled slot whose type names both Mythic and Reaper, and a selectable-level `+N` suffix), set-bonus lines (struck through + "(Suppressed)" when an augment on the item suppresses them), and minor-artifact/weapon filigree lines (sentient weapon personality first). V3's `gear`/`simpleGear` sections (`sections.ts`) previously emitted only a bare `[b]Gear[/b]:`/`[b]Gear (simple)[/b]:` heading with flat `  slot: item` lines. New shared `exportGearTable()` reproduces V2's exact row shape for both, driven by a new `SectionContext.gearItems` (the resolved gear `Item` catalogue, same shape as the existing `useGearItems(build.gear)` hook, now also passed by `ForumExportPanel.tsx`) and `SectionContext.allAugments` (from `useStaticBundle`) — reusing `gearSlotUpgrades.ts`'s already-exact `resolveAugmentSlots`/`effectiveAugmentChoice` (D2/D9) for the augment-slot list and `itemDisplay.ts`'s already-exact `describeBuff`/`hasSelectableLevels`/`augmentValueAtIndex` (gear hover cards) for buff descriptions and augment tier values — no new stat computation needed. Residual, left out of this pass: `AddAlternateGear` (V3's `alternateGearLayouts` section) shares the same `bSimple=true` exporter per non-active named gear setup in V2, but V3 has no resolved `Item` catalogue for named gear sets yet (only the active `build.gear` is resolved) — `alternateGearLayouts` keeps its pre-existing slot-order + augment-line behaviour (#33) unchanged. 18 new regression tests in `parityPassX19Gear.test.ts`; `forumExport.test.ts`'s SimpleGear-format assertions updated to the new table row shape. | this PR |
@@ -1102,22 +1103,33 @@ occurrences confirmed), so no change is needed there.
   favor drops from 233 to the V2-correct 223 (Devil Assault Normal+Hard's
   10 double-counted favor removed). 5 new regression tests in
   `parityPassD12IgnoreForTotalFavor.test.tsx`.
-- ❌ **D13 — an item's own inherent `<ArcaneSpellFailure>` is parsed onto
-  `Item` but never turned into a stat.** V2 `Build::ApplyArmorEffects`/
-  `ApplyWeaponEffects` (`Build.cpp:5944-5951` armor, `Build.cpp:5660-5668`
-  shields) synthesizes `Effect_ArcaneSpellFailure`/
-  `Effect_ArcaneSpellFailureShields` from the equipped item's own
-  `<ArcaneSpellFailure>` field (e.g. plate armor's inherent ASF%) whenever
-  `item.HasArcaneSpellFailure()`. `effectParser.ts:1284-1288`/`2323-2326`
-  already map those effect *types* to stat keys `arcaneSpellFailure`/
-  `arcaneSpellFailureShield` for feat/enhancement-granted ASF effects, but
-  `buildStats.ts`'s `accumulateGear` (alongside its already-handled
-  `ArmorCheckPenalty`/`ShieldBonus`/`ArmorBonus` synthesis) never reads
-  `item.ArcaneSpellFailure` at all, so an item's own inherent ASF% never
-  reaches either stat key — and neither key is read anywhere else in
-  `webapp/src` (not the Breakdowns panel, not any export section), so V3
-  has no Arcane Spell Failure % surfaced anywhere for an armored/shielded
-  arcane caster.
+- ✅ **D13 — CLOSED (#168): an item's own inherent `<ArcaneSpellFailure>` now
+  synthesizes a stat.** V2 `Build::ApplyArmorEffects`/`ApplyWeaponEffects`
+  (`Build.cpp:5944-5951` armor, `Build.cpp:5663-5670` weapons — called for
+  BOTH the Weapon1/main-hand and Weapon2/off-hand slots) synthesizes
+  `Effect_ArcaneSpellFailure`/`Effect_ArcaneSpellFailureShields` from the
+  equipped item's own `<ArcaneSpellFailure>` field (e.g. plate armor's
+  inherent ASF%, or a shield's) whenever `item.HasArcaneSpellFailure()` —
+  unconditionally, no feat/requirement gate, unlike the Docent Mithral/
+  Adamantine Body rules a few lines above it in the same functions.
+  `effectParser.ts:1284-1288`/`2323-2326` already mapped those effect
+  *types* to stat keys `arcaneSpellFailure`/`arcaneSpellFailureShield` for
+  feat/enhancement-granted ASF effects, but `buildStats.ts`'s
+  `accumulateGear` (alongside its already-handled `ArmorCheckPenalty`/
+  `ShieldBonus`/`ArmorBonus` synthesis) never read `item.ArcaneSpellFailure`
+  at all, so an item's own inherent ASF% — present on 990 of the shipped
+  `.item` files (armor, shields, and off-hand-equippable weapons) — never
+  reached either stat key. Fixed: `accumulateGear` now reads
+  `item.ArcaneSpellFailure` and routes it to `arcaneSpellFailure` (Armor
+  slot, bonus type "Armor") or `arcaneSpellFailureShield` (Main Hand/Off
+  Hand slots, bonus type "Shield", reusing the existing weapon-slot-alias
+  set), matching V2's per-slot Effect type split exactly. Left out of this
+  narrow fix's scope: neither stat key is read anywhere else in
+  `webapp/src` (not the Breakdowns panel, not any export section) even for
+  the pre-existing feat/enhancement-granted path — surfacing Arcane Spell
+  Failure % in the UI/export is a separate, wider gap affecting all
+  sources of the stat, not just gear, and is left for a future pass. 5 new
+  regression tests in `parityPassD13ArcaneSpellFailure.test.ts`.
 
 Confirmed **not** gaps: `RaceRequirement`/weapon-proficiency/Cannith-
 Crafting-style systems don't exist in V2's data model (no crafting XML
