@@ -707,6 +707,21 @@ function accumulateGear(
     if (isTowerShield && typeof item.MaximumDexterityBonus === 'number') {
       add(map, 'mdbShields', { value: item.MaximumDexterityBonus, type: 'Equipment', source, fromGear: true })
     }
+    // V2 Build::ApplyArmorEffects (Build.cpp:5861-5869) / ApplyWeaponEffects
+    // (Build.cpp:5663-5670, called for BOTH Weapon1/main-hand and Weapon2/
+    // off-hand slots) synthesize an item's own inherent <ArcaneSpellFailure>
+    // into a stat effect — Armor slot -> Effect_ArcaneSpellFailure, Weapon1/
+    // Weapon2 -> Effect_ArcaneSpellFailureShields — unconditionally, no
+    // feat/requirement gate (unlike the Docent Mithral/Adamantine Body rules
+    // above). 990 shipped .item files carry this field (armor, shields, and
+    // off-hand-equippable weapons).
+    if (item.ArcaneSpellFailure) {
+      if (slot === 'Armor' || slot === 'Body') {
+        add(map, 'arcaneSpellFailure', { value: item.ArcaneSpellFailure, type: 'Armor', source: `${item.Name} (Armor Arcane Spell Failure)`, fromGear: true })
+      } else if (GREENSTEEL_WEAPON_SLOTS.has(slot)) {
+        add(map, 'arcaneSpellFailureShield', { value: item.ArcaneSpellFailure, type: 'Shield', source: `${item.Name} (Shield Arcane Spell Failure)`, fromGear: true })
+      }
+    }
     // V2 armor check penalty: armor and shield clamped to ≤0, accumulated separately.
     if (item.ArmorCheckPenalty != null && item.ArmorCheckPenalty < 0) {
       const slotLower = slot.toLowerCase()
