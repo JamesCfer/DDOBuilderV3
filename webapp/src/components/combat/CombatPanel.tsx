@@ -12,7 +12,10 @@ import {
   chainWithAttackAdded, chainWithAttackRemoved, chainWithAttackMoved,
   type AvailableAttack, type SwingBaseline,
 } from '../../lib/combat/attackChain'
-import { lookupAttacksPerMinute, pickCombatStyleName } from '../../lib/combat/attackRate'
+import {
+  lookupAttacksPerMinute, pickCombatStyleName, twoWeaponFightingTier,
+} from '../../lib/combat/attackRate'
+import { acquiredFeatNames } from '../../lib/automaticFeats'
 import { deriveWeaponClasses, type WeaponGroupSpec } from '../../lib/weapons/groups'
 import BreakdownTip, { type BreakdownTipState } from '../common/BreakdownTip'
 import {
@@ -21,15 +24,6 @@ import {
 } from '../../lib/combat/damageRows'
 import { fmtDamage, fmtPercent } from '../../lib/combat/format'
 import styles from './CombatPanel.module.css'
-
-function pickTwfTier(featChoices: Record<string, string>): 0 | 1 | 2 | 3 | 4 {
-  const f = new Set(Object.values(featChoices).filter(Boolean))
-  if (f.has('Perfect Two Weapon Fighting')) return 4
-  if (f.has('Greater Two Weapon Fighting')) return 3
-  if (f.has('Improved Two Weapon Fighting')) return 2
-  if (f.has('Two Weapon Fighting')) return 1
-  return 0
-}
 
 const DEFAULT_FOE_AC = 80
 const DEFAULT_FOE_PRR = 50
@@ -40,7 +34,15 @@ export default function CombatPanel() {
 
   const bundle = useStaticBundle()
   const gearItems = useGearItems(build.gear)
-  const { allFeats, allTrees, allWeaponGroups } = bundle
+  const { allFeats, allTrees, allWeaponGroups, allClasses, allRaces } = bundle
+
+  // Every feat the character has, trained or granted by their race and class
+  // levels — a Dark Hunter's Two Weapon Fighting counts exactly like a trained
+  // one (V2 Build::CurrentFeats).
+  const featNames = useMemo(
+    () => acquiredFeatNames(build, allClasses, allRaces),
+    [build, allClasses, allRaces],
+  )
   const [allAttackRates, setAllAttackRates] = useState<AttackRate[]>([])
 
   const [foeAC, setFoeAC] = useState(DEFAULT_FOE_AC)
@@ -75,7 +77,7 @@ export default function CombatPanel() {
     }
     const abilityScore = stats.total(`ability.${ab}`)
     const bab = Math.min(25, stats.total('bab'))
-    const twfTier = pickTwfTier(build.featChoices)
+    const twfTier = twoWeaponFightingTier(featNames)
     const twoHanded = stats.weapon.diceNum >= 2
     const isUnarmed = stats.weapon.weaponType === 'Handwraps' ||
       stats.weapon.name.toLowerCase().includes('handwrap')
@@ -94,8 +96,7 @@ export default function CombatPanel() {
     const offhandIsLight = offhand?.weaponType
       ? deriveWeaponClasses(offhand.weaponType, allWeaponGroups).has('Light')
       : false
-    const oversizedTwf = new Set(Object.values(build.featChoices).filter(Boolean))
-      .has('Oversized Two Weapon Fighting')
+    const oversizedTwf = featNames.has('Oversized Two Weapon Fighting')
     // V2 BreakdownItemWeaponAttackBonus.cpp:70-79: −4 to-hit if the character is
     // not proficient with the main-hand weapon (Build::IsWeaponInGroup("Proficiency")).
     const nonProficient = stats.weapon.weaponType
@@ -113,15 +114,15 @@ export default function CombatPanel() {
       nonProficient,
     })
     return { ...entry, apm }
-  }, [stats, foeAC, foePRR, foeFort, helpless, build.featChoices, build.gear, gearItems, allAttackRates, allWeaponGroups])
+  }, [stats, foeAC, foePRR, foeFort, helpless, featNames, build.gear, gearItems, allAttackRates, allWeaponGroups])
 
   // Attacks granted by trained feats / enhancements (V2 DPSPane available list).
   const availableAttacks = useMemo(() => collectAvailableAttacks({
     allFeats, allTrees,
-    trainedFeatNames: Object.values(build.featChoices),
+    trainedFeatNames: Array.from(featNames),
     enhancementChoices: build.enhancementChoices,
     enhancementSelections: build.enhancementSelections,
-  }), [allFeats, allTrees, build.featChoices, build.enhancementChoices, build.enhancementSelections])
+  }), [allFeats, allTrees, featNames, build.enhancementChoices, build.enhancementSelections])
 
   // Per-swing baseline feeding the chain estimator (V3 extension; V2's
   // per-style evaluators are stubs — see lib/combat/attackChain.ts).

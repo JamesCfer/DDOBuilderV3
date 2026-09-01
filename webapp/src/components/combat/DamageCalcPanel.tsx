@@ -19,7 +19,10 @@ import type {
 } from '../../types/ddo'
 import type { AttackRate, ItemBuffSpec } from '../../server/dataLoaders'
 import { useBuildStats } from '../../hooks/useBuildStats'
-import { lookupAttacksPerMinute, pickCombatStyleName } from '../../lib/combat/attackRate'
+import {
+  lookupAttacksPerMinute, pickCombatStyleName, twoWeaponFightingTier,
+} from '../../lib/combat/attackRate'
+import { acquiredFeatNames } from '../../lib/automaticFeats'
 import type { WeaponGroupSpec } from '../../lib/weapons/groups'
 import {
   simulateDamage, TRIGGERS,
@@ -34,15 +37,6 @@ import BreakdownTip, { type BreakdownTipState } from '../common/BreakdownTip'
 import { sourceShareRows, bucketSourceRows } from '../../lib/combat/damageRows'
 import { fmtDamage as fmt, fmtPercentValue } from '../../lib/combat/format'
 import styles from './DamageCalcPanel.module.css'
-
-function pickTwfTier(featChoices: Record<string, string>): 0 | 1 | 2 | 3 | 4 {
-  const f = new Set(Object.values(featChoices).filter(Boolean))
-  if (f.has('Perfect Two Weapon Fighting')) return 4
-  if (f.has('Greater Two Weapon Fighting')) return 3
-  if (f.has('Improved Two Weapon Fighting')) return 2
-  if (f.has('Two Weapon Fighting')) return 1
-  return 0
-}
 
 // ---------------------------------------------------------------------------
 // Field descriptors -- label, key, and widget kind for the scalar inputs.
@@ -302,7 +296,9 @@ export default function DamageCalcPanel() {
     const abilityScore = stats.total(`ability.${ab}`)
     const bab = Math.min(25, stats.total('bab'))
 
-    const twfTier = pickTwfTier(build.featChoices)
+    // Granted feats count: a Dark Hunter is given Two Weapon Fighting at class
+    // level 2 and Improved at 6 without ever training them.
+    const twfTier = twoWeaponFightingTier(acquiredFeatNames(build, allClasses, allRaces))
     const twoHanded = stats.weapon.diceNum >= 2
     const isUnarmed = stats.weapon.name.toLowerCase().includes('handwrap') ||
       stats.weapon.slot === 'Handwraps'
@@ -317,7 +313,7 @@ export default function DamageCalcPanel() {
       allSetBonuses,
       Object.values(build.gear).filter(Boolean) as string[],
     )
-  }, [stats, build.featChoices, build.gear, gearItems, allAttackRates, allItemBuffs, allSetBonuses])
+  }, [stats, build, allClasses, allRaces, gearItems, allAttackRates, allItemBuffs, allSetBonuses])
 
   // --- Player overrides ----------------------------------------------------
 

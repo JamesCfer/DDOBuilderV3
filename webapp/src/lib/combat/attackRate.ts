@@ -49,3 +49,22 @@ export function pickCombatStyleName(opts: {
   if (!opts.hasOffhand) return 'Single WeaponFighting'
   return 'Sword and Board'
 }
+
+/**
+ * The two-weapon-fighting tier a character fights at: 0 (no TWF feat) through
+ * 4 (Perfect Two Weapon Fighting). Each tier adds an off-hand attack chance,
+ * and tier >= 1 selects the "Two Weapon Fighting" attack-rate style above.
+ *
+ * Takes the character's whole feat set, not their trained choices: Rangers and
+ * Dark Hunters are GRANTED Two Weapon Fighting / Improved / Greater at class
+ * levels 2 / 6 / 11, and reading trained feats alone left those builds fighting
+ * at tier 0 — the granted feats did nothing at all to the combat numbers.
+ */
+export function twoWeaponFightingTier(feats: Iterable<string>): 0 | 1 | 2 | 3 | 4 {
+  const f = feats instanceof Set ? feats : new Set(feats)
+  if (f.has('Perfect Two Weapon Fighting')) return 4
+  if (f.has('Greater Two Weapon Fighting')) return 3
+  if (f.has('Improved Two Weapon Fighting')) return 2
+  if (f.has('Two Weapon Fighting')) return 1
+  return 0
+}
