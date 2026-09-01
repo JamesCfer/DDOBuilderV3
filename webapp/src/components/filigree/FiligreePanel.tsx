@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter, MAX_FILIGREE_SLOTS } from '../../context/CharacterContext'
 import type { Filigree, FiligreeSetBonus, FiligreeSetBuff, FiligreeSlot, SentientGem } from '../../types/ddo'
+import { filigreeMatchesSearch } from '../../lib/searchMatch'
 import DdoIcon from '../DdoIcon'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { FiligreeCardContent, type SetCount } from './FiligreeHoverCard'
@@ -77,10 +78,9 @@ function FiligreeSlotRow({
     return { current, projected: current - displaced + 1 }
   }
 
-  const needle = search.trim().toLowerCase()
-  const matches = (f: Filigree) => !needle
-    || f.Name.toLowerCase().includes(needle)
-    || toArray(f.SetBonus).some(s => s.toLowerCase().includes(needle))
+  // Name, description and set name all match, so a filigree can be found by
+  // the effect it grants ("healing amp") and not only by its own name.
+  const matches = (f: Filigree) => filigreeMatchesSearch(f, search)
 
   function choose(name: string) {
     onNameChange(name)
@@ -119,7 +119,7 @@ function FiligreeSlotRow({
           <div className={styles.picker}>
             <input
               className={styles.pickerSearch}
-              placeholder="Search filigrees or sets…"
+              placeholder="Search name, effect or set…"
               value={search}
               autoFocus
               onChange={e => setSearch(e.target.value)}

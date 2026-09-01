@@ -15,6 +15,7 @@ import {
   augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
 } from '../../lib/itemDisplay'
 import { itemMatchesType, itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
+import { itemSearchText, matchesTerms, searchTerms } from '../../lib/searchMatch'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent, AugmentCardContent, type AugmentFill } from './GearHoverCards'
 import ItemTypeSelect from './ItemTypeSelect'
@@ -90,7 +91,9 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
   // One pass over the slot's items instead of five chained .filter() copies —
   // Main Hand holds 3650 of them and this used to re-run on every render.
   const available = useMemo(() => {
-    const needle = deferredSearch.toLowerCase()
+    // Name, description and set bonuses all match — a player looking for
+    // "shadow" gear should not have to know each piece's name.
+    const terms = searchTerms(deferredSearch)
     return items
       .filter(item => {
         const lvl = item.MinLevel ?? 1
@@ -98,7 +101,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
         if (buffFilter && !toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
           .some(b => b.Type === buffFilter)) return false
         if (!itemMatchesType(item, typeFilter, allWeaponGroups)) return false
-        if (needle && !item.Name.toLowerCase().includes(needle)) return false
+        if (terms.length > 0 && !matchesTerms(itemSearchText(item), terms)) return false
         return true
       })
       .sort((a, b) => (a.MinLevel ?? 0) - (b.MinLevel ?? 0) || a.Name.localeCompare(b.Name))
@@ -134,7 +137,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
         <div className={styles.pickerSearch}>
           <input
             className={styles.pickerSearchInput}
-            placeholder="Search items…"
+            placeholder="Search name, description or set…"
             value={search}
             autoFocus
             onChange={e => setSearch(e.target.value)}
