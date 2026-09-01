@@ -10,7 +10,7 @@ import type { MyBuildSummary } from '../../lib/community/api'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { migrateDocument } from '../../hooks/usePersistence'
-import { isCharacterDocument, syncBuildIntoDocument } from '../../lib/multiLife'
+import { isCharacterDocument, syncBuildIntoDocument, repairCharacterNames } from '../../lib/multiLife'
 import type { CharacterDocument } from '../../types/ddo'
 
 // ---------------------------------------------------------------------------
@@ -203,7 +203,9 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
     setNotice(null)
     const name = (saveName || build.name || 'Unnamed build').trim()
     try {
-      await communityApi.saveBuild({ name, document: currentDoc() })
+      // Save under the same name the character is known by, so re-opening
+      // the build shows that name rather than a placeholder.
+      await communityApi.saveBuild({ name, document: repairCharacterNames(currentDoc(), name) })
       setSaveName('')
       setNotice(`Saved "${name}" to your account.`)
       refresh()
@@ -234,7 +236,10 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
     try {
       const rec = await communityApi.getMyBuild(b.id)
       if (!isCharacterDocument(rec.document)) throw new Error('Saved build is not a valid character document')
-      onLoad(migrateDocument(rec.document))
+      // The name the build is saved under is the character's name: a document
+      // saved before builds were named from their file carries "Life 1" in
+      // every build, which is what the Character page would otherwise show.
+      onLoad(migrateDocument(rec.document, rec.name || b.name))
       setNotice(`Loaded "${b.name}" — it is now your working character.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Load failed')

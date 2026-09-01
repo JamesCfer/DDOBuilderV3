@@ -1,5 +1,6 @@
 import type { Item, ItemBuff } from '../types/ddo'
 import { itemMatchesType } from './itemFilters'
+import { matchesTerms, itemSearchText, searchTerms } from './searchMatch'
 import type { WeaponGroupSpec } from './weapons/groups'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
@@ -16,6 +17,7 @@ export interface FindGearQuery {
   minValue?: number
   minLevel?: number
   maxLevel?: number
+  /** Free text matched against the item's name, description and set bonuses. */
   nameSearch?: string
   /** Item type token from `itemFilters` — e.g. `wt:Longsword`, `ar:Medium`,
    *  `wg:Two Handed`, `cat:shield`, `special:artifact`. */
@@ -39,6 +41,8 @@ export interface FindGearResult {
 export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearResult[] {
   const { buffType, buffSearch, minValue, minLevel, maxLevel, nameSearch, itemType, weaponGroups } =
     query
+  // Split once, not per item: the catalogue is 8779 entries long.
+  const nameTerms = searchTerms(nameSearch)
 
   const results: FindGearResult[] = []
 
@@ -46,7 +50,7 @@ export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearR
     const lvl = item.MinLevel ?? 1
     if (minLevel != null && lvl < minLevel) continue
     if (maxLevel != null && lvl > maxLevel) continue
-    if (nameSearch && !item.Name.toLowerCase().includes(nameSearch.toLowerCase())) continue
+    if (nameTerms.length > 0 && !matchesTerms(itemSearchText(item), nameTerms)) continue
     if (itemType && !itemMatchesType(item, itemType, weaponGroups)) continue
 
     const allBuffs = toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)

@@ -185,10 +185,10 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
         {/* Filters */}
         <div className={styles.filters}>
           <label className={styles.filterLabel}>
-            Item name
+            Item text
             <input
               className={styles.filterInput}
-              placeholder="Search by name…"
+              placeholder="Name, description or set…"
               value={nameSearch}
               autoFocus
               onChange={e => setNameSearch(e.target.value)}
@@ -274,8 +274,9 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             <div className={styles.placeholder}>Loading item database…</div>
           ) : !hasFilter ? (
             <div className={styles.placeholder}>
-              Search across all gear slots — by name, by effect, or by item type
-              (Longsword, Small Shield, Medium Armor, Minor Artifact…).
+              Search across all gear slots — by name, description or set bonus,
+              by effect, or by item type (Longsword, Small Shield, Medium Armor,
+              Minor Artifact…).
             </div>
           ) : results.length === 0 ? (
             <div className={styles.placeholder}>No items match — try adjusting the filters.</div>
