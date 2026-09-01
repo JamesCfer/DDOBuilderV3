@@ -10,6 +10,7 @@ import {
   syncBuildIntoDocument,
   findActiveBuild,
   characterFileName,
+  repairCharacterNames,
 } from '../lib/multiLife'
 import { importV2Build } from '../lib/v2Import'
 import { runBackgroundParityCheck } from '../lib/parityClient'
@@ -58,16 +59,20 @@ function writeDocs(docs: CharacterDocument[]): void {
  * `migrateLoad` so fields added after the save was written get defaults
  * everywhere a stored build is consumed (LifeBuildBar, BuildCompare, export),
  * not only when one is dispatched through LOAD_BUILD. Stamps `_v: 2`.
+ *
+ * Also repairs never-chosen character names (a build stored as "Life 1" shows
+ * the character's name instead); `preferredName` is the name the save is
+ * listed under, used when the document itself has no real name either.
  */
-export function migrateDocument(doc: CharacterDocument): CharacterDocument {
-  return {
+export function migrateDocument(doc: CharacterDocument, preferredName?: string): CharacterDocument {
+  return repairCharacterNames({
     ...doc,
     lives: doc.lives.map(life => ({
       ...life,
       builds: life.builds.map(migrateLoad),
     })),
     _v: 2,
-  }
+  }, preferredName)
 }
 
 /**
@@ -311,7 +316,9 @@ export function usePersistence(): PersistenceAPI {
               reject(new Error('Character document contained no builds'))
               return
             }
-            resolve(migrateDocument(parsed))
+            // A .json character carries its own name; the file's base name is
+            // the fallback when the stored names are placeholders.
+            resolve(migrateDocument(parsed, baseFileName(file.name)))
             return
           }
           if (

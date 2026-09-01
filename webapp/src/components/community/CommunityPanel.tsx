@@ -73,9 +73,11 @@ export default function CommunityPanel({ onLoad }: CommunityPanelProps) {
   async function handleLoad(l: CommunityListing) {
     setNotice(null)
     try {
-      const { document } = await communityApi.getPublished(l.id)
+      const { document, name } = await communityApi.getPublished(l.id)
       if (!isCharacterDocument(document)) throw new Error('Build data is not a valid character document')
-      onLoad(migrateDocument(document))
+      // The listing name is the character's name for a document whose own
+      // builds were never named (older saves carry their life's "Life 1").
+      onLoad(migrateDocument(document, name || l.name))
       setNotice(`Loaded "${l.name}" by ${l.author} — it is now your working character.`)
     } catch (e) {
       setNotice(e instanceof Error ? e.message : 'Load failed')

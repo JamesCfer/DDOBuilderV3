@@ -171,13 +171,72 @@ export function syncBuildIntoDocument(doc: CharacterDocument, build: CharacterBu
   return { ...doc, name, lives, activeBuildId: build.id }
 }
 
+/** Names nobody chose: the defaults every code path stamps on a nameless
+ *  character, plus the "Life N" shape a V2 import used as its name fallback
+ *  before the file's own name was available. */
+const GENERIC_NAMES = new Set([
+  '',
+  'new character',
+  'imported',
+  'imported v2 build',
+  'imported v2 character',
+  'unnamed build',
+  'character',
+])
+
+function isGenericName(name: string | undefined): boolean {
+  const n = (name ?? '').trim().toLowerCase()
+  return GENERIC_NAMES.has(n) || /^life \d+$/.test(n)
+}
+
 /** Document names nobody chose: the defaults, and the life-name fallback a V2
  *  import used before the file's own name was available ("Life 1"). */
 function isPlaceholderName(doc: CharacterDocument, activeLifeId?: string): boolean {
   const name = (doc.name ?? '').trim()
-  if (name === '' || name === 'New Character' || name === 'Imported V2 Character') return true
+  if (isGenericName(name)) return true
   const life = doc.lives.find(l => l.id === activeLifeId) ?? doc.lives[0]
   return !!life && name === (life.name ?? '').trim()
+}
+
+/**
+ * Repairs character names that were never chosen by the user, so a build
+ * loaded from an account (or the community, or an old local save) shows the
+ * character's name on the Character page instead of its life's name.
+ *
+ * Documents written before the V2 import named a build from its file took
+ * their build names from the LIFE ("Life 1"), and those names are baked into
+ * anything already stored — reloading such a save put "Life 1" in the Name
+ * field. Every build whose name is generic ("Life 1", "New Character", empty)
+ * or is simply a copy of its life's name is renamed to the best name we have:
+ * the document's own name, else `preferredName` (the name the save is listed
+ * under, e.g. the account's build name). Names the user actually typed are
+ * never touched, and with no better name available the document is returned
+ * unchanged.
+ */
+export function repairCharacterNames(doc: CharacterDocument, preferredName?: string): CharacterDocument {
+  const preferred = (preferredName ?? '').trim()
+  const docName = (doc.name ?? '').trim()
+  const docNameIsOwn = !isPlaceholderName(doc, doc.activeLifeId)
+  const best = (docNameIsOwn ? docName : '') || preferred
+  if (!best) return doc
+
+  let changed = docName !== best
+  const lives = doc.lives.map(life => {
+    const lifeName = (life.name ?? '').trim()
+    let lifeChanged = false
+    const builds = life.builds.map(b => {
+      const name = (b.name ?? '').trim()
+      if (name === best) return b
+      if (!isGenericName(name) && name !== lifeName) return b
+      lifeChanged = true
+      return { ...b, name: best }
+    })
+    if (!lifeChanged) return life
+    changed = true
+    return { ...life, builds }
+  })
+
+  return changed ? { ...doc, name: best, lives } : doc
 }
 
 /**
