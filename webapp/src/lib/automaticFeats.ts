@@ -139,3 +139,31 @@ export function automaticAcquisitionFeatGroup(
   }
   return names.length > 0 ? { source: 'Automatically Acquired', feats: names, charLevel: 0 } : null
 }
+
+/**
+ * Every feat the character HAS, whatever path it arrived by: feats trained in
+ * a slot, the race's granted feats and the class automatic feats (Dark Hunter's
+ * Two Weapon Fighting at class level 2, Improved Two Weapon Fighting at 6, …).
+ *
+ * V2's Build::CurrentFeats is the same union, and everything that asks "does
+ * this character have feat X?" reads it — a granted feat is not a lesser feat.
+ * Reading `build.featChoices` alone answers that question wrongly for every
+ * class grant: it both let the player re-train a feat the class already gave
+ * them and left the granted copy out of the combat maths.
+ */
+export function acquiredFeatNames(
+  build: Pick<CharacterBuild,
+    'race' | 'classes' | 'levelClasses' | 'totalLevel' | 'pastLives' | 'featChoices' | 'favorFeats'>,
+  allClasses: DDOClass[],
+  allRaces: Race[],
+  specialFeats: string[] = [],
+): Set<string> {
+  const names = new Set<string>()
+  for (const f of Object.values(build.featChoices ?? {})) if (f) names.add(f)
+  for (const g of buildAutomaticFeatGroups(build, allClasses, allRaces)) {
+    for (const f of g.feats) names.add(f)
+  }
+  for (const f of build.favorFeats ?? []) names.add(f)
+  for (const f of specialFeats) names.add(f)
+  return names
+}
