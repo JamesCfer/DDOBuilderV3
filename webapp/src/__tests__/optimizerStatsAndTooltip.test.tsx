@@ -176,8 +176,14 @@ describe('Plugins page', () => {
       root.render(React.createElement(mod.default))
     })
     mounted.push({ root, container })
-    expect(container.textContent).toContain('Dungeon Help Plugins')
-    expect(container.textContent).toContain('No plugins are listed yet')
-    expect(container.querySelectorAll('a')).toHaveLength(0)
+    expect(container.textContent).toContain('DDO Plugins')
+    // Nothing is fetched in this environment, so no plugin card, download link
+    // or version is invented — only the DungeonHelper explainer link stands.
+    expect(container.textContent).toContain('Loading the plugin catalogue')
+    expect(container.querySelectorAll('a')).toHaveLength(1)
+    expect(container.querySelectorAll('a')[0].getAttribute('href'))
+      .toBe('https://www.dungeonhelper.com/')
+    // The page never credits a plugin to an individual account name.
+    expect(container.textContent).not.toMatch(/\bby [A-Z]/)
   })
 })

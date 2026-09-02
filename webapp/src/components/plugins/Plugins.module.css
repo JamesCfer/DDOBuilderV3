@@ -157,7 +157,9 @@
 .cardFoot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* The download control is the only thing on this row (the byline was
+     removed), so keep it against the right edge of the card. */
+  justify-content: flex-end;
   gap: 8px;
   font-size: 11px;
   color: var(--color-text-muted);
