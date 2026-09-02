@@ -3,6 +3,10 @@
 // DungeonHelper — with the individual plugins listed underneath for anyone who
 // wants to install one by hand. Releases come from /api/plugins, which
 // aggregates the public release repo's catalog.json + per-plugin manifests.
+//
+// The catalogue carries an `author` per plugin; the page deliberately does not
+// render it — the plugins are presented as the site's own, not credited to an
+// individual account name.
 
 import { useEffect, useState } from 'react'
 import styles from './Plugins.module.css'
@@ -65,7 +69,7 @@ export default function PluginsPanel() {
                       ⬇ Download the Plugin Hub
                     </a>
                     <span className={styles.downloadHint}>
-                      {manager.key}-{manager.version}.zip · free · by {manager.author}
+                      {manager.key}-{manager.version}.zip · free
                     </span>
                   </>
                 ) : (
@@ -102,7 +106,6 @@ export default function PluginsPanel() {
                     </h3>
                     <p className={styles.cardDesc}>{p.description}</p>
                     <div className={styles.cardFoot}>
-                      <span>by {p.author}</span>
                       {p.zipUrl
                         ? <a className={styles.smallDownload} href={downloadUrl(p.key)}>⬇ Download</a>
                         : <span className={styles.unavailable}>No release yet</span>}

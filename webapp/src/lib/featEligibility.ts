@@ -59,13 +59,18 @@ export function buildSnapshotForSlot(
 }
 
 /**
- * V2 Build::CurrentFeats(level) equivalent: the full feat set that
- * prerequisite checks evaluate against at a slot — trained feats up to and
- * including the slot's level (already in `snap.featChoices`), automatic
- * class/race feats granted by then, and special feats (past lives, favor
- * rewards, Life special feats) which V2 always includes regardless of level.
+ * The feats a character has at a slot WITHOUT choosing them: automatic
+ * class/race grants up to the slot's level, feats auto-acquired through their
+ * own <AutomaticAcquisition> requirements, and the special feats (past lives,
+ * favor rewards, Life special feats) V2 includes regardless of level.
+ *
+ * V2's Build::CurrentFeats counts these alongside trained feats both for
+ * prerequisites and for the MaxTimesAcquire limit, so they are kept separately
+ * here: `prereqFeatCounts` adds the trained feats on top, while the trainable
+ * list needs the granted half on its own (its trained tally spans every slot,
+ * not just those at or below this level).
  */
-export function prereqFeatCounts(
+export function grantedFeatCounts(
   snap: CharacterBuild,
   slotLevel: number,
   allClasses: DDOClass[],
@@ -77,7 +82,6 @@ export function prereqFeatCounts(
   const add = (name: string, n = 1) => {
     if (name) counts[name] = (counts[name] ?? 0) + n
   }
-  for (const v of Object.values(snap.featChoices)) if (v) add(v)
   // AutomaticAcquisition feats (V2 Build::UpdateFeats evaluates each feat's
   // <AutomaticAcquisition> requirements per level): Sunder/Trip/Defensive
   // Fighting (BAB 1), Attack/Sneak/Heroic Durability (level 1), etc. count
@@ -103,6 +107,27 @@ export function prereqFeatCounts(
   }
   for (const f of snap.favorFeats ?? []) add(f)
   for (const f of specialFeats) add(f)
+  return counts
+}
+
+/**
+ * V2 Build::CurrentFeats(level) equivalent: the full feat set that
+ * prerequisite checks evaluate against at a slot — trained feats up to and
+ * including the slot's level (already in `snap.featChoices`) on top of
+ * everything `grantedFeatCounts` supplies.
+ */
+export function prereqFeatCounts(
+  snap: CharacterBuild,
+  slotLevel: number,
+  allClasses: DDOClass[],
+  race: Race | undefined,
+  specialFeats: string[] = [],
+  allFeats?: Feat[],
+): Record<string, number> {
+  const counts = grantedFeatCounts(snap, slotLevel, allClasses, race, specialFeats, allFeats)
+  for (const v of Object.values(snap.featChoices)) {
+    if (v) counts[v] = (counts[v] ?? 0) + 1
+  }
   return counts
 }
 
@@ -166,19 +191,30 @@ export function featOptionsForSlot(
   const featSet = new Set(Object.keys(featCounts))
   const reqCtx = { build: snap, allClasses, race, feats: featSet, featCounts }
 
-  // Exclude feats already trained to their MaxTimesAcquire limit in other
-  // slots (V2 Build.cpp:1584: bCanTrain = trainedCount < MaxTimesAcquire,
-  // default 1). Toughness (MaxTimesAcquire 99) and other multi-acquire feats
-  // stay offered no matter how many slots already hold them.
+  // Exclude feats already acquired to their MaxTimesAcquire limit (V2
+  // Build.cpp:1584: bCanTrain = TrainedCount(CurrentFeats(level), feat) <
+  // MaxTimesAcquire, default 1). V2's CurrentFeats counts the AUTOMATIC grants
+  // too, so a feat the class hands out cannot be trained again: Dark Hunter 2
+  // grants Two Weapon Fighting, and the feat lists went on offering it (and
+  // Improved Two Weapon Fighting from Dark Hunter 6) as if the character had
+  // never received it. Toughness (MaxTimesAcquire 99) and other multi-acquire
+  // feats stay offered no matter how many copies are already held.
   const chosenCounts = new Map<string, number>()
   for (const [k, v] of Object.entries(build.featChoices)) {
     if (k === slot.key || !v) continue
     chosenCounts.set(v, (chosenCounts.get(v) ?? 0) + 1)
   }
+  const granted = grantedFeatCounts(snap, slot.level, allClasses, race, opt.specialFeats, feats)
+  // V2 TrainableFeats always lists the slot's own current choice
+  // (`includeThisFeat`), so a feat later granted by a class level does not
+  // vanish from the slot that already holds it.
+  const currentChoice = build.featChoices[slot.key]
 
   return feats
     .filter(f => {
-      if ((chosenCounts.get(f.Name) ?? 0) >= (f.MaxTimesAcquire ?? 1)) return false
+      const acquired = (chosenCounts.get(f.Name) ?? 0)
+        + (f.Name === currentChoice ? 0 : granted[f.Name] ?? 0)
+      if (acquired >= (f.MaxTimesAcquire ?? 1)) return false
       if (f.Acquire && f.Acquire !== 'Train') return false
 
       // V2 Build::TrainableFeats:1455-1459 — ignore-listed feats are hidden
