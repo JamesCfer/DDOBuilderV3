@@ -5,7 +5,7 @@ import { findGearByEffect } from '../../lib/findGear'
 import { displaySlotsForItemKey } from '../../lib/gearSlots'
 import { useDocument } from '../../context/DocumentContext'
 import type { Item, ItemBuff } from '../../types/ddo'
-import { formatBuffText } from '../../lib/itemDisplay'
+import { buffDescription, formatBuffText } from '../../lib/itemDisplay'
 import { itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import HoverCard, { useHoverCard } from '../common/HoverCard'
@@ -324,7 +324,21 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                             )}
                           </td>
                           <td className={styles.tdEffect}>
-                            {result.matchedBuffs.map(b => formatBuffText(b)).join(', ') || '—'}
+                            {result.matchedBuffs.length === 0 && '—'}
+                            {/* The label alone says nothing for the named
+                                effects, so each one carries the sentence
+                                ItemBuffs.xml gives it. */}
+                            {result.matchedBuffs.map((b, i) => {
+                              const description = buffDescription(b)
+                              return (
+                                <div key={i} className={styles.effectEntry}>
+                                  <span className={styles.effectLabel}>{formatBuffText(b)}</span>
+                                  {description && (
+                                    <span className={styles.effectText}>{description}</span>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </td>
                           <td className={styles.tdEquip}>
                             <EquipCell

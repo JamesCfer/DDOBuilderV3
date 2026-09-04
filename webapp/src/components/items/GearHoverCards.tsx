@@ -6,8 +6,8 @@ import type { Item, ItemBuff, ItemAugment, Augment } from '../../types/ddo'
 import DdoIcon from '../DdoIcon'
 import { HoverHeader, HoverBody, HoverSection, hoverStyles as s } from '../common/HoverCard'
 import {
-  describeBuff, augmentTypeColor, augmentDescription, augmentTypes, augmentValueAtLevel,
-  hasSelectableLevels, augmentLevelOptions, augmentValueAtIndex,
+  describeBuff, buffDescription, augmentTypeColor, augmentDescription, augmentTypes,
+  augmentValueAtLevel, hasSelectableLevels, augmentLevelOptions, augmentValueAtIndex,
 } from '../../lib/itemDisplay'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
@@ -15,14 +15,20 @@ function toArray<T>(val: T | T[] | undefined): T[] {
   return Array.isArray(val) ? val : [val]
 }
 
-/** One "+15 | Intelligence | Enhancement" row. */
+/** One "+15 | Intelligence | Enhancement" row, plus what the effect actually
+ *  does when ItemBuffs.xml describes it — for the named effects ("Mind Drain",
+ *  "Nightmare Guard") the label alone says nothing. */
 function EffectRow({ buff }: { buff: ItemBuff }) {
   const d = describeBuff(buff)
+  const description = buffDescription(buff)
   return (
-    <div className={s.effectRow}>
-      <span className={s.effectValue}>{d.value ?? ''}</span>
-      <span className={s.effectName}>{d.label}</span>
-      {d.bonusType && <span className={s.chip}>{d.bonusType}</span>}
+    <div className={s.effectGroup}>
+      <div className={s.effectRow}>
+        <span className={s.effectValue}>{d.value ?? ''}</span>
+        <span className={s.effectName}>{d.label}</span>
+        {d.bonusType && <span className={s.chip}>{d.bonusType}</span>}
+      </div>
+      {description && <div className={s.effectText}>{description}</div>}
     </div>
   )
 }

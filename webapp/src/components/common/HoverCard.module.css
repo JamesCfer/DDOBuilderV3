@@ -87,11 +87,27 @@
   margin-bottom: 3px;
 }
 
-/* Effect list: value | name | bonus-type chip */
+/* Effect list: value | name | bonus-type chip, with the effect's own sentence
+   under it when ItemBuffs.xml describes what it does. */
 .effects {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.effectGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.effectText {
+  /* Indented under the value column so the labels still line up. */
+  margin: 1px 0 3px 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .effectRow {

@@ -16,6 +16,7 @@ import type {
 import type { WeaponGroupSpec } from '../lib/weapons/groups'
 import type { BonusTypeSpec, ItemBuffSpec } from '../server/dataLoaders'
 import { initBonusTypes } from '../lib/bonus'
+import { setBuffTemplates } from '../lib/itemDisplay'
 
 export interface StaticBundle {
   allClasses: DDOClass[]
@@ -83,6 +84,11 @@ export function preloadStaticBundle(): Promise<StaticBundle> {
     ]) => {
       if (allBonusTypes.length > 0) {
         initBonusTypes(allBonusTypes)
+      }
+      // What a named item effect actually does lives in ItemBuffs.xml, not on
+      // the item, so the display and search helpers need the catalogue.
+      if (allItemBuffs.length > 0) {
+        setBuffTemplates(allItemBuffs)
       }
       cache = {
         allClasses, allRaces, allFeats, allTrees, allSelfBuffs, allAugments,

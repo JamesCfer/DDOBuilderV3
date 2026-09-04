@@ -10,10 +10,13 @@
 // and gear carries a fourth: the effects themselves. An item's <Buff> entries
 // are what the player is usually hunting for ("Dodge", "Insightful
 // Constitution", "Acid Resistance"), and most of that text appears nowhere in
-// the Name or Description: the target stat lives in <Item>/<Description1> and
-// the stacking category in <BonusType>. Each buff therefore contributes its
-// rendered effect description, exactly as the hover card and the picker show
-// it, so what is searched is what is displayed.
+// the Name or Description: the target stat lives in <Item>/<Description1>, the
+// stacking category in <BonusType>, and for the named effects the whole
+// sentence lives in ItemBuffs.xml against the buff's <Type> (Lucid Dreams
+// carries the bare words "Mind Drain"; that it "reduces your maximum spell
+// points by 5%" is only in the catalogue). Each buff therefore contributes its
+// full effect description, exactly as the hover card shows it, so what is
+// searched is what is displayed.
 //
 // A query is matched term-by-term: every whitespace-separated term must appear
 // somewhere in that text, in any order ("shadow goggle" finds the goggles
@@ -21,7 +24,7 @@
 // still behaves exactly like the old substring match.
 
 import type { Filigree, Item } from '../types/ddo'
-import { buffSearchText, itemBuffs } from './itemDisplay'
+import { buffSearchText, buffTemplateGeneration, itemBuffs } from './itemDisplay'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
@@ -32,13 +35,17 @@ function toArray<T>(val: T | T[] | undefined): T[] {
 // descriptions are long — lower-casing them once per item and keeping it
 // against the catalogue object costs one pass rather than one per keystroke.
 // A WeakMap keeps nothing alive: entries go when the catalogue does.
-const haystacks = new WeakMap<object, string>()
+// The generation guards entries built before ItemBuffs.xml arrived: the
+// effect sentences are part of the text, and the catalogue loads after the
+// first render.
+const haystacks = new WeakMap<object, { gen: number; text: string }>()
 
 function haystackOf(source: object, parts: () => (string | undefined)[]): string {
+  const gen = buffTemplateGeneration()
   const cached = haystacks.get(source)
-  if (cached !== undefined) return cached
+  if (cached !== undefined && cached.gen === gen) return cached.text
   const text = parts().filter(Boolean).join('\n').toLowerCase()
-  haystacks.set(source, text)
+  haystacks.set(source, { gen, text })
   return text
 }
 
