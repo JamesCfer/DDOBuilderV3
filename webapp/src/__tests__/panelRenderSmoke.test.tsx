@@ -243,12 +243,16 @@ const PANELS: Array<[string, () => Promise<{ default: React.ComponentType<any> }
     default: () => React.createElement(auth.AuthProvider, null,
       React.createElement(m.default, { onLoad: () => {} })),
   }))],
+  // The account panel also offers the live-sharing controls, so it needs the
+  // collaboration context (which sits under AuthProvider in the real app).
   ['AccountPanel', () => Promise.all([
     import('../components/community/AccountPanel'),
     import('../context/AuthContext'),
-  ]).then(([m, auth]) => ({
+    import('../context/CollabContext'),
+  ]).then(([m, auth, collab]) => ({
     default: () => React.createElement(auth.AuthProvider, null,
-      React.createElement(m.default, { onLoad: () => {} })),
+      React.createElement(collab.CollabProvider, null,
+        React.createElement(m.default, { onLoad: () => {} }))),
   }))],
 ]
 

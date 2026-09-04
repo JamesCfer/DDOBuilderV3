@@ -50,6 +50,26 @@ export interface MyBuildSummary {
   updatedAt: string
   published: boolean
   score: number
+  /** Present when the build has a live share link. Only the owner is ever
+   *  sent this, and it is the whole credential, so treat it as a secret. */
+  shareToken?: string
+  sharedAt?: string
+}
+
+/** One person currently editing a shared build. */
+export interface CollabParticipant {
+  id: string
+  name: string
+  color: string
+  isOwner: boolean
+}
+
+export interface CollabSnapshot {
+  buildId: string
+  name: string
+  version: number
+  document: unknown
+  participants: CollabParticipant[]
 }
 
 export type CommunitySort =
@@ -145,6 +165,34 @@ export const communityApi = {
 
   getPublished: (id: string) =>
     req<{ id: string; name: string; author: string; document: unknown; snapshot?: BuildSnapshot; score: number }>(`/api/community/${id}`),
+
+  /** Turns a saved build into a shared one (or returns the existing link). */
+  shareBuild: (id: string) =>
+    req<{ token: string; sharedAt: string }>(`/api/my/builds/${id}/share`, { method: 'POST' }),
+
+  /** Revokes the link: everyone else loses access to the shared copy. */
+  unshareBuild: (id: string) =>
+    req<{ ok: boolean }>(`/api/my/builds/${id}/share`, { method: 'DELETE' }),
+
+  /** Opens a shared build by its link token. Works signed out. */
+  collabOpen: (token: string) =>
+    req<CollabSnapshot & { owner: string }>(`/api/collab/${encodeURIComponent(token)}`),
+
+  collabUpdate: (token: string, payload: {
+    clientId: string
+    baseVersion: number
+    base?: unknown
+    document: unknown
+    name?: string
+  }) => req<CollabSnapshot>(`/api/collab/${encodeURIComponent(token)}/update`, {
+    method: 'POST', body: JSON.stringify(payload),
+  }),
+
+  collabPresence: (token: string, payload: { clientId: string; name?: string; leaving?: boolean }) =>
+    req<{ version: number; participants: CollabParticipant[] }>(
+      `/api/collab/${encodeURIComponent(token)}/presence`,
+      { method: 'POST', body: JSON.stringify(payload) },
+    ),
 
   vote: (id: string, value: 1 | -1 | 0) =>
     req<{ score: number; myVote: 1 | -1 | 0 }>(`/api/community/${id}/vote`, {
