@@ -1,0 +1,66 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 14px;
+  font-size: 12px;
+  background: var(--color-bg-panel);
+  border-bottom: 1px solid var(--color-gold-dark);
+  color: var(--color-text-secondary);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.live { background: #3fbf72; box-shadow: 0 0 6px #3fbf72; }
+.connecting { background: #e3ca4c; }
+.offline { background: #e58c3c; }
+.revoked { background: #e35b5b; }
+
+.status {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.name b { color: var(--color-gold-light); }
+
+.owner { color: var(--color-text-muted); }
+
+.people {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.person {
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.crown { font-size: 9px; }
+
+.alone {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.error {
+  color: var(--color-danger, #e35b5b);
+}
+
+.leave {
+  font-size: 11px;
+  padding: 2px 10px;
+}

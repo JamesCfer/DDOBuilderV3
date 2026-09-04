@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext'
 import { communityApi } from '../../lib/community/api'
 import type { MyBuildSummary } from '../../lib/community/api'
 import { useCharacter } from '../../context/CharacterContext'
+import { useCollab } from '../../context/CollabContext'
+import { copyToClipboard } from '../../lib/clipboard'
 import { useDocument } from '../../context/DocumentContext'
 import { migrateDocument } from '../../hooks/usePersistence'
 import { isCharacterDocument, syncBuildIntoDocument, repairCharacterNames } from '../../lib/multiLife'
@@ -173,6 +175,7 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
   const { user, checking, logout } = useAuth()
   const { build } = useCharacter()
   const { doc, setDoc } = useDocument()
+  const collab = useCollab()
   const [builds, setBuilds] = useState<MyBuildSummary[]>([])
   const [saveName, setSaveName] = useState('')
   const [notice, setNotice] = useState<string | null>(null)
@@ -246,6 +249,58 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
     }
   }
 
+  /** The full URL a collaborator opens. Same page, share token in the query. */
+  function shareUrl(token: string): string {
+    return `${window.location.origin}${window.location.pathname}?share=${encodeURIComponent(token)}`
+  }
+
+  async function handleShare(b: MyBuildSummary) {
+    setError(null)
+    setNotice(null)
+    try {
+      const { token } = await communityApi.shareBuild(b.id)
+      await copyToClipboard(shareUrl(token))
+      setNotice(`Share link for "${b.name}" copied — anyone with it can open and edit this build with you.`)
+      refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create a share link')
+    }
+  }
+
+  async function handleCopyLink(b: MyBuildSummary) {
+    if (!b.shareToken) return
+    setError(null)
+    const copied = await copyToClipboard(shareUrl(b.shareToken))
+    setNotice(copied
+      ? `Share link for "${b.name}" copied.`
+      : `Share link: ${shareUrl(b.shareToken)}`)
+  }
+
+  async function handleUnshare(b: MyBuildSummary) {
+    if (!window.confirm(`Stop sharing "${b.name}"? The link stops working and anyone editing it loses access.`)) return
+    setError(null)
+    try {
+      await communityApi.unshareBuild(b.id)
+      setNotice(`"${b.name}" is no longer shared.`)
+      refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not revoke the link')
+    }
+  }
+
+  /** Joins the shared session for a build the signed-in owner already has open
+   *  elsewhere, so the owner edits alongside their collaborators. */
+  async function handleJoin(b: MyBuildSummary) {
+    if (!b.shareToken) return
+    setError(null)
+    try {
+      await collab.join(b.shareToken)
+      setNotice(`Editing "${b.name}" live — everyone with the link sees your changes.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not open the shared build')
+    }
+  }
+
   async function handleDelete(b: MyBuildSummary) {
     if (!window.confirm(`Delete "${b.name}" from your account${b.published ? ' (it is shared with the community)' : ''}?`)) return
     try {
@@ -286,7 +341,8 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
             <span className={styles.myBuildName}>{b.name}</span>
             <span className={styles.myBuildMeta}>
               updated {new Date(b.updatedAt).toLocaleString()}
-              {b.published && <> — shared, score {b.score}</>}
+              {b.published && <> — in the community, score {b.score}</>}
+              {b.shareToken && <> — link sharing on</>}
             </span>
             <button
               type="button"
@@ -296,6 +352,31 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
             >
               {b.published ? '★ Shared' : '☆ Star'}
             </button>
+            {b.shareToken ? (
+              <>
+                <button
+                  type="button"
+                  className={styles.shareBtn}
+                  title="Copy the link that lets other people edit this build with you"
+                  onClick={() => handleCopyLink(b)}
+                >🔗 Copy link</button>
+                <button
+                  type="button"
+                  className={collab.token === b.shareToken ? styles.shareActive : undefined}
+                  title="Open this build in the live shared session"
+                  onClick={() => handleJoin(b)}
+                  disabled={collab.token === b.shareToken}
+                >{collab.token === b.shareToken ? 'Editing live' : 'Edit together'}</button>
+                <button type="button" onClick={() => handleUnshare(b)}>Stop sharing</button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={styles.shareBtn}
+                title="Create a link that lets other people edit this build with you, at the same time"
+                onClick={() => handleShare(b)}
+              >🔗 Share to edit</button>
+            )}
             <button type="button" onClick={() => handleOpen(b)}>Open</button>
             <button type="button" onClick={() => handleDelete(b)}>Delete</button>
           </div>

@@ -267,6 +267,17 @@
   box-shadow: 0 0 8px var(--tint-accent-strong);
 }
 
+.shareBtn {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+/* The build this browser is currently editing live with other people. */
+.shareActive, .shareActive:hover:not(:disabled) {
+  color: var(--color-gold-light);
+  border-color: var(--color-gold-dark);
+}
+
 .saveRow {
   display: flex;
   gap: 8px;

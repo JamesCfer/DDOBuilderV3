@@ -15,6 +15,7 @@ import {
 import { augmentMatchesSlotType } from './src/lib/gearSlotUpgrades'
 import { loadCraftingSystems, craftingSummaries } from './src/server/crafting'
 import { CommunityStore } from './src/server/communityStore'
+import { CollabHub, sanitizeName } from './src/server/collabHub'
 import { buildSnapshotFromDocument } from './src/server/communitySnapshot'
 import { runParityCheck, defaultOraclePath } from './src/server/oracleParity'
 import {
@@ -36,7 +37,10 @@ app.use(cors())
 // Loaded optionally: a missing module must degrade to uncompressed, never
 // crash-loop the server (see optionalCompression.ts).
 app.use(loadOptionalCompression())
-app.use(express.json())
+// Saved characters are whole documents (every life and build), and a
+// collaborative edit carries two of them, so the 100 KB default rejects the
+// long-lived accounts this feature exists for.
+app.use(express.json({ limit: '4mb' }))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -529,6 +533,10 @@ app.get('/api/my/builds', (req, res) => {
     updatedAt: b.updatedAt,
     published: b.published,
     score: community.score(b),
+    // The share link is the owner's to copy and revoke, so it is only ever
+    // sent on this authenticated listing.
+    shareToken: b.shareToken,
+    sharedAt: b.sharedAt,
   })))
 })
 
@@ -537,7 +545,22 @@ app.post('/api/my/builds', (req, res) => {
   if (!userId) return
   try {
     const { id, name, document } = req.body ?? {}
-    const build = community.saveBuild(userId, { id, name, document })
+    // A plain save into a build people are editing live must not throw their
+    // work away: it goes through the same merge as any other collaborator.
+    const live = typeof id === 'string' ? collab.liveRoom(id) : undefined
+    if (live) {
+      const existing = community.getBuild(id)
+      live.applyUpdate({
+        clientId: `owner:${userId}`,
+        baseVersion: -1,
+        base: existing?.document,
+        document,
+      })
+      live.flush()
+    }
+    const build = community.saveBuild(userId, {
+      id, name, document: live ? live.document : document,
+    })
     res.json({ id: build.id, name: build.name, updatedAt: build.updatedAt, published: build.published })
   } catch (err) { communityError(res, err) }
 })
@@ -590,6 +613,142 @@ app.delete('/api/my/builds/:id/star', (req, res) => {
     community.unpublishBuild(req.params.id, userId)
     res.json({ ok: true })
   } catch (err) { communityError(res, err) }
+})
+
+// ---------------------------------------------------------------------------
+// Collaborative editing — several people on one shared build at the same time.
+//
+// The owner turns a saved build into a shared one, which mints a secret token;
+// anyone holding the link may open and edit the build, signed in or not. Each
+// client sends the document it is proposing plus the shared version it started
+// from, and CollabHub merges that against everyone else's edits and pushes the
+// result to the other clients over SSE. See src/server/collabHub.ts.
+// ---------------------------------------------------------------------------
+
+const collab = new CollabHub(community)
+
+app.post('/api/my/builds/:id/share', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    const build = community.shareBuild(req.params.id, userId)
+    res.json({ token: build.shareToken, sharedAt: build.sharedAt })
+  } catch (err) { communityError(res, err) }
+})
+
+app.delete('/api/my/builds/:id/share', (req, res) => {
+  const userId = requireAuth(req, res)
+  if (!userId) return
+  try {
+    community.unshareBuild(req.params.id, userId)
+    // Everyone in the room keeps what they have locally but can no longer
+    // reach the shared copy, which is what revoking a link means.
+    collab.closeRoom(req.params.id)
+    res.json({ ok: true })
+  } catch (err) { communityError(res, err) }
+})
+
+/** Resolves the :token path parameter, replying 404 when the link is unknown
+ *  or has been revoked. Returns null once it has answered. */
+function collabRoom(req: express.Request, res: express.Response) {
+  const record = collab.resolve(req.params.token)
+  if (!record) {
+    res.status(404).json({ error: 'This share link is no longer valid' })
+    return null
+  }
+  return { record, room: collab.roomFor(record) }
+}
+
+/** The display name for a request: the signed-in username, else the guest name
+ *  the client supplied. */
+function collabName(req: express.Request, raw: unknown): string {
+  const userId = communityUserId(req)
+  const user = userId ? community.userById(userId) : undefined
+  return user ? user.username : sanitizeName(raw)
+}
+
+app.get('/api/collab/:token', (req, res) => {
+  const found = collabRoom(req, res)
+  if (!found) return
+  const { record, room } = found
+  const owner = community.userById(record.ownerId)
+  res.json({ ...room.snapshot(), owner: owner?.username ?? 'Unknown', canEdit: true })
+})
+
+// The live channel: one long-lived SSE stream per open tab, carrying `sync`
+// (a new shared document) and `presence` (who is in the build) events.
+app.get('/api/collab/:token/stream', (req, res) => {
+  const found = collabRoom(req, res)
+  if (!found) return
+  const { record, room } = found
+  const clientId = typeof req.query.client === 'string' ? req.query.client.slice(0, 64) : ''
+  if (!clientId) {
+    res.status(400).json({ error: 'A client id is required' })
+    return
+  }
+  const userId = communityUserId(req)
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    // Proxies that buffer would defeat the whole point of the stream.
+    'X-Accel-Buffering': 'no',
+  })
+  res.flushHeaders?.()
+
+  room.touch(clientId, collabName(req, req.query.name), userId === record.ownerId)
+  const unsubscribe = room.subscribe(clientId, {
+    write: (chunk: string) => { res.write(chunk) },
+    end: () => { res.end() },
+  })
+  req.on('close', unsubscribe)
+})
+
+// One client's edit. The reply carries the merged shared document, so a client
+// whose edit was reshaped by someone else's sees the result immediately.
+app.post('/api/collab/:token/update', (req, res) => {
+  const found = collabRoom(req, res)
+  if (!found) return
+  const { record, room } = found
+  const { clientId, baseVersion, base, document, name } = req.body ?? {}
+  if (typeof clientId !== 'string' || clientId === '') {
+    res.status(400).json({ error: 'A client id is required' })
+    return
+  }
+  if (typeof document !== 'object' || document === null) {
+    res.status(400).json({ error: 'A document is required' })
+    return
+  }
+  const userId = communityUserId(req)
+  room.touch(clientId, collabName(req, name), userId === record.ownerId)
+  res.json(room.applyUpdate({
+    clientId,
+    baseVersion: typeof baseVersion === 'number' ? baseVersion : -1,
+    base,
+    document,
+  }))
+})
+
+// A heartbeat that keeps the sender in the presence list, and returns the
+// shared version so a client with a dead stream still notices it is behind.
+app.post('/api/collab/:token/presence', (req, res) => {
+  const found = collabRoom(req, res)
+  if (!found) return
+  const { record, room } = found
+  const { clientId, name, leaving } = req.body ?? {}
+  if (typeof clientId !== 'string' || clientId === '') {
+    res.status(400).json({ error: 'A client id is required' })
+    return
+  }
+  if (leaving) {
+    room.leave(clientId)
+  } else {
+    const userId = communityUserId(req)
+    room.touch(clientId, collabName(req, name), userId === record.ownerId)
+  }
+  room.broadcastPresence()
+  res.json({ version: room.version, participants: room.present() })
 })
 
 app.get('/api/community', (req, res) => {

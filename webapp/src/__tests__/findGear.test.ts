@@ -98,12 +98,16 @@ describe('findGearByEffect — V2 FindGearDialog parity', () => {
     expect(names).toContain('High Level Helm')       // Value1: 12 > 8
   })
 
-  it('filters by item name search (case-insensitive)', () => {
+  it('filters by item text search (case-insensitive)', () => {
+    // The item-text box searches the effect descriptions too, so the helm
+    // whose only mention of Strength is its buff comes back as well.
     const results = findGearByEffect(MOCK_ITEMS, { nameSearch: 'strength' })
-    expect(results).toHaveLength(2)
+    expect(results).toHaveLength(3)
     const names = results.map(r => r.item.Name)
     expect(names).toContain('Ring of Strength')
     expect(names).toContain('Boots of Strength')
+    expect(names).toContain('High Level Helm')
+    expect(names).not.toContain('Cloak of Protection')
   })
 
   it('exposes matchedBuffs containing only the matching buff(s)', () => {

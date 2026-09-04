@@ -1,5 +1,6 @@
 import type { Item, ItemBuff } from '../types/ddo'
 import { itemMatchesType } from './itemFilters'
+import { buffSearchText } from './itemDisplay'
 import { matchesTerms, itemSearchText, searchTerms } from './searchMatch'
 import type { WeaponGroupSpec } from './weapons/groups'
 
@@ -11,7 +12,10 @@ function toArray<T>(val: T | T[] | undefined): T[] {
 export interface FindGearQuery {
   /** Exact match on ItemBuff.Type */
   buffType?: string
-  /** Partial case-insensitive match on ItemBuff.Type */
+  /** Free text matched against each buff's effect description: its rendered
+   *  line ("+15 Intelligence (Enhancement)"), its raw <Type>, its bonus type
+   *  and its target stat. Every whitespace-separated term must appear, so
+   *  "insightful constitution" narrows where "constitution" alone would not. */
   buffSearch?: string
   /** Minimum ItemBuff.Value1 (applied after buff type filter) */
   minValue?: number
@@ -43,6 +47,7 @@ export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearR
     query
   // Split once, not per item: the catalogue is 8779 entries long.
   const nameTerms = searchTerms(nameSearch)
+  const buffTerms = searchTerms(buffSearch)
 
   const results: FindGearResult[] = []
 
@@ -59,9 +64,8 @@ export function findGearByEffect(items: Item[], query: FindGearQuery): FindGearR
     if (buffType) {
       matchedBuffs = allBuffs.filter(b => b.Type === buffType)
       if (matchedBuffs.length === 0) continue
-    } else if (buffSearch) {
-      const lower = buffSearch.toLowerCase()
-      matchedBuffs = allBuffs.filter(b => b.Type?.toLowerCase().includes(lower))
+    } else if (buffTerms.length > 0) {
+      matchedBuffs = allBuffs.filter(b => matchesTerms(buffSearchText(b), buffTerms))
       if (matchedBuffs.length === 0) continue
     } else {
       matchedBuffs = allBuffs

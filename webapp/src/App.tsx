@@ -39,6 +39,8 @@ import CommunityPanel from './components/community/CommunityPanel'
 import AccountPanel from './components/community/AccountPanel'
 import { SaveLoadBar } from './hooks/usePersistence'
 import { DocumentProvider, useDocument } from './context/DocumentContext'
+import { CollabProvider, useCollab } from './context/CollabContext'
+import CollabBar from './components/collab/CollabBar'
 import { SettingsProvider } from './context/SettingsContext'
 import SettingsPanel from './components/layout/SettingsPanel'
 import ContentPanel from './components/layout/ContentPanel'
@@ -113,7 +115,9 @@ export default function App() {
         <DocumentProvider>
           <SettingsProvider>
             <AuthProvider>
-              <AppInner />
+              <CollabProvider>
+                <AppInner />
+              </CollabProvider>
             </AuthProvider>
           </SettingsProvider>
         </DocumentProvider>
@@ -136,6 +140,16 @@ function AccountButton({ onGoToAccount }: { onGoToAccount: () => void }) {
   )
 }
 
+/** The share token in the address bar, when the page was opened from a
+ *  collaboration link (`?share=…`). */
+function shareTokenFromUrl(): string | null {
+  try {
+    return new URLSearchParams(window.location.search).get('share')
+  } catch {
+    return null
+  }
+}
+
 function AppInner() {
   const { dispatch } = useCharacter()
   const { setDoc } = useDocument()
@@ -153,6 +167,10 @@ function AppInner() {
   // level-1 character when you spent yesterday on a 34-life build — with the
   // real one sitting in localStorage the whole time — is a needless loss.
   useEffect(() => {
+    // A collaboration link brings its own document; restoring the last local
+    // session first would flash the wrong character and then be pushed at the
+    // people already in the shared build.
+    if (shareTokenFromUrl()) return
     const restored = readSession()
     if (!restored) return
     setDoc(restored)
@@ -161,6 +179,20 @@ function AppInner() {
     // Once, on mount, before any edit can overwrite the snapshot.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  // Opened from a share link: join the shared build instead of the last local
+  // character. The token stays in the address bar so a reload rejoins.
+  const { join: joinCollab } = useCollab()
+  const [joinError, setJoinError] = useState<string | null>(null)
+  useEffect(() => {
+    const token = shareTokenFromUrl()
+    if (!token) return
+    joinCollab(token).catch((err: unknown) => {
+      setJoinError(err instanceof Error ? err.message : 'That share link could not be opened')
+    })
+    // Once, on mount: joining twice would leave a duplicate stream open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const [tabs, setTabs] = useState<Record<Page, string>>(() => (
     Object.fromEntries(PAGES.map(p => [p, PAGE_TABS[p][0]])) as Record<Page, string>
   ))
@@ -266,6 +298,8 @@ function AppInner() {
   return (
     <>
       <AppShortcuts onLoad={handleLoad} />
+      <CollabBar />
+      {joinError && <div className={styles.joinError} role="alert">{joinError}</div>}
       <Layout
         pages={PAGES}
         activePage={page}

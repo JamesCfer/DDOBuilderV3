@@ -62,6 +62,14 @@ export interface SavedBuildRecord {
   publishedAt?: string
   snapshot?: BuildSnapshot
   votes: Record<string, 1 | -1>
+  /** Secret token for the collaborative editing link. Anyone holding it may
+   *  open and edit this build; the owner creates and revokes it. Absent means
+   *  the build is not shared. */
+  shareToken?: string
+  sharedAt?: string
+  /** Bumped on every accepted collaborative edit, so a client can tell the
+   *  server which shared version its own edit was based on. */
+  collabVersion?: number
 }
 
 export interface CommunityListing {
@@ -350,6 +358,51 @@ export class CommunityStore {
   unpublishBuild(id: string, ownerId: string): SavedBuildRecord {
     const build = this.requireOwnedBuild(id, ownerId)
     build.published = false
+    this.persist()
+    return build
+  }
+
+  // -------------------------------------------------------------------------
+  // Collaborative share links
+  // -------------------------------------------------------------------------
+
+  /** Creates the build's share link, or returns the existing one. The token is
+   *  the only credential a collaborator needs, so it is generated with the
+   *  same CSPRNG as session ids and is long enough not to be guessable. */
+  shareBuild(id: string, ownerId: string): SavedBuildRecord {
+    const build = this.requireOwnedBuild(id, ownerId)
+    if (!build.shareToken) {
+      build.shareToken = randomBytes(24).toString('base64url')
+      build.sharedAt = now()
+      this.persist()
+    }
+    return build
+  }
+
+  /** Revokes the link. Everyone currently editing loses access on their next
+   *  request, which is the point of a revoke. */
+  unshareBuild(id: string, ownerId: string): SavedBuildRecord {
+    const build = this.requireOwnedBuild(id, ownerId)
+    delete build.shareToken
+    delete build.sharedAt
+    this.persist()
+    return build
+  }
+
+  buildByShareToken(token: string): SavedBuildRecord | undefined {
+    if (typeof token !== 'string' || token === '') return undefined
+    return this.state.builds.find(b => b.shareToken === token)
+  }
+
+  /** Stores a merged collaborative document against the build and returns the
+   *  new shared version. Bypasses the ownership check by design: everyone
+   *  holding the share link may edit. */
+  saveCollabDocument(id: string, document: unknown, version: number): SavedBuildRecord {
+    const build = this.getBuild(id)
+    if (!build) throw new Error('Build not found')
+    build.document = document
+    build.collabVersion = version
+    build.updatedAt = now()
     this.persist()
     return build
   }
