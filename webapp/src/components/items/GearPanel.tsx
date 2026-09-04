@@ -13,6 +13,7 @@ import { itemSlotKey } from '../../lib/gearSlots'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import {
   augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
+  itemEffectsSummary,
 } from '../../lib/itemDisplay'
 import { itemMatchesType, itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
 import { itemSearchText, matchesTerms, searchTerms } from '../../lib/searchMatch'
@@ -137,7 +138,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
         <div className={styles.pickerSearch}>
           <input
             className={styles.pickerSearchInput}
-            placeholder="Search name, description or set…"
+            placeholder="Search name, effect, description or set…"
             value={search}
             autoFocus
             onChange={e => setSearch(e.target.value)}
@@ -224,6 +225,13 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
               <span className={styles.pickerItemName}>{item.Name}</span>
               {itemTypeLabel(item) && (
                 <span className={styles.pickerItemType}>{itemTypeLabel(item)}</span>
+              )}
+              {/* What the item actually does. Searching matches these lines,
+                  so a tile found by its effect shows why it matched. */}
+              {itemEffectsSummary(item) && (
+                <span className={styles.pickerItemEffects} title={itemEffectsSummary(item)}>
+                  {itemEffectsSummary(item)}
+                </span>
               )}
               {item.MinLevel != null && item.MinLevel > 1 && (
                 <span className={styles.pickerItemLevel}>Lv {item.MinLevel}</span>

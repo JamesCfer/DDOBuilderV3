@@ -375,6 +375,21 @@
   font-weight: 600;
 }
 
+.pickerItemEffects {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  line-height: 1.25;
+  text-align: center;
+  word-break: break-word;
+  /* Effect lists run long; keep every tile the same shape and put the full
+     list in the tile's tooltip (and the hover card). */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .pickerItemType {
   font-size: 9px;
   color: var(--color-text-secondary);

@@ -9,6 +9,7 @@ import {
   itemMatchesSearch, filigreeMatchesSearch, searchTerms, matchesTerms,
 } from '../lib/searchMatch'
 import { findGearByEffect } from '../lib/findGear'
+import { itemEffectsSummary } from '../lib/itemDisplay'
 import type { Filigree, Item } from '../types/ddo'
 
 const GOGGLES = {
@@ -99,5 +100,68 @@ describe('findGearByEffect — the Find Gear dialog uses the same matching', () 
   it('still finds gear by name', () => {
     const results = findGearByEffect(items, { nameSearch: 'ring of strength' })
     expect(results.map(r => r.item.Name)).toEqual(['Ring of Strength'])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Effect descriptions
+// ---------------------------------------------------------------------------
+// What an item DOES lives in its <Buff> entries, and almost none of that text
+// appears in the Name or the Description: the stat is in <Item>/<Description1>
+// and the stacking category in <BonusType>. Searching "insightful
+// constitution" or "acid resistance" therefore used to return nothing.
+
+const BRACERS = {
+  Name: 'Bracers of the Sun Soul',
+  MinLevel: 20,
+  EquipmentSlot: { Wrist: true },
+  Buff: [
+    { Type: 'AbilityBonus', Item: 'Constitution', BonusType: 'Insightful', Value1: 4 },
+    { Type: 'EnergyResistance', Item: 'Acid', Value1: 30 },
+  ],
+} as unknown as Item
+
+describe('effect descriptions are searchable', () => {
+  it('matches the stat a buff targets, which appears in no other field', () => {
+    expect(itemMatchesSearch(BRACERS, 'constitution')).toBe(true)
+    expect(itemMatchesSearch(BRACERS, 'acid resistance')).toBe(true)
+    expect(itemMatchesSearch(BRACERS, 'dodge')).toBe(false)
+  })
+
+  it('matches the stacking category', () => {
+    expect(itemMatchesSearch(BRACERS, 'insightful constitution')).toBe(true)
+    expect(itemMatchesSearch(BRACERS, 'quality constitution')).toBe(false)
+  })
+
+  it('still matches the raw buff type names', () => {
+    expect(itemMatchesSearch(BRACERS, 'abilitybonus')).toBe(true)
+  })
+
+  it('renders the same lines the picker shows', () => {
+    expect(itemEffectsSummary(BRACERS))
+      .toBe('+4 Constitution (Insightful), +30 Acid Resistance')
+    expect(itemEffectsSummary(PLAIN_RING)).toBe('')
+  })
+})
+
+describe('findGearByEffect effect search', () => {
+  const items = [BRACERS, PLAIN_RING]
+
+  it('matches the effect description, not just the raw <Type>', () => {
+    expect(findGearByEffect(items, { buffSearch: 'Insightful Constitution' })
+      .map(r => r.item.Name)).toEqual(['Bracers of the Sun Soul'])
+    expect(findGearByEffect(items, { buffSearch: 'acid' })
+      .flatMap(r => r.matchedBuffs.map(b => b.Type))).toEqual(['EnergyResistance'])
+  })
+
+  it('keeps returning only the buffs that matched', () => {
+    const [result] = findGearByEffect(items, { buffSearch: 'constitution' })
+    expect(result.matchedBuffs).toHaveLength(1)
+    expect(result.matchedBuffs[0].Item).toBe('Constitution')
+  })
+
+  it('finds gear by effect through the item-text box too', () => {
+    expect(findGearByEffect(items, { nameSearch: 'acid resistance' })
+      .map(r => r.item.Name)).toEqual(['Bracers of the Sun Soul'])
   })
 })

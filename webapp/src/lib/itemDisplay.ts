@@ -8,7 +8,7 @@
 // we do the same substitution for the prose line and additionally derive a
 // short structured label for the effect tables.
 
-import type { ItemBuff, Augment } from '../types/ddo'
+import type { Item, ItemBuff, Augment } from '../types/ddo'
 
 // ---------------------------------------------------------------------------
 // Buff labels
@@ -127,6 +127,50 @@ export function formatBuffText(buff: ItemBuff): string {
   const val = d.value ? `${d.value} ` : ''
   const bonus = d.bonusType ? ` (${d.bonusType})` : ''
   return `${val}${d.label}${bonus}`
+}
+
+function toBuffArray(val: ItemBuff | ItemBuff[] | undefined): ItemBuff[] {
+  if (val == null) return []
+  return Array.isArray(val) ? val : [val]
+}
+
+/** The item's <Buff> entries, normalised to an array. */
+export function itemBuffs(item: Item): ItemBuff[] {
+  return toBuffArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
+}
+
+/**
+ * One line per effect, exactly as the hover card reads them
+ * ("+15 Intelligence (Enhancement)"). Used both for the picker's effect line
+ * and, lower-cased, as part of what a search query is matched against.
+ */
+export function itemEffectLines(item: Item): string[] {
+  return itemBuffs(item).map(formatBuffText)
+}
+
+// Picker tiles re-render as the grid pages in, and the summary is the same
+// every time: build it once per catalogue entry. A WeakMap keeps nothing
+// alive beyond the catalogue itself.
+const summaries = new WeakMap<Item, string>()
+
+/** The item's effects as one comma-separated line, for compact lists. */
+export function itemEffectsSummary(item: Item): string {
+  const cached = summaries.get(item)
+  if (cached !== undefined) return cached
+  const text = itemEffectLines(item).join(', ')
+  summaries.set(item, text)
+  return text
+}
+
+/** Everything one buff can be searched by: its display line, its raw
+ *  <Type> (so the "AbilityBonus" style names still match), its stacking
+ *  category and its target stat. */
+export function buffSearchText(buff: ItemBuff): string {
+  const d = describeBuff(buff)
+  return [formatBuffText(buff), buff.Type, humanizeBuffType(buff.Type), d.bonusType, buffTarget(buff)]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
 }
 
 // ---------------------------------------------------------------------------

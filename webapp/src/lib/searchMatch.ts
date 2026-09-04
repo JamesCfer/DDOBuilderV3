@@ -7,7 +7,13 @@
 //                     easier", the flavour text naming the effect
 //   * `SetBonus`    — the named set(s) the piece belongs to ("Angelic Wings",
 //                     "Legendary Dread Isle")
-// so all three are searched together.
+// and gear carries a fourth: the effects themselves. An item's <Buff> entries
+// are what the player is usually hunting for ("Dodge", "Insightful
+// Constitution", "Acid Resistance"), and most of that text appears nowhere in
+// the Name or Description: the target stat lives in <Item>/<Description1> and
+// the stacking category in <BonusType>. Each buff therefore contributes its
+// rendered effect description, exactly as the hover card and the picker show
+// it, so what is searched is what is displayed.
 //
 // A query is matched term-by-term: every whitespace-separated term must appear
 // somewhere in that text, in any order ("shadow goggle" finds the goggles
@@ -15,6 +21,7 @@
 // still behaves exactly like the old substring match.
 
 import type { Filigree, Item } from '../types/ddo'
+import { buffSearchText, itemBuffs } from './itemDisplay'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
@@ -35,12 +42,14 @@ function haystackOf(source: object, parts: () => (string | undefined)[]): string
   return text
 }
 
-/** Everything an item is searchable by: name, description and set names. */
+/** Everything an item is searchable by: name, description, set names and the
+ *  description of every effect it grants. */
 export function itemSearchText(item: Item): string {
   return haystackOf(item, () => [
     item.Name,
     item.Description,
     ...toArray(item.SetBonus),
+    ...itemBuffs(item).map(buffSearchText),
   ])
 }
 
@@ -63,7 +72,8 @@ export function matchesTerms(text: string, terms: string[]): boolean {
   return terms.every(t => text.includes(t))
 }
 
-/** Does the item match a free-text query (name / description / set bonus)? */
+/** Does the item match a free-text query (name / description / set bonus /
+ *  effect descriptions)? */
 export function itemMatchesSearch(item: Item, query: string | undefined): boolean {
   const terms = searchTerms(query)
   if (terms.length === 0) return true

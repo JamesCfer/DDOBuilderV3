@@ -188,7 +188,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             Item text
             <input
               className={styles.filterInput}
-              placeholder="Name, description or set…"
+              placeholder="Name, effect, description or set…"
               value={nameSearch}
               autoFocus
               onChange={e => setNameSearch(e.target.value)}
@@ -199,7 +199,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             Effect
             <input
               className={styles.filterInput}
-              placeholder="e.g. Strength, Dodge…"
+              placeholder="e.g. Insightful Strength, Dodge…"
               value={buffSearch}
               list={listId}
               onChange={e => setBuffSearch(e.target.value)}
@@ -274,9 +274,10 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
             <div className={styles.placeholder}>Loading item database…</div>
           ) : !hasFilter ? (
             <div className={styles.placeholder}>
-              Search across all gear slots — by name, description or set bonus,
-              by effect, or by item type (Longsword, Small Shield, Medium Armor,
-              Minor Artifact…).
+              Search across all gear slots: by item text (name, effect
+              description, flavour text or set bonus), by a single effect
+              (Insightful Constitution, Acid Resistance, Dodge), or by item
+              type (Longsword, Small Shield, Medium Armor, Minor Artifact…).
             </div>
           ) : results.length === 0 ? (
             <div className={styles.placeholder}>No items match — try adjusting the filters.</div>
@@ -323,7 +324,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
                             )}
                           </td>
                           <td className={styles.tdEffect}>
-                            {result.matchedBuffs.map(b => formatBuffText(b)).join(', ')}
+                            {result.matchedBuffs.map(b => formatBuffText(b)).join(', ') || '—'}
                           </td>
                           <td className={styles.tdEquip}>
                             <EquipCell
