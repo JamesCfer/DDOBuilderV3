@@ -272,10 +272,25 @@
 .tdEffect {
   color: var(--color-text-secondary);
   font-size: 11px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* One entry per effect, each free to wrap: the descriptions are sentences,
+     and truncating them to a single line is what hid them in the first place. */
   max-width: 0;
+}
+
+.effectEntry {
+  display: block;
+  padding: 1px 0;
+}
+
+.effectLabel {
+  display: block;
+  color: var(--color-text-primary);
+}
+
+.effectText {
+  display: block;
+  color: var(--color-text-muted);
+  line-height: 1.35;
 }
 
 .tdEquip {

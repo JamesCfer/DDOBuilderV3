@@ -13,7 +13,7 @@ import { itemSlotKey } from '../../lib/gearSlots'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import {
   augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
-  itemEffectsSummary,
+  itemEffectsSummary, itemEffectsText,
 } from '../../lib/itemDisplay'
 import { itemMatchesType, itemTypeLabel, itemTypeOptions } from '../../lib/itemFilters'
 import { itemSearchText, matchesTerms, searchTerms } from '../../lib/searchMatch'
@@ -227,9 +227,11 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
                 <span className={styles.pickerItemType}>{itemTypeLabel(item)}</span>
               )}
               {/* What the item actually does. Searching matches these lines,
-                  so a tile found by its effect shows why it matched. */}
+                  so a tile found by its effect shows why it matched. The tile
+                  has room for the labels; the tooltip carries each effect's
+                  full description, as the hover card does. */}
               {itemEffectsSummary(item) && (
-                <span className={styles.pickerItemEffects} title={itemEffectsSummary(item)}>
+                <span className={styles.pickerItemEffects} title={itemEffectsText(item)}>
                   {itemEffectsSummary(item)}
                 </span>
               )}

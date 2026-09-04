@@ -9,6 +9,8 @@
 // short structured label for the effect tables.
 
 import type { Item, ItemBuff, Augment } from '../types/ddo'
+import type { ItemBuffSpec } from '../server/dataLoaders'
+import { stripLabel } from './combat/procText'
 
 // ---------------------------------------------------------------------------
 // Buff labels
@@ -129,6 +131,119 @@ export function formatBuffText(buff: ItemBuff): string {
   return `${val}${d.label}${bonus}`
 }
 
+// ---------------------------------------------------------------------------
+// Effect descriptions (ItemBuffs.xml)
+// ---------------------------------------------------------------------------
+//
+// Most of what an item DOES is not on the item. "Mind Drain" appears in
+// Lucid Dreams as `<Buff><Type>Mind Drain</Type></Buff>` and nothing else:
+// the sentence a player wants ("reduces your maximum spell points by 5% while
+// equipped") lives in ItemBuffs.xml against that Type, as a template with
+// %v1/%v2/%b1/%i1 placeholders the item's own values fill in
+// (V2 Buff::MakeDescription, Buff.cpp:111-178).
+//
+// The catalogue is fetched once per session, so it is registered here rather
+// than threaded through every call site; `templateGeneration` lets the caches
+// built on top of it (the effect summaries, the search haystacks) tell a text
+// built before the catalogue arrived from one built after.
+
+let buffTemplates = new Map<string, ItemBuffSpec>()
+let templateGeneration = 0
+
+/** Registers ItemBuffs.xml, once the catalogue bundle has loaded. */
+export function setBuffTemplates(specs: ItemBuffSpec[]): void {
+  buffTemplates = new Map(
+    specs
+      .filter(spec => typeof spec?.Type === 'string')
+      .map(spec => [spec.Type.trim().toLowerCase(), spec]),
+  )
+  templateGeneration++
+}
+
+/** Bumped whenever the templates change; caches keyed on descriptions must
+ *  compare against it before trusting an entry. */
+export function buffTemplateGeneration(): number {
+  return templateGeneration
+}
+
+/** Test-only: forget the registered templates. */
+export function resetBuffTemplatesForTests(): void {
+  buffTemplates = new Map()
+  templateGeneration++
+}
+
+function templateText(type: string): string[] {
+  const spec = buffTemplates.get(type.trim().toLowerCase())
+  const raw = (spec as { DisplayText?: string | string[] } | undefined)?.DisplayText
+  if (raw == null) return []
+  return (Array.isArray(raw) ? raw : [raw]).filter(t => typeof t === 'string' && t.trim() !== '')
+}
+
+/** V2 formats every substituted value with an explicit sign ("%+d"). */
+function signed(n: number): string {
+  return `${n >= 0 ? '+' : ''}${n}`
+}
+
+/**
+ * Drops a leading label the template BUILT out of the buff's own parts, which
+ * `stripLabel` cannot see because it no longer matches the raw <Type>:
+ * Potency's template renders "Equipment Potency +48: +48 Equipment bonus to…",
+ * and the first half is the label the panel already shows.
+ *
+ * Only a prefix made entirely of the buff's own words goes, so a trigger clause
+ * ("On Vorpal:") or any real prose is never mistaken for one.
+ */
+function stripRenderedLabel(text: string, buff: ItemBuff): string {
+  const colon = text.indexOf(':')
+  if (colon <= 0 || colon > 60) return text
+  const own = new Set(
+    [
+      buff.Type, humanizeBuffType(buff.Type ?? ''), buff.BonusType, buff.Description1,
+      ...(Array.isArray(buff.Item) ? buff.Item : [buff.Item]),
+      buff.Value1 != null ? signed(buff.Value1) : undefined,
+      buff.Value2 != null ? signed(buff.Value2) : undefined,
+    ]
+      .filter((v): v is string | number => v != null && v !== '')
+      .flatMap(v => String(v).toLowerCase().split(/\s+/)),
+  )
+  const words = text.slice(0, colon).toLowerCase().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return text
+  // Percent signs and the like ride along with a word we already know.
+  const known = words.every(w => own.has(w.replace(/[%,.]+$/, '')))
+  return known ? text.slice(colon + 1).trim() : text
+}
+
+/**
+ * The full prose for one item buff: its ItemBuffs.xml template with the item's
+ * own values substituted in. Undefined when the buff names no template, which
+ * is the common case for the plain stat buffs whose label already says
+ * everything ("+15 Intelligence").
+ *
+ * The template repeats the effect's own name ("Mind Drain: This item…"), which
+ * would read twice next to the label, so that prefix is dropped — never when it
+ * is a trigger clause ("On Vorpal: …"), which `stripLabel` already guards.
+ */
+export function buffDescription(buff: ItemBuff): string | undefined {
+  const type = buff?.Type
+  if (typeof type !== 'string' || type.trim() === '') return undefined
+  const lines = templateText(type)
+  if (lines.length === 0) return undefined
+
+  const target = buff.Description1 ?? (Array.isArray(buff.Item) ? buff.Item[0] : buff.Item)
+  const rendered = lines.map(line => {
+    let text = line
+    if (buff.Value1 != null) text = text.split('%v1').join(signed(buff.Value1))
+    if (buff.Value2 != null) text = text.split('%v2').join(signed(buff.Value2))
+    if (buff.BonusType) text = text.split('%b1').join(String(buff.BonusType).trim())
+    if (target != null && String(target).trim() !== '') {
+      text = text.split('%i1').join(String(target).trim())
+    }
+    return stripRenderedLabel(stripLabel(text.replace(/\s+/g, ' ').trim(), type), buff)
+  }).filter(Boolean)
+
+  return rendered.length > 0 ? rendered.join('\n') : undefined
+}
+
 function toBuffArray(val: ItemBuff | ItemBuff[] | undefined): ItemBuff[] {
   if (val == null) return []
   return Array.isArray(val) ? val : [val]
@@ -137,6 +252,21 @@ function toBuffArray(val: ItemBuff | ItemBuff[] | undefined): ItemBuff[] {
 /** The item's <Buff> entries, normalised to an array. */
 export function itemBuffs(item: Item): ItemBuff[] {
   return toBuffArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
+}
+
+/** One effect, as the hover card and the effect tables present it: the short
+ *  label the panels have always shown, plus the sentence from ItemBuffs.xml
+ *  when the buff has one. */
+export interface EffectDetail extends BuffDisplay {
+  description?: string
+}
+
+/** Every effect on the item, with its description resolved. */
+export function itemEffectDetails(item: Item): EffectDetail[] {
+  return itemBuffs(item).map(buff => ({
+    ...describeBuff(buff),
+    description: buffDescription(buff),
+  }))
 }
 
 /**
@@ -148,26 +278,54 @@ export function itemEffectLines(item: Item): string[] {
   return itemBuffs(item).map(formatBuffText)
 }
 
-// Picker tiles re-render as the grid pages in, and the summary is the same
-// every time: build it once per catalogue entry. A WeakMap keeps nothing
-// alive beyond the catalogue itself.
-const summaries = new WeakMap<Item, string>()
-
-/** The item's effects as one comma-separated line, for compact lists. */
-export function itemEffectsSummary(item: Item): string {
-  const cached = summaries.get(item)
-  if (cached !== undefined) return cached
-  const text = itemEffectLines(item).join(', ')
-  summaries.set(item, text)
-  return text
+/** One line per effect, label and sentence together — what a tooltip shows and
+ *  what an item is searchable by. */
+export function itemEffectLinesWithText(item: Item): string[] {
+  return itemBuffs(item).map(buff => {
+    const description = buffDescription(buff)
+    return description ? `${formatBuffText(buff)}: ${description}` : formatBuffText(buff)
+  })
 }
 
-/** Everything one buff can be searched by: its display line, its raw
- *  <Type> (so the "AbilityBonus" style names still match), its stacking
- *  category and its target stat. */
+// Picker tiles re-render as the grid pages in, and the summary is the same
+// every time: build it once per catalogue entry. A WeakMap keeps nothing
+// alive beyond the catalogue itself. The generation guards the entries built
+// before ItemBuffs.xml finished loading.
+const summaries = new WeakMap<Item, { gen: number; short: string; full: string }>()
+
+function summaryOf(item: Item): { short: string; full: string } {
+  const cached = summaries.get(item)
+  if (cached && cached.gen === templateGeneration) return cached
+  const entry = {
+    gen: templateGeneration,
+    short: itemEffectLines(item).join(', '),
+    full: itemEffectLinesWithText(item).join('\n'),
+  }
+  summaries.set(item, entry)
+  return entry
+}
+
+/** The item's effects as one comma-separated line of labels, for compact
+ *  lists where a sentence per effect would not fit. */
+export function itemEffectsSummary(item: Item): string {
+  return summaryOf(item).short
+}
+
+/** The item's effects one per line, each with its description — for tooltips
+ *  and anywhere the full text has room. */
+export function itemEffectsText(item: Item): string {
+  return summaryOf(item).full
+}
+
+/** Everything one buff can be searched by: its display line, the sentence
+ *  ItemBuffs.xml gives it, its raw <Type> (so the "AbilityBonus" style names
+ *  still match), its stacking category and its target stat. */
 export function buffSearchText(buff: ItemBuff): string {
   const d = describeBuff(buff)
-  return [formatBuffText(buff), buff.Type, humanizeBuffType(buff.Type), d.bonusType, buffTarget(buff)]
+  return [
+    formatBuffText(buff), buffDescription(buff), buff.Type,
+    humanizeBuffType(buff.Type), d.bonusType, buffTarget(buff),
+  ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
