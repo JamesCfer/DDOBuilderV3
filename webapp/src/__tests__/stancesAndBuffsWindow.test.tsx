@@ -82,10 +82,12 @@ describe('Stances & Buffs window', () => {
     expect(guildBuffs).toBeGreaterThan(selfBuffs)
   })
 
-  it('is on the Overview tab by default and available to every tab', () => {
-    const overview = defaultWorkspaces('Character')[0]
-    expect(overview.windows.map(w => w.panel)).toContain('Stances & Buffs')
+  it('is placed by default where toggles matter and available to every tab', () => {
+    const placed = defaultWorkspaces('Character').flatMap(t => t.windows.map(w => w.panel))
+    expect(placed).toContain('Stances & Buffs')
     expect(WINDOW_REGISTRY['Stances & Buffs']).toBeDefined()
+    // The Overview shows what is ON through the compact Active tile instead.
+    expect(defaultWorkspaces('Character')[0].windows.map(w => w.panel)).toContain('Active')
   })
 })
 

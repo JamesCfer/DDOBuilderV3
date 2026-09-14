@@ -139,7 +139,7 @@ describe('Workspace layout', () => {
     const c = await mountWorkspace()
     expect(tabButtons(c).map(b => b.textContent)).toContain('Overview')
     expect(windowsOn(c)).toHaveLength(OVERVIEW_COUNT)
-    expect(windowsOn(c).map(w => w.getAttribute('data-window'))).toContain('Stances & Buffs')
+    expect(windowsOn(c).map(w => w.getAttribute('data-window'))).toContain('Character')
   })
 
   it('draws every window on the grid', async () => {
@@ -201,7 +201,7 @@ describe('Workspace layout', () => {
     const gear = tabButtons(c).find(b => b.textContent === 'Gear')!
     await act(async () => { gear.click() })
     expect(windowsOn(c).map(w => w.getAttribute('data-window'))).toContain('Gear')
-    expect(windowsOn(c).map(w => w.getAttribute('data-window'))).not.toContain('Character Info')
+    expect(windowsOn(c).map(w => w.getAttribute('data-window'))).not.toContain('Character')
 
     const again = await mountWorkspace()
     expect(windowsOn(again).map(w => w.getAttribute('data-window'))).toContain('Gear')

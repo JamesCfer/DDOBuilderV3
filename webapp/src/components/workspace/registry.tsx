@@ -12,7 +12,7 @@ import StancesPanel from '../stances/StancesPanel'
 import SelfBuffsPanel from '../buffs/SelfBuffsPanel'
 import GuildBuffsPanel from '../guildbuffs/GuildBuffsPanel'
 
-export type WindowGroup = 'Build' | 'Progression' | 'Equipment' | 'Combat' | 'Analysis' | 'Stances & Buffs' | 'Tools' | 'Crafting' | 'Community' | 'Plugins'
+export type WindowGroup = 'Overview' | 'Build' | 'Progression' | 'Equipment' | 'Combat' | 'Analysis' | 'Stances & Buffs' | 'Tools' | 'Crafting' | 'Community' | 'Plugins'
 
 export interface WindowDefinition {
   group: WindowGroup
@@ -63,6 +63,14 @@ export function StancesAndBuffs() {
 const S = (w: number, h: number) => ({ w, h })
 
 export const WINDOW_REGISTRY: Record<string, WindowDefinition> = {
+  // Overview — compact tiles that summarise the build and offer quick edits.
+  'Character':         { group: 'Overview', component: lazy(() => import('../overview/IdentityTile')), size: S(340, 400) },
+  'Class Split':       { group: 'Overview', component: lazy(() => import('../overview/ClassesTile')), size: S(360, 400) },
+  'Feat Summary':      { group: 'Overview', component: lazy(() => import('../overview/FeatsTile')), size: S(420, 440) },
+  'Progression':       { group: 'Overview', component: lazy(() => import('../overview/ProgressionTile')), size: S(380, 440) },
+  'Equipment':         { group: 'Overview', component: lazy(() => import('../overview/EquipmentTile')), size: S(400, 440) },
+  'Active':            { group: 'Overview', component: lazy(() => import('../overview/ActiveTile')), size: S(300, 440) },
+
   // Build
   'Character Info':    { group: 'Build', component: lazy(() => import('../builder/CharacterInfo')), size: S(360, 280) },
   'Race':              { group: 'Build', component: lazy(() => import('../builder/RaceSelector')), size: S(360, 200) },
@@ -128,7 +136,7 @@ export const WINDOW_REGISTRY: Record<string, WindowDefinition> = {
 }
 
 export const WINDOW_GROUPS: WindowGroup[] = [
-  'Build', 'Progression', 'Equipment', 'Combat', 'Analysis', 'Stances & Buffs', 'Tools', 'Crafting', 'Community', 'Plugins',
+  'Overview', 'Build', 'Progression', 'Equipment', 'Combat', 'Analysis', 'Stances & Buffs', 'Tools', 'Crafting', 'Community', 'Plugins',
 ]
 
 /** Registry keys grouped for a menu, in registry order within each group. */
