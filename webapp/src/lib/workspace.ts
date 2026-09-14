@@ -158,16 +158,20 @@ function ws(id: string, name: string, cells: Cell[]): Workspace {
 // Character tabs. Each is a full workspace; the ones that are one big tree or
 // table give that panel the width and keep a numbers window alongside.
 const CHARACTER_DEFAULTS: Workspace[] = [
+  // Overview: the whole character at a glance — identity, class split,
+  // abilities and base stats across the top; feats, progression, equipment
+  // and what is switched on underneath. Everything fits a 1440×900 canvas
+  // without scrolling, and each tile is a summary with quick edits; the full
+  // editors are the other tabs.
   ws('overview', 'Overview', [
-    ['Character Info',    0,  0, 15, 12],
-    ['Race',              0, 12, 15,  8],
-    ['Classes',           0, 20, 15, 14],
-    ['Ability Scores',   15,  0, 20, 16],
-    ['Ability Level Ups',15, 16, 20,  8],
-    ['Tomes',            15, 24, 20, 10],
-    ['Stats',            35,  0, 18, 20],
-    ['Past Lives',       35, 20, 18, 14],
-    ['Stances & Buffs',  53,  0, 14, 34],
+    ['Character',        0,  0, 14, 16],
+    ['Class Split',     14,  0, 15, 16],
+    ['Ability Scores',  29,  0, 18, 16],
+    ['Stats',           47,  0, 13, 16],
+    ['Feat Summary',     0, 16, 17, 20],
+    ['Progression',     17, 16, 15, 20],
+    ['Equipment',       32, 16, 17, 20],
+    ['Active',          49, 16, 11, 20],
   ]),
   ws('skills', 'Skills', [
     ['Skills',            0,  0, 44, 32],

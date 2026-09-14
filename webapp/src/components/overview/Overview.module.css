@@ -1,0 +1,352 @@
+/* Overview tiles — compact, glanceable summaries of the build, progression
+   and equipment, sized to sit side by side on the Overview tab. The full
+   editors live on their own tabs; these show the state and offer the quick
+   edits that make sense at a glance. */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+}
+
+.meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────── */
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.field input,
+.field select {
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.fieldWide { grid-column: 1 / -1; }
+
+/* ── Rows ────────────────────────────────────────────────────────────────── */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  min-height: 28px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.rowValue {
+  font-weight: 700;
+  color: var(--color-gold-light);
+  white-space: nowrap;
+}
+
+.rowMuted { color: var(--color-text-muted); font-style: italic; }
+
+.rowDanger { color: var(--color-red); }
+
+/* ── Section titles inside a tile ────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.sectionNote {
+  font-family: var(--font-main);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.chipOn {
+  border-color: var(--color-gold-dark);
+  background: var(--tint-accent);
+  color: var(--color-gold-light);
+}
+
+.chipPositive { color: var(--color-green); }
+.chipNegative { color: var(--color-red); }
+
+.chipBtn { cursor: pointer; }
+.chipBtn:hover { border-color: var(--color-gold); }
+
+/* ── Steppers ────────────────────────────────────────────────────────────── */
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.stepBtn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+}
+
+.stepValue {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-gold-light);
+}
+
+/* ── Class rows ──────────────────────────────────────────────────────────── */
+
+.classRow {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.classRow select {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.levelBar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.levelSeg { height: 100%; flex: 0 0 auto; }
+
+.levelLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ── Bars (AP spend) ─────────────────────────────────────────────────────── */
+
+.barRow {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 11em) 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.barTrack {
+  position: relative;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--color-bg-secondary);
+  overflow: hidden;
+}
+
+.barFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--color-gold-dark), var(--color-gold));
+  border-radius: 3px;
+}
+
+.barName {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barValue {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-gold-light);
+  white-space: nowrap;
+}
+
+/* ── Feat list ───────────────────────────────────────────────────────────── */
+
+.featRow {
+  display: grid;
+  grid-template-columns: 34px 22px 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  min-height: 26px;
+  border-radius: var(--radius-sm);
+}
+
+.featRow:nth-child(odd) { background: var(--color-bg-secondary); }
+
+.featLevel {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.featName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.featType {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-left: 6px;
+}
+
+/* ── Equipment grid ──────────────────────────────────────────────────────── */
+
+.gearGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+}
+
+.gearSlot {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  min-height: 30px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.gearText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.gearSlotName {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.gearItem {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.gearEmpty { color: var(--color-text-muted); font-style: italic; }
+
+.iconBox {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.footnote {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
