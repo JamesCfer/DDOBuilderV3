@@ -1,6 +1,7 @@
-// HeroForge-style top navigation: brand • five page tabs • File/Account
-// clusters, with a second row of per-page sub-tabs and a collapsible
-// Lives & Builds strip. Replaces the old 30-item left sidebar.
+// Top navigation: brand • the four pages (Character, Crafting, Community,
+// Plugins) • File / theme / account, with a collapsible Lives & Builds strip.
+// The per-page tabs live in the workspace bar below the header, next to the
+// window tools they belong with.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ThemeMenu from './ThemeMenu'
@@ -10,7 +11,7 @@ import { api } from '../../api'
 import ParityBadge from './ParityBadge'
 
 // ---------------------------------------------------------------------------
-// Update button (moved from the old Sidebar)
+// Update button
 // ---------------------------------------------------------------------------
 
 interface UpdateInfo {
@@ -74,10 +75,11 @@ function UpdateButton() {
 // Dropdown helper — closes on outside click / Escape
 // ---------------------------------------------------------------------------
 
-function Dropdown({ label, children, alignRight }: {
+export function Dropdown({ label, children, alignRight, title }: {
   label: React.ReactNode
   children: React.ReactNode
   alignRight?: boolean
+  title?: string
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -104,11 +106,16 @@ function Dropdown({ label, children, alignRight }: {
         type="button"
         className={`${styles.dropdownBtn} ${open ? styles.dropdownBtnOpen : ''}`}
         onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        title={title}
       >
         {label} <span className={styles.caret}>▾</span>
       </button>
       {open && (
-        <div className={`${styles.dropdownPanel} ${alignRight ? styles.dropdownRight : ''}`}>
+        <div
+          className={`${styles.dropdownPanel} ${alignRight ? styles.dropdownRight : ''}`}
+          onClick={e => { if ((e.target as HTMLElement).closest('[data-closes-menu]')) setOpen(false) }}
+        >
           {children}
         </div>
       )}
@@ -123,14 +130,13 @@ function Dropdown({ label, children, alignRight }: {
 const LIVES_OPEN_KEY = 'ddo-builder-lives-open'
 
 export interface TopNavProps {
-  pages: string[]
+  pages: readonly string[]
   activePage: string
   onNavigate: (page: string) => void
-  subTabs: string[]
-  activeSubTab: string
-  onSubTab: (tab: string) => void
   /** Contents of the File ▾ menu (SaveLoadBar). */
   fileMenu: React.ReactNode
+  /** Contents of the Tools ▾ menu (settings, content, help…). */
+  toolsMenu?: React.ReactNode
   /** Account button / menu node (built by App from auth state). */
   account: React.ReactNode
   /** The Lives & Builds switcher strip (LifeBuildBar). */
@@ -139,8 +145,7 @@ export interface TopNavProps {
 
 export default function TopNav({
   pages, activePage, onNavigate,
-  subTabs, activeSubTab, onSubTab,
-  fileMenu, account, livesBar,
+  fileMenu, toolsMenu, account, livesBar,
 }: TopNavProps) {
   const { build } = useCharacter()
   // Never display the literal 'unknown' sentinel — hide the badge instead.
@@ -171,7 +176,6 @@ export default function TopNav({
 
   return (
     <header className={styles.header}>
-      {/* Row 1 — brand, pages, file/account */}
       <div className={styles.topRow}>
         <div className={styles.brand}>
           <span className={styles.brandName}>DDO Builder</span>
@@ -186,6 +190,7 @@ export default function TopNav({
               type="button"
               className={`${styles.pageTab} ${activePage === p ? styles.pageTabActive : ''}`}
               onClick={() => onNavigate(p)}
+              aria-current={activePage === p ? 'page' : undefined}
             >
               {p}
             </button>
@@ -193,6 +198,16 @@ export default function TopNav({
         </nav>
 
         <div className={styles.rightCluster}>
+          {build.name && <span className={styles.charName} title="Current character">{build.name}</span>}
+          <button
+            type="button"
+            className={`${styles.livesToggle} ${livesOpen ? styles.livesToggleOpen : ''}`}
+            onClick={toggleLives}
+            title="Show / hide the Lives & Builds switcher"
+            aria-expanded={livesOpen}
+          >
+            Lives &amp; Builds {livesOpen ? '▴' : '▾'}
+          </button>
           <ParityBadge />
           <Dropdown label="File">
             <div className={styles.fileMenu}>
@@ -200,41 +215,16 @@ export default function TopNav({
               <UpdateButton />
             </div>
           </Dropdown>
+          {toolsMenu && (
+            <Dropdown label="Tools" alignRight title="Settings, content, help">
+              <div className={styles.fileMenu}>{toolsMenu}</div>
+            </Dropdown>
+          )}
           <ThemeMenu />
           {account}
         </div>
       </div>
 
-      {/* Row 2 — sub-tabs + character name + lives toggle */}
-      <div className={styles.subRow}>
-        {/* A page with a single section has nothing to switch between —
-            showing one lone tab just adds a row of chrome. */}
-        <nav className={styles.subTabs} aria-label="Page sections">
-          {(subTabs.length > 1 ? subTabs : []).map(t => (
-            <button
-              key={t}
-              type="button"
-              className={`${styles.subTab} ${activeSubTab === t ? styles.subTabActive : ''}`}
-              onClick={() => onSubTab(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </nav>
-        <div className={styles.subRight}>
-          {build.name && <span className={styles.charName} title="Current character">{build.name}</span>}
-          <button
-            type="button"
-            className={`${styles.livesToggle} ${livesOpen ? styles.livesToggleOpen : ''}`}
-            onClick={toggleLives}
-            title="Show / hide the Lives & Builds switcher"
-          >
-            Lives &amp; Builds {livesOpen ? '▴' : '▾'}
-          </button>
-        </div>
-      </div>
-
-      {/* Row 3 — collapsible Lives & Builds strip */}
       {livesOpen && (
         <div className={styles.livesStrip}>
           {livesBar}

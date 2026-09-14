@@ -226,15 +226,25 @@ const PANELS: Array<[string, () => Promise<{ default: React.ComponentType<any> }
   ['ContentPanel', () => import('../components/layout/ContentPanel')],
   ['HelpPanel', () => import('../components/layout/HelpPanel')],
   ['LifeBuildBar', () => import('../components/layout/LifeBuildBar')],
-  // Dashboard keys its window layout by account, so it needs AuthProvider —
-  // the same wrapper the app always renders it inside.
-  ['Dashboard', () => Promise.all([
-    import('../components/layout/Dashboard'),
+  // The workspace keys its layout by account, so it needs AuthProvider — the
+  // same wrapper the app always renders it inside. Mounting the Character
+  // page renders the Overview tab's default windows with real data.
+  ['Workspace', () => Promise.all([
+    import('../components/workspace/Workspace'),
+    import('../hooks/useWorkspaceLayout'),
     import('../context/AuthContext'),
-  ]).then(([m, auth]) => ({
-    default: () => React.createElement(auth.AuthProvider, null,
-      React.createElement(m.default)),
-  }))],
+    import('../context/CollabContext'),
+  ]).then(([m, hook, auth, collab]) => {
+    function Page() {
+      const api = hook.useWorkspaceLayout(null)
+      return React.createElement(m.default, { page: 'Character', api })
+    }
+    return {
+      default: () => React.createElement(auth.AuthProvider, null,
+        React.createElement(collab.CollabProvider, null,
+          React.createElement(Page))),
+    }
+  })],
   // Community panels need AuthProvider and an onLoad prop — shim them in.
   ['CommunityPanel', () => Promise.all([
     import('../components/community/CommunityPanel'),

@@ -1,0 +1,406 @@
+/* Workspace — tab strip, toolbar, snapping-grid canvas and the windows on it.
+   Themed through the app's tokens so every palette carries over. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+/* ── Bar: tabs on the left, tools on the right ──────────────────────────── */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  flex: 0 0 auto;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  box-shadow: none;
+}
+
+.tabActive,
+.tabActive:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-gold);
+}
+
+.tabClose {
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.6;
+  padding: 0 2px;
+  border-radius: var(--radius-sm);
+}
+.tabClose:hover { opacity: 1; background: var(--tint-danger); }
+
+.tabAdd {
+  background: transparent;
+  border: 1px dashed var(--color-border-light);
+  padding: 1px 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+.tabAdd:hover:not(:disabled) { color: var(--color-gold); border-color: var(--color-gold-dark); box-shadow: none; }
+
+.tabEdit {
+  width: 140px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 5px 0;
+}
+
+.toolBtn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.toolBtn:hover:not(:disabled) { color: var(--color-text-primary); }
+
+.toolBtnOn,
+.toolBtnOn:hover:not(:disabled) {
+  color: var(--color-gold-light);
+  border-color: var(--color-gold-dark);
+  background: var(--tint-accent);
+}
+
+.toolBtnPrimary {
+  color: var(--color-gold-light);
+  border-color: var(--color-gold-dark);
+}
+
+.toolLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.toolSelect {
+  width: auto;
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+/* ── Add-window menu ─────────────────────────────────────────────────────── */
+
+.menu { position: relative; }
+
+.menuPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 300px;
+  max-height: min(70vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 300;
+  padding: 8px;
+}
+
+.menuFilter {
+  font-size: 12px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+
+.menuScroll { overflow-y: auto; min-height: 0; }
+
+.menuGroup { padding: 2px 0 6px; }
+
+.menuGroupTitle {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  padding: 4px 6px 2px;
+}
+
+.menuItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+}
+.menuItem:hover:not(:disabled) { background: var(--color-bg-hover); box-shadow: none; }
+
+.menuOpen {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 5px;
+}
+
+/* ── Canvas ──────────────────────────────────────────────────────────────── */
+
+.viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background:
+    radial-gradient(ellipse at top, var(--tint-accent-faint), transparent 60%),
+    var(--color-bg-secondary);
+  overscroll-behavior: contain;
+}
+
+.viewportStacked { overflow-x: hidden; }
+
+.canvas {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* The snapping grid: one dot per cell, on the same pitch the windows snap to. */
+.canvasGrid {
+  background-image: radial-gradient(circle, var(--color-border-light) 1px, transparent 1.2px);
+  background-size: var(--grid) var(--grid);
+  background-position: 0 0;
+}
+
+.canvasStacked {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  padding: 24px;
+  pointer-events: none;
+}
+.canvasStacked .empty { position: static; }
+
+/* ── Windows ─────────────────────────────────────────────────────────────── */
+
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  contain: layout;
+}
+
+.windowFocused {
+  border-color: var(--color-gold-dark);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--tint-accent-strong);
+}
+
+.windowDragging {
+  opacity: 0.92;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--color-gold);
+  transition: none;
+}
+
+.windowCollapsed { min-height: 0; }
+
+.windowStacked {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+}
+
+.titleBar {
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+  padding: 0 6px 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+  color: var(--color-gold-light);
+  background: linear-gradient(180deg, var(--tint-accent), var(--tint-accent-faint));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.windowStacked .titleBar { cursor: default; }
+
+.titleText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleBtn {
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.titleBtn:hover:not(:disabled) {
+  opacity: 1;
+  border-color: var(--color-border);
+  background: var(--tint-raise);
+  box-shadow: none;
+}
+
+.zoomBtn {
+  min-width: 48px;
+  font-size: 10px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.zoomAuto { color: var(--color-gold-light); }
+
+.body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.inner { min-width: 0; }
+
+/* Hosted panels bring their own .panel chrome; the window is the frame now. */
+.inner > :global(.panel),
+.inner > div > :global(.panel) {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.loading {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ── Resize grips ────────────────────────────────────────────────────────── */
+
+.grip {
+  position: absolute;
+  touch-action: none;
+  z-index: 3;
+}
+
+.grip_n  { top: -3px; left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+.grip_s  { bottom: -3px; left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+.grip_e  { right: -3px; top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+.grip_w  { left: -3px; top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+.grip_ne { top: -3px; right: -3px; width: 14px; height: 14px; cursor: nesw-resize; }
+.grip_sw { bottom: -3px; left: -3px; width: 14px; height: 14px; cursor: nesw-resize; }
+.grip_nw { top: -3px; left: -3px; width: 14px; height: 14px; cursor: nwse-resize; }
+.grip_se {
+  bottom: -1px; right: -1px; width: 16px; height: 16px; cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--color-gold-dark) 50%, var(--color-gold-dark) 60%, transparent 60%, transparent 75%, var(--color-gold-dark) 75%, var(--color-gold-dark) 85%, transparent 85%);
+  opacity: 0.6;
+}
+.window:hover .grip_se { opacity: 1; }
+
+/* ── Scrollbars inside the workspace ─────────────────────────────────────── */
+
+.viewport,
+.body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gold-dark) transparent;
+}
+
+.viewport::-webkit-scrollbar,
+.body::-webkit-scrollbar { width: 8px; height: 8px; }
+
+.viewport::-webkit-scrollbar-thumb,
+.body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-gold-dark) 55%, transparent);
+  border-radius: 4px;
+}
+
+.viewport::-webkit-scrollbar-thumb:hover,
+.body::-webkit-scrollbar-thumb:hover { background: var(--color-gold-dark); }
+
+/* ── Small screens ───────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .bar { flex-wrap: wrap; padding: 0 8px; }
+  .tabs { flex-basis: 100%; }
+  .tools { flex-wrap: wrap; }
+  .toolLabel { display: none; }
+}

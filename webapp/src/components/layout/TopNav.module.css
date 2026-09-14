@@ -17,8 +17,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 8px 18px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 6px 18px;
 }
 
 .brand {
@@ -171,55 +170,7 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* ── Row 2 — sub-tabs ──────────────────────────────────────────────────── */
-
-.subRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 18px;
-  /* A black wash muddies any light palette — use the theme's own surface. */
-  background: var(--color-bg-secondary);
-}
-
-.subTabs {
-  display: flex;
-  gap: 2px;
-  flex: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.subTabs::-webkit-scrollbar { display: none; }
-
-.subTab {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 7px 13px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-}
-
-.subTab:hover:not(:disabled) {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
-  box-shadow: none;
-}
-
-.subTabActive,
-.subTabActive:hover:not(:disabled) {
-  color: var(--color-text-primary);
-  border-bottom-color: var(--color-gold);
-}
-
-.subRight {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-}
+/* ── Character name + lives toggle (right cluster) ─────────────────── */
 
 .charName {
   font-family: var(--font-heading);
@@ -259,6 +210,5 @@
   .rightCluster { order: 2; margin-left: auto; }
   .pageTabs { order: 3; flex-basis: 100%; }
   .pageTab { padding: 7px 10px; font-size: 12px; }
-  .subRow { padding: 0 12px; }
   .charName { display: none; }
 }

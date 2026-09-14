@@ -158,12 +158,9 @@ describe('breakdown tooltip placement', () => {
 
 describe('Plugins page', () => {
   it('is a top-level destination', async () => {
-    const { readFileSync } = await import('fs')
-    const { join } = await import('path')
-    const src = readFileSync(join(__dirname, '..', 'App.tsx'), 'utf-8')
-    const pages = src.match(/const PAGES: Page\[\] = \[(.*?)\]/s)?.[1] ?? ''
-    expect(pages).toContain("'Plugins'")
-    expect(src).toMatch(/case 'Plugins\//)
+    const { PAGES, defaultWorkspaces } = await import('../lib/workspace')
+    expect(PAGES).toContain('Plugins')
+    expect(defaultWorkspaces('Plugins')[0].windows.map(w => w.panel)).toContain('Dungeon Help')
   })
 
   it('renders its empty state without inventing plugins', async () => {

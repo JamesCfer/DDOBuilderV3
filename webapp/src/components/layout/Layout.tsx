@@ -4,15 +4,14 @@ import TopNav, { type TopNavProps } from './TopNav'
 
 interface LayoutProps extends TopNavProps {
   children: React.ReactNode
-  /** Span the full viewport width (Custom › Windows work area). */
-  fullBleed?: boolean
 }
 
-export default function Layout({ children, fullBleed, ...nav }: LayoutProps) {
+/** Header on top, the workspace filling everything below it. */
+export default function Layout({ children, ...nav }: LayoutProps) {
   return (
     <div className={styles.root}>
       <TopNav {...nav} />
-      <main className={`${styles.content} ${fullBleed ? styles.contentFull : ''}`}>
+      <main className={styles.content}>
         {children}
       </main>
     </div>

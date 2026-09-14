@@ -1,58 +1,4 @@
-/* Content row — StanceBuffDock rail, page content, AnalysisDock rail */
-
-.contentRow {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-/* Below the rails' comfortable width the left rail goes full-width and the
-   row wraps, so stances/buffs sit above the page instead of squeezing it. */
-@media (max-width: 1100px) {
-  .contentRow {
-    flex-wrap: wrap;
-  }
-}
-
-.tabArea {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Page content widths */
-
-.narrow {
-  max-width: 980px;
-}
-
-.wide {
-  max-width: none;
-}
-
-/* Character › Overview — three-column grid */
-
-.overviewGrid {
-  display: grid;
-  grid-template-columns: 320px minmax(300px, 1fr) minmax(300px, 1fr);
-  gap: 16px;
-  align-items: start;
-  max-width: 1400px;
-}
-
-.overviewCol {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-}
-
-/* Simple vertical stack (Feats tab) */
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* App shell — the workspace owns the page; only the header widgets live here. */
 
 /* Account button in the top-right cluster */
 
@@ -64,18 +10,12 @@
   color: var(--color-gold-light);
 }
 
-/* Responsive */
+/* Items in the Tools ▾ menu */
 
-@media (max-width: 1200px) {
-  .overviewGrid {
-    grid-template-columns: 320px 1fr;
-  }
-}
-
-@media (max-width: 860px) {
-  .overviewGrid {
-    grid-template-columns: 1fr;
-  }
+.menuItem {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
 }
 
 /* A share link that no longer works: shown in place of the collaboration bar,
