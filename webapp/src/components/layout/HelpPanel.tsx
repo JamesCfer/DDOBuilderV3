@@ -67,9 +67,10 @@ export default function HelpPanel({ onStartTour }: HelpPanelProps = {}) {
           <strong>Tips</strong>
           <ul style={{ margin: '4px 0 0 16px' }}>
             <li>Drop a .DDOBuild file anywhere on the window to import it.</li>
-            <li>Lives and builds within a character are managed from the bar under Save/Load.</li>
+            <li>Lives and builds within a character are managed from the <em>Lives &amp; Builds</em> strip in the header.</li>
+            <li>Every page is a grid of windows: drag by the title bar, resize from any edge, and use <em>+ Add window</em> to put any panel on any tab. <em>Reset</em> restores a tab's default layout.</li>
             <li>Found a bug or have an idea? The gold <em>Feedback</em> button in the bottom-right corner sends it straight to the maintainer.</li>
-            <li>Hide content you don't own under <em>Content</em>; tune feat list filters under <em>Settings</em>.</li>
+            <li>Hide content you don't own under <em>Tools › Content I Own</em>; tune feat list filters under <em>Tools › Settings</em>.</li>
           </ul>
         </section>
       </div>

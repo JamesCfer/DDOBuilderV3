@@ -1,112 +1,54 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { preloadStaticBundle } from './hooks/useStaticBundle'
 import { CharacterProvider, useCharacter } from './context/CharacterContext'
 import { BuildLogProvider } from './context/BuildLogContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import BuildHistoryPanel from './components/layout/BuildHistoryPanel'
 import Layout from './components/layout/Layout'
-import CharacterInfo from './components/builder/CharacterInfo'
-import RaceSelector from './components/builder/RaceSelector'
-import ClassSelector from './components/builder/ClassSelector'
-import AbilityScores from './components/builder/AbilityScores'
-import AbilityLevelUps from './components/builder/AbilityLevelUps'
-import StatsPanel from './components/builder/StatsPanel'
-import FeatSlots from './components/builder/FeatSlots'
-import Skills from './components/builder/Skills'
-import LevelTrainingPanel from './components/builder/LevelTrainingPanel'
-import AutomaticFeats from './components/builder/AutomaticFeats'
-import SpellsPanel from './components/builder/SpellsPanel'
-import EnhancementTreePanel from './components/enhancements/EnhancementTreePanel'
-import EpicDestiniesPanel from './components/epicdestinies/EpicDestiniesPanel'
-import ReaperPanel from './components/reaper/ReaperPanel'
-import GearPanel from './components/items/GearPanel'
-import ClickiesPanel from './components/items/ClickiesPanel'
-import StanceBuffDock from './components/layout/StanceBuffDock'
-import AnalysisDock from './components/layout/AnalysisDock'
-import CombatPanel from './components/combat/CombatPanel'
-import DamageCalcPanel from './components/combat/DamageCalcPanel'
-import PluginsPanel from './components/plugins/PluginsPanel'
-import CraftingPanel from './components/crafting/CraftingPanel'
-import CannithPlanner from './components/crafting/CannithPlanner'
-import PastLivesPanel from './components/pastlives/PastLivesPanel'
-import SetBonusesPanel from './components/setbonuses/SetBonusesPanel'
-import FiligreePanel from './components/filigree/FiligreePanel'
-import TomesPanel from './components/builder/TomesPanel'
-import FavorPanel from './components/favor/FavorPanel'
-import NotesPanel from './components/notes/NotesPanel'
-import ForumExportPanel from './components/export/ForumExportPanel'
-import CommunityPanel from './components/community/CommunityPanel'
-import AccountPanel from './components/community/AccountPanel'
 import { SaveLoadBar } from './hooks/usePersistence'
 import { DocumentProvider, useDocument } from './context/DocumentContext'
 import { CollabProvider, useCollab } from './context/CollabContext'
 import CollabBar from './components/collab/CollabBar'
 import { SettingsProvider } from './context/SettingsContext'
-import SettingsPanel from './components/layout/SettingsPanel'
-import ContentPanel from './components/layout/ContentPanel'
-import HelpPanel from './components/layout/HelpPanel'
 import AppShortcuts from './components/layout/AppShortcuts'
 import FeedbackWidget from './components/layout/FeedbackWidget'
 import WelcomeTour, { shouldShowTour } from './components/layout/WelcomeTour'
 import ErrorBoundary from './components/common/ErrorBoundary'
-import Dashboard from './components/layout/Dashboard'
-import OptimizerPanel from './components/optimizer/OptimizerPanel'
 import LifeBuildBar from './components/layout/LifeBuildBar'
+import Workspace from './components/workspace/Workspace'
+import ToolWindow from './components/workspace/ToolWindow'
+import { WorkspaceHostContext, type WorkspaceHost } from './components/workspace/WorkspaceHostContext'
+import { useWorkspaceLayout } from './hooks/useWorkspaceLayout'
+import { PAGES, type PageId } from './lib/workspace'
 import { findActiveBuild } from './lib/multiLife'
 import { readSession } from './lib/sessionStore'
 import type { CharacterDocument } from './types/ddo'
 import styles from './App.module.css'
 
 // ---------------------------------------------------------------------------
-// Page model — five destinations plus a utility page, each with sub-tabs
-// (HeroForge-style consolidation of the old 30-item sidebar).
+// Page model — four pages, each a workspace of windows on a snapping grid.
+//
+// Character is the build: its tabs (Overview, Skills, Feats, Spells, Level
+// Plan, Enhancements, Destinies, Reaper, Past Lives, Favor, Gear, Combat,
+// Optimizer, Notes & Export) are workspaces the user can rearrange, and any
+// panel — stances, breakdowns, DCs, the damage calculator — can be placed on
+// any of them. Crafting, Community and Plugins are the tools around the
+// build. Settings, Content and Help open from the Tools menu as floating
+// windows over whatever page is showing.
 // ---------------------------------------------------------------------------
 
-// Analysis is not a page: it is the right-hand rail (AnalysisDock), visible
-// on every page, because every choice made here is only interesting for what
-// it does to those numbers. Combat is the exception -- its damage simulator
-// is something you edit rather than read, so it needs the width of a page.
-type Page = 'Character' | 'Progression' | 'Equipment' | 'Combat' | 'Crafting' | 'Community' | 'Plugins' | 'Custom'
+/** Utility panels that open over the page rather than living on it. */
+const TOOL_WINDOWS = ['Settings', 'Content I Own', 'Help & About', 'Build Log'] as const
+type ToolWindowName = (typeof TOOL_WINDOWS)[number]
 
-const PAGES: Page[] = ['Character', 'Progression', 'Equipment', 'Combat', 'Crafting', 'Community', 'Plugins', 'Custom']
+const PAGE_KEY = 'ddo-builder-page'
 
-const PAGE_TABS: Record<Page, string[]> = {
-  Character:   ['Overview', 'Skills', 'Feats', 'Spells', 'Tomes', 'Level Plan'],
-  Progression: ['Enhancements', 'Epic Destinies', 'Reaper', 'Past Lives', 'Favor'],
-  // Equipment is one page: gear, filigrees, set bonuses and clickies are all
-  // the same decision ("what am I wearing"), and set bonuses in particular
-  // only make sense next to the gear that grants them.
-  Equipment:   ['Gear'],
-  // Combat earns a page rather than a dock section because the damage
-  // model is a two-column simulator: forty inputs on the left, a
-  // distribution and its breakdown on the right. That never fitted the
-  // right-hand rail, which is sized to read a number off, not to edit one.
-  Combat:      ['Overview', 'Damage Calc'],
-  // Crafting sits next to Equipment because it answers the question just
-  // before "what am I wearing" — but like Plugins it is a standalone tool,
-  // not part of the builder (see STANDALONE_PAGES).
-  Crafting:    ['Systems', 'Cannith Planner'],
-  Community:   ['Browse', 'My Builds'],
-  // Our in-game dungeon-help plugins — a destination of its own so people can
-  // actually find them.
-  Plugins:     ['Dungeon Help'],
-  Custom:      ['Windows', 'Optimizer', 'Notes', 'Forum Export', 'Content', 'Settings', 'Help', 'Build Log'],
+function readPage(): PageId {
+  try {
+    const stored = localStorage.getItem(PAGE_KEY)
+    if (stored && (PAGES as string[]).includes(stored)) return stored as PageId
+  } catch { /* fall through */ }
+  return 'Character'
 }
-
-/** Tabs whose content wants the full viewport width (trees, tables). */
-const WIDE_TABS = new Set([
-  'Enhancements', 'Epic Destinies', 'Reaper', 'Gear', 'Windows', 'Damage Calc',
-  'Level Plan', 'Optimizer', 'Dungeon Help', 'Systems', 'Cannith Planner',
-])
-
-/**
- * Pages that are tools in their own right rather than views of the open
- * character. Neither the plugin downloads nor the crafting reference reads a
- * build, so flanking them with the stances rail and the analysis rail — both
- * of which describe a character that has nothing to do with what is on screen
- * — costs the page most of its width to say nothing.
- */
-const STANDALONE_PAGES = new Set<Page>(['Crafting', 'Plugins'])
 
 export default function App() {
   return (
@@ -153,14 +95,23 @@ function shareTokenFromUrl(): string | null {
 function AppInner() {
   const { dispatch } = useCharacter()
   const { setDoc } = useDocument()
-  const [page, setPage] = useState<Page>('Character')
+  const { user } = useAuth()
+  const [page, setPageState] = useState<PageId>(readPage)
   // First visit in this browser gets the tutorial; afterwards it only opens
   // from Help. Read once on mount so a re-render never re-triggers it.
   const [tourOpen, setTourOpen] = useState(() => shouldShowTour())
+  const [tool, setTool] = useState<ToolWindowName | null>(null)
 
-  // Warm the shared catalogue bundle at startup so every tab — especially
-  // Analysis — has the complete dataset ready instead of each tab fetching
-  // its own copy on first visit.
+  const layoutApi = useWorkspaceLayout(user?.id ?? null)
+
+  function setPage(next: PageId) {
+    setPageState(next)
+    try { localStorage.setItem(PAGE_KEY, next) } catch { /* ignore */ }
+  }
+
+  // Warm the shared catalogue bundle at startup so every window — especially
+  // the analysis ones — has the complete dataset ready instead of each
+  // fetching its own copy on first render.
   useEffect(() => { preloadStaticBundle() }, [])
 
   // Restore the document that was open last time. Opening the app on an empty
@@ -193,140 +144,54 @@ function AppInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const [tabs, setTabs] = useState<Record<Page, string>>(() => (
-    Object.fromEntries(PAGES.map(p => [p, PAGE_TABS[p][0]])) as Record<Page, string>
-  ))
-
-  const tab = tabs[page]
-  const standalone = STANDALONE_PAGES.has(page)
-
   function handleLoad(doc: CharacterDocument) {
     setDoc(doc)
     const build = findActiveBuild(doc)
     if (build) dispatch({ type: 'LOAD_BUILD', build })
+    setPage('Character')
   }
 
-  function goToAccount() {
-    setPage('Community')
-    setTabs(t => ({ ...t, Community: 'My Builds' }))
-  }
+  const host = useMemo<WorkspaceHost>(() => ({
+    loadDocument: handleLoad,
+    startTour: () => { setTool(null); setTourOpen(true) },
+    // handleLoad closes over stable context setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [])
 
-  function renderTab(): React.ReactNode {
-    switch (`${page}/${tab}`) {
-      // ── Character ────────────────────────────────────────────────────────
-      case 'Character/Overview':
-        return (
-          <div className={styles.overviewGrid}>
-            <div className={styles.overviewCol}>
-              <CharacterInfo />
-              <RaceSelector />
-              <ClassSelector />
-            </div>
-            <div className={styles.overviewCol}>
-              <AbilityScores />
-              <AbilityLevelUps />
-              {/* Tomes and past lives feed the ability/stat numbers shown on
-                  this page, so both editors are reachable here as folded
-                  cards instead of only from their own tabs. */}
-              <TomesPanel collapsible />
-            </div>
-            <div className={styles.overviewCol}>
-              <StatsPanel />
-              <PastLivesPanel collapsible />
-            </div>
-          </div>
-        )
-      case 'Character/Skills':      return <Skills />
-      case 'Character/Feats':
-        return (
-          <div className={styles.stack}>
-            <FeatSlots />
-            <AutomaticFeats />
-          </div>
-        )
-      case 'Character/Spells':      return <SpellsPanel />
-      case 'Character/Tomes':       return <TomesPanel />
-      case 'Character/Level Plan':  return <LevelTrainingPanel />
-
-      // ── Progression ──────────────────────────────────────────────────────
-      case 'Progression/Enhancements':   return <EnhancementTreePanel />
-      case 'Progression/Epic Destinies': return <EpicDestiniesPanel />
-      case 'Progression/Reaper':         return <ReaperPanel />
-      case 'Progression/Past Lives':     return <PastLivesPanel />
-      case 'Progression/Favor':          return <FavorPanel />
-
-      // ── Equipment ────────────────────────────────────────────────────────
-      case 'Equipment/Gear':
-        return (
-          <div className={styles.stack}>
-            <GearPanel />
-            <FiligreePanel />
-            <SetBonusesPanel />
-            <ClickiesPanel />
-          </div>
-        )
-
-      // ── Crafting ─────────────────────────────────────────────────────────
-      // ── Combat ────────────────────────────────────────────────
-      case 'Combat/Overview':     return <CombatPanel />
-      case 'Combat/Damage Calc':  return <DamageCalcPanel />
-
-      case 'Crafting/Systems':         return <CraftingPanel />
-      case 'Crafting/Cannith Planner': return <CannithPlanner />
-
-      // ── Plugins ──────────────────────────────────────────────────────────
-      case 'Plugins/Dungeon Help': return <PluginsPanel />
-
-      // ── Community ────────────────────────────────────────────────────────
-      case 'Community/Browse':      return <CommunityPanel onLoad={handleLoad} />
-      case 'Community/My Builds':   return <AccountPanel onLoad={handleLoad} />
-
-      // ── Custom ───────────────────────────────────────────────────────────
-      case 'Custom/Windows':      return <Dashboard />
-      case 'Custom/Optimizer':    return <OptimizerPanel />
-      case 'Custom/Notes':        return <NotesPanel />
-      case 'Custom/Forum Export': return <ForumExportPanel />
-      case 'Custom/Content':      return <ContentPanel />
-      case 'Custom/Settings':     return <SettingsPanel />
-      case 'Custom/Help':         return <HelpPanel onStartTour={() => setTourOpen(true)} />
-      case 'Custom/Build Log':    return <BuildHistoryPanel />
-
-      default: return null
-    }
-  }
+  const toolsMenu = (
+    <>
+      {TOOL_WINDOWS.map(name => (
+        <button key={name} type="button" className={styles.menuItem} data-closes-menu onClick={() => setTool(name)}>
+          {name}
+        </button>
+      ))}
+    </>
+  )
 
   return (
-    <>
+    <WorkspaceHostContext.Provider value={host}>
       <AppShortcuts onLoad={handleLoad} />
       <CollabBar />
       {joinError && <div className={styles.joinError} role="alert">{joinError}</div>}
       <Layout
         pages={PAGES}
         activePage={page}
-        fullBleed={page === 'Custom' && tab === 'Windows'}
-        onNavigate={p => setPage(p as Page)}
-        subTabs={PAGE_TABS[page]}
-        activeSubTab={tab}
-        onSubTab={t => setTabs(prev => ({ ...prev, [page]: t }))}
+        onNavigate={p => setPage(p as PageId)}
         fileMenu={<SaveLoadBar onLoad={handleLoad} />}
-        account={<AccountButton onGoToAccount={goToAccount} />}
+        toolsMenu={toolsMenu}
+        account={<AccountButton onGoToAccount={() => setPage('Community')} />}
         livesBar={<LifeBuildBar />}
       >
-        {/* One panel throwing used to unmount the whole app, leaving a blank
-            page. Each region catches its own; the key resets the boundary when
-            the user navigates, so a bad tab is never sticky. */}
-        <div className={styles.contentRow}>
-          {!standalone && (
-            <ErrorBoundary label="Stances & Buffs"><StanceBuffDock /></ErrorBoundary>
-          )}
-          <div className={`${styles.tabArea} ${WIDE_TABS.has(tab) ? styles.wide : styles.narrow}`}>
-            <ErrorBoundary key={`${page}/${tab}`} label={tab}>{renderTab()}</ErrorBoundary>
-          </div>
-          {!standalone && <ErrorBoundary label="Analysis"><AnalysisDock /></ErrorBoundary>}
-        </div>
+        {/* One window throwing is caught inside that window; this boundary
+            is for the workspace chrome itself. The key resets it when the
+            user changes page, so a bad page is never sticky. */}
+        <ErrorBoundary key={page} label={page}>
+          <Workspace page={page} api={layoutApi} />
+        </ErrorBoundary>
       </Layout>
-      <FeedbackWidget page={`${page} · ${tab}`} />
+      {tool && <ToolWindow panel={tool} onClose={() => setTool(null)} />}
+      <FeedbackWidget page={page} />
       {tourOpen && <WelcomeTour onClose={() => setTourOpen(false)} />}
-    </>
+    </WorkspaceHostContext.Provider>
   )
 }

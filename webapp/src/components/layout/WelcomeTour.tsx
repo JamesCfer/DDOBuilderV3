@@ -1,5 +1,5 @@
 // First-run tutorial. A short, stepped overlay that says what this site is
-// and where the four things you need live, shown once per browser the first
+// and where the things you need live, shown once per browser the first
 // time the app is opened and re-openable from Help & About at any time.
 //
 // Deliberately a modal card rather than an element-anchored spotlight: the
@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import styles from './WelcomeTour.module.css'
 
 /** Bump when the steps change enough that returning users should see them. */
-export const TOUR_VERSION = '1'
+export const TOUR_VERSION = '2'
 const TOUR_KEY = 'ddo-builder-tour-seen'
 
 /** True when this browser has not been shown the current tour. */
@@ -50,32 +50,34 @@ const STEPS: Step[] = [
     ),
   },
   {
-    title: 'The tabs across the top are the build',
+    title: 'Four pages across the top',
     body: (
       <>
-        <p>Work left to right:</p>
         <ul>
-          <li><strong>Character</strong> — race, classes, ability scores, feats, skills, spells.</li>
-          <li><strong>Progression</strong> — enhancement trees, epic destinies, reaper, past lives.</li>
-          <li><strong>Equipment</strong> — gear, filigrees, set bonuses and clickies.</li>
+          <li><strong>Character</strong> — the build. Its tabs run from Overview through Skills, Feats, Spells, Enhancements, Destinies and Gear to Combat.</li>
           <li><strong>Crafting</strong>, <strong>Community</strong> and <strong>Plugins</strong> — the tools around the build.</li>
         </ul>
-        <p>The second row changes with the page — those are the sections of the page you are on.</p>
+        <p>
+          Every page is a workspace: the panels are <strong>windows on a grid</strong>.
+          Drag one by its title bar, resize it from any edge, roll it up, or close it.
+        </p>
       </>
     ),
   },
   {
-    title: 'Your numbers are always on the right',
+    title: 'Make it yours',
     body: (
       <>
         <p>
-          The <strong>Analysis</strong> rail down the right-hand side recalculates as
-          you build: hit points, saves, attack and damage, spell power, and where
-          each bonus came from.
+          <strong>+ Add window</strong> puts any panel on the tab you are looking at — your
+          numbers next to your feats, stances next to the damage calculator, whatever you like.
+          Windows snap to the grid, the canvas grows as far as you drag, and on a small screen
+          the windows stack instead.
         </p>
         <p>
-          The rail on the left holds your <strong>Stances &amp; Buffs</strong> — toggle a
-          stance or a buff there and the numbers on the right answer immediately.
+          <strong>Breakdowns</strong>, <strong>DCs</strong> and <strong>Bonuses</strong> recalculate
+          as you build; <strong>Stances &amp; Buffs</strong> toggles feed straight into them.
+          Add your own tabs with <strong>+</strong>, and <strong>Reset</strong> restores a tab's default layout.
         </p>
       </>
     ),
@@ -108,7 +110,7 @@ const STEPS: Step[] = [
           it is the fastest way anything gets fixed.
         </p>
         <p>
-          You can reopen this tour any time from <strong>Custom › Help</strong>.
+          You can reopen this tour any time from <strong>Tools › Help &amp; About</strong>.
         </p>
       </>
     ),

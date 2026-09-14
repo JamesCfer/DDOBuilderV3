@@ -8,8 +8,6 @@ import { describe, it, expect, afterEach, beforeEach } from 'vitest'
 import React from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
-import { readFileSync } from 'fs'
-import { join } from 'path'
 
 import { resetApiCacheForTests } from '../api'
 import { valueAtLevel, parseSlots, formatValue } from '../components/crafting/CannithPlanner'
@@ -43,22 +41,22 @@ async function mount(element: React.ReactElement): Promise<HTMLElement> {
 // ---------------------------------------------------------------------------
 
 describe('Crafting in the nav', () => {
-  const src = readFileSync(join(__dirname, '..', 'App.tsx'), 'utf-8')
-
-  it('is a top-level destination with its own tabs', () => {
-    const pages = src.match(/const PAGES: Page\[\] = \[(.*?)\]/s)?.[1] ?? ''
-    expect(pages).toContain("'Crafting'")
-    expect(src).toMatch(/case 'Crafting\/Systems'/)
-    expect(src).toMatch(/case 'Crafting\/Cannith Planner'/)
+  it('is a top-level page with both crafting tools on its workspace', async () => {
+    const { PAGES, defaultWorkspaces } = await import('../lib/workspace')
+    expect(PAGES).toContain('Crafting')
+    const panels = defaultWorkspaces('Crafting').flatMap(w => w.windows.map(x => x.panel))
+    expect(panels).toContain('Crafting Systems')
+    expect(panels).toContain('Cannith Planner')
   })
 
-  it('is standalone — no build rails, exactly like Plugins', () => {
-    const standalone = src.match(/const STANDALONE_PAGES = new Set<Page>\(\[(.*?)\]\)/s)?.[1] ?? ''
-    expect(standalone).toContain("'Crafting'")
-    expect(standalone).toContain("'Plugins'")
-    // Both rails must actually be gated on it, or the constant is decoration.
-    expect(src).toMatch(/!standalone[\s\S]{0,120}StanceBuffDock/)
-    expect(src).toMatch(/!standalone && <ErrorBoundary label="Analysis">/)
+  it('is standalone — no build windows on its default layout, exactly like Plugins', async () => {
+    const { defaultWorkspaces } = await import('../lib/workspace')
+    const { WINDOW_REGISTRY } = await import('../components/workspace/registry')
+    for (const page of ['Crafting', 'Plugins'] as const) {
+      for (const w of defaultWorkspaces(page).flatMap(s => s.windows)) {
+        expect(WINDOW_REGISTRY[w.panel].group, `${page}: ${w.panel}`).toBe(page)
+      }
+    }
   })
 })
 
