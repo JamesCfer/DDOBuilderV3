@@ -29,11 +29,18 @@ type Part = typeof PARTS[number]
  */
 const EXTRA_SLOT_MIN_LEVEL = 10
 
+/**
+ * Essence Crafting stops at item level 36 (Update 81). V2's shard tables run
+ * to 40 regardless, so the table length alone would offer levels no blank
+ * can be crafted at.
+ */
+export const MAX_ESSENCE_ITEM_LEVEL = 36
+
 /** Where a slot family's effects come from — crafted, or rolled by the game. */
 type Source = 'Cannith' | 'Random'
 
 const SOURCE_BLURB: Record<Source, string> = {
-  Cannith: 'Shards you craft and bind yourself at a Cannith altar.',
+  Cannith: 'Shards you craft and bind yourself at an Essence Crafting device.',
   Random: 'The same effect tables the game rolls on random loot — useful for '
     + 'judging whether a dropped item beats what you could craft.',
 }
@@ -142,10 +149,10 @@ export function valueAtLevel(recipe: CraftingRecipe, level: number): number | nu
 
 /** Highest level any of this system's tables actually covers. */
 function maxPlannableLevel(detail: CraftingSystemDetail | null): number {
-  if (!detail) return 34
+  if (!detail) return MAX_ESSENCE_ITEM_LEVEL
   const longest = detail.slots.reduce((max, slot) =>
     slot.recipes.reduce((m, r) => Math.max(m, r.values.length), max), 0)
-  return Math.max(longest, 1)
+  return Math.min(Math.max(longest, 1), MAX_ESSENCE_ITEM_LEVEL)
 }
 
 /**
@@ -170,7 +177,7 @@ export default function CannithPlanner() {
     let cancelled = false
     api.craftingSystem('cannith')
       .then(res => { if (!cancelled) setDetail(res) })
-      .catch(() => { if (!cancelled) setError('Could not load the Cannith shard tables.') })
+      .catch(() => { if (!cancelled) setError('Could not load the Essence Crafting shard tables.') })
     return () => { cancelled = true }
   }, [])
 
@@ -203,6 +210,10 @@ export default function CannithPlanner() {
     }
   }, [detail, slots, source, kind, query])
 
+  // Combined prefixes carry a real minimum level (20); plain shards carry 0.
+  // Offering one on a level 12 item would plan something the game refuses.
+  const usableAt = (recipe: CraftingRecipe) => recipe.minLevel <= level
+
   const extraSlots = useMemo(
     () => slots.filter(s => s.source === source && s.kind === kind && s.part === null),
     [slots, source, kind])
@@ -224,27 +235,28 @@ export default function CannithPlanner() {
   [picked, recipesFor, detail, slots, source, kind])
 
   if (error) return <p className={styles.error}>{error}</p>
-  if (!detail) return <p className={styles.status}>Loading the Cannith shard tables…</p>
+  if (!detail) return <p className={styles.status}>Loading the Essence Crafting shard tables…</p>
 
   return (
     <div className={styles.page}>
       <section className={styles.intro}>
         <div className={styles.introText}>
-          <h2 className={styles.introTitle}>Cannith Crafting Planner</h2>
+          <h2 className={styles.introTitle}>Essence Crafting Planner</h2>
           <p className={styles.introBlurb}>
             Choose the item and the level you want to craft at, and every shard
             shows what it is actually worth there. A crafted item takes one
             prefix and one suffix, plus — from item level 10 up, with a Mark of
-            House Cannith — a third extra effect.
+            House Cannith — a third extra effect. From item level 20 the prefix
+            can instead be one of the combined shards that carry two effects.
           </p>
         </div>
         <a
           className={styles.wikiLink}
-          href="https://ddowiki.com/page/Cannith_Crafting"
+          href="https://ddowiki.com/page/Essence_Crafting"
           target="_blank"
           rel="noreferrer"
         >
-          Cannith Crafting on DDO wiki ↗
+          Essence Crafting on DDO wiki ↗
         </a>
       </section>
 
@@ -256,7 +268,7 @@ export default function CannithPlanner() {
             value={source}
             onChange={e => setSource(e.target.value as Source)}
           >
-            <option value="Cannith">Cannith shards</option>
+            <option value="Cannith">Essence shards</option>
             <option value="Random">Random loot</option>
           </select>
         </label>
@@ -296,7 +308,9 @@ export default function CannithPlanner() {
 
       <div className={styles.shardColumns}>
         {PARTS.map(part => {
-          const recipes = recipesFor(part)
+          const all = recipesFor(part)
+          const recipes = all.filter(usableAt)
+          const lockedCount = all.length - recipes.length
           return (
             <section key={part} className={styles.shardColumn}>
               <h3 className={styles.shardTitle}>
@@ -308,6 +322,12 @@ export default function CannithPlanner() {
                   {level < EXTRA_SLOT_MIN_LEVEL
                     ? `No extra slot below item level ${EXTRA_SLOT_MIN_LEVEL} — raise the level to use one.`
                     : 'Needs a Mark of House Cannith to open this slot.'}
+                </p>
+              )}
+              {lockedCount > 0 && (
+                <p className={styles.slotNote}>
+                  {lockedCount} combined {lockedCount === 1 ? 'prefix needs' : 'prefixes need'} item
+                  level {Math.min(...all.filter(r => !usableAt(r)).map(r => r.minLevel))} or higher.
                 </p>
               )}
               {recipes.length === 0 ? (
@@ -335,6 +355,9 @@ export default function CannithPlanner() {
                           )}
                           {recipe.description && (
                             <span className={styles.shardDesc}>{recipe.description}</span>
+                          )}
+                          {recipe.ingredients.length > 0 && (
+                            <span className={styles.shardDesc}>{recipe.ingredients.join(' · ')}</span>
                           )}
                         </button>
                       </li>
@@ -391,6 +414,11 @@ export default function CannithPlanner() {
                 <> {' '}<strong>At level {level} this item has no extra slot</strong>, so
                 the extra effect above cannot go on it — the Mark of House Cannith
                 slot starts at level {EXTRA_SLOT_MIN_LEVEL}.</>
+              )}
+              {chosen.some(c => !usableAt(c.recipe)) && (
+                <> {' '}<strong>A shard you picked needs a higher item level</strong>, so
+                raise the level to at least {Math.max(...chosen.map(c => c.recipe.minLevel))} to
+                craft this item.</>
               )}
             </p>
           </>

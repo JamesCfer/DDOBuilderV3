@@ -32,6 +32,7 @@ import { NAMED_UPGRADE_SYSTEMS } from './craftingNamed'
 import { AUGMENT_CRAFTING_SYSTEMS } from './craftingAugments'
 import { BARTER_CRAFTING_SYSTEMS } from './craftingBarter'
 import { VIKTRANIUM } from './craftingViktranium'
+import { COMBINED_PREFIXES } from './craftingCombined'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,6 +78,12 @@ export interface CraftingSystemMeta {
    * renders both without knowing which is which.
    */
   manual?: ManualSlot[]
+  /**
+   * Recipes that belong in the data slots but are missing from V2's augment
+   * files, already in the XML recipe shape so they sort in beside the shards
+   * they compete with. Essence Crafting's combined prefixes are the case.
+   */
+  extraRecipes?: CraftingRecipe[]
   /**
    * Slot types that are only reachable by first filling another slot (V2
    * `AddAugment`), listed here so the UI can present the tier order the way
@@ -178,23 +185,27 @@ export interface CraftingSystemDetail extends CraftingSystemSummary {
 const AUGMENT_DATA_SYSTEMS: CraftingSystemMeta[] = [
   {
     key: 'cannith',
-    name: 'Cannith Crafting',
+    name: 'Essence Crafting',
     category: 'Craft from scratch',
-    blurb: 'Build an item from a blank: one prefix, one suffix, and a third effect at ML 10 and up.',
+    blurb: 'Build an item from a blank: a prefix, a suffix, and a third effect at ML 10 and up. Items go to ML 36.',
     detail:
-      'The only system that makes gear rather than upgrading it. You take a blank '
-      + '(or any unbound item with a free crafting slot) and bind a prefix shard and a '
-      + 'suffix shard to it. From minimum level 10 upwards a Mark of House Cannith '
-      + 'opens a third "extra" slot as well — below level 10 there is no such slot, '
-      + 'whatever the effect lists show. Every effect scales with the item level you '
-      + 'craft at, so the same shard is worth far more on a level 30 blank than on a '
-      + 'level 8 one. Use the planner tab to pick a slot and a level and see exactly '
-      + 'what each effect is worth there.',
-    where: 'The Crafting Hall in the House Kundarak enclave — not House Cannith — or a portable crafting altar.',
-    ingredients: 'Cannith essences from deconstructing loot, plus collectables for the shard recipes.',
-    source: 'No quest needed — blanks are bought from the crafting vendors or pulled from loot. Added in Update 9.',
+      'The only system that makes gear rather than upgrading it. It was Cannith Crafting '
+      + 'until Update 79 renamed it. You take a blank (or any unbound item with a free '
+      + 'crafting slot) and bind a prefix shard and a suffix shard to it. From minimum '
+      + 'level 10 upwards a Mark of House Cannith opens a third "extra" slot as well; '
+      + 'below level 10 there is no such slot, whatever the effect lists show. Every '
+      + 'scaling effect grows with the item level you craft at, up to ML 36 since Update '
+      + '81, so the same shard is worth far more on a level 30 blank than on a level 8 '
+      + 'one. Update 81 also raised the crafting level cap from 400 to 500 and added 100 '
+      + 'combined prefixes (two effects in one prefix slot, ML 20, crafting level 400 to '
+      + '475). Those only go on blanks disjuncted after Update 81. Use the planner tab to '
+      + 'pick a slot and a level and see exactly what each effect is worth there.',
+    where: 'The Crafting Hall in the House Kundarak enclave, the House Cannith Crafting Hall, the Eveningstar Crafting Hall, or a guild airship crafting amenity.',
+    ingredients: 'Magic Item Essences from dissolving loot (dissolving costs platinum since Update 81; dissolvers are no longer used), collectables for the shard recipes, and Mystical ingredients for the Update 55 combined prefixes.',
+    source: 'No quest needed. Blanks are bought from the crafting vendors or pulled from loot. Added in Update 9 as Cannith Crafting.',
     wiki: 'https://ddowiki.com/page/Essence_Crafting',
     files: ['CannithAndRandomItem'],
+    extraRecipes: COMBINED_PREFIXES,
   },
   {
     key: 'greensteel',
@@ -686,10 +697,13 @@ function levelRange(recipes: CraftingRecipe[]): [number | null, number | null] {
  * what lets the Cannith planner answer "what can go on boots" directly.
  */
 export function buildCraftingSystem(dataDir: string, meta: CraftingSystemMeta): CraftingSystemDetail {
-  const fromData = meta.files
-    .flatMap(f => readAugmentFile(dataDir, f))
-    .map(toRecipe)
-    .filter(r => r.name.length > 0)
+  const fromData = [
+    ...meta.files
+      .flatMap(f => readAugmentFile(dataDir, f))
+      .map(toRecipe)
+      .filter(r => r.name.length > 0),
+    ...(meta.extraRecipes ?? []),
+  ]
 
   const bySlot = new Map<string, CraftingRecipe[]>()
   for (const recipe of fromData) {
@@ -720,8 +734,11 @@ export function buildCraftingSystem(dataDir: string, meta: CraftingSystemMeta): 
 
   const [minLevel, maxLevel] = levelRange(recipes)
 
+  // The extra recipes are already inside `slots`; sending them twice would
+  // double the payload of the largest system on the page.
+  const { extraRecipes: _extra, ...rest } = meta
   return {
-    ...meta,
+    ...rest,
     recipeCount: recipes.length,
     slotCount: slots.length,
     minLevel,

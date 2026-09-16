@@ -75,6 +75,33 @@ maybeDescribe('crafting catalogue', () => {
     }
   })
 
+  it('carries Update 81 Essence Crafting: ML 35-36 values, the new shard, combined prefixes', () => {
+    const cannith = systems.find(s => s.key === 'cannith')!
+    const shard = (slot: string, name: string) => cannith.slots
+      .find(s => s.type === slot)!.recipes.find(r => r.name === name)!
+
+    // ddowiki Essence_Crafting/table_3b: Fortification 159/163/166 at ML 34/35/36.
+    const fort = shard('Cannith Armor Prefix', 'Fortification') ?? shard('Cannith Belt Prefix', 'Fortification')
+    expect(fort.values.slice(33, 36)).toEqual([159, 163, 166])
+
+    const isfm = shard('Cannith Helmet Extra', 'Insightful Spell Focus Mastery')
+    expect(isfm.values[35]).toBe(4)
+    expect(shard('Cannith Trinket Extra', 'Insightful Spell Focus Mastery')).toBeDefined()
+
+    const lucky = shard('Cannith Helmet Prefix', 'Lucky (combined)')
+    expect(lucky.minLevel).toBe(20)
+    expect(lucky.slots).toContain('Cannith Ring Prefix')
+    const combined = new Set(cannith.slots.flatMap(s => s.recipes)
+      .filter(r => r.name.endsWith('(combined)')).map(r => r.name))
+    expect(combined.size).toBe(107)
+    // Every combined prefix must land on a slot the planner actually offers.
+    for (const r of cannith.slots.flatMap(s => s.recipes).filter(r => r.name.endsWith('(combined)'))) {
+      for (const slot of r.slots) {
+        expect(cannith.slots.some(s => s.type === slot && s.recipes.some(x => !x.name.endsWith('(combined)'))), `${r.name}: ${slot}`).toBe(true)
+      }
+    }
+  })
+
   it('records the slot cascade that alchemical tiers depend on', () => {
     const alchemical = systems.find(s => s.key === 'alchemical')!
     const material = alchemical.slots.find(s => s.type === 'Legendary Alchemical Material')!
