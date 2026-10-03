@@ -214,3 +214,35 @@ export function orphanedEnhancementTrees(
   }
   return out
 }
+
+// Enhancement tree slot caps: one racial tree plus six others (class or
+// universal), seven visible trees in total.
+export const MAX_RACIAL_TREES = 1
+export const MAX_OTHER_TREES = 6
+export const MAX_ENHANCEMENT_TREES = MAX_RACIAL_TREES + MAX_OTHER_TREES
+
+/** Count pinned trees by slot kind. Unknown names count as non-racial. */
+export function pinnedTreeCounts(
+  pinned: string[],
+  trees: EnhancementTree[],
+): { racial: number; other: number } {
+  let racial = 0
+  let other = 0
+  for (const name of pinned) {
+    if (trees.find(t => t.Name === name)?.IsRacialTree) racial++
+    else other++
+  }
+  return { racial, other }
+}
+
+/** True when `treeName` can be pinned without exceeding its slot kind's cap. */
+export function canPinTree(
+  pinned: string[],
+  treeName: string,
+  trees: EnhancementTree[],
+): boolean {
+  if (pinned.includes(treeName)) return true
+  const { racial, other } = pinnedTreeCounts(pinned, trees)
+  const isRacial = trees.find(t => t.Name === treeName)?.IsRacialTree === true
+  return isRacial ? racial < MAX_RACIAL_TREES : other < MAX_OTHER_TREES
+}
