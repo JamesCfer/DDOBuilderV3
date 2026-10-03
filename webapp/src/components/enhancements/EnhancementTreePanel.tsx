@@ -7,6 +7,7 @@ import { enhancementAPBudget } from '../../lib/actionPoints'
 import {
   availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible, isUnlockGatedTree,
   orphanedEnhancementTrees,
+  MAX_RACIAL_TREES, MAX_OTHER_TREES, MAX_ENHANCEMENT_TREES, canPinTree, pinnedTreeCounts,
 } from '../../lib/treeAvailability'
 import { computeTreeSpent } from '../../lib/enhancementSpend'
 import { exportEnhancementTreeFile, parseTreeFile } from '../../lib/treeFileIO'
@@ -20,7 +21,8 @@ import styles from './EnhancementTreePanel.module.css'
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_VISIBLE = 6
+// One racial tree plus six class/universal trees (see lib/treeAvailability).
+const MAX_VISIBLE = MAX_ENHANCEMENT_TREES
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,6 +50,7 @@ interface TreePickerProps {
 }
 
 function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: TreePickerProps) {
+  const counts = pinnedTreeCounts(selected, allTrees)
   const racial: EnhancementTree[] = []
   const classTrees: EnhancementTree[] = []
   const universal: EnhancementTree[] = []
@@ -74,7 +77,7 @@ function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: Tree
             // name heuristics needed.
             const on = selected.includes(tree.Name)
             const needsUnlock = unlockGated.has(tree.Name)
-            const full = !on && selected.length >= MAX_VISIBLE
+            const full = !on && !canPinTree(selected, tree.Name, allTrees)
             return (
               <button
                 key={tree.Name}
@@ -106,7 +109,7 @@ function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: Tree
     <div className={styles.pickerOverlay} onClick={onClose}>
       <div className={styles.pickerModal} onClick={e => e.stopPropagation()}>
         <div className={styles.pickerModalHeader}>
-          <span>Select Enhancement Trees ({selected.length}/{MAX_VISIBLE})</span>
+          <span>Select Enhancement Trees (Racial {counts.racial}/{MAX_RACIAL_TREES}, Other {counts.other}/{MAX_OTHER_TREES})</span>
           <button className={styles.pickerClose} onClick={onClose}>✕</button>
         </div>
         <div className={styles.pickerBody}>
@@ -264,8 +267,11 @@ export default function EnhancementTreePanel() {
         setLoadTreeError(`"${file.name}" is a Destiny tree file — load it from the Epic Destinies panel instead.`)
         return
       }
-      if (!pinned.includes(parsed.treeName) && pinned.length >= MAX_VISIBLE) {
-        setLoadTreeError(`All ${MAX_VISIBLE} tree slots are full — remove a tree before loading "${parsed.treeName}".`)
+      if (!canPinTree(pinned, parsed.treeName, enhTrees)) {
+        const isRacial = enhTrees.find(t => t.Name === parsed.treeName)?.IsRacialTree === true
+        setLoadTreeError(isRacial
+          ? `The racial tree slot is full. Remove the current racial tree before loading "${parsed.treeName}".`
+          : `All ${MAX_OTHER_TREES} non-racial tree slots are full. Remove a tree before loading "${parsed.treeName}".`)
         return
       }
       setLoadTreeError(null)
@@ -279,7 +285,7 @@ export default function EnhancementTreePanel() {
   function toggleTree(name: string) {
     if (pinned.includes(name)) {
       dispatch({ type: 'SET_ENH_PINNED', pinned: pinned.filter(n => n !== name) })
-    } else if (pinned.length < MAX_VISIBLE) {
+    } else if (canPinTree(pinned, name, enhTrees)) {
       dispatch({ type: 'SET_ENH_PINNED', pinned: [...pinned, name] })
     }
   }

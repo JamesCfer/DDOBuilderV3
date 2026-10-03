@@ -630,7 +630,8 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     }
     // V2 EnhancementsPane::OnLoadTree (~1174-1270): pins the loaded tree into
     // an empty slot if it isn't pinned already (the caller enforces the
-    // 6-visible-tree cap before dispatching, same as the "+ Add Tree" picker).
+    // 1 racial + 6 other tree caps before dispatching, same as the "+ Add Tree"
+    // picker).
     case 'LOAD_ENH_TREE_FILE': {
       const enhancementPinned = state.enhancementPinned.includes(action.treeName)
         ? state.enhancementPinned
