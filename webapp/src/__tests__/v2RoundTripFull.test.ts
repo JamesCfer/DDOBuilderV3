@@ -81,7 +81,7 @@ maybeDescribe('V2 round-trip with real XML catalogues — Yings Monk', () => {
     expect(wis).toBeLessThanOrEqual(120)
   })
 
-  it('HP is in the expected Monk end-game band (v2calc oracle: 4198)', () => {
+  it('HP is in the expected Monk end-game band (v2calc oracle: 4328)', () => {
     // Band tightened around the real `v2calc` oracle value for this exact
     // fixture (4198 — see v2calc/build/v2calc "Output/Example Builds/
     // YingsMonk.DDOBuild" Output/DataFiles) after fixing three HP bugs:
@@ -92,9 +92,12 @@ maybeDescribe('V2 round-trip with real XML catalogues — Yings Monk', () => {
     // character level, and HitpointsReaper (APCount, level-capped) was
     // merged into the same bucket as flat Reaper-tagged Hitpoints effects
     // (uncapped), so the cap over-applied to both.
+    // V2 2.0.0.85 data cut several reaper clickies to 1 rank at 2 AP; the
+    // fixture's saved 3-rank spends now cost 6 AP each, raising the oracle
+    // (and V3) to 4328 via the AP-scaled reaper HP.
     const hp = stats.total('hp')
-    expect(hp).toBeGreaterThanOrEqual(3900)
-    expect(hp).toBeLessThanOrEqual(4200)
+    expect(hp).toBeGreaterThanOrEqual(4100)
+    expect(hp).toBeLessThanOrEqual(4400)
   })
 
   it('AC is at least 30 (Aasimar Monk with WIS bonus + items)', () => {

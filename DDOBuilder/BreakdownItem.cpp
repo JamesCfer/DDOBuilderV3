@@ -830,6 +830,12 @@ void BreakdownItem::AddEffect(
             effectList->push_back(effect);
         }
         effectList->back().SetBuild(m_pCharacter->ActiveBuild());
+        if (effect.AType() == Amount_HalfStrikethrough)
+        {
+            BreakdownItem* pStrike = FindBreakdown(Breakdown_Strikethrough);
+            pStrike->AttachObserver(this);
+            // we need to update if strikethrough changes
+        }
     }
     if (effect.HasUpdateAutomaticEffects())
     {
@@ -959,6 +965,7 @@ bool BreakdownItem::UpdateEffectAmounts(
     //    }
     //    ++it;
     //}
+    if (bt == Breakdown_Strikethrough) itemChanged = true;
     return itemChanged;
 }
 

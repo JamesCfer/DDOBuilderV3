@@ -1,7 +1,7 @@
 {
   "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
-  "lastSyncedCommit": "f91af4e65d72e62b54984e1bd0dc7a6c0449970b",
-  "lastChecked": "2026-08-02T16:41:45.427Z",
+  "lastSyncedCommit": "ba7e18eecafb1bb5fd6b6cf52cc0b6395bbeb20c",
+  "lastChecked": "2026-10-08T20:20:00.000Z",
   "dataPathUpstream": "Output/DataFiles",
-  "notes": "Full tree synced @ f91af4e (2.0.0.83, 2026-08): DataFiles (73 changed + 268 new: Underdark/Gauntlgrym/demon-lord item wave, augment + filigree-set reworks, enhancement-tree percent-effect retyping) + 37 changed images + C++ source (16 files via git apply --3way preserving local V2CALC_LINUX shim patches; new Effect_HitpointsPercent/Effect_ACPercent with their own Breakdown_HitpointsPercent/Breakdown_TotalACPercent sub-breakdowns, DoAllPercentsAtOnce removed, percent contributions now round half-up). Issues.txt, ChangeHistory.txt, BuildInfo.h and Output/Example Builds/Maetrim_EndGameHandwrapsMonk.DDOBuild had diverged locally and were taken wholesale from upstream."
+  "notes": "Full tree synced @ ba7e18e (2.0.0.85, 2026-10; covers 2.0.0.84 31ef020 too): DataFiles (195 changed + 108 new: Oozing Hunger weapon set, Terror of the Demon Lords raid items/quest, ML36 augment/Cannith fixes, enhancement-tree fixes) + 49 images + C++ source (3-way merged, keeping local V2CALC_LINUX shim patches). CannithAndRandomItem.Augments.xml conflicted with local Update 81 work (#262): upstream values taken on conflicting lines, local-only ML35/36 values kept; Insightful Spell Focus Mastery now matches upstream (Cannith Ring Extra, +5). ShiradiChampion.tree.xml: Strike Upgrade II requirement repointed from \"Queen's Diplomacy\" to the renamed \"Otto's Whistler\" (upstream left the old name). Webapp ports: FeatTrained requirement, HalfAbilityTotal/HalfStrikethrough ATypes, Archmage AMMixedMagics, selection rename on load."
 }

@@ -72,7 +72,7 @@ export interface EffectContext {
   // (Item[0] tests the MAIN hand only; optional Item[1] the off-hand).
   weaponTypeMain?: string
   weaponTypeOffhand?: string
-  // Wild Mage / Arcane Trickster "Mixed Magics": every trained caster class's
+  // Wild Mage / Arcane Trickster / Archmage "Mixed Magics": every trained caster class's
   // caster-level breakdown is raised to min(20, character level) before
   // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
   // cap when the enhancement is trained; ClassCasterLevel amounts read it.
@@ -82,6 +82,8 @@ export interface EffectContext {
   // param carries CLASS levels on the enhancement path, which under-indexed
   // 40-entry tables (Machrotechnic Armor of Legends 34 → 20 on Bardbox).
   charLevelTotal?: number
+  // Resolved Strikethrough total (fixed-point pass 2+) for AType=HalfStrikethrough.
+  strikethroughTotal?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +129,7 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
     case 'SpecificLevel':
       return ctx.totalLevel >= v
     case 'Feat':
+    case 'FeatTrained':   // only Feats.xml prerequisites use it; effects have no trained/granted split
     case 'FeatAnySource':
       return its.some(i => ctx.feats.has(i))
     case 'Enhancement':
@@ -599,6 +602,18 @@ function resolveValue(
       const total = abilityTotalForEffect(effect, ctx)
       return effectHasCap(effect) ? Math.min(total, effectCap(effect)) : total
     }
+
+    case 'HalfAbilityTotal': {
+      // V2 2.0.0.85 Effect.cpp: the ability breakdown total / 2.0 (no
+      // truncation), then the Cap — Ninja Spy / Vile Chemist Doubleshot.
+      const total = abilityTotalForEffect(effect, ctx) / 2
+      return effectHasCap(effect) ? Math.min(total, effectCap(effect)) : total
+    }
+
+    case 'HalfStrikethrough':
+      // V2 2.0.0.85 Effect.cpp: Strikethrough breakdown total / 2 (the
+      // "Lock In" stance's Melee Power). Resolved by the fixed-point pass.
+      return (ctx?.strikethroughTotal ?? 0) / 2
 
     case 'AbilityTotalIndex': {
       // V2: Amount[min(abilityTotal, size-1)]

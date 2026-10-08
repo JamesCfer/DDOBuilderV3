@@ -31,8 +31,9 @@
       <BonusType>Equipment</BonusType>
     </Buff>
     <Buff>
-      <Type>AcidI</Type>
+      <Type>Acid Intensity</Type>
       <BonusType>Enhancement</BonusType>
+      <Value1>24</Value1>
     </Buff>
     <Buff>
       <Type>SpellLoreNumeral</Type>
@@ -46,6 +47,9 @@
       <BonusType>Insightful</BonusType>
       <Description1>Rune Arm</Description1>
       <Item>Rune Arm</Item>
+    </Buff>
+    <Buff>
+      <Type>Rune Arm Imbue - Acid VI</Type>
     </Buff>
     <ItemAugment>
       <Type>Nearly Complete: Exceptional Skills (Legendary)</Type>

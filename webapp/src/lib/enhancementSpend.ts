@@ -27,17 +27,18 @@ export function normalizeCostPerRank(raw: unknown): string {
  * V2 `EnhancementTreeItem::CostPerRank` is a per-rank list ("2 1 1" = 2 AP for
  * the first rank, 1 for each after). A single value applies to every rank; no
  * value at all means 1 AP per rank.
+ *
+ * Ranks are NOT capped at the item's current `Ranks`: V2 SpendInTree::EndElement
+ * charges every saved rank (TrainedEnhancement::Cost falls back to the first
+ * cost past the end of the list), so a build saved before an item dropped from
+ * 3 ranks to 1 (Update 81 reaper clickies) keeps spending AP for all three.
  */
 export function costUpToRank(item: EnhancementTreeItem, rank: number): number {
   if (rank <= 0) return 0
-  const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
   const parts = normalizeCostPerRank(item.CostPerRank).trim().split(/\s+/).map(Number).filter(isFinite)
-  const costs = parts.length === 0
-    ? Array(maxRanks).fill(1)
-    : parts.length === 1
-    ? Array(maxRanks).fill(parts[0])
-    : Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
-  return costs.slice(0, rank).reduce((a: number, b: number) => a + b, 0)
+  let total = 0
+  for (let i = 0; i < rank; i++) total += parts.length === 0 ? 1 : (parts[i] ?? parts[0])
+  return total
 }
 
 /** Total AP spent in one tree. Accepts either key form (V2 InternalName or

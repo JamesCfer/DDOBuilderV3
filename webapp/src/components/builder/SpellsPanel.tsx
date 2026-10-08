@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
+import { hasMixedMagics } from '../../lib/mixedMagics'
 import type { Spell, DDOClass } from '../../types/ddo'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
@@ -75,25 +76,11 @@ export default function SpellsPanel() {
   const heightenActive = build.activeBuffs.includes('Heighten Spell') ||
     build.activeBuffs.includes('Heighten')
 
-  // V2 BreakdownItemCasterLevel.cpp:77-100: the "Mixed Magics" enhancement
-  // (Wild Mage tree WMUnstableSorcery / Arcane Trickster tree ATMoreMagicMoreFun)
-  // raises that class's caster level to min(20, character level). The selection
-  // value "Mixed Magics" is stored under the owning archetype tree, so we map
-  // the trained selection back to its class and pass min(20, totalLevel) to
-  // computeCasterLevel for that class only.
-  const mixedMagicsClasses = useMemo(() => {
-    const set = new Set<string>()
-    const treeToClass: Record<string, string> = {
-      'Wild Mage': 'Wild Mage',
-      'Arcane Trickster': 'Arcane Trickster',
-    }
-    for (const [treeName, sels] of Object.entries(build.enhancementSelections ?? {})) {
-      const cls = treeToClass[treeName]
-      if (!cls) continue
-      if (Object.values(sels).includes('Mixed Magics')) set.add(cls)
-    }
-    return set
-  }, [build.enhancementSelections])
+  // V2 BreakdownItemCasterLevel.cpp: any trained "Mixed Magics" source (Wild
+  // Mage / Arcane Trickster selection, or Archmage AMMixedMagics) raises EVERY
+  // class's caster level to min(20, character level) — V2 adds the delta in
+  // each class's caster-level breakdown, not only the owning class's.
+  const mixedMagics = useMemo(() => hasMixedMagics(build), [build])
   const characterLevel = Math.min(20, build.totalLevel ?? 0)
 
   function isTrained(className: string, lvl: number, name: string): boolean {
@@ -161,7 +148,7 @@ export default function SpellsPanel() {
                             const dcValues = dcs.map(d => computeSpellDC(spell, d, activeTabData.cls, activeTabData.classLevel, stats, { heightenActive }))
                             const cl = computeCasterLevel(
                               spell, activeTabData.cls, activeTabData.classLevel, stats,
-                              mixedMagicsClasses.has(activeTabData.className)
+                              mixedMagics
                                 ? { mixedMagicsCharacterLevel: characterLevel }
                                 : {},
                             )

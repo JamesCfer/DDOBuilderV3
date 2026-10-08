@@ -40,8 +40,15 @@ const KNOWN_OPEN = new Set<string>([])
 //                            contributions now round half-up
 //                            (BreakdownItem.cpp DoPercentageEffects, `+ 0.5`).
 //   fortBypass   71 -> 85    U73 item-data pass on this save's gear.
+// The sync to V2 2.0.0.85 (Update 81.4 data) moved three more, again taken
+// from the v2calc oracle built from 2.0.0.85 against the synced data:
+//   prr        138 -> 189
+//   mrr        122 -> 173
+//   healAmp     30 -> 35
 // Everything else in the export still matches exactly.
-const STALE_EXPORT: Record<string, number> = { hp: 2798, fortBypass: 85 }
+const STALE_EXPORT: Record<string, number> = {
+  hp: 2798, fortBypass: 85, prr: 189, mrr: 173, healAmp: 35,
+}
 
 describe.skipIf(!have)('golden build vs real V2 forum export', () => {
   const cat = loadAllCatalogues(DATA)
@@ -98,9 +105,8 @@ describe.skipIf(!have)('golden build vs real V2 forum export', () => {
     // this pins them down directly so a future regression fails loudly
     // instead of silently reopening up to the old bound.
     for (const key of ['ac', 'mrr', 'prr']) {
-      const v2 = parsed.stats[key]
-      expect(v2, `expected '${key}' in the parsed export`).toBeDefined()
-      expect(composed(key), key).toBe(v2)
+      expect(parsed.stats[key], `expected '${key}' in the parsed export`).toBeDefined()
+      expect(composed(key), key).toBe(expected(key))
     }
   })
 

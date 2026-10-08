@@ -102,6 +102,20 @@ function getFeatSet(ctx: RequirementContext): Set<string> {
   return new Set(Object.values(ctx.build.featChoices).filter(Boolean))
 }
 
+// Feats acquired by choice: slot-trained feats (build.featChoices, which a
+// caller's per-slot snapshot already limits to earlier levels) plus special
+// feats (past lives, favor rewards). Mirrors V2 Build::CurrentFeatsTrained +
+// GetSpecialFeatTrainedCount.
+function trainedFeatCount(build: CharacterBuild, name: string): number {
+  let n = 0
+  for (const v of Object.values(build.featChoices)) if (v === name) n++
+  for (const [k, c] of Object.entries(build.pastLives ?? {})) {
+    if (k === name || `Past Life: ${k}` === name) n += c
+  }
+  for (const f of build.favorFeats ?? []) if (f === name) n++
+  return n
+}
+
 export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext): boolean {
   const item = Array.isArray(req.Item) ? req.Item[0] : req.Item ?? ''
   const value = req.Value ?? 0
@@ -128,6 +142,13 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       if (ctx.featCounts) return (ctx.featCounts[item] ?? 0) >= (req.Value ?? 1)
       return getFeatSet(ctx).has(item)
     }
+    case 'FeatTrained':
+      // V2 2.0.0.85 Requirement.cpp EvaluateFeatTrained: counts only feats the
+      // player TRAINED in a slot (Build::CurrentFeatsTrained) plus special
+      // feats (past lives, favor), never automatic class/race grants. Lets a
+      // Ranger, granted Two Weapon Fighting at level 2, still take the
+      // Two Handed Fighting line whose RequiresNoneOf names TWF.
+      return trainedFeatCount(build, item) >= (req.Value ?? 1)
     case 'Race':
       return build.race === item
     case 'RaceConstruct':

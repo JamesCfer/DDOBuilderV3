@@ -167,8 +167,8 @@ export function computeSpellDC(
  * Result is capped at MaxCasterLevel.
  *
  * `options.mixedMagicsCharacterLevel`: when the build has trained the
- * "Mixed Magics" enhancement (Wild Mage `WMUnstableSorcery` or Arcane
- * Trickster `ATMoreMagicMoreFun`), V2 raises that class's caster level to
+ * "Mixed Magics" enhancement (Wild Mage `WMUnstableSorcery`, Arcane
+ * Trickster `ATMoreMagicMoreFun` or Archmage `AMMixedMagics`), V2 raises the caster level to
  * min(20, character level) — implemented in BreakdownItemCasterLevel.cpp:77-100
  * as an extra (maxLevel - classLevels) "other effect" on the class CL
  * breakdown. We pass min(20, totalLevel) here and add the same delta.

@@ -15,6 +15,8 @@
 // with memoisation and re-exports everything here.
 
 import type { CharacterBuild } from '../types/ddo'
+import { costUpToRank } from './enhancementSpend'
+import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS } from './mixedMagics'
 import { SKILLS } from './gamedata'
 import type {
   Race, DDOClass, Feat, EnhancementTree, EnhancementTreeItem, Item,
@@ -434,29 +436,6 @@ function pickCastingStat(
 // ---------------------------------------------------------------------------
 // Enhancement tree AP and effect helpers
 // ---------------------------------------------------------------------------
-
-function normalizeCostPerRank(raw: unknown): string {
-  if (raw == null) return '1'
-  if (typeof raw === 'number' && isFinite(raw)) return String(raw)
-  if (typeof raw === 'string') return raw || '1'
-  if (typeof raw === 'object' && !Array.isArray(raw) && '#text' in (raw as object)) {
-    const t = (raw as Record<string, unknown>)['#text']
-    if (t != null) return String(t) || '1'
-  }
-  return '1'
-}
-
-function costUpToRank(item: EnhancementTreeItem, rank: number): number {
-  if (rank <= 0) return 0
-  const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
-  const str = normalizeCostPerRank(item.CostPerRank)
-  const parts = str.trim().split(/\s+/).map(Number).filter(isFinite)
-  const costs =
-    parts.length === 0 ? Array(maxRanks).fill(1) :
-    parts.length === 1 ? Array(maxRanks).fill(parts[0]) :
-    Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
-  return (costs as number[]).slice(0, rank).reduce((a: number, b: number) => a + b, 0)
-}
 
 function computeTreeAP(items: EnhancementTreeItem[], choices: Record<string, number>): number {
   return items.reduce((sum, item) => sum + costUpToRank(item, enhancementRank(choices, item)), 0)
@@ -1357,6 +1336,7 @@ function buildStatMapOnce(
   skillTotalsOverride?: Record<string, number>,
   casterLevelsOverride?: Record<string, number>,
   resolvedBabOverride?: number,
+  resolvedStrikethroughOverride?: number,
 ): StatMap {
   const map: StatMap = new Map()
 
@@ -2038,14 +2018,16 @@ function buildStatMapOnce(
       weaponTypeMain: mainWeaponType,
       weaponTypeOffhand: offWeaponType,
       charLevelTotal: (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0),
-      // Wild Mage / Arcane Trickster "Mixed Magics" (see EffectContext)
-      ...(['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
+      // Wild Mage / Arcane Trickster / Archmage "Mixed Magics" (see EffectContext)
+      ...(MIXED_MAGICS_SELECTORS.some(n =>
         ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
+        || MIXED_MAGICS_ENHANCEMENTS.some(n => ctxEnhancements.has(n))
         ? { mixedMagicsCapLevel: Math.min(20, (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)) }
         : {}),
       skillTotals: skillTotalsOverride,
       skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
+      strikethroughTotal: resolvedStrikethroughOverride,
     }
     // V2 Build::SnapshotAbilityValue — Snapshot* StackSources read the
     // persisted per-gear-set ability snapshot when GearSetSnapshot names an
@@ -3488,26 +3470,33 @@ export function buildStatMap(input: BuildStatsInput, build: CharacterBuild): Sta
     return out
   }
   const babOf = (m: StatMap): number => resolveBonus(m.get('bab') ?? []).total
+  // Strikethrough total for AType=HalfStrikethrough (V2 BreakdownItem observes
+  // Breakdown_Strikethrough and re-evaluates when it changes).
+  const strikeOf = (m: StatMap): number => resolveBonus(m.get('melee.strikethrough') ?? []).total
   let map = buildStatMapOnce(input, build)
   let totals = totalsOf(map)
   let skills = skillsOf(map)
   let casters = casterOf(map)
   let bab = babOf(map)
+  let strike = strikeOf(map)
   for (let i = 0; i < 3; i++) {
-    const next = buildStatMapOnce(input, build, totals, skills, casters, bab)
+    const next = buildStatMapOnce(input, build, totals, skills, casters, bab, strike)
     const nextTotals = totalsOf(next)
     const nextSkills = skillsOf(next)
     const nextCasters = casterOf(next)
     const nextBab = babOf(next)
+    const nextStrike = strikeOf(next)
     const stable = ABILITIES.every(ab => nextTotals[ab] === totals[ab])
       && Object.keys({ ...skills, ...nextSkills }).every(k => nextSkills[k] === skills[k])
       && Object.keys({ ...casters, ...nextCasters }).every(k => nextCasters[k] === casters[k])
       && nextBab === bab
+      && nextStrike === strike
     map = next
     totals = nextTotals
     skills = nextSkills
     casters = nextCasters
     bab = nextBab
+    strike = nextStrike
     if (stable) break
   }
   return map

@@ -9,6 +9,7 @@
 // derive from character level, …) is encoded here exactly once.
 
 import { absorptionTotal, resolveBonus } from './bonus'
+import { hasMixedMagics } from './mixedMagics'
 import type { BuildStats } from './buildStats'
 import type { CharacterBuild, Item } from '../types/ddo'
 
@@ -159,13 +160,10 @@ export function buildParityRows(
     push(`dc.${school}`, oracle.spellDC[ok], combined)
   }
   // Per-class caster levels. V2 BreakdownItemClassCasterLevel composes:
-  // class levels + Wild Mage/Arcane Trickster "Mixed Magics" (min(20, level)
-  // − classLevels, only when classLevels > 0) + CasterLevel effects (per-
-  // class and Item=All pools).
-  const mixedMagics = ['WMUnstableSorcery', 'ATMoreMagicMoreFun'].some(n =>
-    Object.entries(build.enhancementSelections ?? {}).some(([tree, sels]) =>
-      (sels as Record<string, string>)[n] === 'Mixed Magics'
-      && ((build.enhancementChoices?.[tree] as Record<string, number> | undefined)?.[n] ?? 0) > 0))
+  // class levels + Wild Mage/Arcane Trickster/Archmage "Mixed Magics"
+  // (min(20, level) − classLevels, only when classLevels > 0) + CasterLevel
+  // effects (per-class and Item=All pools).
+  const mixedMagics = hasMixedMagics(build)
   const charLevel = (build.totalLevel ?? 0)
     + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
   for (const [cls, v2cl] of Object.entries(oracle.casterLevel ?? {})) {
