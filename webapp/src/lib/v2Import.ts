@@ -14,6 +14,7 @@
 //   TrainedEnhancement.cpp   <EnhancementName>/<Ranks>/<Selection>/<IsTier5>
 
 import { XMLParser } from 'fast-xml-parser'
+import { upgradeSelection } from './selectionUpgrades'
 import type {
   Ability, BuildClass, CharacterBuild, CharacterDocument, FiligreeSlot, Life,
   QuestDifficulty,
@@ -380,7 +381,7 @@ function parseEnhancements(
       const sel = asStr(er.Selection)
       if (!name) continue
       if (ranks > 0) tChoices[name] = ranks
-      if (sel) tSelections[name] = sel
+      if (sel) tSelections[name] = upgradeSelection(sel)
     }
     if (Object.keys(tChoices).length > 0) {
       choices[treeName] = tChoices

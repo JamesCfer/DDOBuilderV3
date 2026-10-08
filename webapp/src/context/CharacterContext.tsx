@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useReducer } from 'react'
 import type { CharacterBuild, Ability, FiligreeSlot, QuestDifficulty } from '../types/ddo'
+import { upgradeSelections } from '../lib/selectionUpgrades'
 import { emptyBuild, migrateSentientGem } from '../types/ddo'
 import { aggregateLevelClasses, getLevelClasses, HEROIC_CAP } from '../lib/levelProgression'
 import { EPIC_MAX_LEVELS, LEGENDARY_MAX_LEVELS, LEGENDARY_DEFAULT_LEVELS } from '../lib/gamedata'
@@ -144,7 +145,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     levelClasses: migrateLevelClasses(raw),
     epicLevels: raw.epicLevels ?? 10,
     enhancementChoices: raw.enhancementChoices ?? {},
-    enhancementSelections: raw.enhancementSelections ?? {},
+    enhancementSelections: upgradeSelections(raw.enhancementSelections ?? {}),
     enhancementPinned: raw.enhancementPinned ?? [],
     legendaryLevels: raw.legendaryLevels ?? LEGENDARY_DEFAULT_LEVELS,
     skillRanks: raw.skillRanks ?? {},
@@ -156,7 +157,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     filigreeSlots: migrateFiligreeSlots(raw.filigreeSlots as unknown, 6),
     artifactFiligreeSlots: migrateFiligreeSlots((raw as unknown as { artifactFiligreeSlots?: unknown }).artifactFiligreeSlots, 10),
     destinyChoices: raw.destinyChoices ?? {},
-    destinySelections: (raw as unknown as { destinySelections?: CharacterBuild['destinySelections'] }).destinySelections ?? {},
+    destinySelections: upgradeSelections((raw as unknown as { destinySelections?: CharacterBuild['destinySelections'] }).destinySelections ?? {}),
     reaperChoices: raw.reaperChoices ?? {},
     reaperAP: raw.reaperAP ?? 0,
     activeEpicDestiny: raw.activeEpicDestiny ?? '',
@@ -173,7 +174,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     activeBuffs: raw.activeBuffs ?? [],
     stanceOverrides: (raw as unknown as { stanceOverrides?: Record<string, boolean> }).stanceOverrides ?? {},
     selfBuffs: raw.selfBuffs ?? [],
-    reaperSelections: raw.reaperSelections ?? {},
+    reaperSelections: upgradeSelections(raw.reaperSelections ?? {}),
     augmentLevelChoices: raw.augmentLevelChoices ?? {},
     augmentValueChoices: raw.augmentValueChoices ?? {},
     completedQuests: raw.completedQuests ?? {},

@@ -27,6 +27,7 @@ function formatReq(req: Requirement): string {
     case 'Ability': return `${item} ${val}+`
     case 'BAB': return `BAB ${val}+`
     case 'Feat': return item
+    case 'FeatTrained': return `${item} (Trained)`
     case 'Race': return `Race: ${item}`
     case 'Class': return `Class: ${item}`
     case 'ClassLevel': return `${item} ${val}+`

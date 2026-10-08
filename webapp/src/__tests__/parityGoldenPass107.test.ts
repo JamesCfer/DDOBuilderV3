@@ -70,7 +70,8 @@ describe.skipIf(!have)('golden build V2-exact stats (pass 107)', () => {
   it('elemental spell powers match the committed V2 export (see parityGoldenPass106 for the full sweep)', () => {
     const u = stats.total('sp.Universal')
     expect(stats.total('sp.Positive') + u).toBe(183)
-    expect(stats.total('sp.Sonic') + u).toBe(161)
+    // 161 in the committed export; 176 under V2 2.0.0.85 data (v2calc oracle)
+    expect(stats.total('sp.Sonic') + u).toBe(176)
   })
   it('self buffs list is separate from active stances', () => {
     // The fixture's ActiveStances include "Primal Scream"; the Life node has

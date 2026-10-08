@@ -14,6 +14,7 @@ import { absorptionTotal } from '../bonus'
 import { getLevelClasses, classLevelsAtLevel } from '../levelProgression'
 import { buildSlots, getLevelTrainingEntries } from '../levelTraining'
 import { computeBonusActionPoints } from '../actionPoints'
+import { costUpToRank } from '../enhancementSpend'
 import { destinyPoolForBuild } from '../destiny'
 import { SKILL_NAMES } from '../gamedata'
 import { collectActiveDCs, dcVersusText, dcEvaluationText } from '../dcBreakdown'
@@ -524,33 +525,6 @@ function enhancementLabel(item: EnhancementTreeItem, selection: string | undefin
   }
   const colon = name.indexOf(':')
   return colon === -1 ? name : name.slice(colon + 2)
-}
-
-function normalizeCostPerRank(raw: unknown): string {
-  if (raw == null) return '1'
-  if (typeof raw === 'number' && isFinite(raw)) return String(raw)
-  if (typeof raw === 'string') return raw || '1'
-  if (typeof raw === 'object' && !Array.isArray(raw) && '#text' in (raw as object)) {
-    const t = (raw as Record<string, unknown>)['#text']
-    if (t != null) return String(t) || '1'
-  }
-  return '1'
-}
-
-// Mirrors EnhancementTreePanel.tsx's costUpToRank/computeTreeSpent (V2
-// EnhancementTreeItem::Cost / SpendInTree::Spent parity) — duplicated here
-// rather than imported since that module is component-scoped.
-function costUpToRank(item: EnhancementTreeItem, rank: number): number {
-  if (rank <= 0) return 0
-  const maxRanks = typeof item.Ranks === 'number' ? item.Ranks : 1
-  const str = normalizeCostPerRank(item.CostPerRank)
-  const parts = str.trim().split(/\s+/).map(Number).filter(isFinite)
-  const costs = parts.length === 0
-    ? Array(maxRanks).fill(1)
-    : parts.length === 1
-    ? Array(maxRanks).fill(parts[0])
-    : Array.from({ length: maxRanks }, (_, i) => parts[i] ?? parts[parts.length - 1])
-  return costs.slice(0, rank).reduce((a: number, b: number) => a + b, 0)
 }
 
 function treeSpent(tree: EnhancementTree, choices: Record<string, number>): number {

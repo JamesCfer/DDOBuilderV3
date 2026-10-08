@@ -84,9 +84,9 @@ maybeDescribe('crafting catalogue', () => {
     const fort = shard('Cannith Armor Prefix', 'Fortification') ?? shard('Cannith Belt Prefix', 'Fortification')
     expect(fort.values.slice(33, 36)).toEqual([159, 163, 166])
 
-    const isfm = shard('Cannith Helmet Extra', 'Insightful Spell Focus Mastery')
+    // V2 2.0.0.85 ships this shard as a Cannith Ring Extra.
+    const isfm = shard('Cannith Ring Extra', 'Insightful Spell Focus Mastery')
     expect(isfm.values[35]).toBe(4)
-    expect(shard('Cannith Trinket Extra', 'Insightful Spell Focus Mastery')).toBeDefined()
 
     const lucky = shard('Cannith Helmet Prefix', 'Lucky (combined)')
     expect(lucky.minLevel).toBe(20)

@@ -13,12 +13,15 @@ enough to save them.</Description>
     <Buff>
       <Type>VoidIntensity</Type>
       <Value1>24</Value1>
-      <BonusType>Equipment</BonusType>
+      <BonusType>Enhancement</BonusType>
     </Buff>
     <Buff>
       <Type>VoidLore</Type>
       <Value1>24</Value1>
       <BonusType>Equipment</BonusType>
+    </Buff>
+    <Buff>
+      <Type>Legendary Virulent Poison Guard</Type>
     </Buff>
     <ItemAugment>
       <Type>Nearly Complete: Spell Focus (Legendary)</Type>

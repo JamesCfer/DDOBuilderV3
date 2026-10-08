@@ -52,7 +52,15 @@ const V2_INVALID_TRAINED = new Set([
   'Epic Spell Focus',
   'Spell Specialty: Illusion', 'Spell Specialty: Necromancy',
 ])
-const MISSING_DATA_FEATS = new Set(['Purity of Heart'])
+const MISSING_DATA_FEATS = new Set([
+  'Purity of Heart',
+  // Update 81.4 epic "Master of" feats removed or renamed in V2 2.0.0.85
+  // (Epic.class.xml); V2 itself no longer offers them either.
+  'Master of Air', 'Master of Artifice', 'Master of Chaos', 'Master of Earth',
+  'Master of Fire', 'Master of Light', 'Master of Music', 'Master of Poisons', 'Master of Shadowblades',
+  'Master of Spell Vials', 'Master of Thorns', 'Master of Water', 'Master of the Dead',
+  'Master of the Wilds',
+])
 
 describe.skipIf(!have)('50-build user collection', () => {
   const cat = loadAllCatalogues(DATA)

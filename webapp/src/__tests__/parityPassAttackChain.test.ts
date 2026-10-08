@@ -98,8 +98,9 @@ describe('parseAttackDef from real V2 data files', () => {
     const reed = kensei?.EnhancementTreeItem?.find(i => i.Name === 'Kensei: Reed In The Wind') as unknown as { Attack?: unknown }
     expect(reed).toBeDefined()
     const def = parseAttackDef(reed!.Attack)
-    expect(def!.cooldown).toEqual([8, 8, 8])
-    expect(def!.thisAttack?.bonusDamagePercent).toEqual([20, 40, 60])
+    // Single-rank since V2 2.0.0.85 (Update 81 Kensei pass)
+    expect(def!.cooldown).toEqual([8])
+    expect(def!.thisAttack?.bonusDamagePercent).toEqual([60])
   })
 })
 
@@ -160,7 +161,7 @@ describe('collectAvailableAttacks', () => {
     const haste = withSel.find(a => a.def.name === 'Kensei: Haste Boost')
     expect(haste).toBeDefined()
     expect(haste!.stacks).toBe(3)
-    expect(haste!.def.followOn?.bonusAlacrity).toEqual([10, 20, 30])
+    expect(haste!.def.followOn?.bonusAlacrity).toEqual([30])
     // Without a selection no sub-selection attack is granted
     const withoutSel = collectAvailableAttacks({
       allFeats, allTrees,
