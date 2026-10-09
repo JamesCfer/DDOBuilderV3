@@ -124,16 +124,16 @@ describe('Parity pass 3 — forum export SelfAndPartyBuffs section', () => {
   const buffs: OptionalBuff[] = [{ Name: 'Greater Heroism' } as unknown as OptionalBuff]
 
   it('separates self-buffs from stances when both catalogues are provided', () => {
-    const build = { ...emptyBuild(), activeBuffs: ['Sneak Attack', 'Greater Heroism'] }
+    const build = { ...emptyBuild(), activeBuffs: ['Sneak Attack'], selfBuffs: ['Greater Heroism'] }
     const text = emitForumExport({ build, stats: null, allStances: stances, allSelfBuffs: buffs })
     expect(text).toMatch(/Active Stances.*\n\s*Sneak Attack/)
-    expect(text).toMatch(/Self & Party Buffs.*\n\s*Greater Heroism/)
+    expect(text).toMatch(/Self and Party Buffs\n\[HR\]\[\/HR\]\nGreater Heroism/)
   })
 
-  it('omits Self & Party Buffs heading when there are no non-stance buffs', () => {
+  it('omits Self and Party Buffs heading when there are no self buffs', () => {
     const build = { ...emptyBuild(), activeBuffs: ['Sneak Attack'] }
     const text = emitForumExport({ build, stats: null, allStances: stances, allSelfBuffs: buffs })
-    expect(text).not.toMatch(/Self & Party Buffs/)
+    expect(text).not.toMatch(/Self and Party Buffs/)
   })
 })
 

@@ -439,24 +439,18 @@ const stances: SectionDef = {
   },
 }
 
-// V2 ForumExportDlg.cpp:1583-1610 (FES_SelfAndPartyBuffs) — lists toggled
-// optional/self buffs distinct from stances.
+// V2 ForumExportDlg.cpp:874-887 (AddSelfAndPartyBuffs) prints
+// `Life::SelfAndPartyBuffs()`, the list the Buffs pane toggles, as a plain
+// "Self and Party Buffs" heading + "[HR][/HR]" and one buff name per line.
+// In V3 that list is `build.selfBuffs` (TOGGLE_BUFF / SelfBuffsPanel), not
+// the stance toggles in `build.activeBuffs`.
 const selfAndPartyBuffs: SectionDef = {
   id: 'SelfAndPartyBuffs',
   label: 'Self & party buffs',
-  emit: ({ build, allStances, allSelfBuffs }) => {
-    if (build.activeBuffs.length === 0) return []
-    let list = build.activeBuffs
-    if (allStances && allStances.length > 0) {
-      const stanceNames = new Set(allStances.map(s => s.Name))
-      list = list.filter(n => !stanceNames.has(n))
-    }
-    if (allSelfBuffs && allSelfBuffs.length > 0) {
-      const buffNames = new Set(allSelfBuffs.map(b => b.Name))
-      list = list.filter(n => buffNames.has(n))
-    }
+  emit: ({ build }) => {
+    const list = build.selfBuffs ?? []
     if (list.length === 0) return []
-    return ['[b]Self & Party Buffs[/b]:', '  ' + list.join(', ')]
+    return ['Self and Party Buffs', '[HR][/HR]', ...list]
   },
 }
 
