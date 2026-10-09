@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 171 | **X22 — CLOSED: forum export `PastLives` now uses V2's per-feat lines.** V2 `ForumExportDlg.cpp:393-433 AddPastLives` calls `AddFeats` (`:475-507`) for Heroic, Racial, Iconic, Epic in that order: plain heading, `[HR][/HR]`, one `FeatName` / `FeatName(N)` line per feat sorted by name (`TrainedFeat::operator<`), blank line. V2 prints the full `Past Life: ...` feat name and drops any other type. V3 comma-joined `Name xN` per bucket under a bold header, ordered Heroic/Iconic/Epic/Racial, and added an invented `Other Past Lives` bucket. Now types each entry from `build.pastLifeTypes` (V2 imports) or the class/race/epic-feat catalogues (Past Lives panel entries), re-adds the `Past Life: ` prefix that `v2Import.ts` strips from heroic/racial keys, and drops untyped entries like V2. `forumExport.test.ts` and `parityPass3.test.ts` updated; 3 regression tests in `parityPassX22PastLives.test.ts`. | this PR |
 | 169 | **X21 — CLOSED: forum export `SelfAndPartyBuffs` now reads the Buffs pane list.** V2 `ForumExportDlg.cpp:874-887 AddSelfAndPartyBuffs` prints `Life::SelfAndPartyBuffs()` as a plain `Self and Party Buffs` heading + `[HR][/HR]` and one buff per line. V3's section read `build.activeBuffs` (the stance toggles) and filtered it against the stance and buff catalogues, so real builds exported nothing (stances and buffs are toggled by disjoint panels). It now reads `build.selfBuffs` (already populated by `TOGGLE_BUFF` and `v2Import.ts`) in V2's format. `parityPass3.test.ts` updated for the new input/format; 4 regression tests in `parityPassX21SelfAndPartyBuffs.test.ts`. | this PR |
 | 168 | **D13 — CLOSED: an item's own inherent `ArcaneSpellFailure` field now synthesizes a stat.** V2 `Build::ApplyArmorEffects`/`ApplyWeaponEffects` (`Build.cpp:5663-5670`/`5944-5951`) synthesizes `Effect_ArcaneSpellFailure` (Armor slot) / `Effect_ArcaneSpellFailureShields` (Weapon1/Weapon2 slots) from an equipped item's own `<ArcaneSpellFailure>` field, unconditionally. `buildStats.ts`'s `accumulateGear` never read this field at all — present on 990 shipped `.item` files — so it never reached either of the already-mapped `arcaneSpellFailure`/`arcaneSpellFailureShield` stat keys. Fixed by routing the field through the same per-slot split V2 uses, reusing the existing weapon-slot-alias set. Left out: neither stat key is surfaced in any UI panel or export section yet (a pre-existing gap affecting the feat/enhancement-granted path too, out of this narrow fix's scope). 5 new regression tests in `parityPassD13ArcaneSpellFailure.test.ts`. | this PR |
 | 167 | **D12 — CLOSED: `Quest.IgnoreForTotalFavor` is now normalized and excluded from the Favor panel's max-favor totals.** V2 `Quest.h:62`/`DDOBuilder.cpp:1136-1142` (`CDDOBuilderApp::LoadQuests`) excludes `IgnoreForTotalFavor`-flagged duplicate entries (`Quests.xml`'s "Devil Assault (Normal)"/"(Hard)", each `Favor=5`, both flagged, vs. the unflagged "Devil Assault (Elite)") from both the per-patron and grand "Total Favor" max-favor tallies, to avoid double-counting a quest that appears more than once. `<IgnoreForTotalFavor/>` is a presence-only flag (same bug class as `DoNotShow`/`NoPastLife`/etc. — the XML parser delivers it as `""`), so `loadQuests` now promotes it to an explicit boolean; new `favorMaxTotal()` helper in `FavorPanel.tsx` applies V2's exact exclusion rule to both the grand-total sum and `PatronRow`'s per-patron `totalAvailable` (the achieved/current-favor tally is untouched — V2's numerator uses a separate per-name-deduped run-quest mechanism V3 doesn't model, out of scope here). The Coin Lords' max favor drops from 233 to V2-correct 223. 5 new regression tests in `parityPassD12IgnoreForTotalFavor.test.tsx`. | this PR |
@@ -1398,19 +1399,6 @@ already closed; these are new, some content gaps (not just formatting):
 2026-08-26 scan diffed every remaining `Add*` method against `sections.ts`
 once more; four new gaps beyond X1–X20:
 
-- ❌ **X22 — `PastLives` doesn't reproduce V2's per-feat-line format, and
-  invents an "Other Past Lives" bucket.** V2 `ForumExportDlg.cpp:393-433
-  AddPastLives` calls the shared `AddFeats` helper (`:475-507`) once per
-  category (Heroic, Racial, Iconic, Epic, in that order), each producing
-  one line per feat as `FeatName(Count)` under a plain heading + `[HR][/HR]`.
-  V3's `sections.ts:146-191` instead comma-joins all entries per bucket on
-  a single line as `Name x2`, reorders the buckets (Heroic, Iconic, Epic,
-  Racial), and adds a catch-all "Other Past Lives" bucket V2 has no
-  equivalent for (V2 silently drops anything not matching one of the 4
-  known `<Type>`s). The sibling `SpecialFeats`/`FavorFeats` section
-  (`sections.ts:1174-1191`, closed under X10) already reproduces V2's
-  `Name(N)` per-line convention off the same `AddFeats` V2 function —
-  `PastLives` should have gotten the same treatment but didn't.
 - ❌ **X23 — `ActiveStances` drops V2's per-group label.** V2
   `ForumExportDlg.cpp:846-872 AddActiveStances` emits one line per selected
   stance as `GroupName: StanceName`, iterating `CStancesPane::Groups()`.

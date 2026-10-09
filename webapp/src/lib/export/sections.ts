@@ -143,50 +143,64 @@ const characterHeader: SectionDef = {
   },
 }
 
+// V2 ForumExportDlg.cpp:393-433 (AddPastLives) + :475-507 (AddFeats): for
+// each of Heroic, Racial, Iconic, Epic (in that order) a plain heading,
+// "[HR][/HR]", then one line per past-life feat as "FeatName" or
+// "FeatName(N)", sorted by feat name; a blank line closes each block. V2's
+// FeatName is the full "Past Life: ..." feat name, and anything not of one
+// of the four types is not printed here.
+const PAST_LIFE_BLOCKS: Array<[string, string]> = [
+  ['Heroic Past Lives', 'HeroicPastLife'],
+  ['Racial Past Lives', 'RacialPastLife'],
+  ['Iconic Past Lives', 'IconicPastLife'],
+  ['Epic Past Lives', 'EpicPastLife'],
+]
+
 const pastLives: SectionDef = {
   id: 'PastLives',
   label: 'Past lives',
-  // V2 ForumExportDlg.cpp:421-435 splits past lives by category before listing.
   emit: ({ build, allClasses, allRaces, epicPastLifeFeats }) => {
     const entries = Object.entries(build.pastLives).filter(([, c]) => c > 0)
     if (entries.length === 0) return []
 
+    // V2 imports record each entry's type; entries set in V3's Past Lives
+    // panel are keyed by bare class/race name and are typed from catalogues.
+    const types = build.pastLifeTypes ?? {}
     const heroicNames = new Set((allClasses ?? []).filter(c => !c.NotHeroic).map(c => c.Name))
     const racialNames = new Set((allRaces ?? []).filter(r => !r.NotHeroic && !r.IsIconic).map(r => r.Name))
     const iconicNames = new Set((allRaces ?? []).filter(r => !r.NotHeroic && r.IsIconic).map(r => r.Name))
     const epicNames   = new Set((epicPastLifeFeats ?? []).map(f => f.Name))
+    const typeOf = (key: string): string | undefined => {
+      const t = types[key]
+      if (t && PAST_LIFE_BLOCKS.some(([, bt]) => bt === t)) return t
+      if (heroicNames.has(key)) return 'HeroicPastLife'
+      if (iconicNames.has(key)) return 'IconicPastLife'
+      if (epicNames.has(key))   return 'EpicPastLife'
+      if (racialNames.has(key)) return 'RacialPastLife'
+      return undefined
+    }
+    const featName = (key: string) => key.startsWith('Past Life:') ? key : `Past Life: ${key}`
 
-    const buckets: Record<string, Array<[string, number]>> = {
-      'Heroic Past Lives': [], 'Iconic Past Lives': [],
-      'Epic Past Lives': [],   'Racial Past Lives': [],
-      'Other Past Lives': [],
-    }
-    for (const e of entries) {
-      const [src] = e
-      if (heroicNames.has(src)) buckets['Heroic Past Lives'].push(e)
-      else if (iconicNames.has(src)) buckets['Iconic Past Lives'].push(e)
-      else if (epicNames.has(src))   buckets['Epic Past Lives'].push(e)
-      else if (racialNames.has(src)) buckets['Racial Past Lives'].push(e)
-      else                           buckets['Other Past Lives'].push(e)
+    const byType = new Map<string, Map<string, number>>()
+    for (const [key, count] of entries) {
+      const t = typeOf(key)
+      if (!t) continue
+      const names = byType.get(t) ?? new Map<string, number>()
+      const name = featName(key)
+      names.set(name, (names.get(name) ?? 0) + count)
+      byType.set(t, names)
     }
 
-    const out = ['[b]Past Lives[/b]:']
-    for (const label of Object.keys(buckets)) {
-      const bucket = buckets[label]
-      if (bucket.length === 0) continue
-      const list = bucket.sort(([a], [b]) => a.localeCompare(b))
-        .map(([s, c]) => `${s} x${c}`)
-        .join(', ')
-      out.push(`  ${label}: ${list}`)
+    const out: string[] = []
+    for (const [heading, t] of PAST_LIFE_BLOCKS) {
+      const names = byType.get(t)
+      if (!names) continue
+      out.push(heading, '[HR][/HR]')
+      const sorted = [...names.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      for (const [name, count] of sorted) out.push(count > 1 ? `${name}(${count})` : name)
+      out.push('')
     }
-    // Pre-catalogue fallback: if no catalogues supplied (everything went into
-    // 'Other'), keep the legacy flat output instead of an unhelpful header.
-    if (out.length === 2 && buckets['Other Past Lives'].length === entries.length) {
-      return [
-        '[b]Past Lives[/b]:',
-        '  ' + entries.sort(([a], [b]) => a.localeCompare(b)).map(([s, c]) => `${s} x${c}`).join(', '),
-      ]
-    }
+    if (out.length > 0) out.pop()
     return out
   },
 }

@@ -176,10 +176,14 @@ describe('emitForumExport', () => {
   })
 
   it('lists past lives when present', () => {
-    const build = { ...emptyBuild(), pastLives: { Fighter: 3, Wizard: 1 } }
+    const build = {
+      ...emptyBuild(),
+      pastLives: { Fighter: 3, Wizard: 1 },
+      pastLifeTypes: { Fighter: 'HeroicPastLife', Wizard: 'HeroicPastLife' },
+    }
     const text = emitForumExport({ build, stats: null })
-    expect(text).toMatch(/Past Lives/)
-    expect(text).toMatch(/Fighter x3/)
+    expect(text).toMatch(/Heroic Past Lives/)
+    expect(text).toMatch(/Past Life: Fighter\(3\)/)
   })
 
   it('omits empty sections', () => {

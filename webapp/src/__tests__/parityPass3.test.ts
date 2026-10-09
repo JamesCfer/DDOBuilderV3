@@ -163,19 +163,16 @@ describe('Parity pass 3 — forum export PastLives category split', () => {
       allRaces: [human, purplev],
       epicPastLifeFeats: epicFeats,
     })
-    expect(text).toMatch(/Heroic Past Lives:.*Fighter x3/)
-    expect(text).toMatch(/Heroic Past Lives:.*Wizard x2/)
-    expect(text).toMatch(/Iconic Past Lives:.*Purple Dragon Knight x1/)
-    expect(text).toMatch(/Epic Past Lives:.*Ancient Knowledge x2/)
-    expect(text).toMatch(/Racial Past Lives:.*Human x3/)
+    expect(text).toMatch(/Heroic Past Lives\n\[HR\]\[\/HR\]\nPast Life: Fighter\(3\)\nPast Life: Wizard\(2\)/)
+    expect(text).toMatch(/Iconic Past Lives\n\[HR\]\[\/HR\]\nPast Life: Purple Dragon Knight\n/)
+    expect(text).toMatch(/Epic Past Lives\n\[HR\]\[\/HR\]\nPast Life: Ancient Knowledge\(2\)/)
+    expect(text).toMatch(/Racial Past Lives\n\[HR\]\[\/HR\]\nPast Life: Human\(3\)/)
   })
 
-  it('falls back to flat list when catalogues are not supplied (legacy callers)', () => {
+  it('prints nothing for past lives it cannot type (V2 drops unknown types)', () => {
     const build = { ...emptyBuild(), pastLives: { Fighter: 3 } }
     const text = emitForumExport({ build, stats: null })
-    expect(text).toMatch(/Past Lives/)
-    expect(text).toMatch(/Fighter x3/)
-    expect(text).not.toMatch(/Heroic Past Lives:/)
+    expect(text).not.toMatch(/Past Li(fe|ves)/)
   })
 })
 
