@@ -14,6 +14,7 @@ import type { CharacterBuild } from '../types/ddo'
 import { resolveBonus, emptyResolvedStat } from '../lib/bonus'
 import type { ResolvedStat } from '../lib/bonus'
 import { deriveWeaponClasses } from '../lib/weapons/groups'
+import { inactiveGrantedFeats } from '../lib/effectParser'
 import {
   buildStatMap, buildRuntimeGroupAdds, extractWeaponInfo, extractOffhandWeaponInfo,
   extractArmorMaxDex, ACTIVE_STANCE_KEY_PREFIX,
@@ -72,6 +73,7 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       .filter(k => k.startsWith('grantedFeat.'))
       .sort()
       .map(k => k.slice('grantedFeat.'.length))
+    const inactiveGrantedFeatsList = inactiveGrantedFeats(statMapKeys, grantedFeatsList)
     const activeStances = statMapKeys
       .filter(k => k.startsWith(ACTIVE_STANCE_KEY_PREFIX))
       .sort()
@@ -92,6 +94,7 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
       armorMaxDex,
       slaList,
       grantedFeatsList,
+      inactiveGrantedFeatsList,
       activeStances,
       isWeaponProficient: (weaponType: string) =>
         deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),

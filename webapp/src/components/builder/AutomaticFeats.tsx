@@ -21,6 +21,7 @@ export default function AutomaticFeats() {
   const autoAcquisitionGroup = automaticAcquisitionFeatGroup(build, allFeats, allClasses, race)
   if (autoAcquisitionGroup) groups.push(autoAcquisitionGroup)
   const grantedFeats = stats.grantedFeatsList
+  const inactiveGrantedFeats = stats.inactiveGrantedFeatsList ?? []
   const hasSelection = build.race || build.classes.some(c => c.name && c.levels > 0)
 
   return (
@@ -29,7 +30,7 @@ export default function AutomaticFeats() {
       <div className="panel-body">
         {!hasSelection ? (
           <p className={styles.empty}>Select a race and classes to see automatic feats.</p>
-        ) : groups.length === 0 && grantedFeats.length === 0 ? (
+        ) : groups.length === 0 && grantedFeats.length === 0 && inactiveGrantedFeats.length === 0 ? (
           <p className={styles.empty}>No automatic feats granted at current levels.</p>
         ) : (
           <div className={styles.groups}>
@@ -54,6 +55,18 @@ export default function AutomaticFeats() {
                 <div className={styles.groupHeader}>Granted Feats</div>
                 <ul className={styles.featList}>
                   {grantedFeats.map(feat => (
+                    <li key={feat} className={styles.featRow}>
+                      <span className={styles.featName}>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {inactiveGrantedFeats.length > 0 && (
+              <div className={styles.group}>
+                <div className={styles.groupHeader}>Inactive Granted Feats</div>
+                <ul className={styles.featList}>
+                  {inactiveGrantedFeats.map(feat => (
                     <li key={feat} className={styles.featRow}>
                       <span className={styles.featName}>{feat}</span>
                     </li>

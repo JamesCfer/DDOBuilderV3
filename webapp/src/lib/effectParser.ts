@@ -233,6 +233,21 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
   }
 }
 
+/** Stat-map key prefix for GrantFeat effects whose activation requirements
+ *  are not met (V2 "Inactive Granted Feats"). Display-only. */
+export const INACTIVE_GRANTED_FEAT_KEY_PREFIX = 'inactiveGrantedFeat.'
+
+/** V2 "Inactive Granted Feats": feats granted only by effects whose
+ *  activation requirements are unmet, minus any also granted actively. */
+export function inactiveGrantedFeats(keys: string[], active: string[]): string[] {
+  const activeSet = new Set(active)
+  return keys
+    .filter(k => k.startsWith(INACTIVE_GRANTED_FEAT_KEY_PREFIX))
+    .map(k => k.slice(INACTIVE_GRANTED_FEAT_KEY_PREFIX.length))
+    .filter(n => !activeSet.has(n))
+    .sort()
+}
+
 /** V2 Requirements::Met — top-level Requirements are AND'd; OneOf is OR; NoneOf is NOR. */
 export function requirementsMet(reqs: Requirements | undefined, ctx: EffectContext): boolean {
   if (!reqs) return true
@@ -765,7 +780,18 @@ export function parseEffect(
   const gateExempt = effect.Type === 'Immunity'
   if (!gateExempt) {
     if (ctx) {
-      if (!requirementsMet(effect.Requirements, ctx)) return []
+      if (!requirementsMet(effect.Requirements, ctx)) {
+        // V2 CGrantedFeatsPane::PopulateGrantedFeatsList (GrantedFeatsPane.cpp
+        // :272-323) keeps every GrantFeat effect whose source applies and lists
+        // the ones whose RequirementsToBeActive fail as "Inactive Granted
+        // Feats". Emit a display-only marker so the panel can show them.
+        if (effect.Type === 'GrantFeat') {
+          return toStringArray(effect.Item)
+            .filter(n => n && n !== 'None')
+            .map(n => ({ statKey: `${INACTIVE_GRANTED_FEAT_KEY_PREFIX}${n}`, value: 1, bonusType: 'GrantFeat', source }))
+        }
+        return []
+      }
     } else {
       if (hasStanceRequirement(effect)) return []
     }
