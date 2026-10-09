@@ -126,7 +126,7 @@ describe('Parity pass 3 — forum export SelfAndPartyBuffs section', () => {
   it('separates self-buffs from stances when both catalogues are provided', () => {
     const build = { ...emptyBuild(), activeBuffs: ['Sneak Attack'], selfBuffs: ['Greater Heroism'] }
     const text = emitForumExport({ build, stats: null, allStances: stances, allSelfBuffs: buffs })
-    expect(text).toMatch(/Active Stances.*\n\s*Sneak Attack/)
+    expect(text).toMatch(/Active Stances\n\[HR\]\[\/HR\]\nrogue: Sneak Attack/)
     expect(text).toMatch(/Self and Party Buffs\n\[HR\]\[\/HR\]\nGreater Heroism/)
   })
 
