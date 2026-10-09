@@ -23,7 +23,7 @@ import type {
   Effect, EnhancementSelection, Augment, SetBonus, FiligreeSetBonus, Filigree,
   OptionalBuff, FiligreeSlot, Spell, GuildBuff, ItemBuff, Stance, Requirements,
 } from '../types/ddo'
-import { parseEffect, parseItemBuff, requirementsMet } from './effectParser'
+import { parseEffect, parseItemBuff, requirementsMet, inactiveGrantedFeats } from './effectParser'
 import type { EffectContext, ItemBuffTemplate } from './effectParser'
 import { resolveBonus, emptyResolvedStat } from './bonus'
 import type { RawBonus, ResolvedStat } from './bonus'
@@ -66,6 +66,9 @@ export interface BuildStats {
    *  items, or augments (V2 GrantedFeatsPane parity). Does not include feats
    *  already present in the player-trained / auto-granted set. */
   grantedFeatsList: string[]
+  /** V2 GrantedFeatsPane "Inactive Granted Feats": granted by an applied
+   *  effect whose activation requirements are not currently met. */
+  inactiveGrantedFeatsList?: string[]
   /**
    * Sorted names of every stance active for this build — the auto stances the
    * engine derives from gear/race/alignment/fighting style, the Stances.xml
@@ -3521,6 +3524,7 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     .filter(k => k.startsWith('grantedFeat.'))
     .sort()
     .map(k => k.slice('grantedFeat.'.length))
+  const inactiveGrantedFeatsList = inactiveGrantedFeats(mapKeys, grantedFeatsList)
   const activeStances = mapKeys
     .filter(k => k.startsWith(ACTIVE_STANCE_KEY_PREFIX))
     .sort()
@@ -3543,6 +3547,7 @@ export function computeBuildStats(input: BuildStatsInput, build: CharacterBuild)
     armorMaxDex,
     slaList,
     grantedFeatsList,
+    inactiveGrantedFeatsList,
     activeStances,
     isWeaponProficient: (weaponType: string) =>
       deriveWeaponClasses(weaponType, groups, groupAdds, groupMerges).has('Proficiency'),

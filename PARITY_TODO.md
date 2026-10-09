@@ -19,6 +19,7 @@ the PR number, so this file doubles as a changelog.
 
 | # | Area | PR |
 |---|---|---|
+| 172 | **U13 — CLOSED: Automatic Feats panel now shows V2's "Inactive Granted Feats".** V2 `CGrantedFeatsPane::PopulateGrantedFeatsList` (`GrantedFeatsPane.cpp:272-323`) lists every applied `GrantFeat` effect whose `RequirementsToBeActive` fail in a second "Inactive Granted Feats" section (e.g. Vanguard's Deflect Arrows while Sword and Board is off). V3 dropped those effects at the requirement gate, so nothing tracked them. `effectParser.ts` now emits a display-only `inactiveGrantedFeat.<Name>` marker for a gated-off `GrantFeat`; `BuildStats.inactiveGrantedFeatsList` (both `computeBuildStats` and `useBuildStats`) exposes them minus any feat another source grants actively; `AutomaticFeats.tsx` renders the section. Not covered: item-buff `GrantFeat`s with requirements (dragonmark-gated augments) still go through `parseItemBuff`, which has no such marker. 3 regression tests in `parityPassU13InactiveGrantedFeats.test.ts`. | this PR |
 | 171 | **X22 — CLOSED: forum export `PastLives` now uses V2's per-feat lines.** V2 `ForumExportDlg.cpp:393-433 AddPastLives` calls `AddFeats` (`:475-507`) for Heroic, Racial, Iconic, Epic in that order: plain heading, `[HR][/HR]`, one `FeatName` / `FeatName(N)` line per feat sorted by name (`TrainedFeat::operator<`), blank line. V2 prints the full `Past Life: ...` feat name and drops any other type. V3 comma-joined `Name xN` per bucket under a bold header, ordered Heroic/Iconic/Epic/Racial, and added an invented `Other Past Lives` bucket. Now types each entry from `build.pastLifeTypes` (V2 imports) or the class/race/epic-feat catalogues (Past Lives panel entries), re-adds the `Past Life: ` prefix that `v2Import.ts` strips from heroic/racial keys, and drops untyped entries like V2. `forumExport.test.ts` and `parityPass3.test.ts` updated; 3 regression tests in `parityPassX22PastLives.test.ts`. | this PR |
 | 170 | **X23 — CLOSED: forum export `ActiveStances` now prints V2's per-group lines.** V2 `ForumExportDlg.cpp:846-872 AddActiveStances` emits `Active Stances` + `[HR][/HR]`, then one `GroupName: StanceName` line per selected stance in `CStancesPane` group order (`User` for stances with no `<Group>` first, then groups by first appearance in Stances.xml, `Auto` last; `StancesPane.cpp:281-292, 368-390`), closed by `[HR][/HR]`. V3 comma-joined the names on one line with no group. Now matches V2 using the already-loaded `Stance.Group`. Stances V2 adds dynamically to `Auto` (per-weapon-type etc.) are still only printed when they are in the V3 catalogue. `parityPass3.test.ts` updated; 3 regression tests in `parityPassX23ActiveStanceGroups.test.ts`. | this PR |
 | 169 | **X21 — CLOSED: forum export `SelfAndPartyBuffs` now reads the Buffs pane list.** V2 `ForumExportDlg.cpp:874-887 AddSelfAndPartyBuffs` prints `Life::SelfAndPartyBuffs()` as a plain `Self and Party Buffs` heading + `[HR][/HR]` and one buff per line. V3's section read `build.activeBuffs` (the stance toggles) and filtered it against the stance and buff catalogues, so real builds exported nothing (stances and buffs are toggled by disjoint panels). It now reads `build.selfBuffs` (already populated by `TOGGLE_BUFF` and `v2Import.ts`) in V2's format. `parityPass3.test.ts` updated for the new input/format; 4 regression tests in `parityPassX21SelfAndPartyBuffs.test.ts`. | this PR |
@@ -1163,24 +1164,6 @@ consistent with the existing #71 sentient-gem finding.
 - ✅ **U12 — CLOSED (#164): per-tree save/load to a standalone file.** See the
   Done-table entry above for the full writeup. `ReaperEnhancementsPane.cpp`
   has no such feature in V2 either, so no gap there.
-- ❌ **U13 — Granted Feats panel is missing V2's "Inactive Granted Feats"
-  section.** V2 `CGrantedFeatsPane::PopulateGrantedFeatsList()`
-  (`GrantedFeatsPane.cpp:250-360`) keeps every feat ever granted by an
-  effect (`m_grantedFeats`) and, re-run on every stat/stance change (it
-  explicitly hooks `StanceActivated`/`StanceDeactivated`), splits them into
-  two displayed sections: "Granted Feats" (activation requirement
-  currently met) and "Inactive Granted Feats" (granted by some source but
-  not currently active — e.g. gated behind a stance the player hasn't
-  toggled on). V3's `webapp/src/components/builder/AutomaticFeats.tsx`
-  (lines 52-63) renders only a single "Granted Feats" list sourced from
-  `stats.grantedFeatsList` (`buildStats.ts:3516-3519`), derived purely from
-  which `grantedFeat.<Name>` keys resolved in the current stat pass — there
-  is no code path anywhere that tracks or surfaces inactive/potential
-  granted feats. A player with a stance-gated feat grant (the same
-  `Effect_GrantFeat` class already shown to be stance-conditioned in real
-  builds by Done item #124, e.g. Fury of the Wild's Rage grant) has no way
-  to see that potential feat until they actually activate the stance.
-
 ### Forum export gaps
 
 Fifth review pass diffed every `Add*` method in `DDOBuilder/ForumExportDlg.cpp`
