@@ -423,19 +423,41 @@ const skills: SectionDef = {
   },
 }
 
+// V2 ForumExportDlg.cpp:846-872 (AddActiveStances) walks CStancesPane's
+// groups and prints each selected stance as "GroupName: StanceName" between
+// "[HR][/HR]" rules. Group order (StancesPane.cpp:281-292, 368-390, 1015+):
+// "User" first (stances with no <Group>), then groups in first-appearance
+// order through Stances.xml, "Auto" last; stances keep catalogue order.
 const stances: SectionDef = {
   id: 'ActiveStances',
   label: 'Active stances',
   emit: ({ build, allStances }) => {
     if (build.activeBuffs.length === 0) return []
-    // When stance catalogue is available, only emit names that are actually
-    // stances (the rest go to SelfAndPartyBuffs). Without it, fall back to
-    // emitting the full activeBuffs list to preserve prior behaviour.
-    const list = allStances && allStances.length > 0
-      ? build.activeBuffs.filter(n => allStances.some(s => s.Name === n))
-      : build.activeBuffs
-    if (list.length === 0) return []
-    return ['[b]Active Stances[/b]:', '  ' + list.join(', ')]
+    const active = new Set(build.activeBuffs)
+    const lines: string[] = []
+    if (allStances && allStances.length > 0) {
+      const groups = new Map<string, string[]>([['User', []]])
+      for (const st of allStances) {
+        const group = st.Group || 'User'
+        if (!groups.has(group)) groups.set(group, [])
+        groups.get(group)!.push(st.Name)
+      }
+      const order = [...groups.keys()].filter(g => g !== 'Auto')
+      if (groups.has('Auto')) order.push('Auto')
+      const seen = new Set<string>()
+      for (const g of order) {
+        for (const name of groups.get(g)!) {
+          if (!active.has(name) || seen.has(name)) continue
+          seen.add(name)
+          lines.push(`${g}: ${name}`)
+        }
+      }
+    } else {
+      // No catalogue loaded: no group data, so list the toggles as-is.
+      lines.push(...build.activeBuffs)
+    }
+    if (lines.length === 0) return []
+    return ['Active Stances', '[HR][/HR]', ...lines, '[HR][/HR]']
   },
 }
 
