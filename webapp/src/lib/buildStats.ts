@@ -151,6 +151,18 @@ export interface BuildStatsInput {
 
 export type StatMap = Map<string, RawBonus[]>
 
+/** Stat-map key prefix marking an equipped slot whose item fails its
+ *  MinLevel or <Requirements> (V2 Build::VerifyGear's test). */
+export const GEAR_REQUIREMENTS_UNMET_KEY_PREFIX = 'gearRequirementsUnmet.'
+
+/** Slots V2's Build::VerifyGear would unequip, read from a stats key list. */
+export function gearSlotsFailingRequirements(keys: string[]): string[] {
+  return keys
+    .filter(k => k.startsWith(GEAR_REQUIREMENTS_UNMET_KEY_PREFIX))
+    .map(k => k.slice(GEAR_REQUIREMENTS_UNMET_KEY_PREFIX.length))
+    .sort()
+}
+
 function add(map: StatMap, key: string, bonus: RawBonus): void {
   const list = map.get(key)
   if (list) list.push(bonus)
@@ -1497,7 +1509,22 @@ function buildStatMapOnce(
     // item whose Requirements/MinLevel the build fails stays equipped and
     // keeps contributing in V2. Revoking it at stat time dropped real gear
     // on 60+ oracle builds (e.g. fuzz-5006 lost Decorated Bracers' 40%
-    // Fortification). Unequipping on those edits belongs in the reducer.
+    // Fortification). The check itself is still published here, as
+    // `gearRequirementsUnmet.<slot>` keys, so the edit-time verifier
+    // (GearVerifier) can unequip exactly what V2's VerifyGear would.
+    {
+      const charLevel = (build.totalLevel || 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      const gearReqCtx: RequirementContext = {
+        build, allClasses, race: ctxRace, feats: ctxFeats, featCounts: ctxFeatCounts,
+      }
+      for (const [slot, item] of Object.entries(gearItems)) {
+        const tooLow = (item.MinLevel ?? 0) > charLevel
+        const reqFail = item.Requirements != null && !meetsFeatRequirements(item.Requirements as never, gearReqCtx)
+        if (tooLow || reqFail) {
+          add(map, `${GEAR_REQUIREMENTS_UNMET_KEY_PREFIX}${slot}`, { value: 1, type: 'Requirement', source: item.Name })
+        }
+      }
+    }
     // ── V2 EquippedGear::SetItem off-hand rule (EquippedGear.cpp:377-385) ─
     // When the MAIN-HAND weapon "cannot have an item in your off hand"
     // (CanEquipTo2ndWeapon, GlobalSupportFunctions.cpp): two-handed melee,

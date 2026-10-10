@@ -22,6 +22,7 @@ import { PAGES, type PageId } from './lib/workspace'
 import { findActiveBuild } from './lib/multiLife'
 import { readSession } from './lib/sessionStore'
 import type { CharacterDocument } from './types/ddo'
+import GearVerifier from './components/builder/GearVerifier'
 import styles from './App.module.css'
 
 // ---------------------------------------------------------------------------
@@ -171,6 +172,7 @@ function AppInner() {
   return (
     <WorkspaceHostContext.Provider value={host}>
       <AppShortcuts onLoad={handleLoad} />
+      <GearVerifier />
       <CollabBar />
       {joinError && <div className={styles.joinError} role="alert">{joinError}</div>}
       <Layout
