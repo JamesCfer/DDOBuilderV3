@@ -1,23 +1,27 @@
 /**
- * Parity pass — D8: `Build::VerifyGear` item-revocation pass (PARITY_TODO
- * "Medium-priority remaining › Data-file edge cases").
+ * Parity — D8 revisited: V2 `Build::VerifyGear` does NOT run at load.
  *
- * V2 `Build.cpp:2623-2665 VerifyGear` re-checks every equipped item on every
- * level-up, race/class change, or feat-training event, and force-unequips
- * (with a log entry) any item whose `MinLevel()` exceeds the character's
- * level OR whose `<Requirements>` block (race/class/feat/alignment gates) is
- * no longer met. V3 had no equivalent — an item that a build can no longer
- * legally wear (imported from a V2 save, or reachable via a race/level
- * change) kept contributing its effects, augments and set bonuses forever.
+ * V2 `Build.cpp:2648-2690 VerifyGear` force-unequips items whose `MinLevel()`
+ * exceeds the character level or whose `<Requirements>` fail, but it is only
+ * called from edit events (SetLevel, SetRace, SetClass*, RevokeClass,
+ * SwapClasses, Life::SetRace). Loading a save never calls it, so the v2calc
+ * oracle (V2's own load path) keeps such items and their effects. Pass 160
+ * revoked them at stat time, which dropped real gear on 60+ oracle builds.
  */
 
 import { describe, it, expect } from 'vitest'
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { loadAllCatalogues } from '../server/dataLoaders'
+import { computeV3ForXml } from '../server/oracleParity'
 import { computeBuildStats, type BuildStatsInput } from '../hooks/useBuildStats'
 import { emptyBuild as makeEmptyBuild } from '../types/ddo'
 import type {
   DDOClass, Feat, EnhancementTree, FiligreeSetBonus, Filigree,
   Item, OptionalBuff, SetBonus, Augment,
 } from '../types/ddo'
+
+const ROOT = join(__dirname, '..', '..', '..')
 
 function emptyInput(overrides: Partial<BuildStatsInput> = {}): BuildStatsInput {
   return {
@@ -55,35 +59,18 @@ const plainItem: Item = {
   Buff: { Type: 'PRR', Value1: 4 },
 } as unknown as Item
 
-describe('D8 — Build::VerifyGear item revocation', () => {
-  it('an item whose Race requirement the build does not meet contributes nothing', () => {
+describe('D8 revisited - saved gear is not revoked at load (V2 parity)', () => {
+  it('an item whose Race requirement the build does not meet still contributes', () => {
     const stats = computeBuildStats(
       emptyInput({ gearItems: { Gloves: raceGatedGloves } }),
       { ...makeEmptyBuild(), race: 'Human' },
     )
-    expect(stats.total('prr')).toBe(0)
-  })
-
-  it('the same item DOES contribute once the build race matches', () => {
-    const stats = computeBuildStats(
-      emptyInput({ gearItems: { Gloves: raceGatedGloves } }),
-      { ...makeEmptyBuild(), race: 'Purple Dragon Knight' },
-    )
     expect(stats.total('prr')).toBe(9)
   })
 
-  it('an item above the character level (heroic+epic+legendary) contributes nothing', () => {
-    // emptyBuild(): totalLevel 20 + epicLevels 10 + legendaryLevels 6 = 36
+  it('an item above the character level still contributes', () => {
     const stats = computeBuildStats(
       emptyInput({ gearItems: { Trinket: tooHighLevelItem } }),
-      { ...makeEmptyBuild() },
-    )
-    expect(stats.total('mrr')).toBe(0)
-  })
-
-  it('an item at or below the character level still contributes', () => {
-    const stats = computeBuildStats(
-      emptyInput({ gearItems: { Trinket: { ...tooHighLevelItem, MinLevel: 36 } } }),
       { ...makeEmptyBuild() },
     )
     expect(stats.total('mrr')).toBe(5)
@@ -96,4 +83,14 @@ describe('D8 — Build::VerifyGear item revocation', () => {
     )
     expect(stats.total('prr')).toBe(4)
   })
+
+  // Oracle-pinned: v2calc reports fortification 40 for this save (Dhampir
+  // wearing the Dhampir Dark Bargainer-only Decorated Bracers).
+  const FUZZ = join(ROOT, 'Output', 'FuzzBuilds', 'fuzz-5006.DDOBuild')
+  const DATA = join(ROOT, 'Output', 'DataFiles')
+  it.skipIf(!existsSync(FUZZ) || !existsSync(DATA))('fuzz-5006 keeps Decorated Bracers (V2 oracle: fortification 40)', () => {
+    const cat = loadAllCatalogues(DATA)
+    const { stats } = computeV3ForXml(readFileSync(FUZZ, 'utf8'), cat)
+    expect(stats.total('fortification')).toBe(40)
+  }, 120_000)
 })
