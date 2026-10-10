@@ -857,7 +857,7 @@ function parseBuildNode(
 
   // ── Active stances ───────────────────────────────────────────────────────
   out.activeBuffs = arr(getRec(buildNode, 'ActiveStances')?.Stances as string | string[] | undefined)
-    .map(asStr).filter(Boolean)
+    .map(s => asStr(s).split(STANCE_SPACE_MARK).join(' ')).filter(Boolean)
 
   // SelfAndPartyBuffs live at the Life level in V2 XML (after </Build>), not
   // inside the Build node.
@@ -980,12 +980,32 @@ export interface ImportResult {
   warnings: string[]
 }
 
+/** Stands in for a trailing space on an <ActiveStances> entry while the
+ *  parser (which trims every value) runs; see preserveStanceTrailingSpaces. */
+const STANCE_SPACE_MARK = '\uE000'
+
+/**
+ * V2 names iconic past-life stances "<Race> " with a trailing space, so they
+ * stay distinct from the race's own auto-stance ("Dhampir Dark Bargainer" vs
+ * "Dhampir Dark Bargainer "), and its saves persist both forms in
+ * <ActiveStances>. The parser's trimValues collapsed them onto one name, and
+ * buildStats then dropped it as the build's own race stance, so a Dark
+ * Bargainer with three Dark Bargainer past lives lost the past-life stance's
+ * +3 Necromancy DC and +15 Negative spell power. Mark the trailing spaces
+ * before parsing; parseBuildNode turns the marks back into spaces.
+ */
+function preserveStanceTrailingSpaces(xml: string): string {
+  return xml.replace(/<Stances>([^<]*?[^\s<])( +)<\/Stances>/g,
+    (_m, name: string, spaces: string) =>
+      `<Stances>${name}${STANCE_SPACE_MARK.repeat(spaces.length)}</Stances>`)
+}
+
 /**
  * Parse the <Character>/<Life>/<Build> skeleton out of a V2 .DDOBuild XML
  * string. Returns the parsed nodes and the active indices.
  */
 function parseRoot(xml: string) {
-  const parsed = parser.parse(xml) as AnyRec
+  const parsed = parser.parse(preserveStanceTrailingSpaces(xml)) as AnyRec
   const root = (parsed.DDOBuilderCharacterData ?? parsed) as AnyRec
   const character = getRec(root, 'Character') ?? root
   const lives = arr(character.Life as AnyRec | AnyRec[] | undefined)
