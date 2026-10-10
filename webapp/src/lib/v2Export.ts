@@ -479,7 +479,11 @@ function emitGearSet(
       if (firstColon === lastColon) continue
       const type = k.slice(firstColon + 1, lastColon)
       const idx = Number(k.slice(lastColon + 1))
-      if (!type || !augName || !Number.isInteger(idx)) continue
+      // An explicit '' (a slot the player emptied, or a V2 save's empty
+      // <ItemAugment>) is kept: it is written as a Type-only entry so the
+      // emptied slot survives the round trip instead of falling back to a
+      // pre-slotted catalogue default.
+      if (!type || !Number.isInteger(idx)) continue
       slotAugs[idx] = { type, name: augName, key: k }
     }
     for (let i = 0; i < slotAugs.length; i++) {
@@ -491,6 +495,8 @@ function emitGearSet(
         // is a REQUIRED DL_STRING child (ItemAugment.h), so it must be
         // present even here — use the catalogue item's slot type when known.
         xml.leaf('Type', defAugs[i]?.Type ?? '')
+      } else if (!a.name) {
+        xml.leaf('Type', a.type)
       } else {
         xml.leaf('Type', a.type)
         xml.leaf('SelectedAugment', a.name)

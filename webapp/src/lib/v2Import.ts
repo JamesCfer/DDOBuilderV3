@@ -437,8 +437,17 @@ function parseGear(equippedGearNode: AnyRec): {
       const ar = augs[augIdx] as AnyRec
       const type = asStr(ar.Type)
       const augName = asStr(ar.SelectedAugment)
-      if (!type || !augName) continue
+      if (!type) continue
       const augKey = `${v3Slot}:${type}:${augIdx}`
+      if (!augName) {
+        // An empty saved slot is a choice too. V2 swaps in the catalogue item
+        // at load but CopyUserSetValues (Item.cpp:248-255) restores the SAVED
+        // augment list, so a pre-slotted default the player cleared ("Sealed
+        // in Mist" on Acera) stays cleared. The explicit '' is the override
+        // mergeAugmentChoices already honours for a slot cleared in V3.
+        augmentChoices[augKey] = ''
+        continue
+      }
       augmentChoices[augKey] = augName
       // V2 ItemAugment::SelectedLevelIndex — index into a ChooseLevel
       // augment's LevelValue table (Build.cpp:4975-5012).
