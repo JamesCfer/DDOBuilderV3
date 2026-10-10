@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useReducer } from 'react'
+import React, { createContext, useCallback, useContext, useReducer, useState } from 'react'
 import type { CharacterBuild, Ability, FiligreeSlot, QuestDifficulty } from '../types/ddo'
 import { upgradeSelections } from '../lib/selectionUpgrades'
 import { emptyBuild, migrateSentientGem } from '../types/ddo'
@@ -695,19 +695,31 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
 interface CharacterContextValue {
   build: CharacterBuild
   dispatch: React.Dispatch<Action>
+  /** Bumped on every race/class/level edit, the events V2 follows with
+   *  Build::VerifyGear (SetRace, SetClass*, SetLevel). Loading a build never
+   *  bumps it, matching V2, which keeps saved gear at load. */
+  gearVerifyTick?: number
 }
+
+/** Edits V2 follows with Build::VerifyGear (Build.cpp:2648-2690). */
+export const GEAR_VERIFY_ACTIONS: ReadonlySet<Action['type']> = new Set<Action['type']>([
+  'SET_RACE', 'SET_CLASS', 'SET_CLASS_LEVELS', 'SET_LEVEL_CLASS', 'SET_LEVEL_CLASSES',
+  'SET_EPIC_LEVELS', 'SET_LEGENDARY_LEVELS',
+])
 
 const CharacterContext = createContext<CharacterContextValue | null>(null)
 
 export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [build, rawDispatch] = useReducer(reducer, undefined, emptyBuild)
   const { logAction } = useBuildLog()
+  const [gearVerifyTick, setGearVerifyTick] = useState(0)
   const dispatch = useCallback((action: Action) => {
     rawDispatch(action)
     logAction(action as never)
+    if (GEAR_VERIFY_ACTIONS.has(action.type)) setGearVerifyTick(t => t + 1)
   }, [rawDispatch, logAction])
   return (
-    <CharacterContext.Provider value={{ build, dispatch }}>
+    <CharacterContext.Provider value={{ build, dispatch, gearVerifyTick }}>
       {children}
     </CharacterContext.Provider>
   )
