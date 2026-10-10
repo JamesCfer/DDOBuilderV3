@@ -1491,30 +1491,13 @@ function buildStatMapOnce(
     }
     // Slots V2 strips from the gear set at load (their augments die too).
     const gearSlotsRemovedByV2 = new Set<string>()
-    // ── V2 Build::VerifyGear (Build.cpp:2623-2665) ─
-    // V2 re-checks every equipped item on every level-up, race/class change,
-    // or feat-training event, and force-unequips (with a log entry) any item
-    // whose MinLevel() exceeds the character's current level OR whose
-    // <Requirements> block (race/class/feat/alignment gates) is no longer
-    // met. A static snapshot has no "on every change" hook, so this is
-    // evaluated once against the build's final trained state — an item that
-    // fails either check never contributes here, same as V2 never lets one
-    // stay equipped once it fails.
-    {
-      const charLevel = (build.totalLevel || 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
-      const gearReqCtx: RequirementContext = {
-        build, allClasses, race: ctxRace, feats: ctxFeats, featCounts: ctxFeatCounts,
-      }
-      for (const [slot, item] of Object.entries(gearItems)) {
-        if (slot.startsWith('Cosmetic')) continue
-        const tooLow = (item.MinLevel ?? 0) > charLevel
-        const reqFail = item.Requirements != null && !meetsFeatRequirements(item.Requirements as never, gearReqCtx)
-        if (tooLow || reqFail) {
-          delete gearItems[slot]
-          gearSlotsRemovedByV2.add(slot)
-        }
-      }
-    }
+    // V2 Build::VerifyGear (Build.cpp:2648-2690) is NOT applied here. It only
+    // runs from edit events (SetLevel, SetRace, SetClass*, RevokeClass,
+    // SwapClasses, Life::SetRace), never when a build is loaded, so a saved
+    // item whose Requirements/MinLevel the build fails stays equipped and
+    // keeps contributing in V2. Revoking it at stat time dropped real gear
+    // on 60+ oracle builds (e.g. fuzz-5006 lost Decorated Bracers' 40%
+    // Fortification). Unequipping on those edits belongs in the reducer.
     // ── V2 EquippedGear::SetItem off-hand rule (EquippedGear.cpp:377-385) ─
     // When the MAIN-HAND weapon "cannot have an item in your off hand"
     // (CanEquipTo2ndWeapon, GlobalSupportFunctions.cpp): two-handed melee,
