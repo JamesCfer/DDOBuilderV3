@@ -37,6 +37,31 @@
       <Race>Dhampir</Race>
       <Alignment>True Neutral</Alignment>
       <SpecialFeats>
+        <TrainedFeat>
+          <FeatName>Harper Agent Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Inquisitive Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Horizon Walker Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Vistani Knife Fighter Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
+        <TrainedFeat>
+          <FeatName>Falconry Tree</FeatName>
+          <Type>UniversalTree</Type>
+          <LevelTrainedAt>0</LevelTrainedAt>
+        </TrainedFeat>
       </SpecialFeats>
       <Build version="1">
         <Level>20</Level>

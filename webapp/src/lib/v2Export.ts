@@ -605,6 +605,44 @@ function emitFeatsList(xml: Xml, tag: string, feats: string[], type: string): vo
   xml.close(tag)
 }
 
+/**
+ * Universal trees V2 only lists once the Life records their access feat
+ * ("<Tree> Tree", Feats.xml Acquire UniversalTree) or the build has enough of
+ * the patron's favor reward (each tree's <Requirements> RequiresOneOf). V3
+ * lists them regardless (treeAvailability.ts assumeUnlockFeats).
+ */
+const UNLOCK_GATED_TREES: Record<string, { favor: string; count: number }> = {
+  'Falconry': { favor: 'The Free Agents Favor Rewards', count: 4 },
+  'Feydark Illusionist': { favor: 'Summer Court Favor Rewards', count: 3 },
+  'Harper Agent': { favor: 'The Harpers Favor Rewards', count: 3 },
+  'Horizon Walker': { favor: 'Gate Keepers Favor Rewards', count: 3 },
+  'Inquisitive': { favor: 'Sharn City Council Favor Rewards', count: 3 },
+  'Vistani Knife Fighter': { favor: 'Keepers of a Feather Favor Rewards', count: 3 },
+}
+
+/**
+ * The Life's SpecialFeats plus the access feat of every unlock-gated tree a
+ * build in it spends AP in without the favor that unlocks it. Without either,
+ * V2's CEnhancementsPane::DetermineTrees (EnhancementsPane.cpp:316-374) finds
+ * the tree's requirements unmet when the build becomes active and resets the
+ * whole spend.
+ */
+function withTreeAccessFeats(life: ExportLife): string[] {
+  const feats = [...life.specialFeats]
+  for (const build of life.builds) {
+    for (const [tree, choices] of Object.entries(build.enhancementChoices ?? {})) {
+      const gate = UNLOCK_GATED_TREES[tree]
+      if (!gate) continue
+      if (!Object.values(choices ?? {}).some(rank => rank > 0)) continue
+      const favor = (build.favorFeats ?? []).filter(f => f === gate.favor).length
+      if (favor >= gate.count) continue
+      const feat = `${tree} Tree`
+      if (!feats.includes(feat)) feats.push(feat)
+    }
+  }
+  return feats
+}
+
 /** Emit the inner <Build>…</Build> element for one build. */
 function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogue): void {
   xml.open('Build', 'version="1"')
@@ -795,7 +833,7 @@ export function exportV2Document(doc: ExportDocument, itemCatalogue?: ItemCatalo
     // (V2 Type for these access feats is UniversalTree; reproduced best-effort.)
     // The element itself is a REQUIRED DL_OBJECT child of Life (Life.h), so it
     // is written even when empty.
-    emitFeatsList(xml, 'SpecialFeats', life.specialFeats, 'UniversalTree')
+    emitFeatsList(xml, 'SpecialFeats', withTreeAccessFeats(life), 'UniversalTree')
     for (const build of life.builds) emitBuild(xml, build, itemCatalogue)
     // Life-level self/party buffs round-trip via each build's activeBuffs /
     // ActiveStances; no separate list emitted.

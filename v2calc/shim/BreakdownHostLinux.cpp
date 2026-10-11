@@ -33,6 +33,8 @@
 #include "Class.h"
 #include "Effect.h"
 #include "GlobalSupportFunctions.h"
+#include "EnhancementTree.h"
+#include "SelectedEnhancementTrees.h"
 
 #include "BreakdownItem.h"
 #include "BreakdownItemAbility.h"
@@ -658,6 +660,48 @@ namespace
     }
 }
 
+// Mirror CEnhancementsPane::DetermineTrees (EnhancementsPane.cpp:316-374),
+// which the real app runs as soon as a build becomes active: any selected
+// enhancement tree the build no longer meets has its spend reset and its
+// selection cleared. Logs each reset to stderr when V2CALC_LOG_TREES is set.
+static void DetermineTreesOnBuildActive(Character* pCharacter, Build* pBuild)
+{
+    std::list<std::string> available;
+    for (auto&& tree : EnhancementTrees())
+    {
+        if (tree.MeetRequirements(*pBuild, pBuild->Level() - 1)
+                && !tree.HasIsReaperTree()
+                && !tree.HasIsEpicDestiny()
+                && (!tree.HasLegacy() || pCharacter->SupportLegacyTrees()))
+        {
+            available.push_back(tree.Name());
+        }
+    }
+    const char* log = getenv("V2CALC_LOG_TREES");
+    Enhancement_SelectedTrees selTrees = pBuild->EnhancementSelectedTrees();
+    for (size_t ti = 0; ti < MAX_ENHANCEMENT_TREES; ++ti)
+    {
+        std::string treeName = selTrees.Tree(ti);
+        if (Enhancement_SelectedTrees::IsNotSelected(treeName)) continue;
+        bool found = false;
+        for (auto&& name : available) found |= (name == treeName);
+        if (!found)
+        {
+            if (log != nullptr)
+            {
+                fprintf(stderr, "v2calc: tree reset \"%s\" (spent %d)\n",
+                        treeName.c_str(), pBuild->APSpentInTree(treeName));
+            }
+            if (pBuild->APSpentInTree(treeName) > 0)
+            {
+                pBuild->Enhancement_ResetEnhancementTree(treeName);
+            }
+            selTrees.SetNotSelected(ti);
+        }
+    }
+    pBuild->Enhancement_SetSelectedTrees(selTrees);
+}
+
 namespace v2calc
 {
     void ComputeBreakdowns(Character* pCharacter, Build* pBuild)
@@ -684,6 +728,8 @@ namespace v2calc
         // Drive the real effect-application path: applies feat/enhancement/
         // gear/spell/stance effects and notifies observers (our host).
         pBuild->BuildNowActive();
+
+        DetermineTreesOnBuildActive(pCharacter, pBuild);
 
         // Settle the stance states now that all effects (granted stances,
         // set-bonus stacks for Greensteel dominance) are in place - mirrors
