@@ -1,4 +1,5 @@
 import { useState, useEffect, useId, useMemo, useDeferredValue } from 'react'
+import { userSetsLevel } from '../../lib/craftedItems'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { findGearByEffect } from '../../lib/findGear'
@@ -157,7 +158,8 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const truncated = results.length > MAX_RESULTS
 
   function handleEquip(item: Item, slot: string) {
-    dispatch({ type: 'SET_GEAR', slot, itemName: item.Name })
+    // A crafted item starts at the character's level (see GearPanel).
+    dispatch({ type: 'SET_GEAR', slot, itemName: item.Name, itemLevel: userSetsLevel(item) ? maxCharLevel : undefined })
   }
 
   function handleReset() {

@@ -10,6 +10,7 @@ import { importGearSetXml } from '../../lib/v2Import'
 import { useDocument } from '../../context/DocumentContext'
 import { resolveAugmentSlots, pendingSlotUpgrades, effectiveAugmentChoice } from '../../lib/gearSlotUpgrades'
 import { itemSlotKey } from '../../lib/gearSlots'
+import { userSetsLevel, craftedItemLevel, craftedAugmentLevelIndex } from '../../lib/craftedItems'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import {
   augmentTypeColor, hasSelectableLevels, augmentLevelOptions, bestAugmentLevelIndex,
@@ -59,7 +60,7 @@ interface ItemPickerModalProps {
   items: Item[]
   current: string | undefined
   maxLevel: number
-  onSelect: (name: string) => void
+  onSelect: (name: string, item?: Item) => void
   onClose: () => void
 }
 
@@ -97,8 +98,11 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
     const terms = searchTerms(deferredSearch)
     return items
       .filter(item => {
+        // V2 always lists level-0 items (ItemSelectDialog.cpp:306-308): the
+        // Cannith crafted "Magic Item" for the slot, whose level the player
+        // picks once it is equipped. They sort to the top.
         const lvl = item.MinLevel ?? 1
-        if (lvl < minLv || lvl > maxLv) return false
+        if (lvl !== 0 && (lvl < minLv || lvl > maxLv)) return false
         if (buffFilter && !toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
           .some(b => b.Type === buffFilter)) return false
         if (!itemMatchesType(item, typeFilter, allWeaponGroups)) return false
@@ -214,7 +218,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
               className={`${styles.pickerItem} ${item.Name === current ? styles.pickerItemActive : ''}`}
               onMouseEnter={show(item)}
               onMouseLeave={hide}
-              onClick={() => { onSelect(item.Name); onClose() }}
+              onClick={() => { onSelect(item.Name, item); onClose() }}
             >
               <DdoIcon
                 category="ItemImages"
@@ -235,7 +239,9 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
                   {itemEffectsSummary(item)}
                 </span>
               )}
-              {item.MinLevel != null && item.MinLevel > 1 && (
+              {userSetsLevel(item) ? (
+                <span className={styles.pickerItemLevel} title="Crafted: choose its level after equipping">Any Lv</span>
+              ) : item.MinLevel != null && item.MinLevel > 1 && (
                 <span className={styles.pickerItemLevel}>Lv {item.MinLevel}</span>
               )}
             </button>
@@ -462,7 +468,7 @@ function AugmentSlot({
 export default function GearPanel() {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
-  const itemHover = useHoverCard<{ item: Item; fills: AugmentFill[] }>()
+  const itemHover = useHoverCard<{ item: Item; fills: AugmentFill[]; craftedLevel?: number }>()
   const { allAugments, allWeaponGroups } = useStaticBundle()
 
   const [slotItems, setSlotItems] = useState<Record<string, Item[] | null>>({})
@@ -511,9 +517,12 @@ export default function GearPanel() {
     setOpenSlot(slot)
   }
 
-  function handleSelectItem(slot: string, itemName: string) {
+  function handleSelectItem(slot: string, itemName: string, item?: Item) {
     if (itemName) {
-      dispatch({ type: 'SET_GEAR', slot, itemName })
+      // A crafted item starts at the character's level, the level a planner
+      // usually wants it at (V2 starts it at 1; the level select changes it).
+      const itemLevel = userSetsLevel(item) ? maxLevel : undefined
+      dispatch({ type: 'SET_GEAR', slot, itemName, itemLevel })
       setItemDetails(prev => ({ ...prev, [slot]: undefined as unknown as null }))
     } else {
       dispatch({ type: 'CLEAR_GEAR', slot })
@@ -541,6 +550,9 @@ export default function GearPanel() {
       : []
     const pendingUpgrades = detail ? pendingSlotUpgrades(detail, slot, build.slotUpgradeChoices) : []
     const icon = detail?.Icon
+    // Cannith crafted gear: the player picks the level it is made at.
+    const crafted = userSetsLevel(detail)
+    const craftedLevel = crafted ? craftedItemLevel(slot, build.gearItemLevels) : undefined
 
     // Try to find icon from the basic list too (if detail not yet loaded)
     const basicList = slotItems[slot]
@@ -563,7 +575,7 @@ export default function GearPanel() {
           <button
             className={`${styles.slotBtn} ${equipped ? styles.slotBtnEquipped : ''}`}
             onClick={() => handleSlotClick(slot)}
-            onMouseEnter={detail ? itemHover.show({ item: detail, fills: augFills }) : undefined}
+            onMouseEnter={detail ? itemHover.show({ item: detail, fills: augFills, craftedLevel }) : undefined}
             onMouseLeave={itemHover.hide}
             title={detail ? undefined : (equipped ?? undefined)}
             type="button"
@@ -580,6 +592,20 @@ export default function GearPanel() {
             )}
             <span className={styles.slotBtnText}>{equipped ?? '— Empty —'}</span>
           </button>
+
+          {crafted && craftedLevel != null && (
+            <select
+              className={styles.itemLevelSelect}
+              value={craftedLevel}
+              title="Item level: the level this crafted item is made at"
+              aria-label={`${slotLabel(slot)} item level`}
+              onChange={e => dispatch({ type: 'SET_GEAR_ITEM_LEVEL', slot, itemLevel: Number(e.target.value) })}
+            >
+              {Array.from({ length: Math.max(maxLevel, craftedLevel) }, (_, i) => i + 1).map(lv => (
+                <option key={lv} value={lv}>Lv {lv}</option>
+              ))}
+            </select>
+          )}
 
           {equipped && (
             <button
@@ -600,7 +626,8 @@ export default function GearPanel() {
                 augment={augment}
                 index={index}
                 choice={effectiveAugmentChoice(augmentChoices, augmentKey(slot, augment.Type, index), augment)}
-                levelIndex={build.augmentLevelChoices?.[augmentKey(slot, augment.Type, index)]}
+                levelIndex={craftedAugmentLevelIndex(detail, slot, augment.Type, build.gearItemLevels)
+                  ?? build.augmentLevelChoices?.[augmentKey(slot, augment.Type, index)]}
                 onSet={(key, name, levelIndex) => dispatch({ type: 'SET_AUGMENT', key, augmentName: name, levelIndex })}
                 onSetLevel={(key, levelIndex) => dispatch({ type: 'SET_AUGMENT_LEVEL', key, levelIndex })}
                 onClear={(key) => (augment.SelectedAugment
@@ -608,7 +635,7 @@ export default function GearPanel() {
                   // SelectedAugment default stays overridden after clearing.
                   ? dispatch({ type: 'SET_AUGMENT', key, augmentName: '' })
                   : dispatch({ type: 'CLEAR_AUGMENT', key }))}
-                maxItemLevel={detail?.MinLevel ?? maxLevel}
+                maxItemLevel={craftedLevel ?? detail?.MinLevel ?? maxLevel}
                 buildLevel={maxLevel}
               />
             ))}
@@ -714,7 +741,7 @@ export default function GearPanel() {
                 const parsed = importGearSetXml(text)
                 if (!parsed) { window.alert('Clipboard does not contain a V2 gear-set XML fragment.'); return }
                 for (const [slot, itemName] of Object.entries(parsed.gear)) {
-                  dispatch({ type: 'SET_GEAR', slot, itemName })
+                  dispatch({ type: 'SET_GEAR', slot, itemName, itemLevel: parsed.itemLevels[slot] })
                 }
                 for (const [key, augmentName] of Object.entries(parsed.augmentChoices)) {
                   dispatch({ type: 'SET_AUGMENT', key, augmentName })
@@ -792,7 +819,7 @@ export default function GearPanel() {
           items={pickerSlotItems}
           current={gear[openSlot]}
           maxLevel={maxLevel}
-          onSelect={name => handleSelectItem(openSlot, name)}
+          onSelect={(name, item) => handleSelectItem(openSlot, name, item)}
           onClose={() => setOpenSlot(null)}
         />
       )}
@@ -809,7 +836,11 @@ export default function GearPanel() {
       )}
       {itemHover.hover && (
         <HoverCard x={itemHover.hover.x} y={itemHover.hover.y} openLeft={itemHover.hover.openLeft}>
-          <ItemCardContent item={itemHover.hover.data.item} augmentFills={itemHover.hover.data.fills} />
+          <ItemCardContent
+            item={itemHover.hover.data.item}
+            augmentFills={itemHover.hover.data.fills}
+            craftedLevel={itemHover.hover.data.craftedLevel}
+          />
         </HoverCard>
       )}
       {findGearOpen && <FindGearDialog onClose={() => setFindGearOpen(false)} />}

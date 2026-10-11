@@ -411,7 +411,9 @@ function parseGear(equippedGearNode: AnyRec): {
   augmentLevelChoices: Record<string, number>
   augmentValueChoices: Record<string, number>
   embeddedItems: Record<string, AnyRec>
+  itemLevels: Record<string, number>
 } {
+  const itemLevels: Record<string, number> = {}
   const gear: Record<string, string> = {}
   const augmentChoices: Record<string, string> = {}
   const augmentLevelChoices: Record<string, number> = {}
@@ -429,6 +431,13 @@ function parseGear(equippedGearNode: AnyRec): {
     if (!name) continue
     gear[v3Slot] = name
     embeddedItems[v3Slot] = item
+    // A crafted item's chosen level is its saved MinLevel, kept over the
+    // catalogue's 0 when the save carries <UserSetsLevel/>
+    // (Build::GetLatestVersionOfItem).
+    const savedLevel = Number(item.MinLevel)
+    if ('UserSetsLevel' in item && Number.isFinite(savedLevel) && savedLevel >= 1) {
+      itemLevels[v3Slot] = savedLevel
+    }
     // V2 keeps the SAVED augment list at load (Item::CopyUserSetValues), so
     // catalogue pre-slotted augments the save does not carry never apply.
     augmentChoices[savedAugmentListKey(v3Slot)] = ''
@@ -468,7 +477,7 @@ function parseGear(equippedGearNode: AnyRec): {
       }
     }
   }
-  return { gear, augmentChoices, augmentLevelChoices, augmentValueChoices, embeddedItems }
+  return { gear, augmentChoices, augmentLevelChoices, augmentValueChoices, embeddedItems, itemLevels }
 }
 
 function parseFiligreeSlots(parent: AnyRec, tag: 'Filigree' | 'ArtifactFiligree', count: number): FiligreeSlot[] {
@@ -832,16 +841,19 @@ function parseBuildNode(
     out.augmentChoices = g.augmentChoices
     out.augmentLevelChoices = g.augmentLevelChoices
     out.augmentValueChoices = g.augmentValueChoices
+    out.gearItemLevels = g.itemLevels
     out.activeGearSetName = activeGearName || asStr(activeGearSet.Name) || ''
     // Save every gear set as a named-set so the user can switch.
     out.namedGearSets = {}
     out.namedGearAugments = {}
+    out.namedGearItemLevels = {}
     for (const set of gearSets) {
       const setName = asStr((set as AnyRec).Name)
       if (!setName) continue
       const parsed = parseGear(set as AnyRec)
       out.namedGearSets[setName] = parsed.gear
       out.namedGearAugments[setName] = parsed.augmentChoices
+      out.namedGearItemLevels[setName] = parsed.itemLevels
     }
   }
 
@@ -1038,6 +1050,7 @@ export function importGearSetXml(xml: string): {
   name: string
   gear: Record<string, string>
   augmentChoices: Record<string, string>
+  itemLevels: Record<string, number>
 } | null {
   try {
     const parsed = parser.parse(xml) as AnyRec
@@ -1045,7 +1058,7 @@ export function importGearSetXml(xml: string): {
     const node = arr(parsed.EquippedGear as AnyRec | AnyRec[] | undefined)[0]
     if (!node) return null
     const g = parseGear(node)
-    return { name: asStr(node.Name) || 'Pasted Set', gear: g.gear, augmentChoices: g.augmentChoices }
+    return { name: asStr(node.Name) || 'Pasted Set', gear: g.gear, augmentChoices: g.augmentChoices, itemLevels: g.itemLevels }
   } catch {
     return null
   }

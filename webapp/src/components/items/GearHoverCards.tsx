@@ -2,6 +2,7 @@
 // item picker, the equipped-slot row, Find Gear and the augment picker all
 // render the same card.
 
+import { userSetsLevel } from '../../lib/craftedItems'
 import type { Item, ItemBuff, ItemAugment, Augment } from '../../types/ddo'
 import DdoIcon from '../DdoIcon'
 import { HoverHeader, HoverBody, HoverSection, hoverStyles as s } from '../common/HoverCard'
@@ -40,11 +41,13 @@ export interface AugmentFill {
   choice?: string
 }
 
-export function ItemCardContent({ item, augmentFills }: {
+export function ItemCardContent({ item, augmentFills, craftedLevel }: {
   item: Item
   /** Resolved slot list for equipped gear (includes the player's picks).
    *  Omitted for catalogue entries, which fall back to the item's own slots. */
   augmentFills?: AugmentFill[]
+  /** The level an equipped crafted (UserSetsLevel) item is made at. */
+  craftedLevel?: number
 }) {
   const buffs = toArray(item.Buff as ItemBuff | ItemBuff[] | undefined)
   const slots: AugmentFill[] = augmentFills
@@ -52,13 +55,16 @@ export function ItemCardContent({ item, augmentFills }: {
       .map((a, index) => ({ type: a.Type, index, choice: a.SelectedAugment }))
   const sets = toArray(item.SetBonus as string | string[] | undefined)
   const minLevel = item.MinLevel ?? 1
+  const subtitle = userSetsLevel(item)
+    ? (craftedLevel != null ? `Crafted at item level ${craftedLevel}` : 'Crafted: you choose its level')
+    : minLevel > 1 ? `Minimum level ${minLevel}` : undefined
 
   return (
     <>
       <HoverHeader
         icon={<DdoIcon category="ItemImages" name={item.Icon ?? item.Name} size={28} />}
         title={item.Name}
-        subtitle={minLevel > 1 ? `Minimum level ${minLevel}` : undefined}
+        subtitle={subtitle}
       />
       <HoverBody>
         {item.Description && <div className={s.description}>{item.Description}</div>}
