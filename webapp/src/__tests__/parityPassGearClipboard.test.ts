@@ -16,7 +16,12 @@ describe('gear-set clipboard XML round-trip', () => {
     expect(parsed).not.toBeNull()
     expect(parsed!.name).toBe('My Set')
     expect(parsed!.gear).toEqual(gear)
-    expect(parsed!.augmentChoices).toEqual(augments)
+    // Each pasted slot also carries the `<slot>:*` marker: like a loaded
+    // save, its augments are exactly the ones the XML lists (V2
+    // Item::CopyUserSetValues), with no catalogue defaults added.
+    expect(parsed!.augmentChoices).toEqual({
+      ...augments, 'Main Hand:*': '', 'Armor:*': '', 'Ring:*': '',
+    })
   })
 
   it('returns null for non-gear-set text', () => {

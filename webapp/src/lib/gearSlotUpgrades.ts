@@ -47,12 +47,30 @@ export function augmentMatchesSlotType(augType: string | string[] | undefined, s
  * slot — otherwise the item's `SelectedAugment` default applies (V2 ships
  * some items with an augment pre-slotted, e.g. Kindling's "Sealed in Fire").
  */
+/**
+ * Marker key `<slot>:*` (value '') set when a slot's augment list came from a
+ * saved V2 file. V2 Build::GetLatestVersionOfItem swaps in the catalogue item
+ * at load but Item::CopyUserSetValues (Item.cpp:248-255) restores the SAVED
+ * augment list, so a catalogue pre-slotted augment the save does not carry
+ * never applies. Keys with no `type:index` part are skipped by the exporter
+ * and by every augment consumer (value '').
+ */
+export function savedAugmentListKey(slot: string): string {
+  return `${slot}:*`
+}
+
+/** True when the slot's augments come from a save, not catalogue defaults. */
+export function hasSavedAugmentList(choices: Record<string, string>, slot: string): boolean {
+  return savedAugmentListKey(slot) in choices
+}
+
 export function effectiveAugmentChoice(
   choices: Record<string, string>,
   key: string,
   augment: ItemAugment,
 ): string {
   if (key in choices) return choices[key]
+  if (hasSavedAugmentList(choices, key.split(':')[0])) return ''
   return augment.SelectedAugment ?? ''
 }
 

@@ -15,6 +15,7 @@
 
 import { XMLParser } from 'fast-xml-parser'
 import { upgradeSelection } from './selectionUpgrades'
+import { savedAugmentListKey } from './gearSlotUpgrades'
 import type {
   Ability, BuildClass, CharacterBuild, CharacterDocument, FiligreeSlot, Life,
   QuestDifficulty,
@@ -428,6 +429,9 @@ function parseGear(equippedGearNode: AnyRec): {
     if (!name) continue
     gear[v3Slot] = name
     embeddedItems[v3Slot] = item
+    // V2 keeps the SAVED augment list at load (Item::CopyUserSetValues), so
+    // catalogue pre-slotted augments the save does not carry never apply.
+    augmentChoices[savedAugmentListKey(v3Slot)] = ''
 
     // Each item carries <ItemAugment> children with Type + SelectedAugment.
     // Key format is `slot:type:arrayIndex` — array index matches the position
