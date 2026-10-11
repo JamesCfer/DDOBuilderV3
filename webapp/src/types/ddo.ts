@@ -311,6 +311,13 @@ export interface Item {
    *  Marks Legendary Green Steel gear for `StancesPane::UpdateGreensteelStances`'s
    *  Dominion/Escalation/Opposition/Ethereal/Material dominance stances. */
   IsGreensteel?: string
+  /** V2 `Item.h:66` presence-only flag — parses as `""`. The player picks the
+   *  item's level (Cannith crafted "Magic Item" gear, craftable named items);
+   *  see `lib/craftedItems.ts`. */
+  UserSetsLevel?: string
+  /** V2 `Item.h` presence-only flag — a saved copy of this item is kept as is
+   *  at load instead of being swapped for the latest catalogue version. */
+  NoAutoUpdate?: string
   // Weapon-specific
   Weapon?: string
   AttackModifier?: string | string[]
@@ -609,6 +616,12 @@ export interface CharacterBuild {
   /** ChooseLevel augments: augment key → SelectedLevelIndex (V2 ItemAugment). */
   augmentLevelChoices?: Record<string, number>
   /**
+   * Slot → the level a `UserSetsLevel` item (Cannith crafted gear) is crafted
+   * at. V2 stores it as the saved item's MinLevel (ItemSelectDialog.cpp
+   * OnItemLevelSelect).
+   */
+  gearItemLevels?: Record<string, number>
+  /**
    * EnterValue augments: augment key → the player-entered `ItemAugment::Value`
    * (e.g. Mythic Power Boost's Mythic Bonus rank). V2 `Build::ApplyAugment`
    * replaces every effect's Amount with this value.
@@ -687,6 +700,8 @@ export interface CharacterBuild {
   namedGearAugments?: Record<string, Record<string, string>>
   /** setName → slotUpgradeKey (slot:upgradeType:index) → chosen color; mirrors slotUpgradeChoices but per named gear set */
   namedSlotUpgrades?: Record<string, Record<string, string>>
+  /** setName → slot → crafted item level; mirrors gearItemLevels per named gear set */
+  namedGearItemLevels?: Record<string, Record<string, number>>
   activeGearSetName: string
   /** heroic enhancement choices: treeName → itemName → rank */
   enhancementChoices: Record<string, Record<string, number>>

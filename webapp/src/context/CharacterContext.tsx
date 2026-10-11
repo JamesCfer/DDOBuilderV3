@@ -22,7 +22,8 @@ type Action =
   | { type: 'SET_FEAT'; slotKey: string; featName: string }
   | { type: 'SET_SKILL_RANK'; skill: string; rank: number }
   | { type: 'SET_SKILL_RANK_AT_LEVEL'; level: number; skill: string; rank: number }
-  | { type: 'SET_GEAR'; slot: string; itemName: string }
+  | { type: 'SET_GEAR'; slot: string; itemName: string; itemLevel?: number }
+  | { type: 'SET_GEAR_ITEM_LEVEL'; slot: string; itemLevel: number }
   | { type: 'CLEAR_GEAR'; slot: string }
   | { type: 'SET_AUGMENT'; key: string; augmentName: string; levelIndex?: number }
   | { type: 'CLEAR_AUGMENT'; key: string }
@@ -176,6 +177,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     selfBuffs: raw.selfBuffs ?? [],
     reaperSelections: upgradeSelections(raw.reaperSelections ?? {}),
     augmentLevelChoices: raw.augmentLevelChoices ?? {},
+    gearItemLevels: raw.gearItemLevels ?? {},
     augmentValueChoices: raw.augmentValueChoices ?? {},
     completedQuests: raw.completedQuests ?? {},
     notes: raw.notes ?? '',
@@ -183,6 +185,7 @@ export function migrateLoad(raw: CharacterBuild): CharacterBuild {
     namedGearSets: raw.namedGearSets ?? {},
     namedGearAugments: (raw as unknown as { namedGearAugments?: Record<string, Record<string, string>> }).namedGearAugments ?? {},
     namedSlotUpgrades: (raw as unknown as { namedSlotUpgrades?: Record<string, Record<string, string>> }).namedSlotUpgrades ?? {},
+    namedGearItemLevels: raw.namedGearItemLevels ?? {},
     activeGearSetName: raw.activeGearSetName ?? '',
     sliderValues: (raw as unknown as { sliderValues?: Record<string, number> }).sliderValues ?? {},
     trainedSpells: (raw as unknown as { trainedSpells?: Record<string, Record<number, string[]>> }).trainedSpells ?? {},
@@ -307,10 +310,16 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       else byLevel[lvl] = at
       return { ...state, skillRanksByLevel: byLevel }
     }
-    case 'SET_GEAR':
+    case 'SET_GEAR': {
+      // A crafted level belongs to the item that was in the slot; a
+      // user-levelled replacement brings its own (GearPanel passes it).
+      const gearItemLevels = { ...(state.gearItemLevels ?? {}) }
+      if (action.itemLevel != null) gearItemLevels[action.slot] = action.itemLevel
+      else delete gearItemLevels[action.slot]
       return {
         ...state,
         gear: { ...state.gear, [action.slot]: action.itemName },
+        gearItemLevels,
         augmentChoices: Object.fromEntries(
           Object.entries(state.augmentChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
         ),
@@ -320,6 +329,13 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
         slotUpgradeChoices: Object.fromEntries(
           Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
         ),
+      }
+    }
+    case 'SET_GEAR_ITEM_LEVEL':
+      // V2 CItemSelectDialog::OnItemLevelSelect — the crafted item's level.
+      return {
+        ...state,
+        gearItemLevels: { ...(state.gearItemLevels ?? {}), [action.slot]: Math.max(1, Math.floor(action.itemLevel)) },
       }
     case 'CLEAR_GEAR': {
       const gear = { ...state.gear }
@@ -333,7 +349,9 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       const slotUpgradeChoices = Object.fromEntries(
         Object.entries(state.slotUpgradeChoices).filter(([k]) => !k.startsWith(action.slot + ':')),
       )
-      return { ...state, gear, augmentChoices, augmentLevelChoices, slotUpgradeChoices }
+      const gearItemLevels = { ...(state.gearItemLevels ?? {}) }
+      delete gearItemLevels[action.slot]
+      return { ...state, gear, augmentChoices, augmentLevelChoices, slotUpgradeChoices, gearItemLevels }
     }
     case 'SET_AUGMENT': {
       // A stored tier belongs to the augment that was in the slot; swapping
@@ -647,11 +665,13 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
     case 'SAVE_GEAR_SET': {
       const augments = { ...(state.namedGearAugments ?? {}), [action.setName]: { ...state.augmentChoices } }
       const slotUpgrades = { ...(state.namedSlotUpgrades ?? {}), [action.setName]: { ...state.slotUpgradeChoices } }
+      const itemLevels = { ...(state.namedGearItemLevels ?? {}), [action.setName]: { ...(state.gearItemLevels ?? {}) } }
       return {
         ...state,
         namedGearSets: { ...state.namedGearSets, [action.setName]: { ...state.gear } },
         namedGearAugments: augments,
         namedSlotUpgrades: slotUpgrades,
+        namedGearItemLevels: itemLevels,
         activeGearSetName: action.setName,
       }
     }
@@ -660,11 +680,13 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       if (!gearSet) return state
       const setAugments = (state.namedGearAugments ?? {})[action.setName] ?? {}
       const setSlotUpgrades = (state.namedSlotUpgrades ?? {})[action.setName] ?? {}
+      const setItemLevels = (state.namedGearItemLevels ?? {})[action.setName] ?? {}
       return {
         ...state,
         gear: { ...gearSet },
         augmentChoices: { ...setAugments },
         slotUpgradeChoices: { ...setSlotUpgrades },
+        gearItemLevels: { ...setItemLevels },
         activeGearSetName: action.setName,
       }
     }
@@ -675,11 +697,14 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       delete augs[action.setName]
       const slotUpgrades = { ...(state.namedSlotUpgrades ?? {}) }
       delete slotUpgrades[action.setName]
+      const itemLevels = { ...(state.namedGearItemLevels ?? {}) }
+      delete itemLevels[action.setName]
       return {
         ...state,
         namedGearSets: sets,
         namedGearAugments: augs,
         namedSlotUpgrades: slotUpgrades,
+        namedGearItemLevels: itemLevels,
         activeGearSetName: state.activeGearSetName === action.setName ? '' : state.activeGearSetName,
       }
     }

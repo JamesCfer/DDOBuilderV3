@@ -23,6 +23,7 @@
 // effect definitions) are emitted best-effort / by-name only; see the inline
 // notes and PARITY_TODO.md.
 
+import { userSetsLevel, craftedItemLevel, craftedAugmentLevelIndex } from './craftedItems'
 import type {
   Ability, CharacterBuild, CharacterDocument, FiligreeSlot, Item, ItemAugment, ItemBuff,
 } from '../types/ddo'
@@ -378,11 +379,16 @@ const SNAPSHOT_KEY: Record<Ability, string> = {
  * emitted — with defaults (empty description, level 0, the equipping slot's
  * flag) when no catalogue definition is available.
  */
-function emitItemDefinition(xml: Xml, item: Item | undefined, v2Slot: string): void {
+function emitItemDefinition(xml: Xml, item: Item | undefined, v2Slot: string, craftedLevel?: number): void {
+  // V2 Build::GetLatestVersionOfItem keeps the saved MinLevel only when the
+  // saved item carries <UserSetsLevel/>, so a crafted item writes the flag
+  // and its chosen level.
+  if (item?.NoAutoUpdate !== undefined) xml.empty('NoAutoUpdate')
+  if (userSetsLevel(item)) xml.empty('UserSetsLevel')
   if (item?.Icon) xml.leaf('Icon', item.Icon)
   xml.leaf('Description', item?.Description ?? '')
   if (item?.DropLocation) xml.leaf('DropLocation', item.DropLocation)
-  xml.leaf('MinLevel', item?.MinLevel ?? 0)
+  xml.leaf('MinLevel', craftedLevel ?? item?.MinLevel ?? 0)
   const slots = item?.EquipmentSlot
     ? Object.entries(item.EquipmentSlot).filter(([, on]) => on).map(([s]) => s)
     : []
@@ -444,6 +450,7 @@ function emitGearSet(
   sentient?: SentientInfo,
   augmentLevels?: Record<string, number>,
   augmentValues?: Record<string, number>,
+  itemLevels?: Record<string, number>,
 ): void {
   xml.open('EquippedGear')
   xml.leaf('Name', setName)
@@ -458,7 +465,8 @@ function emitGearSet(
     // EquipmentSlot) are emitted; V2 then re-resolves the rest by name.
     xml.leaf('Name', itemName)
     const itemDef = lookupItem(itemCatalogue, itemName)
-    emitItemDefinition(xml, itemDef, v2Slot)
+    const craftedLevel = userSetsLevel(itemDef) ? craftedItemLevel(v3Slot, itemLevels) : undefined
+    emitItemDefinition(xml, itemDef, v2Slot, craftedLevel)
     const defAugs: ItemAugment[] = itemDef?.ItemAugment
       ? (Array.isArray(itemDef.ItemAugment) ? itemDef.ItemAugment : [itemDef.ItemAugment])
       : []
@@ -500,7 +508,8 @@ function emitGearSet(
       } else {
         xml.leaf('Type', a.type)
         xml.leaf('SelectedAugment', a.name)
-        xml.leaf('SelectedLevelIndex', augmentLevels?.[a.key] ?? 0)
+        xml.leaf('SelectedLevelIndex',
+          craftedAugmentLevelIndex(itemDef, v3Slot, a.type, itemLevels) ?? augmentLevels?.[a.key] ?? 0)
         if (augmentValues?.[a.key] !== undefined) {
           xml.leaf('Value', augmentValues[a.key])
         }
@@ -731,7 +740,8 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
   const setNames = Object.keys(named)
   if (setNames.length > 0) {
     for (const name of setNames) {
-      emitGearSet(xml, name, named[name] ?? {}, namedAug[name] ?? {}, snapshots[name], itemCatalogue, sentient)
+      emitGearSet(xml, name, named[name] ?? {}, namedAug[name] ?? {}, snapshots[name], itemCatalogue, sentient,
+        undefined, undefined, build.namedGearItemLevels?.[name])
     }
   } else {
     // Always emit the active set, even with nothing equipped: V2 gives every
@@ -739,7 +749,7 @@ function emitBuild(xml: Xml, build: CharacterBuild, itemCatalogue?: ItemCatalogu
     // sentient jewel — personality and both filigree lists — lives INSIDE
     // <EquippedGear>. Skipping the empty set dropped a build's filigrees.
     const name = build.activeGearSetName || 'Standard'
-    emitGearSet(xml, name, build.gear ?? {}, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices, build.augmentValueChoices)
+    emitGearSet(xml, name, build.gear ?? {}, build.augmentChoices, snapshots[name], itemCatalogue, sentient, build.augmentLevelChoices, build.augmentValueChoices, build.gearItemLevels)
   }
   // GearSetSnapshot — names the snapshot baseline set (F3).
   if (build.gearSetSnapshot) xml.leaf('GearSetSnapshot', build.gearSetSnapshot)

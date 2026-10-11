@@ -14,6 +14,7 @@
 // as from the useBuildStats hook, which wraps computeBuildStats/buildStatMap
 // with memoisation and re-exports everything here.
 
+import { craftedAugmentLevelIndex, effectiveItemLevel } from './craftedItems'
 import type { CharacterBuild } from '../types/ddo'
 import { costUpToRank } from './enhancementSpend'
 import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS } from './mixedMagics'
@@ -998,6 +999,7 @@ function accumulateAugments(
   ctx?: EffectContext,
   augmentLevelChoices?: Record<string, number>,
   augmentValueChoices?: Record<string, number>,
+  gearItemLevels?: Record<string, number>,
 ): void {
   for (const [key, augName] of Object.entries(augmentChoices)) {
     if (!augName) continue
@@ -1021,9 +1023,12 @@ function accumulateAugments(
     const hasEnterValue = augAny.EnterValue !== undefined
     const levelValues = hasChooseLevel ? chooseLevelValues(augAny.LevelValue) : []
     const levelValues2 = hasChooseLevel ? chooseLevelValues(augAny.LevelValue2) : []
-    const hostItem = gearItems[key.split(':')[0]]
-    const fallbackIdx = Math.max(0, (hostItem?.MinLevel ?? 1) - 1)
-    const levelIdx = augmentLevelChoices?.[key] ?? fallbackIdx
+    const hostItem = gearItems[hostSlot]
+    // A crafted (UserSetsLevel) item counts at the level the player chose;
+    // its Cannith shard slots always read that level (lib/craftedItems.ts).
+    const fallbackIdx = Math.max(0, (effectiveItemLevel(hostItem, hostSlot, gearItemLevels) || 1) - 1)
+    const levelIdx = craftedAugmentLevelIndex(hostItem, hostSlot, augSlotType, gearItemLevels)
+      ?? augmentLevelChoices?.[key] ?? fallbackIdx
     const enteredValue = augmentValueChoices?.[key]
     let effIndex = 0
     for (const rawEff of toArray(aug.Effect)) {
@@ -2335,7 +2340,7 @@ function buildStatMapOnce(
     // contributions) are ignored along with the host item.
     // (allAugmentChoices is computed earlier, alongside the Greensteel
     // dominance stance derivation, which needs the same merged choices.)
-    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices, build.augmentValueChoices)
+    accumulateAugments(map, allAugmentChoices, gearItems, allAugments, ctx, build.augmentLevelChoices, build.augmentValueChoices, build.gearItemLevels)
 
     // ── Gear set bonuses ──────────────────────────────────────────────────
     // Pass the merged augment choices so augment-granted set bonuses (and
