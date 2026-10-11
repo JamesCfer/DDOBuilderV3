@@ -61,10 +61,10 @@ type Action =
   | { type: 'SET_SENTIENT_GEM_NAME'; name: string }
   | { type: 'SET_SENTIENT_GEM_PERSONALITY'; personality: string }
   | { type: 'SET_SENTIENT_GEM_AUGMENT'; slot: 'major' | 'minor'; name: string }
-  | { type: 'SET_ENH_CHOICES'; treeName: string; choices: Record<string, number> }
+  | { type: 'SET_ENH_CHOICES'; treeName: string; choices: Record<string, number>; /** Revokes a GrantFeat enhancement: V2 then runs VerifyGear. */ verifyGear?: boolean }
   | { type: 'SET_ENH_SELECTIONS'; treeName: string; selections: Record<string, string> }
   | { type: 'SET_ENH_PINNED'; pinned: string[] }
-  | { type: 'RESET_ENH_TREE'; treeName: string; /** AP handed back, for the build log. */ refunded?: number }
+  | { type: 'RESET_ENH_TREE'; treeName: string; /** AP handed back, for the build log. */ refunded?: number; /** Revokes a GrantFeat enhancement: V2 then runs VerifyGear. */ verifyGear?: boolean }
   | {
       type: 'LOAD_ENH_TREE_FILE'; treeName: string
       choices: Record<string, number>; selections: Record<string, string>
@@ -741,7 +741,9 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useCallback((action: Action) => {
     rawDispatch(action)
     logAction(action as never)
-    if (GEAR_VERIFY_ACTIONS.has(action.type)) setGearVerifyTick(t => t + 1)
+    if (GEAR_VERIFY_ACTIONS.has(action.type) || ('verifyGear' in action && action.verifyGear)) {
+      setGearVerifyTick(t => t + 1)
+    }
   }, [rawDispatch, logAction])
   return (
     <CharacterContext.Provider value={{ build, dispatch, gearVerifyTick }}>

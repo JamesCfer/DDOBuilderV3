@@ -9,7 +9,7 @@ import {
   orphanedEnhancementTrees,
   MAX_RACIAL_TREES, MAX_OTHER_TREES, MAX_ENHANCEMENT_TREES, canPinTree, pinnedTreeCounts,
 } from '../../lib/treeAvailability'
-import { computeTreeSpent } from '../../lib/enhancementSpend'
+import { computeTreeSpent, revokedSpendGrantsFeat } from '../../lib/enhancementSpend'
 import { exportEnhancementTreeFile, parseTreeFile } from '../../lib/treeFileIO'
 import { downloadTextFile } from '../../lib/browserDownload'
 import type { DDOClass, EnhancementTree, Race, Feat } from '../../types/ddo'
@@ -216,7 +216,10 @@ export default function EnhancementTreePanel() {
     for (const { name, spent } of orphanedEnhancementTrees(
       enhTrees, build, allClasses, currentRace, specialFeats,
     )) {
-      dispatch({ type: 'RESET_ENH_TREE', treeName: name, refunded: spent })
+      dispatch({
+        type: 'RESET_ENH_TREE', treeName: name, refunded: spent,
+        verifyGear: revokesGrantedFeat(name, {}),
+      })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableTrees])
@@ -233,8 +236,19 @@ export default function EnhancementTreePanel() {
     () => (allFeats.length > 0 ? enhancementAPBudget(build, allFeats, specialFeats) : Math.min(20, build.totalLevel || 0) * 4),
     [build, allFeats, specialFeats])
 
+  // V2 Build::RevokeEnhancementEffects (Build.cpp:3748-3822) runs VerifyGear
+  // whenever a revoked enhancement carried a GrantFeat effect.
+  function revokesGrantedFeat(treeName: string, after: TreeChoices): boolean {
+    const tree = enhTrees.find(t => t.Name === treeName)
+    return tree != null && revokedSpendGrantsFeat(
+      tree, enhChoices[treeName] ?? {}, after, enhSelections[treeName] ?? {})
+  }
+
   function handleChoicesChange(treeName: string, updated: TreeChoices) {
-    dispatch({ type: 'SET_ENH_CHOICES', treeName, choices: updated })
+    dispatch({
+      type: 'SET_ENH_CHOICES', treeName, choices: updated,
+      verifyGear: revokesGrantedFeat(treeName, updated),
+    })
   }
 
   function handleSelectionsChange(treeName: string, updated: TreeSelections) {
@@ -242,7 +256,7 @@ export default function EnhancementTreePanel() {
   }
 
   function handleReset(treeName: string) {
-    dispatch({ type: 'RESET_ENH_TREE', treeName })
+    dispatch({ type: 'RESET_ENH_TREE', treeName, verifyGear: revokesGrantedFeat(treeName, {}) })
   }
 
   // V2 EnhancementsPane::OnSaveTree (~932-992) — export just this tree's
