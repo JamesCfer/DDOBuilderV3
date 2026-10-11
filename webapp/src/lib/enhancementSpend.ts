@@ -49,3 +49,51 @@ export function computeTreeSpent(tree: EnhancementTree, choices: TreeChoices): n
     return sum + costUpToRank(item, choices[key] ?? choices[item.Name] ?? 0)
   }, 0)
 }
+
+function effectList(raw: unknown): Array<{ Type?: unknown; Rank?: unknown }> {
+  if (raw == null) return []
+  return (Array.isArray(raw) ? raw : [raw]) as Array<{ Type?: unknown; Rank?: unknown }>
+}
+
+/** A GrantFeat effect among `effects` that fires on one of ranks now+1..was.
+ *  V2 `EnhancementTreeItem::GetEffects` (EnhancementTreeItem.cpp:486-515)
+ *  returns an effect with a <Rank> only for exactly that rank. */
+function grantsFeat(effects: unknown, was: number, now: number): boolean {
+  return effectList(effects).some(e => {
+    const types = Array.isArray(e?.Type) ? e.Type : [e?.Type]
+    if (!types.includes('GrantFeat')) return false
+    if (e.Rank == null) return true
+    const rank = Number(e.Rank)
+    return rank > now && rank <= was
+  })
+}
+
+/**
+ * True when lowering a tree's spend from `before` to `after` revokes an
+ * enhancement rank with a GrantFeat effect (its own effects or the chosen
+ * selection's). V2 `Build::RevokeEnhancementEffects` (Build.cpp:3748-3822)
+ * runs `VerifyGear` exactly then, unequipping gear whose requirements the
+ * build no longer meets.
+ */
+export function revokedSpendGrantsFeat(
+  tree: EnhancementTree,
+  before: TreeChoices,
+  after: TreeChoices,
+  selections: Record<string, string> = {},
+): boolean {
+  for (const item of tree.EnhancementTreeItem ?? []) {
+    const key = item.InternalName ?? item.Name
+    const was = before[key] ?? before[item.Name] ?? 0
+    const now = after[key] ?? after[item.Name] ?? 0
+    if (was <= 0 || now >= was) continue
+    if (grantsFeat(item.Effect, was, now)) return true
+    const chosen = selections[key] ?? selections[item.Name]
+    if (!chosen) continue
+    for (const group of item.Selector ?? []) {
+      for (const sel of group.EnhancementSelection ?? []) {
+        if (sel.Name === chosen && grantsFeat(sel.Effect, was, now)) return true
+      }
+    }
+  }
+  return false
+}

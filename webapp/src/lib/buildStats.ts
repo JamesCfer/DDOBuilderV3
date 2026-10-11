@@ -16,7 +16,7 @@
 
 import { craftedAugmentLevelIndex, effectiveItemLevel } from './craftedItems'
 import type { CharacterBuild } from '../types/ddo'
-import { costUpToRank } from './enhancementSpend'
+import { costUpToRank, revokedSpendGrantsFeat } from './enhancementSpend'
 import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS } from './mixedMagics'
 import { SKILLS } from './gamedata'
 import type {
@@ -1512,7 +1512,9 @@ function buildStatMapOnce(
     }
     // Slots V2 strips from the gear set at load (their augments die too).
     const gearSlotsRemovedByV2 = new Set<string>()
-    // V2 Build::VerifyGear (Build.cpp:2648-2690) is NOT applied here. It only
+    const gearSlotsFailingAtLoad: string[] = []
+    // V2 Build::VerifyGear (Build.cpp:2648-2690) is NOT applied here, save
+    // for the load-time tree reset handled further down. It only
     // runs from edit events (SetLevel, SetRace, SetClass*, RevokeClass,
     // SwapClasses, Life::SetRace), never when a build is loaded, so a saved
     // item whose Requirements/MinLevel the build fails stays equipped and
@@ -1531,6 +1533,7 @@ function buildStatMapOnce(
         const reqFail = item.Requirements != null && !meetsFeatRequirements(item.Requirements as never, gearReqCtx)
         if (tooLow || reqFail) {
           add(map, `${GEAR_REQUIREMENTS_UNMET_KEY_PREFIX}${slot}`, { value: 1, type: 'Requirement', source: item.Name })
+          gearSlotsFailingAtLoad.push(slot)
         }
       }
     }
@@ -1612,6 +1615,34 @@ function buildStatMapOnce(
               delete gearItems[slot]
               gearSlotsRemovedByV2.add(slot)
             }
+          }
+        }
+      }
+    }
+
+    // ── V2 VerifyGear after the load-time tree reset ─────────────────────
+    // The one load path that does run VerifyGear: CEnhancementsPane::
+    // DetermineTrees (EnhancementsPane.cpp:316-374) resets a selected tree
+    // the build can no longer reach as soon as it becomes active, and
+    // revoking an enhancement with a GrantFeat effect runs Build::VerifyGear
+    // (RevokeEnhancementEffects, Build.cpp:3748-3822). accessibleEnhancement
+    // Choices already drops those trees' effects; when one of them granted a
+    // feat, the gear failing its requirements goes too (fuzz-5087: an
+    // Aasimar's "Aasimar: Scourge of the Undead" spend is reset, so the
+    // Aasimar Scourge-only Faded Tracker's Boots are unequipped).
+    {
+      const allEnh = build.enhancementChoices ?? {}
+      const verifies = Object.keys(allEnh).some(name => {
+        if (name in accessibleEnhChoices) return false
+        const tree = (input.allTrees ?? []).find(t => t.Name === name)
+        return tree != null
+          && revokedSpendGrantsFeat(tree, allEnh[name] ?? {}, {}, build.enhancementSelections?.[name])
+      })
+      if (verifies) {
+        for (const slot of gearSlotsFailingAtLoad) {
+          if (gearItems[slot]) {
+            delete gearItems[slot]
+            gearSlotsRemovedByV2.add(slot)
           }
         }
       }
