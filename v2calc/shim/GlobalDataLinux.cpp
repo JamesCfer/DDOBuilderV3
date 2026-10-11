@@ -914,3 +914,16 @@ CLogPane& GetLog()
 
 void CLogPane::AddLogEntry(const CString&) {}
 void CLogPane::UpdateLastLogEntry(const CString&) {}
+
+// GlobalSupportFunctions.cpp's ClassIndex (that TU is not linked headless);
+// reached via Build::UpdateSpells when a tree reset revokes enhancements.
+size_t ClassIndex(const std::string& className)
+{
+    size_t ci = 0;
+    for (auto&& c : Classes())
+    {
+        if (c.Name() == className) break;
+        ++ci;
+    }
+    return ci;
+}
