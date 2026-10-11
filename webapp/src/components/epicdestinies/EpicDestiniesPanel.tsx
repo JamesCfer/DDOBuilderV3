@@ -100,6 +100,26 @@ export default function EpicDestiniesPanel() {
     allTrees.filter(t => Object.values(destinyChoices[t.Name] ?? {}).some(v => v > 0)).map(t => t.Name),
   [allTrees, destinyChoices])
 
+  // U51 destiny claim feats (Feats.xml Acquire=EpicDestinyTree), one per
+  // destiny, each worth +3 Fate Points. V2 DestinyPane shows them as toggle
+  // buttons under the trees (OnClaimTree); the claim count lives in pastLives.
+  const destinyClaimFeats = useMemo(
+    () => bundle.allFeats.filter(f => f.Acquire === 'EpicDestinyTree'),
+    [bundle.allFeats],
+  )
+  const isClaimed = (name: string) => (build.pastLives[name] ?? 0) > 0
+  const claimedCount = destinyClaimFeats.filter(f => isClaimed(f.Name)).length
+
+  function setClaimed(name: string, claimed: boolean) {
+    dispatch({ type: 'SET_PAST_LIFE', source: name, count: claimed ? 1 : 0 })
+  }
+
+  function setAllClaimed(claimed: boolean) {
+    for (const f of destinyClaimFeats) {
+      if (isClaimed(f.Name) !== claimed) setClaimed(f.Name, claimed)
+    }
+  }
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleSlotChange(slot: 0 | 1 | 2, name: string) {
@@ -243,6 +263,40 @@ export default function EpicDestiniesPanel() {
             </div>
           )}
         </div>
+
+        {/* ── Destinies claimed (V2 DestinyPane claim buttons) ──────────── */}
+        {destinyClaimFeats.length > 0 && (
+          <div className={styles.slotSection}>
+            <div className={styles.slotSectionTitle}>
+              Epic Destinies Claimed ({claimedCount}/{destinyClaimFeats.length}, +3 Fate Points each)
+              <span className={styles.claimBulk}>
+                <button
+                  onClick={() => setAllClaimed(true)}
+                  disabled={claimedCount === destinyClaimFeats.length}
+                  title="Claim every epic destiny"
+                >Claim all</button>
+                <button
+                  onClick={() => setAllClaimed(false)}
+                  disabled={claimedCount === 0}
+                  title="Unclaim every epic destiny"
+                >Clear</button>
+              </span>
+            </div>
+            <div className={styles.claimGrid}>
+              {destinyClaimFeats.map(f => (
+                <label key={f.Name} className={styles.claimItem} title={f.Description}>
+                  <input
+                    type="checkbox"
+                    checked={isClaimed(f.Name)}
+                    onChange={e => setClaimed(f.Name, e.target.checked)}
+                    aria-label={`Claimed ${f.Name}`}
+                  />
+                  {f.Name}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Shared pool + side-by-side tree grids (V2 DestinyPane) ─────── */}
         {selectedSlots.length > 0 && (

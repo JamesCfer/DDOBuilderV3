@@ -26,7 +26,7 @@
 import type {
   Ability, CharacterBuild, CharacterDocument, FiligreeSlot, Item, ItemAugment, ItemBuff,
 } from '../types/ddo'
-import { POINT_BUY_COSTS } from '../types/ddo'
+import { POINT_BUY_COSTS, EPIC_DESTINY_CLAIMS } from '../types/ddo'
 
 /**
  * Optional item catalogue passed to the exporter for F2 (gear-effect
@@ -571,6 +571,9 @@ function emitSpecialFeats(xml: Xml, build: CharacterBuild): void {
     if (!count) continue
     let type = knownTypes[key] ?? ''
     let featName = key
+    // Destiny claims are V2 Character SpecialFeats of Type EpicDestinyTree
+    // (older imports captured them as 'Special').
+    if ((!type || type === 'Special') && EPIC_DESTINY_CLAIMS.includes(key)) type = 'EpicDestinyTree'
     if (!type) {
       // No captured type → infer from the key (V3-authored builds).
       if (HEROIC_CLASSES.has(key)) type = 'HeroicPastLife'

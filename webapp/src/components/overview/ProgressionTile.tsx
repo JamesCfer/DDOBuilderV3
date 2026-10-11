@@ -9,6 +9,7 @@ import { computeTreeSpent } from '../../lib/enhancementSpend'
 import { enhancementAPBudget } from '../../lib/actionPoints'
 import { destinyPoolForBuild } from '../../lib/destiny'
 import type { EnhancementTree } from '../../types/ddo'
+import { pastLifeCount } from '../../types/ddo'
 import styles from './Overview.module.css'
 
 function Bar({ tree, spent, max }: { tree: EnhancementTree | undefined; name?: string; spent: number; max: number }) {
@@ -53,7 +54,7 @@ export default function ProgressionTile() {
     .reduce((s, [name, choices]) => s + (treeByName.get(name) ? computeTreeSpent(treeByName.get(name)!, choices) : 0), 0)
 
   // Past lives.
-  const pastLives = Object.values(build.pastLives ?? {}).reduce((s, n) => s + (n || 0), 0)
+  const pastLives = pastLifeCount(build.pastLives)
   const twists = (build.twistChoices ?? []).filter(Boolean).length
 
   return (
