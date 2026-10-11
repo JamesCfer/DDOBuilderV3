@@ -806,6 +806,29 @@ function generateId(): string {
   })
 }
 
+/**
+ * The U51 epic destiny "claim" feats (Feats.xml Acquire=EpicDestinyTree), one
+ * per destiny. Each claim grants +3 Fate Points. New builds start with every
+ * destiny claimed; the Epic Destinies panel lets the player unclaim them.
+ * Claims live in `pastLives` (count 0/1) like V2's Character SpecialFeats.
+ */
+export const EPIC_DESTINY_CLAIMS: readonly string[] = [
+  'Divine Crusader', 'Draconic Incarnation', 'Exalted Angel', 'Fatesinger',
+  'Fury of the Wild', 'Grandmaster of Flowers', 'Legendary Dreadnought',
+  'Machrotechnic', 'Magus of the Eclipse', 'Primal Avatar', 'Shadowdancer',
+  'Shiradi Champion', 'Unyielding Sentinel',
+]
+
+/** Total past-life count in `pastLives`, leaving out destiny claims (which
+ *  share the map but are not past lives). */
+export function pastLifeCount(pastLives: Record<string, number> | undefined): number {
+  let total = 0
+  for (const [name, n] of Object.entries(pastLives ?? {})) {
+    if (!EPIC_DESTINY_CLAIMS.includes(name)) total += Number(n) || 0
+  }
+  return total
+}
+
 export function emptyBuild(): CharacterBuild {
   return {
     id: generateId(),
@@ -836,7 +859,7 @@ export function emptyBuild(): CharacterBuild {
     augmentValueChoices: {},
     selfBuffs: [],
     slotUpgradeChoices: {},
-    pastLives: {},
+    pastLives: Object.fromEntries(EPIC_DESTINY_CLAIMS.map(n => [n, 1])),
     filigreeSlots: Array.from({ length: 6 }, () => ({ name: '', rare: false })),
     artifactFiligreeSlots: Array.from({ length: 10 }, () => ({ name: '', rare: false })),
     destinyChoices: {},

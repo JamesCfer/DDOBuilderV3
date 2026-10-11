@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { DDOClass, Race, Feat } from '../../types/ddo'
+import { pastLifeCount } from '../../types/ddo'
 import {
   specialFeatTrainedCount, canTrainSpecialFeat, canRevokeSpecialFeat,
 } from '../../lib/specialFeats'
@@ -42,7 +43,7 @@ interface Props {
 
 export default function PastLivesPanel({ collapsible = false }: Props = {}) {
   const { build } = useCharacter()
-  const totalPLs = Object.values(build.pastLives).reduce((s, n) => s + n, 0)
+  const totalPLs = pastLifeCount(build.pastLives)
 
   if (collapsible) {
     return (
@@ -76,14 +77,12 @@ function PastLivesBody() {
   const [allRaces, setAllRaces] = useState<Race[]>([])
   const [epicFeats, setEpicFeats] = useState<Feat[]>([])
   const [specialFeatsData, setSpecialFeatsData] = useState<Feat[]>([])
-  const [destinyClaimFeats, setDestinyClaimFeats] = useState<Feat[]>([])
 
   useEffect(() => {
     api.classes().then(setAllClasses)
     api.races().then(setAllRaces)
     api.feats({ acquire: 'EpicPastLife' }).then(setEpicFeats).catch(() => setEpicFeats([]))
     api.feats({ acquire: 'Special' }).then(setSpecialFeatsData).catch(() => setSpecialFeatsData([]))
-    api.feats({ acquire: 'EpicDestinyTree' }).then(setDestinyClaimFeats).catch(() => setDestinyClaimFeats([]))
   }, [])
 
   const heroicClasses = allClasses.filter(c => !c.NotHeroic)
@@ -107,18 +106,6 @@ function PastLivesBody() {
       bulk: true,
     },
   ]
-
-  // U51 Destiny Tree claim feats (Feats.xml Acquire=EpicDestinyTree): one per
-  // epic destiny — "You have claimed the <Destiny> Epic Destiny tree. Also
-  // grants 3 Fate points when claimed". Every 3 Fate Points = +1 destiny
-  // point, so each claimed destiny grows the shared destiny-point pool.
-  if (destinyClaimFeats.length > 0) {
-    groups.push({
-      title: 'Epic Destinies Claimed (+3 Fate Points each → +1 Destiny Point)',
-      entries: destinyClaimFeats.map(f => ({ name: f.Name, max: f.MaxTimesAcquire ?? 1 })),
-      bulk: true,
-    })
-  }
 
   // V2 ForumExportDlg.cpp:431 emits "Epic Past Lives" via FeatAcquisition_EpicPastLife.
   // Group by Sphere so the panel mirrors V2's SpecialFeatsPane layout.

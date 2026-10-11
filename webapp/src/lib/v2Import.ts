@@ -20,7 +20,7 @@ import type {
   Ability, BuildClass, CharacterBuild, CharacterDocument, FiligreeSlot, Life,
   QuestDifficulty,
 } from '../types/ddo'
-import { emptyBuild } from '../types/ddo'
+import { emptyBuild, EPIC_DESTINY_CLAIMS } from '../types/ddo'
 import { V2_SKILL_TOMES } from './v2Export'
 
 // ---------------------------------------------------------------------------
@@ -889,6 +889,8 @@ function parseBuildNode(
   // turn could make Racial/Class Completionist eligibility (every heroic
   // race/class at the required past-life count) falsely fail and its +2
   // AbilityBonus/+2 SkillBonus never apply.
+  // The file's own claim state wins over emptyBuild's all-claimed default.
+  out.pastLives = {}
   out.pastLifeTypes = {}
   for (const special of [parseFeatsListObject(getRec(character, 'SpecialFeats')), parseFeatsListObject(getRec(life, 'SpecialFeats'))]) {
     for (const [k, n] of Object.entries(special.pastLives)) {
@@ -903,7 +905,7 @@ function parseBuildNode(
     // fold them into pastLives by count (previously parsed but dropped).
     for (const name of special.feats) {
       out.pastLives[name] = (out.pastLives[name] ?? 0) + 1
-      out.pastLifeTypes[name] = 'Special'
+      out.pastLifeTypes[name] = EPIC_DESTINY_CLAIMS.includes(name) ? 'EpicDestinyTree' : 'Special'
     }
   }
 

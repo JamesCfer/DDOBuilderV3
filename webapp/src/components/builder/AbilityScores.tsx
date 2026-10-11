@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
 import type { Ability, Race } from '../../types/ddo'
-import { POINT_BUY_COSTS, totalPointsSpent, pointBuyCost } from '../../types/ddo'
+import { POINT_BUY_COSTS, totalPointsSpent, pointBuyCost, pastLifeCount } from '../../types/ddo'
 import { tomeCapAtLevel } from '../../lib/levelProgression'
 import { api } from '../../api'
 import styles from './AbilityScores.module.css'
@@ -38,7 +38,7 @@ export default function AbilityScores() {
   const points = race ? parseBuildPoints(race.BuildPoints) : [28, 32, 34, 36]
   // V2 Build::DetermineBuildPoints: 0 PLs → idx 0, 1 PL → idx 2, 2+ PLs → idx 3.
   // Counts heroic + racial past lives, not just the current race.
-  const totalPLs = Object.values(build.pastLives).reduce<number>((a, n) => a + (Number(n) || 0), 0)
+  const totalPLs = pastLifeCount(build.pastLives)
   const budgetIdx = totalPLs === 0 ? 0 : totalPLs === 1 ? 2 : 3
   const POINT_BUY_BUDGET = points[Math.min(budgetIdx, points.length - 1)] ?? 32
 
