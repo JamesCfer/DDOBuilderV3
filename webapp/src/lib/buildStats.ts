@@ -39,6 +39,7 @@ import {
 import { getLevelClasses, tomeCapAtLevel } from './levelProgression'
 import { buildFeatCountMap, orphanedEnhancementTrees } from './treeAvailability'
 import { displaySlotsForItemKey } from './gearSlots'
+import { hasSavedAugmentList } from './gearSlotUpgrades'
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -845,6 +846,9 @@ export function mergeAugmentChoices(
   // override, so `in` (key presence), not truthiness.
   for (const [slot, item] of Object.entries(gearItems)) {
     if (slot.startsWith('Cosmetic')) continue
+    // A slot imported from a V2 save uses the saved augment list only
+    // (V2 Item::CopyUserSetValues), never the catalogue defaults.
+    if (hasSavedAugmentList(build.augmentChoices, slot)) continue
     toArray(item.ItemAugment).forEach((ia, index) => {
       if (!ia?.SelectedAugment) return
       const key = `${slot}:${ia.Type}:${index}`
