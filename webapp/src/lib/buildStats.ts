@@ -697,9 +697,10 @@ function accumulateGear(
     // V2 BreakdownItemAC.cpp:71-82 + BreakdownItemDodge.cpp:55-63: tower
     // shield items contribute their MaximumDexterityBonus to the dedicated
     // mdbShields breakdown, which caps DEX-to-AC and dodge when a tower
-    // shield is equipped.
-    const armorType = item.Armor
-    const isTowerShield = armorType === 'TowerShield' || armorType === 'Tower Shield'
+    // shield is equipped. V2 Build::ApplyWeaponEffects (Build.cpp:5638-5650)
+    // keys this on the item's Weapon type: tower shields carry
+    // <Weapon>Tower Shield</Weapon>, never an <Armor> type.
+    const isTowerShield = item.Weapon === 'Tower Shield'
     if (isTowerShield && typeof item.MaximumDexterityBonus === 'number') {
       add(map, 'mdbShields', { value: item.MaximumDexterityBonus, type: 'Equipment', source, fromGear: true })
     }
