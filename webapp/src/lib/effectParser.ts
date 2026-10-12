@@ -100,13 +100,26 @@ function items(req: Requirement): string[] {
   return Array.isArray(req.Item) ? req.Item : [req.Item]
 }
 
+/**
+ * V2 Build::IsStanceActive (Build.cpp:3899-3910) special-cases the name
+ * "FavoredWeapon" (Grace / Knowledge of Battle): the "Favored Weapon" stance
+ * must be active and Favored Soul levels must be at least half of
+ * min(20, Level()).
+ */
+function favoredWeaponActive(ctx: EffectContext): boolean {
+  const half = Math.floor(Math.min(20, ctx.totalLevel) / 2)
+  return ctx.stances.has('Favored Weapon') && (ctx.classLevels['Favored Soul'] ?? 0) >= half
+}
+
 /** Checks a single Requirement against a build context. */
 function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
   const its = items(req)
   const v = req.Value ?? 0
   switch (req.Type) {
     case 'Stance':
-      return its.length === 0 || its.some(i => ctx.stances.has(i))
+      return its.length === 0 || its.some(i => i === 'FavoredWeapon'
+        ? favoredWeaponActive(ctx)
+        : ctx.stances.has(i))
     case 'Race':
       return its.some(i => ctx.race === i)
     case 'NotConstruct':
