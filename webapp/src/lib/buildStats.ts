@@ -1967,10 +1967,29 @@ function buildStatMapOnce(
           if (st.Name?.endsWith(' ')) iconicStanceNames.add(st.Name)
         }
       }
+      // V2 builds the stance buttons before Build::BuildNowActive applies
+      // any effects, so a persisted stance is checked while "Centered" and
+      // "Favored Weapon" still see only the static weapon groups: the
+      // AddGroupWeapon adds from feats (Zen Archery's longbows, Favored Soul
+      // weapons) are not there yet. A stance that fails then is disabled
+      // (DisableStance) and stays off after those auto stances turn on
+      // (oracle-verified on Raged DPS life 6: Wind Stance with a Zen
+      // Archery longbow is dropped).
+      const loadStances = new Set(ctxStances)
+      {
+        const baseMain = deriveWeaponClasses(mainWeaponType, groups)
+        const baseOff = deriveWeaponClasses(offWeaponType, groups)
+        const centered = ctxStances.has('Cloth Armor')
+          && (!mainWeaponType || baseMain.has('Centered'))
+          && (!offWeaponType || baseOff.has('Centered'))
+        if (!centered) loadStances.delete('Centered')
+        if (!baseMain.has('Favored Weapon')) loadStances.delete('Favored Weapon')
+      }
+      const loadCtx: EffectContext = { ...stanceCtx, stances: loadStances }
       for (const s of build.activeBuffs) {
         if (autoFamily.has(s)) continue
         const def = stanceDefs.get(s)
-        if (def?.Requirements && !requirementsMet(def.Requirements, stanceCtx)) continue
+        if (def?.Requirements && !requirementsMet(def.Requirements, loadCtx)) continue
         ctxStances.add(s)
         if (iconicStanceNames.has(`${s} `)) ctxStances.add(`${s} `)
       }
