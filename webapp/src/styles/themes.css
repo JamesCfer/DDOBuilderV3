@@ -209,6 +209,17 @@
   --shadow-dropdown: 0 6px 24px rgba(90, 70, 40, 0.28);
   --shadow-sidebar:  2px 0 16px rgba(90, 70, 40, 0.18);
   --shadow-gold:     0 0 12px rgba(138, 100, 18, 0.3);
+
+  /* Bonus-type swatches: the light steps of the same eight hues. */
+  --bonus-1:     #2a78d6;
+  --bonus-2:     #eb6834;
+  --bonus-3:     #1baf7a;
+  --bonus-4:     #eda100;
+  --bonus-5:     #e87ba4;
+  --bonus-6:     #008300;
+  --bonus-7:     #6250d6;
+  --bonus-8:     #e34948;
+  --bonus-other: #9a958a;
 }
 
 /* ── Daylight — cool, plain light theme for bright rooms. ───────────────── */
@@ -245,6 +256,17 @@
   --shadow-dropdown: 0 6px 24px rgba(20, 30, 50, 0.2);
   --shadow-sidebar:  2px 0 16px rgba(20, 30, 50, 0.12);
   --shadow-gold:     0 0 12px rgba(31, 95, 168, 0.25);
+
+  /* Bonus-type swatches: the light steps of the same eight hues. */
+  --bonus-1:     #2a78d6;
+  --bonus-2:     #eb6834;
+  --bonus-3:     #1baf7a;
+  --bonus-4:     #eda100;
+  --bonus-5:     #e87ba4;
+  --bonus-6:     #008300;
+  --bonus-7:     #6250d6;
+  --bonus-8:     #e34948;
+  --bonus-other: #9a958a;
 }
 
 /* ── High Contrast — maximum separation for low-vision use. ─────────────── */

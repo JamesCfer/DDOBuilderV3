@@ -193,8 +193,8 @@
 .tipBox {
   position: fixed;
   z-index: 9999;
-  min-width: 200px;
-  max-width: 340px;
+  min-width: 240px;
+  max-width: 400px;
 
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border-light);
@@ -243,11 +243,76 @@
 .tipTable tbody td {
   padding: 2px 8px;
   color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-light);
 }
 
-.tipTable tbody tr:last-child td {
-  border-bottom: none;
+/* One block per bonus type: a header with swatch, rule and subtotal, then
+   that type's sources indented under a rule in the type's colour. */
+.tipGroup + .tipGroup .tipGroupHead td {
+  border-top: 1px solid var(--color-border);
+}
+
+.tipTable .tipGroupHead td {
+  padding-top: 4px;
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.tipSwatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+.tipRule {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.tipTable .tipBonusRow td:first-child {
+  /* A thin rule in the type's colour, sitting under the header's swatch.
+     --type-color is set inline per row. */
+  padding-left: 22px;
+  background: linear-gradient(var(--type-color), var(--type-color)) 11px 0 / 2px 100% no-repeat;
+}
+
+.tipTable .tipGroup:last-of-type .tipBonusRow:last-child td {
+  padding-bottom: 4px;
+}
+
+.tipOrigin {
+  margin-left: 6px;
+  padding: 0 4px;
+  font-size: 9px;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-muted);
+}
+
+.tipNote {
+  display: block;
+  font-size: 9px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.tipCount {
+  margin-left: 6px;
+  font-size: 9px;
+  color: var(--color-text-muted);
+}
+
+.tipValMinor {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  vertical-align: top;
 }
 
 .tipTable tfoot td {
@@ -255,6 +320,23 @@
   border-top: 1px solid var(--color-border);
   color: var(--color-text-primary);
 }
+
+/* Composition bar: each type's share of the positive bonuses. */
+.tipBar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin: 6px 8px 2px;
+}
+
+.tipBarSeg {
+  flex-basis: 0;
+  min-width: 3px;
+  border-radius: 2px;
+}
+
+.tipBarSeg:first-child { border-radius: 3px 2px 2px 3px; }
+.tipBarSeg:last-child  { border-radius: 2px 3px 3px 2px; }
 
 .tipVal {
   text-align: right;
@@ -271,9 +353,13 @@
 }
 
 .tipRowSuppressed td {
-  opacity: 0.4;
-  text-decoration: line-through;
+  opacity: 0.55;
   color: var(--color-text-muted) !important;
+}
+
+/* Strike the source and value, not the "overridden by" note. */
+.tipRowSuppressed .tipSource {
+  text-decoration: line-through;
 }
 
 /* ── Spell Power table ───────────────────────────────────────────────── */

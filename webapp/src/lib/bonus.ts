@@ -88,6 +88,15 @@ export function initBonusTypes(specs: BonusTypeEntry[]): void {
   exclusiveTypes = buildExclusiveSet(specs)
 }
 
+/**
+ * True when gear bonuses of this type compete Highest-Only. Build-sourced
+ * bonuses (feats, enhancements, race) always stack regardless; see
+ * resolveBonus.
+ */
+export function isExclusiveType(type: string): boolean {
+  return exclusiveTypes.has(type)
+}
+
 /** Restore the hard-coded fallback set. Intended for use in tests only. */
 export function resetBonusTypes(): void {
   exclusiveTypes = EXCLUSIVE_FALLBACK
