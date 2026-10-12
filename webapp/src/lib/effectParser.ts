@@ -200,6 +200,11 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       if (ctx.skillRanks) return (ctx.skillRanks[its[0]] ?? 0) >= (req.Value ?? 0)
       if (!ctx.skillTotals) return true
       return (ctx.skillTotals[its[0]] ?? 0) >= (req.Value ?? 0)
+    case 'WeaponGroup':
+      // Not a V2 requirement type (RequirementTypes.h): it parses as
+      // Requirement_Unknown and Requirement::Met's default returns false, so
+      // Two Handed Specialty's "Hand and a Half" 1.6x never applies in V2.
+      return false
     case 'EnemyType':
       // V2 Requirement.cpp:467/513: `case Requirement_EnemyType: met = false`.
       // Favored-enemy-style effects NEVER apply inside the planner.
