@@ -70,8 +70,11 @@ export function buildAutomaticFeatGroups(
   // <Archetype>", each needing only >=1 (not >=3 — that threshold is for
   // races only). The "Unknown" placeholder class (Class_Unknown) is excluded,
   // matching `cit.GetBaseClass() != Class_Unknown`.
+  // The feat's own AutomaticAcquisition (Feats.xml) still requires character
+  // Level 3: Build::AutomaticFeats (Build.cpp:2527-2584) checks it before
+  // the past-life requirements, so a level 1-2 build never has Completionist.
   const heroicClasses = allClasses.filter(c => !c.NotHeroic && c.Name !== 'Unknown')
-  if (heroicClasses.length > 0) {
+  if (heroicClasses.length > 0 && build.totalLevel >= 3) {
     const classGroups = new Map<string, string[]>()
     for (const c of heroicClasses) {
       const base = c.BaseClass || c.Name
