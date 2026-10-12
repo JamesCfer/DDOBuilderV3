@@ -11,6 +11,7 @@
 // rows show a percentage of a whole. Both tooltips place themselves with the
 // same hook, so they behave identically at the screen edges.
 
+import { createPortal } from 'react-dom'
 import { useTipPosition } from './useTipPosition'
 import { fmtDamage, fmtFactor, fmtSigned } from '../../lib/combat/format'
 import styles from './BreakdownTip.module.css'
@@ -89,7 +90,7 @@ export default function BreakdownTip({ tip, onHide, openLeft = false }: {
   const { running, shareTotal } = walk(tip.rows)
   const isShareList = tip.rows.length > 0 && tip.rows.every(r => r.kind === 'share' || r.kind === 'note')
 
-  return (
+  const box = (
     <div
       ref={ref}
       className={styles.tipBox}
@@ -161,4 +162,8 @@ export default function BreakdownTip({ tip, onHide, openLeft = false }: {
       )}
     </div>
   )
+
+  // Portal to the body so a workspace window (contain: layout, overflow:
+  // hidden) cannot re-anchor and clip the fixed-position box.
+  return typeof document === 'undefined' ? box : createPortal(box, document.body)
 }

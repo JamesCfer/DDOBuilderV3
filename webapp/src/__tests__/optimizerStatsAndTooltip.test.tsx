@@ -106,7 +106,7 @@ async function renderTip(x: number, y: number, openLeft = false) {
     }))
   })
   mounted.push({ root, container })
-  return container.firstElementChild as HTMLElement
+  return document.body.querySelector('[role="tooltip"]') as HTMLElement
 }
 
 describe('breakdown tooltip placement', () => {

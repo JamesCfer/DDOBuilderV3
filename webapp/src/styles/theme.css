@@ -33,6 +33,20 @@
   --color-blue:         #3060b0;
   --color-purple:       #7050c0;   /* arcane accent */
 
+  /* Bonus-type swatches (breakdown tooltips). Fixed categorical order:
+     Insightful, Artifact, Quality, Enhancement, Sacred, Luck, Exceptional,
+     Profane; every other type folds into --bonus-other. Dark steps, checked
+     for colour-blind separation and 3:1 contrast on the panel surface. */
+  --bonus-1:     #3987e5;
+  --bonus-2:     #d95926;
+  --bonus-3:     #199e70;
+  --bonus-4:     #c98500;
+  --bonus-5:     #d55181;
+  --bonus-6:     #008300;
+  --bonus-7:     #9085e9;
+  --bonus-8:     #e66767;
+  --bonus-other: #6c7390;
+
   /* Typography */
   --font-heading: 'Cinzel', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
   --font-main:    'Inter', system-ui, -apple-system, sans-serif;
