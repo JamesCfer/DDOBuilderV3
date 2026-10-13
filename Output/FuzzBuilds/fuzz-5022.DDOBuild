@@ -545,26 +545,6 @@
           </TrainedEnhancement>
         </EnhancementSpendInTree>
         <EnhancementSpendInTree>
-          <TreeName>Wood Elf</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfKeenSenses</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfChildOfNature</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfAdeptOfTrees</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-        </EnhancementSpendInTree>
-        <EnhancementSpendInTree>
           <TreeName>Elf</TreeName>
           <TreeVersion>1</TreeVersion>
           <TrainedEnhancement>
@@ -577,28 +557,6 @@
           </TrainedEnhancement>
           <TrainedEnhancement>
             <EnhancementName>ElfChildOfNature</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-        </EnhancementSpendInTree>
-        <EnhancementSpendInTree>
-          <TreeName>Half-Elf</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>HalfElfCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>HalfElfSkillFocus</EnhancementName>
-            <Selection>Negotiator</Selection>
-            <Ranks>2</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>HalfElfImprovedDilettanteI</EnhancementName>
-            <Selection>Improved Dilettante: Ranger</Selection>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>HalfElfDiplomaticImmunity</EnhancementName>
             <Ranks>1</Ranks>
           </TrainedEnhancement>
         </EnhancementSpendInTree>

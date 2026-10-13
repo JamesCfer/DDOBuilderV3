@@ -477,22 +477,6 @@
           </TrainedEnhancement>
         </EnhancementSpendInTree>
         <EnhancementSpendInTree>
-          <TreeName>Wood Elf</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfKeenSenses</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>WoodElfChildOfNature</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-        </EnhancementSpendInTree>
-        <EnhancementSpendInTree>
           <TreeName>Falconry</TreeName>
           <TreeVersion>1</TreeVersion>
           <TrainedEnhancement>

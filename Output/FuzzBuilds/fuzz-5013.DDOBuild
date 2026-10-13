@@ -324,39 +324,6 @@
           </TrainedEnhancement>
         </EnhancementSpendInTree>
         <EnhancementSpendInTree>
-          <TreeName>Tiefling Scoundrel</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelHellishRebuke</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelsSkills</EnhancementName>
-            <Ranks>2</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelCore2</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelInfernalResistanceI</EnhancementName>
-            <Selection>Infernal Resistance (Acid)</Selection>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelInnateProtection</EnhancementName>
-            <Ranks>3</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>ScoundrelCore3</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-        </EnhancementSpendInTree>
-        <EnhancementSpendInTree>
           <TreeName>Warchanter</TreeName>
           <TreeVersion>1</TreeVersion>
           <TrainedEnhancement>
