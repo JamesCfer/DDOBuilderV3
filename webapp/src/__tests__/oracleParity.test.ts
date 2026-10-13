@@ -83,6 +83,23 @@ describe('buildParityRows — oracle↔V3 composition', () => {
     expect(rows.find(r => r.stat === 'destinyAPs')).toMatchObject({ v2: 91, v3: 91 })
   })
 
+  it('keeps an immunity name that itself contains a comma whole', () => {
+    // V2 joins effect names with ", " and one real name has a comma in it.
+    const name = 'Stunning, dazing and disorientation from sound based spells'
+    const oracle: OracleJson = { immunities: `Fear, ${name}, Drowning` }
+    const stats = makeStats({ 'immunity.Fear': 1, [`immunity.${name}`]: 1, 'immunity.Drowning': 1 })
+    const row = buildParityRows(oracle, stats, makeBuild(), {}).find(r => r.stat === 'immunities')!
+    expect(row).toMatchObject({ v2: 3, v3: 3 })
+  })
+
+  it('still counts an immunity missing from V3', () => {
+    const name = 'Stunning, dazing and disorientation from sound based spells'
+    const oracle: OracleJson = { immunities: `Fear, ${name}` }
+    const row = buildParityRows(oracle, makeStats({ 'immunity.Fear': 1 }), makeBuild(), {})
+      .find(r => r.stat === 'immunities')!
+    expect(row.v3).not.toBe(row.v2)
+  })
+
   it('compares immunities as name sets', () => {
     const oracle: OracleJson = { immunities: 'Fear, Fear, Silence' }
     const stats = makeStats({ 'immunity.Fear': 1, 'immunity.Silence': 1 })

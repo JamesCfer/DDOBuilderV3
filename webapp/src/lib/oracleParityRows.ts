@@ -240,10 +240,20 @@ export function buildParityRows(
   // Immunities: V2 emits the display string (comma-joined effect names, with
   // duplicates); V3 pools immunity.<name> keys. Compare as SETS of names.
   if (oracle.immunities !== undefined) {
-    const v2Set = new Set(oracle.immunities.split(',').map(x => x.trim()).filter(Boolean))
     const v3Set = new Set(stats.keys()
       .filter(k => k.startsWith('immunity.') && stats.total(k) > 0)
       .map(k => k.slice('immunity.'.length).trim()))
+    // Some names contain a comma ("Stunning, dazing and disorientation from
+    // sound based spells"), so rejoin adjacent pieces when together they
+    // form a name V3 knows; a lone piece is a name only V2 has.
+    const parts = oracle.immunities.split(',').map(x => x.trim()).filter(Boolean)
+    const v2Set = new Set<string>()
+    for (let i = 0; i < parts.length;) {
+      let j = parts.length
+      while (j > i + 1 && !v3Set.has(parts.slice(i, j).join(', '))) j--
+      v2Set.add(parts.slice(i, j).join(', '))
+      i = j
+    }
     let diff = 0
     for (const n of v2Set) if (!v3Set.has(n)) diff++
     for (const n of v3Set) if (!v2Set.has(n)) diff++
