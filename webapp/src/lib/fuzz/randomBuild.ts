@@ -18,6 +18,7 @@ import type {
 } from '../../types/ddo'
 import { emptyBuild, POINT_BUY_COSTS } from '../../types/ddo'
 import { buildSlots } from '../levelTraining'
+import { availableEnhancementTrees } from '../treeAvailability'
 import { featOptionsForSlot } from '../featEligibility'
 import { meetsRequirements } from '../requirements'
 import { enhancementAPBudget } from '../actionPoints'
@@ -103,7 +104,14 @@ function isUniversalTree(tree: EnhancementTree): boolean {
 /** Trees this build may spend in — same rules as EnhancementTreePanel. */
 export function accessibleTrees(cat: FuzzCatalogues, build: CharacterBuild): EnhancementTree[] {
   const classNames = build.classes.map(c => c.name).filter(Boolean)
-  return cat.allTrees.filter(isEnhancementTree).filter(tree => {
+  // The name match below is loose ("Tiefling" also matches "Tiefling
+  // Scoundrel"), so also require the tree's real requirements: a tree that
+  // fails them is orphaned spend V3 drops but V2 keeps when unselected.
+  const race = cat.allRaces.find(r => r.Name === build.race)
+  const available = new Set(availableEnhancementTrees(
+    cat.allTrees, build, cat.allClasses, race, build.enhancementPinned ?? [],
+  ).map(t => t.Name))
+  return cat.allTrees.filter(isEnhancementTree).filter(tree => available.has(tree.Name)).filter(tree => {
     if (tree.IsRacialTree) return build.race ? treeMatchesName(tree.Name, build.race) : false
     if (isUniversalTree(tree)) return true
     if (classNames.some(cn => treeMatchesName(tree.Name, cn))) return true

@@ -332,22 +332,6 @@
           </TrainedEnhancement>
         </EnhancementSpendInTree>
         <EnhancementSpendInTree>
-          <TreeName>Tabaxi Trailblazer</TreeName>
-          <TreeVersion>1</TreeVersion>
-          <TrainedEnhancement>
-            <EnhancementName>TabTrailCore1</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>TabTrailLowBlows</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-          <TrainedEnhancement>
-            <EnhancementName>TabTrailSneakyStrikesI</EnhancementName>
-            <Ranks>1</Ranks>
-          </TrainedEnhancement>
-        </EnhancementSpendInTree>
-        <EnhancementSpendInTree>
           <TreeName>Apothecary</TreeName>
           <TreeVersion>1</TreeVersion>
           <TrainedEnhancement>
