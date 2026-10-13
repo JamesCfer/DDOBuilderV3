@@ -17,7 +17,7 @@
 import { craftedAugmentLevelIndex, effectiveItemLevel } from './craftedItems'
 import type { CharacterBuild } from '../types/ddo'
 import { costUpToRank, revokedSpendGrantsFeat } from './enhancementSpend'
-import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS } from './mixedMagics'
+import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS, hasMixedMagics } from './mixedMagics'
 import { SKILLS } from './gamedata'
 import type {
   Race, DDOClass, Feat, EnhancementTree, EnhancementTreeItem, Item,
@@ -3236,29 +3236,37 @@ function buildStatMapOnce(
       }
     }
 
-    // V2 BreakdownItemTurnUndeadLevel.cpp:42-89 — base Turn Undead level from class levels.
-    // Turn level = max(Cleric caster levels, Dark Apostate caster levels,
-    //                  max(0, Paladin levels - 3)).
+    // V2 BreakdownItemTurnUndeadLevel.cpp:42-89 / BreakdownItemTurnUndeadHitDice:
+    // the base Turn Undead level reads the Cleric, Dark Apostate and Paladin
+    // CASTER LEVEL breakdowns (class levels + CasterLevel effects + Mixed
+    // Magics), not raw class levels:
+    //   max(Cleric CL, Dark Apostate CL), unless Paladin CL - 3 is higher.
     // Added to 'turnUndead.levelBonus' as type 'Base' so the displayed total
-    // includes both the class-derived base and any enhancement bonuses.
-    // Similarly, BreakdownItemTurnUndeadHitDice adds the same base plus CHA mod
-    // to 'turnUndead.diceBonus'.
+    // includes both the base and any enhancement bonuses. Hit dice add the
+    // same base plus the Charisma modifier (always, not only with a base).
     {
-      const clericLevels = ctxClassLevels['Cleric'] ?? 0
-      const darkApostateLevels = ctxClassLevels['Dark Apostate'] ?? 0
-      const paladinLevels = ctxClassLevels['Paladin'] ?? 0
-      const effectiveClericLevels = Math.max(clericLevels, darkApostateLevels)
-      const effectivePaladinContrib = Math.max(0, paladinLevels - 3)
-      const baseLevel = Math.max(effectiveClericLevels, effectivePaladinContrib)
-      if (baseLevel > 0) {
-        const classSource = effectiveClericLevels >= effectivePaladinContrib
-          ? (darkApostateLevels > clericLevels ? 'Dark Apostate levels' : 'Cleric levels')
-          : 'Paladin levels (−3)'
+      const charLevel = (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
+      const mixedMagics = hasMixedMagics(build)
+      const clAll = resolveBonus(map.get('cl.All') ?? []).total
+      const casterLevel = (cls: string): number => {
+        const lv = ctxClassLevels[cls] ?? 0
+        let cl = lv + resolveBonus(map.get(`cl.${cls}`) ?? []).total + clAll
+        if (lv > 0 && mixedMagics) cl += Math.min(20, charLevel) - lv
+        return cl
+      }
+      const clericCL = casterLevel('Cleric')
+      const darkApostateCL = casterLevel('Dark Apostate')
+      const effectiveClericLevels = Math.max(clericCL, darkApostateCL)
+      const effectivePaladinLevels = casterLevel('Paladin') - 3
+      const clericBranch = effectiveClericLevels >= effectivePaladinLevels
+      const baseLevel = clericBranch ? effectiveClericLevels : effectivePaladinLevels
+      const classSource = clericBranch ? 'Cleric Levels' : 'Effective Cleric Levels (Paladin-3)'
+      if (baseLevel !== 0) {
         add(map, 'turnUndead.levelBonus', { value: baseLevel, type: 'Base', source: classSource })
         add(map, 'turnUndead.diceBonus',  { value: baseLevel, type: 'Base', source: classSource })
-        if (chaMod !== 0) {
-          add(map, 'turnUndead.diceBonus', { value: chaMod, type: 'Ability mod', source: 'Charisma' })
-        }
+      }
+      if (chaMod !== 0) {
+        add(map, 'turnUndead.diceBonus', { value: chaMod, type: 'Ability mod', source: 'Ability bonus (Charisma)' })
       }
     }
 
