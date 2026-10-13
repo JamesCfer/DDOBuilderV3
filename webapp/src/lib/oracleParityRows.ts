@@ -84,6 +84,7 @@ const SCALAR2_MAP: Record<string, string> = {
   spellPoints: 'spellPoints', spellResistance: 'spellResistance',
   spellPenetration: 'spellPenetration', spellCostReduction: 'spellCostPct',
   kiMax: 'ki.max', kiPassive: 'ki.passive', kiHit: 'ki.hit', kiCritical: 'ki.critical',
+  turnUndeadLevel: 'turnUndead.levelBonus',
   songCount: 'song.count', tumbleCharges: 'tumbleCharge',
 }
 const HIRELING_MAP: Record<string, string> = {
