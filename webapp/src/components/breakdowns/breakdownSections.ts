@@ -199,8 +199,10 @@ export function buildBreakdownSections(
     }
   }
 
-  // melee.toHit / ranged.toHit already include STR/DEX mod from phase 2; bab is separate key
-  const meleeToHitTotal  = babTotal + stats.total('melee.toHit')
+  // melee.toHit is V2's whole weapon Attack Bonus line: ability mod, weapon
+  // enchantment and BAB itself (a Base line, BreakdownItemWeaponAttackBonus),
+  // so BAB must not be added again. ranged.toHit has no BAB line.
+  const meleeToHitTotal  = stats.total('melee.toHit')
   const rangedToHitTotal = babTotal + stats.total('ranged.toHit')
 
   const weapon = stats.weapon
@@ -242,7 +244,7 @@ export function buildBreakdownSections(
   const meleeStats: StatRowData[] = [
     statRow('Melee Power',    'melee.power',        sign),
     fixedRow('To-Hit Bonus',  meleeToHitTotal, sign(meleeToHitTotal),
-      [...stats.resolve('bab').bonuses, ...stats.resolve('melee.toHit').bonuses]),
+      stats.resolve('melee.toHit').bonuses),
     statRow('Damage Bonus',   'melee.damage',       sign),
     fixedRow('W Dice',        0, weaponDiceDisplay, [], !weapon),
     fixedRow('Threat Range',  crit.threatFaces, crit.threatDisplay, threatBonuses,
