@@ -20,7 +20,7 @@
 // remains the place for a full DPS estimate against a specific foe.
 
 import type { BuildStats, WeaponInfo } from '../buildStats'
-import { critProfile, type CritProfile } from './critProfile'
+import { critProfile, isOffhandSlotWeapon, type CritProfile } from './critProfile'
 
 export interface ExpectedDamage {
   /** Average of the weapon's damage dice, including bonus W. */
@@ -133,7 +133,7 @@ export function expectedDamage(
   weapon?: WeaponInfo | null,
   opts: DamageOptions = {},
 ): ExpectedDamage {
-  const crit = critProfile(total, weapon)
+  const crit = critProfile(total, weapon, { offhand: opts.offhand && isOffhandSlotWeapon(weapon) })
 
   const bonusW = total('weapon.bonusW')
   const diceNum = (weapon?.diceNum ?? 1) + bonusW

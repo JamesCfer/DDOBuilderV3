@@ -6,7 +6,7 @@
 import type { BuildStats } from '../../lib/buildStats'
 import { absorptionTotal } from '../../lib/bonus'
 import { deriveWeaponClasses, type WeaponGroupSpec } from '../../lib/weapons/groups'
-import { critProfile } from '../../lib/combat/critProfile'
+import { critProfile, isOffhandSlotWeapon } from '../../lib/combat/critProfile'
 import { expectedDamage } from '../../lib/combat/expectedDamage'
 import type { ResolvedBonus } from '../../lib/bonus'
 import type { CharacterBuild, DDOClass } from '../../types/ddo'
@@ -215,21 +215,28 @@ export function buildBreakdownSections(
   // the hand that holds them — but Ranged Power scales the shot, not Melee.
   const shot = expectedDamage(k => stats.total(k), stats.keys(), weapon, { power: 'ranged' })
   const isRanged = weapon ? rangedWeapon(weapon.weaponType) : false
-  // The off-hand keeps its own dice and base crit profile; the character's crit
-  // bonuses and damage bonus apply to both hands, and DDO halves the off-hand's
-  // ability damage.
+  // A weapon in the off-hand slot has its own crit lines, as in V2: its item's
+  // base range and multiplier plus only the effects that name it. Handwraps
+  // standing in for the off hand share the main hand's. DDO halves the
+  // off-hand's ability damage.
   const offhand = stats.offhandWeapon ?? null
-  const offhandCrit = critProfile(k => stats.total(k), offhand)
+  const offSlot = isOffhandSlotWeapon(offhand)
+  const offhandCrit = critProfile(k => stats.total(k), offhand, { offhand: offSlot })
   const offhandDamage = expectedDamage(k => stats.total(k), stats.keys(), offhand, { offhand: true })
-  const offhandCritBonuses: ResolvedBonus[] = [
-    { value: offhandCrit.baseMultiplier, type: 'Base', source: offhand?.name ?? 'None', active: true },
-    ...stats.resolve('melee.crit.multiplier').bonuses,
-  ]
-  const offhandThreatBonuses: ResolvedBonus[] = [
-    { value: offhandCrit.baseThreatFaces, type: 'Base', source: offhand?.name ?? 'None', active: true },
-    ...stats.resolve('weapon.threatRange').bonuses,
-    ...stats.resolve('melee.crit.range').bonuses,
-  ]
+  const offhandCritBonuses: ResolvedBonus[] = offSlot
+    ? stats.resolve('offhand.crit.multiplier').bonuses
+    : [
+        { value: offhandCrit.baseMultiplier, type: 'Base', source: offhand?.name ?? 'None', active: true },
+        ...stats.resolve('melee.crit.multiplier').bonuses,
+      ]
+  const offhandThreatBonuses: ResolvedBonus[] = offSlot
+    ? stats.resolve('offhand.crit.range').bonuses
+    : [
+        { value: offhandCrit.baseThreatFaces, type: 'Base', source: offhand?.name ?? 'None', active: true },
+        ...stats.resolve('weapon.threatRange').bonuses,
+        ...stats.resolve('melee.crit.range').bonuses,
+      ]
+  const offhand1920Bonuses = stats.resolve(offSlot ? 'offhand.crit.multiplier19to20' : 'weapon.critMultiplier19to20').bonuses
   const weaponDiceDisplay = weapon ? `${weapon.diceNum}d${weapon.diceSides}` : '—'
   const threatBonuses: ResolvedBonus[] = [
     { value: crit.baseThreatFaces, type: 'Base', source: weapon?.name ?? 'Unarmed', active: true },
@@ -319,7 +326,7 @@ export function buildBreakdownSections(
       'crit.offhand.multiplier'),
     fixedRow('Crit Multiplier 19–20', offhandCrit.multiplier19to20,
       offhand ? `×${offhandCrit.multiplier19to20}` : '—',
-      [...offhandCritBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
+      [...offhandCritBonuses, ...offhand1920Bonuses],
       !offhand || offhandCrit.bonus19to20 === 0, 'crit.offhand.multiplier19to20'),
     fixedRow('Damage per Swing', offhandDamage.perSwing,
       offhand ? offhandDamage.perSwing.toFixed(1) : '—',

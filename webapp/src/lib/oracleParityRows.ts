@@ -10,6 +10,7 @@
 
 import { absorptionTotal, resolveBonus } from './bonus'
 import { hasMixedMagics } from './mixedMagics'
+import { critProfile, isOffhandSlotWeapon } from './combat/critProfile'
 import type { BuildStats } from './buildStats'
 import type { CharacterBuild, Item } from '../types/ddo'
 
@@ -317,6 +318,10 @@ export function buildParityRows(
       push('weaponMain.critMultiplier', wm.critMultiplier,
         base + stats.total('melee.crit.multiplier'))
     }
+    if (wm.critMultiplier19To20 !== undefined) {
+      push('weaponMain.critMultiplier19To20', wm.critMultiplier19To20,
+        critProfile(k => stats.total(k), w).multiplier19to20)
+    }
     if (wm.attackSpeed !== undefined) {
       push('weaponMain.attackSpeed', wm.attackSpeed,
         stats.total('weapon.alacrity') + stats.total('melee.alacrity'))
@@ -330,6 +335,23 @@ export function buildParityRows(
     }
     if (wm.trueSeeing !== undefined) {
       push('weaponMain.trueSeeing', wm.trueSeeing, stats.total('trueSeeing'))
+    }
+  }
+
+  // Off-hand weapon crit lines: V2 keeps a separate breakdown per hand
+  // (BreakdownItemWeaponEffects), fed by the off-hand item's base lines and
+  // only the effects that name its weapon type or group.
+  const wo = oracle.weaponOffhand
+  if (wo !== undefined && isOffhandSlotWeapon(stats.offhandWeapon)) {
+    const oc = critProfile(k => stats.total(k), stats.offhandWeapon, { offhand: true })
+    if (wo.critThreatRange !== undefined) {
+      push('weaponOffhand.critThreatRange', wo.critThreatRange, oc.baseThreatFaces + oc.bonusThreatFaces)
+    }
+    if (wo.critMultiplier !== undefined) {
+      push('weaponOffhand.critMultiplier', wo.critMultiplier, oc.multiplier)
+    }
+    if (wo.critMultiplier19To20 !== undefined) {
+      push('weaponOffhand.critMultiplier19To20', wo.critMultiplier19To20, oc.multiplier19to20)
     }
   }
 
