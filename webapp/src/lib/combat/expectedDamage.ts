@@ -143,9 +143,11 @@ export function expectedDamage(
   // Weapon effects are modelled on the wielded weapon, so the damage bonus
   // and ability keys are shared; only the power stat and the off-hand's
   // halved ability damage differ between hands.
-  const abilityMult = (total('melee.damageAbilityMult') || 1) / (opts.offhand ? 2 : 1)
-  const abilityDamage = modifier(damageAbilityScore(total, keys)) * abilityMult
-  const flatDamage = total('melee.damage')
+  // `melee.damage` is V2's whole Damage Bonus line, ability part included
+  // (also kept on `melee.damageAbilityPart`); the off-hand gets half of it.
+  const mainAbilityDamage = total('melee.damageAbilityPart')
+  const abilityDamage = opts.offhand ? mainAbilityDamage / 2 : mainAbilityDamage
+  const flatDamage = total('melee.damage') - mainAbilityDamage
   const damageBonus = flatDamage + abilityDamage
 
   const baseDamage = weaponDice + damageBonus

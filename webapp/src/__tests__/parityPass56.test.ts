@@ -13,7 +13,7 @@
  *
  * Fix: buildRuntimeGroupAdds() collects AddGroupWeapon / MergeGroups effects
  * from all trained feats and enhancements; BuildStats.isWeaponProficient()
- * checks the resulting group; CombatPanel passes nonProficient to buildAttackEntry.
+ * checks the resulting group; buildStats puts the −4 in the melee.toHit attack line.
  */
 
 import { describe, it, expect } from 'vitest'

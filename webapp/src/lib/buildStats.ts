@@ -2931,6 +2931,9 @@ function buildStatMapOnce(
       const dmgMult = resolveBonus(map.get('melee.damageAbilityMult') ?? []).total
       const dmgMod = Math.trunc(dmgModRaw * dmgMult)
       if (dmgMod !== 0) add(map, 'melee.damage', { value: dmgMod, type: 'Ability mod', source: `${dmgAb} (x${dmgMult})` })
+      // The ability part of that line, on its own key, so the combat
+      // estimators can halve it for the off-hand without re-adding it.
+      if (dmgMod !== 0) add(map, 'melee.damageAbilityPart', { value: dmgMod, type: 'Computed', source: `${dmgAb} (x${dmgMult})` })
 
 
       // V2 BreakdownItemWeaponAttackBonus adds the BAB breakdown total INTO
@@ -3146,22 +3149,6 @@ function buildStatMapOnce(
         type: 'Stacking',
         source: `Negative levels (-5 × ${negLevels})`,
       })
-    }
-
-    // V2 BreakdownItemWeaponAttackBonus.cpp:82-115 — weapon attack bonus takes
-    // -1 per negative level and the (positive-clamped) armor check penalty.
-    // Both apply to melee and ranged to-hit; flow into the `*.attack` keys that
-    // attackEntry adds onto the attack bonus.  (Non-proficiency and TWF
-    // penalties are weapon-specific and handled in attackEntry / below.)
-    if (negLevels > 0) {
-      const src = `Negative levels (-1 × ${negLevels})`
-      add(map, 'melee.attack',  { value: -negLevels, type: 'Penalty', source: src })
-      add(map, 'ranged.attack', { value: -negLevels, type: 'Penalty', source: src })
-    }
-    if (armorACP < 0) {
-      // V2 applies the armor check penalty to attack regardless of weapon.
-      add(map, 'melee.attack',  { value: armorACP, type: 'Penalty', source: 'Armor check penalty' })
-      add(map, 'ranged.attack', { value: armorACP, type: 'Penalty', source: 'Armor check penalty' })
     }
 
     // V2 fate points (BreakdownItemHitpoints.cpp:88-105 +2 HP each;

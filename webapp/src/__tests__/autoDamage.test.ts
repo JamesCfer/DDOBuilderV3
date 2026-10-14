@@ -41,9 +41,9 @@ describe('isRangedWeapon', () => {
 
 describe('extractCore', () => {
   const totals = {
-    'melee.toHit': 20,
-    'melee.attack': 5,
-    'melee.damage': 40,
+    // V2's whole weapon lines: BAB 21 + STR 15 + 20 to-hit; 40 damage + 15 STR.
+    'melee.toHit': 56,
+    'melee.damage': 55,
     'melee.power': 150,
     'melee.doublestrike': 35,
     'melee.crit.range': 0,
@@ -60,9 +60,8 @@ describe('extractCore', () => {
 
   const core = extractCore(fakeStats(totals), weapon, 40, 21, { attacksPerMinute: 120 })
 
-  it('sums the attack bonus from BAB, to-hit sources, and the ability modifier', () => {
-    // 21 BAB + (20 + 5) to-hit + 15 from a 40 Strength
-    expect(core.atk).toBe(21 + 25 + 15)
+  it('takes the attack bonus from the attack line, BAB and ability already in it', () => {
+    expect(core.atk).toBe(56)
   })
 
   it('converts threat faces into the lowest threatening d20 face', () => {
@@ -81,7 +80,7 @@ describe('extractCore', () => {
   })
 
   it('puts flat damage in the critable bucket and crit-only damage on top', () => {
-    expect(core.deadly).toBe(55)       // 40 melee.damage + 15 ability mod
+    expect(core.deadly).toBe(55)       // the Damage Bonus line, ability included
     expect(core.deadlyCrit).toBe(85)   // + 30 crit-only
   })
 

@@ -75,8 +75,8 @@ describe('expectedDamage', () => {
     'weapon.threatRange': 4,          // 20 → 16-20
     'melee.crit.multiplier': 2,       // ×2 base → ×4
     'weapon.critMultiplier19to20': 2, // → ×6 on 19-20
-    'melee.damage': 20,
-    'ability.Strength': 30,           // +10 modifier
+    'melee.damage': 30,
+    'melee.damageAbilityPart': 10,           // +10 modifier
   }
 
   it('builds the swing from dice + damage, exactly as DDO does', () => {
@@ -124,14 +124,13 @@ describe('expectedDamage', () => {
     expect(d.weaponDice).toBe(7)   // 2d6
   })
 
-  it('uses the highest ability an effect names for damage, not just Strength', () => {
-    const finesse = {
-      'melee.damageAbility.Dexterity': 1,
-      'ability.Strength': 10,
-      'ability.Dexterity': 40,
-    }
+  it('reports the ability part buildStats already put in melee.damage, not a second copy', () => {
+    // The best-ability choice lives in buildStats (oracle-verified); the
+    // swing must not add it again on top of the Damage Bonus line.
+    const finesse = { 'melee.damage': 25, 'melee.damageAbilityPart': 15, 'ability.Dexterity': 40 }
     const d = expectedDamage(totals(finesse), Object.keys(finesse), weapon())
-    expect(d.abilityDamage).toBe(15)   // (40-10)/2
+    expect(d.abilityDamage).toBe(15)
+    expect(d.damageBonus).toBe(25)
   })
 
   it('weighs a bigger multiplier against a bigger flat bonus by crit frequency', () => {
@@ -143,10 +142,10 @@ describe('expectedDamage', () => {
       return expectedDamage(totals(map), Object.keys(map), weapon()).perSwing
     }
     // Crits on 16-20 (25%): the flat bonus applies to every hit and wins.
-    expect(swing({ 'melee.damage': 30 })).toBeGreaterThan(swing({ 'melee.crit.multiplier': 4 }))
+    expect(swing({ 'melee.damage': 40 })).toBeGreaterThan(swing({ 'melee.crit.multiplier': 4 }))
     // Crits on 12-20 (45%): the multiplier now compounds often enough to win.
     expect(swing({ 'weapon.threatRange': 8, 'melee.crit.multiplier': 4 }))
-      .toBeGreaterThan(swing({ 'weapon.threatRange': 8, 'melee.damage': 30 }))
+      .toBeGreaterThan(swing({ 'weapon.threatRange': 8, 'melee.damage': 40 }))
   })
 })
 
@@ -156,8 +155,8 @@ describe('derivedCombatStats', () => {
       'weapon.threatRange': 4,
       'melee.crit.multiplier': 2,
       'weapon.critMultiplier19to20': 2,
-      'melee.damage': 20,
-      'ability.Strength': 30,
+      'melee.damage': 30,
+      'melee.damageAbilityPart': 10,
     }
     const derived = derivedCombatStats(totals(map), Object.keys(map), weapon())
     expect(derived.get('crit.threatFaces')).toBe(5)
@@ -174,7 +173,7 @@ describe('derivedCombatStats', () => {
 
 describe('ranged swings', () => {
   const bow = weapon({ name: 'Longbow', weaponType: 'Longbow', diceNum: 1, diceSides: 8, critThreatRange: 3, critMultiplier: 3 })
-  const map = { 'melee.power': 100, 'ranged.power': 50, 'melee.damage': 10, 'ability.Strength': 20 }
+  const map = { 'melee.power': 100, 'ranged.power': 50, 'melee.damage': 15, 'melee.damageAbilityPart': 5 }
 
   it('scales by Ranged Power, not Melee Power', () => {
     const shot = expectedDamage(totals(map), Object.keys(map), bow, { power: 'ranged' })
@@ -200,7 +199,7 @@ describe('ranged swings', () => {
 
 describe('off-hand swings', () => {
   const rapier = weapon({ name: 'Rapier', weaponType: 'Rapier', diceNum: 1, diceSides: 6, critThreatRange: 3, critMultiplier: 2 })
-  const map = { 'melee.damage': 10, 'ability.Strength': 30 }   // +10 modifier
+  const map = { 'melee.damage': 20, 'melee.damageAbilityPart': 10 }   // +10 modifier
 
   it('gets half the ability damage the main hand does', () => {
     const main = expectedDamage(totals(map), Object.keys(map), rapier)
@@ -228,7 +227,7 @@ describe('off-hand swings', () => {
 describe('derivedCombatStats — both hands', () => {
   const axe = weapon({ name: 'Axe', weaponType: 'Great Axe', diceNum: 1, diceSides: 12, critThreatRange: 1, critMultiplier: 3 })
   const dagger = weapon({ name: 'Dagger', weaponType: 'Dagger', diceNum: 1, diceSides: 4, critThreatRange: 3, critMultiplier: 2 })
-  const map = { 'melee.damage': 10, 'ability.Strength': 30, 'ranged.power': 100 }
+  const map = { 'melee.damage': 20, 'melee.damageAbilityPart': 10, 'ranged.power': 100 }
 
   it('reports the off hand separately from the main hand', () => {
     const d = derivedCombatStats(totals(map), Object.keys(map), axe, dagger)
@@ -258,7 +257,7 @@ describe('derivedCombatStats — both hands', () => {
 // ---------------------------------------------------------------------------
 
 describe('extra swings: doublestrike, doubleshot, off-hand', () => {
-  const base = { 'melee.damage': 20, 'ability.Strength': 30 }   // 33.5 per swing, no crits
+  const base = { 'melee.damage': 30, 'melee.damageAbilityPart': 10 }   // 33.5 per swing, no crits
   const swing = (over: Record<string, number>, opts = {}) => {
     const map = { ...base, ...over }
     return expectedDamage(totals(map), Object.keys(map), weapon(), opts)
@@ -332,7 +331,7 @@ describe('extra swings: doublestrike, doubleshot, off-hand', () => {
 describe('derivedCombatStats — per attack', () => {
   it('exposes per-swing and per-attack separately for each hand', () => {
     const map = {
-      'melee.damage': 20, 'ability.Strength': 30,
+      'melee.damage': 30, 'melee.damageAbilityPart': 10,
       'melee.doublestrike': 50, 'ranged.doubleshot': 100, 'offhand.doublestrike': 20,
     }
     const dagger = weapon({ name: 'Dagger', diceNum: 1, diceSides: 4 })
