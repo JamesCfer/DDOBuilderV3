@@ -97,11 +97,6 @@ export default function CombatPanel() {
       ? deriveWeaponClasses(offhand.weaponType, allWeaponGroups).has('Light')
       : false
     const oversizedTwf = featNames.has('Oversized Two Weapon Fighting')
-    // V2 BreakdownItemWeaponAttackBonus.cpp:70-79: −4 to-hit if the character is
-    // not proficient with the main-hand weapon (Build::IsWeaponInGroup("Proficiency")).
-    const nonProficient = stats.weapon.weaponType
-      ? !stats.isWeaponProficient(stats.weapon.weaponType)
-      : false
     const entry = buildAttackEntry(stats, stats.weapon, abilityScore, bab, {
       foeAC, foePRR, foeFortification: foeFort,
       helpless,
@@ -111,7 +106,6 @@ export default function CombatPanel() {
       offhand,
       offhandIsLight,
       oversizedTwf,
-      nonProficient,
     })
     return { ...entry, apm }
   }, [stats, foeAC, foePRR, foeFort, helpless, featNames, build.gear, gearItems, allAttackRates, allWeaponGroups])

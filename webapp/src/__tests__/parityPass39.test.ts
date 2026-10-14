@@ -165,17 +165,18 @@ const longsword: WeaponInfo = {
 } as unknown as WeaponInfo
 
 describe('N2 — to-hit penalties (BreakdownItemWeaponAttackBonus.cpp)', () => {
-  it('non-proficiency applies a −4 to-hit penalty', () => {
-    const stats = makeStats({})
-    const prof = buildAttackEntry(stats, longsword, 10, 5, { foeAC: 15 })
-    const nonProf = buildAttackEntry(stats, longsword, 10, 5, { foeAC: 15, nonProficient: true })
-    // +5 vs AC15 → minRoll 10 → 0.55; with −4 → minRoll 14 → 0.35
+  it('takes non-proficiency from the attack line, not a second −4', () => {
+    // buildStats puts the −4 in melee.toHit (V2's whole attack line), so the
+    // entry must not subtract it again.
+    const prof = buildAttackEntry(makeStats({ 'melee.toHit': 5 }), longsword, 10, 5, { foeAC: 15 })
+    const nonProf = buildAttackEntry(makeStats({ 'melee.toHit': 1 }), longsword, 10, 5, { foeAC: 15 })
+    // +5 vs AC15 → minRoll 10 → 0.55; +1 → minRoll 14 → 0.35
     expect(prof.hitChance).toBeCloseTo(0.55, 2)
     expect(nonProf.hitChance).toBeCloseTo(0.35, 2)
   })
 
   it('two-weapon fighting applies the main-hand attack penalty', () => {
-    const stats = makeStats({})
+    const stats = makeStats({ 'melee.toHit': 5 })   // BAB 5 in the attack line
     const single = buildAttackEntry(stats, longsword, 10, 5, { foeAC: 15 })
     // dual-wield, no TWF feat → −6 main (longsword off-hand is not light)
     const dual = buildAttackEntry(stats, longsword, 10, 5, {
@@ -186,7 +187,7 @@ describe('N2 — to-hit penalties (BreakdownItemWeaponAttackBonus.cpp)', () => {
   })
 
   it('TWF feat and a light off-hand reduce the main-hand penalty', () => {
-    const stats = makeStats({})
+    const stats = makeStats({ 'melee.toHit': 10 })
     // no feat, heavy off-hand: −6 main
     const heavyNoFeat = buildAttackEntry(stats, longsword, 10, 10, {
       foeAC: 18, offhand: longsword, twoWeaponFightingTier: 0,
@@ -199,7 +200,7 @@ describe('N2 — to-hit penalties (BreakdownItemWeaponAttackBonus.cpp)', () => {
   })
 
   it('off-hand swings roll against the off-hand attack bonus', () => {
-    const stats = makeStats({})
+    const stats = makeStats({ 'melee.toHit': 12 })
     // A worse off-hand attack bonus (no TWF feat, −10) yields a lower off-hand
     // hit chance — and thus lower off-hand DPR — than the TWF-feat case (−4),
     // holding the off-hand proc rate fixed by passing the same tier.

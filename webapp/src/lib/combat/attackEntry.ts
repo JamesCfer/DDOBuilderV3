@@ -30,8 +30,6 @@ export interface AttackEntryOptions {
   offhandIsLight?: boolean
   /** Oversized Two Weapon Fighting feat trained (reduces TWF penalty by 2). */
   oversizedTwf?: boolean
-  /** Character is non-proficient with the main-hand weapon (−4 to-hit). */
-  nonProficient?: boolean
 }
 
 /**
@@ -173,8 +171,18 @@ export function buildAttackEntry(
   // Weapon Fighting) from buildStats phase 2.5; 60% is its ceiling.
   const offhandDoublestrike =
     Math.min(PROC_CAP.offhandDoublestrike, stats.total('offhand.doublestrike')) / 100
-  const meleeToHit = stats.total('melee.toHit') + stats.total('melee.attack')
+  // `melee.toHit` / `melee.damage` are V2's whole weapon Attack Bonus and
+  // Damage Bonus lines (BreakdownItemWeaponAttackBonus/DamageBonus): BAB, the
+  // best ability modifier (damage already scaled by the damage-ability
+  // multiplier and truncated), enchantment, non-proficiency, negative levels,
+  // armor check and the stance TWF penalty are lines inside them.
+  const meleeToHit = stats.total('melee.toHit')
   const meleeDamage = stats.total('melee.damage')
+  const abilityDamage = stats.total('melee.damageAbilityPart')
+  // The TWF stance penalty already in the pool; re-derived per hand below.
+  const poolTwfPenalty = stats.resolve('melee.toHit').bonuses
+    .filter(b => b.active !== false && b.source === 'TWF attack penalty')
+    .reduce((s, b) => s + b.value, 0)
   // Threat range and both multipliers come from critProfile so this agrees with
   // the Analysis breakdown — reading only `melee.crit.range` here dropped
   // Improved Critical, which arrives on `weapon.threatRange`.
@@ -187,16 +195,14 @@ export function buildAttackEntry(
   // weapon type (gated in effectParser against ctx.weaponTypes).
   const bonusW = stats.total('weapon.bonusW')
   const weaponDie = avgDie(weapon.diceNum + bonusW, weapon.diceSides)
-  const baseDamage = weaponDie + meleeDamage + abilityMod * damageAbilMult
+  const baseDamage = weaponDie + meleeDamage
   const sneakBonus = sneakDice * 3.5 // 1d6 = 3.5
   const hitDmgRaw = (baseDamage + sneakBonus) * meleePowerMult
 
-  // V2 BreakdownItemWeaponAttackBonus.cpp:139-191. `meleeToHit` already folds
-  // in BAB-independent bonuses plus the global negative-level / armor-check
-  // penalties (added in useBuildStats). Here we add the weapon-specific
-  // non-proficiency penalty and the per-hand Two Weapon Fighting penalties.
-  const nonProfPenalty = opts.nonProficient ? -4 : 0
-  const rawAttackBonus = bab + meleeToHit + abilityMod + nonProfPenalty
+  // V2 BreakdownItemWeaponAttackBonus.cpp:139-191. The line already carries
+  // non-proficiency; only the per-hand Two Weapon Fighting penalties are
+  // applied here, in place of the pool's own stance penalty.
+  const rawAttackBonus = meleeToHit - poolTwfPenalty
 
   // TWF attack penalty (only when dual-wielding, i.e. an off-hand is present):
   //   main hand: −4 with the TWF feat, else −6;  off hand: −4 with TWF, else −10
@@ -217,7 +223,8 @@ export function buildAttackEntry(
     }
   }
 
-  const attackBonus = rawAttackBonus + mainTwfPenalty
+  // The main hand keeps V2's own stance penalty when the pool has one.
+  const attackBonus = poolTwfPenalty !== 0 ? meleeToHit : rawAttackBonus + mainTwfPenalty
   const hitC = hitChanceVsAC(attackBonus, opts.foeAC)
 
   // Crit math: threat range = (21 - critThreatRange) .. 20 (faces that threaten).
@@ -280,7 +287,8 @@ export function buildAttackEntry(
       Math.min(1, TWF_OFFHAND_CHANCE[offhandTier] + offhandAttackBonus) *
       (1 + offhandDoublestrikeChance)
     const ohDie = avgDie(opts.offhand.diceNum, opts.offhand.diceSides)
-    const ohRaw = (ohDie + meleeDamage + abilityMod * (damageAbilMult / 2) + sneakBonus) * meleePowerMult
+    // DDO halves the off-hand's ability damage.
+    const ohRaw = (ohDie + meleeDamage - abilityDamage / 2 + sneakBonus) * meleePowerMult
     // Off-hand swings roll against the off-hand attack bonus (larger TWF penalty).
     const offhandHitC = hitChanceVsAC(rawAttackBonus + offhandTwfPenalty, opts.foeAC)
     offhandDPR = ohRaw * offhandHitC * offhandChance * helplessFactor
@@ -319,7 +327,8 @@ export function buildAttackEntry(
       meleeDamage,
       abilityMod,
       damageAbilMult,
-      abilityDamage: abilityMod * damageAbilMult,
+      abilityDamage,
+      attackBonus,
       sneakDice,
       sneakBonus,
       meleePower,

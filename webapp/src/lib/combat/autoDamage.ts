@@ -139,10 +139,12 @@ export function extractCore(
 
   const abilityMod = modifier(abilityScore)
   const damageAbilMult = stats.total('melee.damageAbilityMult') || 1
-  const toHit = stats.total('melee.toHit') + stats.total('melee.attack')
+  // V2's whole weapon Attack Bonus line: BAB and the ability modifier are
+  // already lines in it, as the ability damage is in `melee.damage`.
+  const toHit = stats.total('melee.toHit')
 
   // Flat damage that rides the crit multiplier, and the crit-only extra.
-  const flatDamage = stats.total('melee.damage') + abilityMod * damageAbilMult
+  const flatDamage = stats.total('melee.damage')
   const critOnlyDamage = stats.total('melee.crit.damage')
 
   // Threat faces, then the lowest d20 face that threatens.
@@ -157,7 +159,7 @@ export function extractCore(
 
   return {
     // To-hit
-    atk: bab + toHit + abilityMod,
+    atk: toHit,
     prof: proficient ? 20 : 0,
     prec: 0,
     seeker: 0,

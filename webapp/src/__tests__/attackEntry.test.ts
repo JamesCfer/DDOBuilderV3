@@ -25,12 +25,13 @@ const falchion: WeaponInfo = {
 
 describe('buildAttackEntry', () => {
   it('produces a deterministic positive DPR for a basic Fighter swing', () => {
+    // melee.toHit is V2's whole attack line: STR +6, BAB 20 and +3 = +29.
     const stats = makeStats({
-      'melee.toHit': 3,
+      'melee.toHit': 29,
       'melee.damage': 5,
       'melee.power': 50,
     })
-    // STR 22 (mod +6) + BAB 20 + melee.toHit +3 = +29. Against an easier AC.
+    // +29 against an easier AC.
     const r = buildAttackEntry(stats, falchion, 22, 20, {
       foeAC: 25,
       twoHanded: true,
@@ -164,7 +165,8 @@ const handwraps: WeaponInfo = {
 
 describe('unarmed off-hand strikes', () => {
   it('takes no two-weapon penalty when the off hand IS the handwraps', () => {
-    const stats = makeStats({ 'melee.damage': 10 })
+    // BAB 20 + STR +5 already in the attack line.
+    const stats = makeStats({ 'melee.damage': 10, 'melee.toHit': 25 })
     const armed = buildAttackEntry(stats, falchion, 20, 20, {
       foeAC: 30, offhand: falchion, twoWeaponFightingTier: 1,
     })
