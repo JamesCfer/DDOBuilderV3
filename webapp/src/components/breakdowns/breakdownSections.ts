@@ -259,6 +259,11 @@ export function buildBreakdownSections(
     fixedRow('Crit Multiplier 19–20', crit.multiplier19to20, `×${crit.multiplier19to20}`,
       [...critMultBonuses, ...stats.resolve('weapon.critMultiplier19to20').bonuses],
       crit.bonus19to20 === 0, 'crit.multiplier19to20'),
+    // V2's Critical Attack Bonus line: the To-Hit total plus crit-only
+    // confirm bonuses (Seeker, "+X Critical Attack and Damage").
+    fixedRow('Crit Attack Bonus', meleeToHitTotal + stats.total('melee.crit.toHit'),
+      sign(meleeToHitTotal + stats.total('melee.crit.toHit')),
+      [...stats.resolve('melee.toHit').bonuses, ...stats.resolve('melee.crit.toHit').bonuses]),
     statRow('Crit-Only Damage', 'melee.crit.damage', sign),
     fixedRow('Damage per Swing', damage.perSwing, damage.perSwing.toFixed(1),
       [{ value: damage.perSwing, type: 'Computed', source:

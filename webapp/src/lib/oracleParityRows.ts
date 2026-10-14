@@ -296,6 +296,16 @@ export function buildParityRows(
     if (wm.damageBonus !== undefined) {
       push('weaponMain.damageBonus', wm.damageBonus, stats.total('melee.damage'))
     }
+    // Critical lines: the standard line is the base, plus the crit-only pools
+    // (BreakdownItemWeaponAttackBonus/DamageBonus in critical-effects mode).
+    if (wm.critAttackBonus !== undefined) {
+      push('weaponMain.critAttackBonus', wm.critAttackBonus,
+        stats.total('melee.toHit') + stats.total('melee.crit.toHit'))
+    }
+    if (wm.critDamageBonus !== undefined) {
+      push('weaponMain.critDamageBonus', wm.critDamageBonus,
+        stats.total('melee.damage') + stats.total('melee.crit.damage'))
+    }
     const w = stats.weapon
     if (wm.critThreatRange !== undefined) {
       const base = w?.critThreatRange ?? 1

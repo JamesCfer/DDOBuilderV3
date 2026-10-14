@@ -1772,9 +1772,12 @@ export function parseEffect(
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
     case 'Weapon_DamageCritical':
-    case 'Weapon_AttackAndDamageCritical':
     case 'WeaponOtherDamageBonusCritical':
       return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
+    // V2 counts it in BOTH critical lines: BreakdownItemWeaponAttackBonus
+    // (critical-effects mode, .cpp:262-269) and ...DamageBonus (.cpp:190).
+    case 'Weapon_AttackAndDamageCritical':
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.toHit'), make('melee.crit.damage')] : []
     // -----------------------------------------------------------------------
     // Per-weapon-class effects (V2 BreakdownItemWeaponAttackBonus.cpp:233-279,
     // BreakdownItemWeaponDamageBonus.cpp:157-205, ...CriticalThreatRange /
@@ -2735,10 +2738,12 @@ export function parseItemBuff(
       return weaponScopeMatches(items, ctx) ? [make('melee.crit.range')] : []
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // surfaced as `melee.crit.damage` for the DPR estimator's crit term.
-    case 'Weapon_AttackAndDamageCritical':
     case 'Weapon_DamageCritical':
     case 'WeaponOtherDamageBonusCritical':
       return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
+    // Both critical lines, as in parseEffect above.
+    case 'Weapon_AttackAndDamageCritical':
+      return weaponScopeMatches(items, ctx) ? [make('melee.crit.toHit'), make('melee.crit.damage')] : []
     case 'Weapon_Attack':
     case 'Weapon_AttackAbility':
     case 'Weapon_AttackAndDamage':
