@@ -321,6 +321,10 @@ export function buildParityRows(
       push('weaponMain.attackSpeed', wm.attackSpeed,
         stats.total('weapon.alacrity') + stats.total('melee.alacrity'))
     }
+    if (wm.vorpalRange !== undefined) {
+      // V2's line has a base of 1 (a natural 20 is always vorpal).
+      push('weaponMain.vorpalRange', wm.vorpalRange, 1 + stats.total('weapon.vorpalRange'))
+    }
     if (wm.ghostTouch !== undefined) {
       push('weaponMain.ghostTouch', wm.ghostTouch, stats.total('ghostTouch'))
     }
