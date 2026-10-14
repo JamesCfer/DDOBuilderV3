@@ -138,10 +138,17 @@ describe('parseEffect — stat aggregation basics', () => {
     '%s emits melee.crit.damage',
     type => {
       const out = parseEffect(mk(type, { Amount: 6 }), 1, 'Weapon', 0, 0, ctx)
-      expect(out[0].statKey).toBe('melee.crit.damage')
-      expect(out[0].value).toBe(6)
+      const dmg = out.find(o => o.statKey === 'melee.crit.damage')
+      expect(dmg?.value).toBe(6)
     },
   )
+
+  // V2 also counts it in the Critical Attack Bonus line
+  // (BreakdownItemWeaponAttackBonus.cpp:262-269).
+  it('Weapon_AttackAndDamageCritical also emits melee.crit.toHit', () => {
+    const out = parseEffect(mk('Weapon_AttackAndDamageCritical', { Amount: 6 }), 1, 'Weapon', 0, 0, ctx)
+    expect(out.map(o => o.statKey).sort()).toEqual(['melee.crit.damage', 'melee.crit.toHit'])
+  })
 
   it('Weapon_CriticalMultiplier19To20 emits weapon.critMultiplier19to20', () => {
     const out = parseEffect(mk('Weapon_CriticalMultiplier19To20', { Amount: 1 }), 1, 'Weapon', 0, 0, ctx)
