@@ -24,7 +24,7 @@ import type {
   Effect, EnhancementSelection, Augment, SetBonus, FiligreeSetBonus, Filigree,
   OptionalBuff, FiligreeSlot, Spell, GuildBuff, ItemBuff, Stance, Requirements,
 } from '../types/ddo'
-import { parseEffect, parseItemBuff, requirementsMet, inactiveGrantedFeats } from './effectParser'
+import { parseEffect, parseItemBuff, requirementsMet, inactiveGrantedFeats, flagSet } from './effectParser'
 import type { EffectContext, ItemBuffTemplate } from './effectParser'
 import { resolveBonus, emptyResolvedStat } from './bonus'
 import type { RawBonus, ResolvedStat } from './bonus'
@@ -665,8 +665,25 @@ function accumulateGear(
 ): void {
   for (const [slot, item] of Object.entries(gearItems)) {
     const source = `${item.Name} (${slot})`
+    // V2 Build::ApplyItem: an ApplyToWeaponOnly buff on a wielded weapon
+    // reaches that hand's weapon lines only.
+    const hand = MAIN_HAND_SLOTS.has(slot) ? 'main' as const
+      : OFF_HAND_SLOTS.has(slot) ? 'off' as const : undefined
     for (const buff of toArray(item.Buff)) {
-      addParsed(map, parseItemBuff(buff, source, buffCatalogue, ctx), true)
+      const weaponOnly = hand !== undefined && ctx !== undefined
+        && flagSet((buffCatalogue?.get(buff.Type) as { ApplyToWeaponOnly?: unknown } | undefined)?.ApplyToWeaponOnly)
+      addParsed(map, parseItemBuff(buff, source, buffCatalogue,
+        weaponOnly ? { ...ctx, weaponOnlyHand: hand } : ctx), true)
+    }
+    // V2 Build::ApplyWeaponEffects: the off-hand item's own threat range and
+    // multiplier are Base lines of the off-hand weapon (absent on rune arms).
+    if (hand === 'off' && item.Weapon) {
+      if (item.CriticalThreatRange != null) {
+        add(map, 'offhand.crit.range', { value: item.CriticalThreatRange, type: 'Base', source: 'Base Weapon Range', fromGear: true })
+      }
+      if (item.CriticalMultiplier != null) {
+        add(map, 'offhand.crit.multiplier', { value: item.CriticalMultiplier, type: 'Base', source: 'Base Weapon Multiplier', fromGear: true })
+      }
     }
     // Armor bonus from armor/shield items — treated as Armor bonus type.
     // DOCENTS (items with a <MithralBody> field): V2 Build::ApplyArmorEffects
@@ -1277,6 +1294,9 @@ export function extractWeaponInfo(gearItems: Record<string, Item>): WeaponInfo |
  * Reading the Off Hand slot alone reported no off-hand attacks at all for
  * every monk and unarmed build.
  */
+const MAIN_HAND_SLOTS = new Set(['Main Hand', 'Weapon1', 'MainHand', 'Weapon'])
+const OFF_HAND_SLOTS = new Set(['Off Hand', 'Weapon2', 'OffHand'])
+
 export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): WeaponInfo | null {
   for (const slot of ['Off Hand', 'Weapon2', 'OffHand']) {
     const wi = weaponInfoFromItem(gearItems[slot], slot)
@@ -2992,6 +3012,12 @@ function buildStatMapOnce(
         const kb = weaponBaseCriticalRange(mainWeaponType)
         if (kb > 0) {
           add(map, 'melee.crit.range', { value: kb, type: 'Keen', source: 'Keen/Improved Critical', fromGear: true })
+        }
+      }
+      if ((map.get('offhand.weapon.keen') ?? []).length > 0) {
+        const kb = weaponBaseCriticalRange(offWeaponType)
+        if (kb > 0) {
+          add(map, 'offhand.crit.range', { value: kb, type: 'Keen', source: 'Keen/Improved Critical', fromGear: true })
         }
       }
     }

@@ -49,12 +49,37 @@ export interface CritProfile {
 type Total = (key: string) => number
 
 /**
+ * True for a weapon wielded in the off-hand slot, which V2 gives its own crit
+ * lines. Handwraps standing in for the off hand use the main hand's.
+ */
+export function isOffhandSlotWeapon(weapon?: WeaponInfo | null): boolean {
+  return weapon?.slot === 'Off Hand' || weapon?.slot === 'Weapon2' || weapon?.slot === 'OffHand'
+}
+
+/**
  * Resolve the effective critical profile of the wielded weapon.
  *
  * With no weapon equipped the caller is unarmed: DDO's unarmed profile is a
  * natural 20 threat at ×2, which is also `WeaponInfo`'s default.
  */
-export function critProfile(total: Total, weapon?: WeaponInfo | null): CritProfile {
+export function critProfile(
+  total: Total,
+  weapon?: WeaponInfo | null,
+  opts: { offhand?: boolean } = {},
+): CritProfile {
+  // V2 gives a wielded off-hand weapon its own lines
+  // (BreakdownItemWeaponEffects): the item's base range and multiplier arrive
+  // as Base bonuses in the offhand.crit.* pools (none for a rune arm), with
+  // only the effects that name the off-hand weapon.
+  if (opts.offhand) {
+    const bonusThreatFaces = total('offhand.crit.range')
+    const threatFaces = Math.max(1, Math.min(20, bonusThreatFaces))
+    const multiplier = total('offhand.crit.multiplier')
+    const bonus19to20 = total('offhand.crit.multiplier19to20')
+    return finishProfile(0, bonusThreatFaces, threatFaces, 0, multiplier, bonus19to20,
+      total('melee.crit.damage'))
+  }
+
   const baseThreatFaces = Math.max(1, weapon?.critThreatRange ?? 1)
   // Both keys are real sources of extra threat faces; counting one and not the
   // other is what made Improved Critical and Keen disagree between panels.
@@ -63,11 +88,24 @@ export function critProfile(total: Total, weapon?: WeaponInfo | null): CritProfi
 
   const baseMultiplier = weapon?.critMultiplier ?? 2
   const bonusMultiplier = total('melee.crit.multiplier')
-  const multiplier = baseMultiplier + bonusMultiplier
 
   // V2 seeds the 19-20 multiplier with the standard one and stacks 19-20-only
   // effects on top (BreakdownItemWeaponCriticalMultiplier.cpp:52-66).
   const bonus19to20 = total('weapon.critMultiplier19to20')
+  return finishProfile(baseThreatFaces, bonusThreatFaces, threatFaces, baseMultiplier,
+    bonusMultiplier, bonus19to20, total('melee.crit.damage'))
+}
+
+function finishProfile(
+  baseThreatFaces: number,
+  bonusThreatFaces: number,
+  threatFaces: number,
+  baseMultiplier: number,
+  bonusMultiplier: number,
+  bonus19to20: number,
+  critOnlyDamage: number,
+): CritProfile {
+  const multiplier = baseMultiplier + bonusMultiplier
   const multiplier19to20 = multiplier + bonus19to20
 
   // DDO applies the 19-20 multiplier only on a natural 19 or 20; faces below
@@ -91,6 +129,6 @@ export function critProfile(total: Total, weapon?: WeaponInfo | null): CritProfi
     multiplier19to20,
     faces19to20,
     facesStandard,
-    critOnlyDamage: total('melee.crit.damage'),
+    critOnlyDamage,
   }
 }
