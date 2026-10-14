@@ -387,8 +387,14 @@ export function buildBreakdownSections(
   if (wAlac.total !== 0) weaponEffectStats.push(fixedRow('Alacrity', wAlac.total, pct(wAlac.total), wAlac.bonuses))
   const wKeen = stats.resolve('weapon.keen')
   if (wKeen.total !== 0) weaponEffectStats.push(fixedRow('Keen', wKeen.total, sign(wKeen.total), wKeen.bonuses))
+  // V2 BreakdownItemWeaponVorpalRange: a natural 20 is always vorpal, so the
+  // line is 1 + Weapon_VorpalRange effects, shown as "20" or "19-20".
   const wVorpal = stats.resolve('weapon.vorpalRange')
-  if (wVorpal.total !== 0) weaponEffectStats.push(fixedRow('Vorpal Range', wVorpal.total, sign(wVorpal.total), wVorpal.bonuses))
+  if (weapon || wVorpal.total !== 0) {
+    const vorpal = 1 + wVorpal.total
+    weaponEffectStats.push(fixedRow('Vorpal Range', vorpal, vorpal > 1 ? `${21 - vorpal}-20` : '20',
+      [{ value: 1, type: 'Base', source: 'Natural 20', active: true }, ...wVorpal.bonuses]))
+  }
 
   // Immunities — list every immunity.<name> key set anywhere in the build
   const immunityKeys = stats.keys().filter(k => k.startsWith('immunity.'))
