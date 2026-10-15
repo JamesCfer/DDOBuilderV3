@@ -239,6 +239,7 @@ export function buildBreakdownSections(
   // V2 keeps attack speed and vorpal range per hand too.
   const offhandAlacrity = stats.resolve(offSlot ? 'offhand.alacrity' : 'weapon.alacrity')
   const offhandVorpal = stats.resolve(offSlot ? 'offhand.vorpalRange' : 'weapon.vorpalRange')
+  const offhandToHit = offSlot ? stats.resolve('offhand.toHit') : null
   const offhandEnchant = stats.resolve(offSlot ? offhandEnchantKey(offhand) : 'weapon.enchantMain')
   const offhand1920Bonuses = stats.resolve(offSlot ? 'offhand.crit.multiplier19to20' : 'weapon.critMultiplier19to20').bonuses
   const weaponDiceDisplay = weapon ? `${weapon.diceNum}d${weapon.diceSides}` : '—'
@@ -319,6 +320,8 @@ export function buildBreakdownSections(
   const offhandStats: StatRowData[] = [
     fixedRow('Weapon', 0, offhand?.name ?? '—', [], !offhand),
     fixedRow('W Dice', 0, offhand ? `${offhand.diceNum}d${offhand.diceSides}` : '—', [], !offhand),
+    fixedRow('To-Hit', offhandToHit?.total ?? 0,
+      offhandToHit ? sign(offhandToHit.total) : '-', offhandToHit?.bonuses ?? [], !offhandToHit),
     fixedRow('Enhancement', offhandEnchant.total,
       offhand ? sign(offhandEnchant.total) : '-', offhandEnchant.bonuses, !offhand),
     fixedRow('Threat Range', offhandCrit.threatFaces,

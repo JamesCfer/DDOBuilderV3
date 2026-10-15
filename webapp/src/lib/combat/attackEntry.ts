@@ -7,7 +7,7 @@
 // tested independently of React.
 
 import type { BuildStats, WeaponInfo } from '../../hooks/useBuildStats'
-import { critProfile } from './critProfile'
+import { critProfile, isOffhandSlotWeapon } from './critProfile'
 import { PROC_CAP } from './expectedDamage'
 import { isUnarmedWeapon } from '../buildStats'
 
@@ -289,8 +289,18 @@ export function buildAttackEntry(
     const ohDie = avgDie(opts.offhand.diceNum, opts.offhand.diceSides)
     // DDO halves the off-hand's ability damage.
     const ohRaw = (ohDie + meleeDamage - abilityDamage / 2 + sneakBonus) * meleePowerMult
-    // Off-hand swings roll against the off-hand attack bonus (larger TWF penalty).
-    const offhandHitC = hitChanceVsAC(rawAttackBonus + offhandTwfPenalty, opts.foeAC)
+    // Off-hand swings roll against the off-hand attack bonus (larger TWF
+    // penalty). A weapon in the off-hand slot has its own V2 line
+    // (offhand.toHit); handwraps share the main hand's.
+    const offPool = isOffhandSlotWeapon(opts.offhand) && stats.keys().includes('offhand.toHit')
+    const offPoolTwf = offPool
+      ? stats.resolve('offhand.toHit').bonuses
+        .filter(b => b.active !== false && b.source === 'TWF attack penalty')
+        .reduce((sum, b) => sum + b.value, 0)
+      : 0
+    const offhandAttackBase = offPool ? stats.total('offhand.toHit') : rawAttackBonus
+    const offhandHitC = hitChanceVsAC(
+      offPoolTwf !== 0 ? offhandAttackBase : offhandAttackBase - offPoolTwf + offhandTwfPenalty, opts.foeAC)
     offhandDPR = ohRaw * offhandHitC * offhandChance * helplessFactor
     offhandParts = {
       chance: offhandChance,
