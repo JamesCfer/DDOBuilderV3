@@ -1791,12 +1791,14 @@ export function parseEffect(
     // keen totals (V2 BreakdownItemWeaponAttackSpeed, ...VorpalRange).
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.alacrity',
+        offhandTypeMatches(items, ctx), 'offhand.alacrity')
     case 'Weapon_Keen':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.keen',
         offhandTypeMatches(items, ctx), 'offhand.weapon.keen')
     case 'Weapon_VorpalRange':
-      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.vorpalRange',
+        offhandTypeMatches(items, ctx), 'offhand.vorpalRange')
     // Weapon_CriticalMultiplier is universal (not weapon-class-gated) but V2
     // (BreakdownItemWeaponCriticalMultiplier.cpp:70-93) sums it into the same
     // total as the class-gated WeaponCriticalMultiplierClass sibling, so both
@@ -1853,8 +1855,8 @@ export function parseEffect(
       // Same pool as Weapon_Alacrity — V2 has ONE per-weapon attack-speed
       // breakdown, so a gear WeaponAlacrityClass (Shadow Striker) competes
       // Highest-Only with gear Weapon_Alacrity (Topaz of Swiftness, Haste).
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('weapon.alacrity')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'weapon.alacrity',
+        offhandClassMatches(items, ctx), 'offhand.alacrity')
     case 'WeaponOtherDamageBonusClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.damage')] : []
@@ -2768,12 +2770,14 @@ export function parseItemBuff(
     // Weapon-specific (modeled by the weapon breakdown engine)
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
-      return weaponScopeMatches(items, ctx) ? [make('weapon.alacrity')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.alacrity',
+        offhandTypeMatches(items, ctx), 'offhand.alacrity')
     case 'Weapon_Keen':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.keen',
         offhandTypeMatches(items, ctx), 'offhand.weapon.keen')
     case 'Weapon_VorpalRange':
-      return weaponScopeMatches(items, ctx) ? [make('weapon.vorpalRange')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.vorpalRange',
+        offhandTypeMatches(items, ctx), 'offhand.vorpalRange')
     // Universal sibling of WeaponCriticalMultiplierClass — same total (N8).
     case 'Weapon_CriticalMultiplier':
       return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.multiplier',

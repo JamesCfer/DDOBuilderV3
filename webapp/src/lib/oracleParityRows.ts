@@ -353,6 +353,13 @@ export function buildParityRows(
     if (wo.critMultiplier19To20 !== undefined) {
       push('weaponOffhand.critMultiplier19To20', wo.critMultiplier19To20, oc.multiplier19to20)
     }
+    if (wo.attackSpeed !== undefined) {
+      push('weaponOffhand.attackSpeed', wo.attackSpeed,
+        stats.total('offhand.alacrity') + stats.total('melee.alacrity'))
+    }
+    if (wo.vorpalRange !== undefined) {
+      push('weaponOffhand.vorpalRange', wo.vorpalRange, 1 + stats.total('offhand.vorpalRange'))
+    }
   }
 
   // V2 BreakdownItemEnergyAbsorption::Total is MULTIPLICATIVE:

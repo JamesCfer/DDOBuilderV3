@@ -236,6 +236,9 @@ export function buildBreakdownSections(
         ...stats.resolve('weapon.threatRange').bonuses,
         ...stats.resolve('melee.crit.range').bonuses,
       ]
+  // V2 keeps attack speed and vorpal range per hand too.
+  const offhandAlacrity = stats.resolve(offSlot ? 'offhand.alacrity' : 'weapon.alacrity')
+  const offhandVorpal = stats.resolve(offSlot ? 'offhand.vorpalRange' : 'weapon.vorpalRange')
   const offhand1920Bonuses = stats.resolve(offSlot ? 'offhand.crit.multiplier19to20' : 'weapon.critMultiplier19to20').bonuses
   const weaponDiceDisplay = weapon ? `${weapon.diceNum}d${weapon.diceSides}` : '—'
   const threatBonuses: ResolvedBonus[] = [
@@ -342,6 +345,11 @@ export function buildBreakdownSections(
         active: true }], !offhand, 'damage.offhand.perAttack'),
     statRow('Attack Chance', 'offhand.attack', pct),
     statRow('Doublestrike', 'offhand.doublestrike', pct),
+    fixedRow('Attack Speed', offhandAlacrity.total,
+      offhand ? pct(offhandAlacrity.total) : '-', offhandAlacrity.bonuses, !offhand),
+    fixedRow('Vorpal Range', 1 + offhandVorpal.total,
+      offhand ? (offhandVorpal.total > 0 ? `${20 - offhandVorpal.total}-20` : '20') : '-',
+      [{ value: 1, type: 'Base', source: 'Natural 20', active: true }, ...offhandVorpal.bonuses], !offhand),
   ]
 
   const spellStats: StatRowData[] = [
