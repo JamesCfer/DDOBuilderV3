@@ -359,6 +359,9 @@ export function buildParityRows(
     if (wo.attackBonus !== undefined) {
       push('weaponOffhand.attackBonus', wo.attackBonus, stats.total('offhand.toHit'))
     }
+    if (wo.damageBonus !== undefined) {
+      push('weaponOffhand.damageBonus', wo.damageBonus, stats.total('offhand.damage'))
+    }
     if (wo.enchantment !== undefined) {
       push('weaponOffhand.enchantment', wo.enchantment, stats.total(offhandEnchantKey(stats.offhandWeapon)))
     }
