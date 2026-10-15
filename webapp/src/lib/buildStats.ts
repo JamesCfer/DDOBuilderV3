@@ -3035,6 +3035,22 @@ function buildStatMapOnce(
         if (offNegLev !== 0) add(map, 'offhand.toHit', { value: -offNegLev, type: 'Negative Levels', source: 'Negative Levels' })
         const offAcp = Math.max(0, resolveBonus(map.get('armorCheckPenalty') ?? []).total)
         if (offAcp !== 0) add(map, 'offhand.toHit', { value: -offAcp, type: 'Penalty', source: 'Armor check penalty' })
+        // The off-hand damage line (V2 BreakdownItemWeaponDamageBonus with
+        // m_bOffhandWeapon): the best damage ability among the off-hand
+        // item's own candidates, scaled by the off-hand Damage Ability
+        // Multiplier (Base 0.5) and truncated, plus the off-hand enhancement.
+        const offDmgCands = [
+          ...toArray((offItem as { DamageModifier?: string | string[] }).DamageModifier),
+          ...(offThrown || offDexOnly ? ['Dexterity'] : []),
+          ...(offThrown ? ['Strength'] : []),
+          ...grantedOf('offhand.damageAbility.')]
+        if (offDmgCands.length > 0) {
+          const [offDmgAb, offDmgRaw] = pickBest(offDmgCands)
+          const offMult = resolveBonus(map.get('offhand.damageAbilityMult') ?? []).total
+          const offDmg = Math.trunc(offDmgRaw * offMult)
+          if (offDmg !== 0) add(map, 'offhand.damage', { value: offDmg, type: 'Ability mod', source: `${offDmgAb} (x${offMult})` })
+        }
+        if (offEnch !== 0) add(map, 'offhand.damage', { value: offEnch, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
         if (ctxStances.has('Two Weapon Fighting')) {
           let twf = ctxFeats.has('Two Weapon Fighting') ? -4 : -10
           if (ctxWeaponClassOff.has('Light') || ctxFeats.has('Oversized Two Weapon Fighting')) twf += 2

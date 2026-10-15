@@ -1276,13 +1276,15 @@ export function parseEffect(
         offhandTypeMatches(items, ctx), 'offhand.toHit', ctx)
 
     case 'Weapon_Damage':
-      return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'melee.damage',
+        offhandTypeMatches(items, ctx), 'offhand.damage', ctx)
 
     case 'Weapon_AttackAndDamage':
       return [
         ...perHand(make, weaponScopeMatches(items, ctx), 'melee.toHit',
           offhandTypeMatches(items, ctx), 'offhand.toHit', ctx),
-        ...(weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []),
+        ...perHand(make, weaponScopeMatches(items, ctx), 'melee.damage',
+          offhandTypeMatches(items, ctx), 'offhand.damage', ctx),
       ]
 
     case 'Weapon_OtherDamageBonus':
@@ -1871,8 +1873,8 @@ export function parseEffect(
       return perHand(make, mainClassMatches(items, ctx), 'melee.toHit',
         offhandClassMatches(items, ctx), 'offhand.toHit', ctx)
     case 'WeaponDamageBonusClass':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.damage')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.damage',
+        offhandClassMatches(items, ctx), 'offhand.damage', ctx)
     case 'WeaponAttackBonusCriticalClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.toHit')] : []
@@ -1942,8 +1944,8 @@ export function parseEffect(
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.toHit')] : []
     case 'WeaponDamageBonusDamageType':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.damage')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.damage',
+        offhandClassMatches(items, ctx), 'offhand.damage', ctx)
     case 'WeaponDamageBonusCriticalDamageType':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.damage')] : []
