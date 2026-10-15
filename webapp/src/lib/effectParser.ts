@@ -938,11 +938,16 @@ export function parseEffect(
     if (!ctx || its.length < 2) return []
     const byClass = effect.Type.endsWith('Class')
     const memberSet = byClass ? ctx.weaponClassMain : ctx.weaponTypes
+    const kind = effect.Type.includes('Attack') ? 'attackAbility' : 'damageAbility'
+    const marker = (key: string): ParsedBonus =>
+      ({ statKey: key, value: 1, bonusType: effect.Bonus ?? 'Enhancement', source })
+    // The off-hand weapon's own candidates (V2 evaluates each weapon's list).
+    const offOk = byClass ? offhandClassMatches(its.slice(1), ctx) : offhandTypeMatches(its.slice(1), ctx)
+    const out: ParsedBonus[] = offOk ? [marker(`offhand.${kind}.${its[0]}`)] : []
     // Item[1..] may be 'All' — every weapon qualifies (Monk Dragon Disciple's
     // Wisdom-to-attack grant, oracle-verified on YingsMonk).
-    if (!memberSet || !its.slice(1).some(i => i === 'All' || memberSet.has(i))) return []
-    const kind = effect.Type.includes('Attack') ? 'attackAbility' : 'damageAbility'
-    return [{ statKey: `melee.${kind}.${its[0]}`, value: 1, bonusType: effect.Bonus ?? 'Enhancement', source }]
+    if (!memberSet || !its.slice(1).some(i => i === 'All' || memberSet.has(i))) return out
+    return [marker(`melee.${kind}.${its[0]}`), ...out]
   }
 
   // V2 parity (BreakdownItemSpellPower::IterateList/ReplacementTotal): lets one
@@ -1267,13 +1272,18 @@ export function parseEffect(
       return [make('ranged.doubleshot')]
 
     case 'Weapon_Attack':
-      return weaponScopeMatches(items, ctx) ? [make('melee.toHit')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'melee.toHit',
+        offhandTypeMatches(items, ctx), 'offhand.toHit', ctx)
 
     case 'Weapon_Damage':
       return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
 
     case 'Weapon_AttackAndDamage':
-      return weaponScopeMatches(items, ctx) ? [make('melee.toHit'), make('melee.damage')] : []
+      return [
+        ...perHand(make, weaponScopeMatches(items, ctx), 'melee.toHit',
+          offhandTypeMatches(items, ctx), 'offhand.toHit', ctx),
+        ...(weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []),
+      ]
 
     case 'Weapon_OtherDamageBonus':
       return weaponScopeMatches(items, ctx) ? [make('melee.damage')] : []
@@ -1858,8 +1868,8 @@ export function parseEffect(
     // emitted — same as V2 with no weapon wielded.
     // -----------------------------------------------------------------------
     case 'WeaponAttackBonusClass':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.toHit')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.toHit',
+        offhandClassMatches(items, ctx), 'offhand.toHit', ctx)
     case 'WeaponDamageBonusClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.damage')] : []
@@ -1926,8 +1936,8 @@ export function parseEffect(
     // Build::IsWeaponInGroup(item, weaponType).
     // -----------------------------------------------------------------------
     case 'WeaponAttackBonusDamageType':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.toHit')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.toHit',
+        offhandClassMatches(items, ctx), 'offhand.toHit', ctx)
     case 'WeaponAttackBonusCriticalDamageType':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.crit.toHit')] : []

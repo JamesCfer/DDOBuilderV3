@@ -1295,7 +1295,8 @@ export function extractWeaponInfo(gearItems: Record<string, Item>): WeaponInfo |
  * every monk and unarmed build.
  */
 const MAIN_HAND_SLOTS = new Set(['Main Hand', 'Weapon1', 'MainHand', 'Weapon'])
-const OFF_HAND_SLOTS = new Set(['Off Hand', 'Weapon2', 'OffHand'])
+const OFF_HAND_SLOT_NAMES = ['Off Hand', 'Weapon2', 'OffHand']
+const OFF_HAND_SLOTS = new Set(OFF_HAND_SLOT_NAMES)
 
 export function extractOffhandWeaponInfo(gearItems: Record<string, Item>): WeaponInfo | null {
   for (const slot of ['Off Hand', 'Weapon2', 'OffHand']) {
@@ -2999,6 +3000,45 @@ function buildStatMapOnce(
           let twf = ctxFeats.has('Two Weapon Fighting') ? -4 : -6
           if (ctxWeaponClassOff.has('Light') || ctxFeats.has('Oversized Two Weapon Fighting')) twf += 2
           add(map, 'melee.toHit', { value: twf, type: 'Penalty', source: 'TWF attack penalty' })
+        }
+      }
+
+      // The off-hand weapon's own attack line (V2 BreakdownItemWeaponAttackBonus
+      // with m_bOffhandWeapon): the same BAB, proficiency, negative level,
+      // armor check, enchantment and best-ability lines, but for the off-hand
+      // item, and a -10 TWF penalty without the feat (-6 in the main hand).
+      // Its effects pool under offhand.toHit (effectParser perHand).
+      const offItem = OFF_HAND_SLOT_NAMES.map(sl => gearItems[sl]).find(i => i?.Weapon)
+      if (offItem) {
+        const offThrown = ['Shuriken', 'Dart', 'Throwing Dagger', 'Throwing Axe', 'Throwing Hammer']
+          .includes(offWeaponType)
+        const offStrDex = ctxWeaponClassOff.has('Finesseable') || offThrown
+        const offDexOnly = ctxWeaponClassOff.has('Light')
+          || ctxWeaponClassOff.has('Crossbow') || ctxWeaponClassOff.has('RepeatingCrossbow')
+        const offCands = [...toArray(offItem.AttackModifier as string | string[] | undefined),
+          ...(offStrDex ? ['Strength', 'Dexterity'] : []),
+          ...(offDexOnly ? ['Dexterity'] : []),
+          ...grantedOf('offhand.attackAbility.')]
+        if (offCands.length > 0) {
+          const [offAb, offMod] = pickBest(offCands)
+          if (offMod !== 0) add(map, 'offhand.toHit', { value: offMod, type: 'Ability mod', source: offAb })
+        }
+        const offBab = resolveBonus(map.get('bab') ?? []).total
+        if (offBab > 0) add(map, 'offhand.toHit', { value: offBab, type: 'Base', source: 'Base Attack Bonus' })
+        const shield = ['Buckler', 'Small Shield', 'Large Shield', 'Tower Shield'].includes(offWeaponType)
+        const offEnch = resolveBonus(map.get(shield ? 'offhand.shieldEnchant' : 'offhand.enchant') ?? []).total
+        if (offEnch !== 0) add(map, 'offhand.toHit', { value: offEnch, type: 'Weapon Enchantment', source: 'Weapon Enchantment' })
+        if (!ctxWeaponClassOff.has('Proficiency')) {
+          add(map, 'offhand.toHit', { value: -4, type: 'Penalty', source: 'Non proficient penalty' })
+        }
+        const offNegLev = Math.round(resolveBonus(map.get('negativeLevel') ?? []).total)
+        if (offNegLev !== 0) add(map, 'offhand.toHit', { value: -offNegLev, type: 'Negative Levels', source: 'Negative Levels' })
+        const offAcp = Math.max(0, resolveBonus(map.get('armorCheckPenalty') ?? []).total)
+        if (offAcp !== 0) add(map, 'offhand.toHit', { value: -offAcp, type: 'Penalty', source: 'Armor check penalty' })
+        if (ctxStances.has('Two Weapon Fighting')) {
+          let twf = ctxFeats.has('Two Weapon Fighting') ? -4 : -10
+          if (ctxWeaponClassOff.has('Light') || ctxFeats.has('Oversized Two Weapon Fighting')) twf += 2
+          add(map, 'offhand.toHit', { value: twf, type: 'Penalty', source: 'TWF attack penalty' })
         }
       }
 
