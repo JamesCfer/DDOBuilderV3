@@ -76,6 +76,10 @@ export interface EffectContext {
   // V2 Build::ApplyItem routes it to that hand's weapon only
   // (NotifyItemWeaponEffect sets just Weapon1 or Weapon2).
   weaponOnlyHand?: 'main' | 'off'
+  // Set from an effect's own ItemSlot requirement (Weapon1/Weapon2): V2
+  // evaluates it against each weapon breakdown's slot
+  // (Requirement::EvaluateItemSlot), so it picks the hand.
+  itemSlotHand?: 'main' | 'off'
   // Wild Mage / Arcane Trickster / Archmage "Mixed Magics": every trained caster class's
   // caster-level breakdown is raised to min(20, character level) before
   // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
@@ -453,11 +457,25 @@ function perHand(
   make: (key: string) => ParsedBonus,
   mainOk: boolean, mainKey: string,
   offOk: boolean, offKey: string,
+  ctx?: EffectContext,
 ): ParsedBonus[] {
   const out: ParsedBonus[] = []
-  if (mainOk) out.push(make(mainKey))
-  if (offOk) out.push(make(offKey))
+  if (mainOk && ctx?.itemSlotHand !== 'off') out.push(make(mainKey))
+  if (offOk && ctx?.itemSlotHand !== 'main') out.push(make(offKey))
   return out
+}
+
+const SHIELD_TYPES = ['Buckler', 'Small Shield', 'Large Shield', 'Tower Shield']
+
+/** The hand an effect's ItemSlot requirement names, if any. */
+function itemSlotHand(reqs: Requirements | undefined): 'main' | 'off' | undefined {
+  for (const r of reqList(reqs?.Requirement)) {
+    if (r.Type !== 'ItemSlot') continue
+    const slot = toStringArray(r.Item as string | string[] | undefined)[0]
+    if (slot === 'Weapon1') return 'main'
+    if (slot === 'Weapon2') return 'off'
+  }
+  return undefined
 }
 
 // The 17 concrete spell power types (V2 spellPowerTypeMap minus All/Universal
@@ -854,6 +872,9 @@ export function parseEffect(
       if (hasStanceRequirement(effect)) return []
     }
   }
+
+  const slotHand = ctx ? itemSlotHand(effect.Requirements) : undefined
+  if (slotHand) ctx = { ...ctx!, itemSlotHand: slotHand }
 
   const resolved = resolveValue(effect, rank, classLevels, treeTotalAP, ctx)
 
@@ -1410,8 +1431,11 @@ export function parseEffect(
     case 'EnchantArmor':
       return [make('armor.enchantment')]
 
+    // V2 also feeds a wielded shield's own enhancement line from these
+    // (BreakdownItemWeapon m_weaponEnchantment on Effect_ShieldEnchantment).
     case 'ShieldEnchantment':
-      return [make('shield.enchantment')]
+      return [make('shield.enchantment'),
+        ...(offhandTypeMatches(items, ctx) ? [make('offhand.shieldEnchant')] : [])]
 
     // -----------------------------------------------------------------------
     // Healing / repair / negative-energy amplification
@@ -1792,28 +1816,28 @@ export function parseEffect(
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.alacrity',
-        offhandTypeMatches(items, ctx), 'offhand.alacrity')
+        offhandTypeMatches(items, ctx), 'offhand.alacrity', ctx)
     case 'Weapon_Keen':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.keen',
-        offhandTypeMatches(items, ctx), 'offhand.weapon.keen')
+        offhandTypeMatches(items, ctx), 'offhand.weapon.keen', ctx)
     case 'Weapon_VorpalRange':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.vorpalRange',
-        offhandTypeMatches(items, ctx), 'offhand.vorpalRange')
+        offhandTypeMatches(items, ctx), 'offhand.vorpalRange', ctx)
     // Weapon_CriticalMultiplier is universal (not weapon-class-gated) but V2
     // (BreakdownItemWeaponCriticalMultiplier.cpp:70-93) sums it into the same
     // total as the class-gated WeaponCriticalMultiplierClass sibling, so both
     // route to melee.crit.multiplier (V2 parity pass N8).
     case 'Weapon_CriticalMultiplier':
       return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.multiplier',
-        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier')
+        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier', ctx)
     case 'Weapon_CriticalMultiplier19To20':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.critMultiplier19to20',
-        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier19to20')
+        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier19to20', ctx)
     // Universal sibling of WeaponCriticalRangeClass — same total (N7),
     // matching V2 BreakdownItemWeaponCriticalThreatRange.cpp:52-57.
     case 'Weapon_CriticalRange':
       return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.range',
-        offhandTypeMatches(items, ctx), 'offhand.crit.range')
+        offhandTypeMatches(items, ctx), 'offhand.crit.range', ctx)
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
@@ -1847,16 +1871,16 @@ export function parseEffect(
         ? [make('melee.crit.damage')] : []
     case 'WeaponCriticalMultiplierClass':
       return perHand(make, mainClassMatches(items, ctx), 'melee.crit.multiplier',
-        offhandClassMatches(items, ctx), 'offhand.crit.multiplier')
+        offhandClassMatches(items, ctx), 'offhand.crit.multiplier', ctx)
     case 'WeaponCriticalRangeClass':
       return perHand(make, mainClassMatches(items, ctx), 'melee.crit.range',
-        offhandClassMatches(items, ctx), 'offhand.crit.range')
+        offhandClassMatches(items, ctx), 'offhand.crit.range', ctx)
     case 'WeaponAlacrityClass':
       // Same pool as Weapon_Alacrity — V2 has ONE per-weapon attack-speed
       // breakdown, so a gear WeaponAlacrityClass (Shadow Striker) competes
       // Highest-Only with gear Weapon_Alacrity (Topaz of Swiftness, Haste).
       return perHand(make, mainClassMatches(items, ctx), 'weapon.alacrity',
-        offhandClassMatches(items, ctx), 'offhand.alacrity')
+        offhandClassMatches(items, ctx), 'offhand.alacrity', ctx)
     case 'WeaponOtherDamageBonusClass':
       return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
         ? [make('melee.damage')] : []
@@ -1869,10 +1893,11 @@ export function parseEffect(
     // then feeds the attack and damage lines as a single entry — composed
     // in buildStats from this key.
     case 'Weapon_Enchantment':
-      return weaponScopeMatches(items, ctx) ? [make('weapon.enchantMain')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.enchantMain',
+        offhandTypeMatches(items, ctx), 'offhand.enchant', ctx)
     case 'Weapon_EnchantmentClass':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('weapon.enchantMain')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'weapon.enchantMain',
+        offhandClassMatches(items, ctx), 'offhand.enchant', ctx)
     // Extra base damage dice (+W) for the listed weapon TYPES.
     case 'Weapon_BaseDamage':
       return ctx && items.some(i => ctx.weaponTypes.has(i))
@@ -1918,7 +1943,7 @@ export function parseEffect(
       // Emit value=1 as a binary "Improved Critical active" marker.
       return perHand(key => ({ statKey: key, value: 1, bonusType, source }),
         mainClassMatches(items, ctx), 'weapon.keen',
-        offhandClassMatches(items, ctx), 'offhand.weapon.keen')
+        offhandClassMatches(items, ctx), 'offhand.weapon.keen', ctx)
 
     // -----------------------------------------------------------------------
     // Niche surfaced stats (V2 parity): regen, guard, ghost touch, etc.
@@ -2442,8 +2467,14 @@ export function parseItemBuff(
     case 'ArmorEnchantment':
       return [make('armor.enchantment')]
 
+    // V2 also feeds a wielded shield's own enhancement line from these
+    // (BreakdownItemWeapon m_weaponEnchantment on Effect_ShieldEnchantment).
     case 'ShieldEnchantment':
-      return [make('shield.enchantment')]
+      // With no Item of its own the buff keeps the ItemBuffs.xml template's
+      // four shield types (Buff::UpdatedEffects).
+      return [make('shield.enchantment'),
+        ...(offhandTypeMatches(items.length > 0 ? items : SHIELD_TYPES, ctx)
+          ? [make('offhand.shieldEnchant')] : [])]
 
     // -----------------------------------------------------------------------
     // Healing / repair / negative-energy amplification
@@ -2771,24 +2802,24 @@ export function parseItemBuff(
     // -----------------------------------------------------------------------
     case 'Weapon_Alacrity':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.alacrity',
-        offhandTypeMatches(items, ctx), 'offhand.alacrity')
+        offhandTypeMatches(items, ctx), 'offhand.alacrity', ctx)
     case 'Weapon_Keen':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.keen',
-        offhandTypeMatches(items, ctx), 'offhand.weapon.keen')
+        offhandTypeMatches(items, ctx), 'offhand.weapon.keen', ctx)
     case 'Weapon_VorpalRange':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.vorpalRange',
-        offhandTypeMatches(items, ctx), 'offhand.vorpalRange')
+        offhandTypeMatches(items, ctx), 'offhand.vorpalRange', ctx)
     // Universal sibling of WeaponCriticalMultiplierClass — same total (N8).
     case 'Weapon_CriticalMultiplier':
       return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.multiplier',
-        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier')
+        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier', ctx)
     case 'Weapon_CriticalMultiplier19To20':
       return perHand(make, weaponScopeMatches(items, ctx), 'weapon.critMultiplier19to20',
-        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier19to20')
+        offhandTypeMatches(items, ctx), 'offhand.crit.multiplier19to20', ctx)
     // Universal sibling of WeaponCriticalRangeClass — same total (N7).
     case 'Weapon_CriticalRange':
       return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.range',
-        offhandTypeMatches(items, ctx), 'offhand.crit.range')
+        offhandTypeMatches(items, ctx), 'offhand.crit.range', ctx)
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // surfaced as `melee.crit.damage` for the DPR estimator's crit term.
     case 'Weapon_DamageCritical':

@@ -57,6 +57,16 @@ export function isOffhandSlotWeapon(weapon?: WeaponInfo | null): boolean {
 }
 
 /**
+ * Stat key of the off-hand weapon's enhancement line. V2 feeds a shield's
+ * line from ShieldEnchantment effects and any other weapon's from
+ * Weapon_Enchantment (BreakdownItemWeapon m_weaponEnchantment).
+ */
+export function offhandEnchantKey(weapon?: WeaponInfo | null): string {
+  const shield = ['Buckler', 'Small Shield', 'Large Shield', 'Tower Shield'].includes(weapon?.weaponType ?? '')
+  return shield ? 'offhand.shieldEnchant' : 'offhand.enchant'
+}
+
+/**
  * Resolve the effective critical profile of the wielded weapon.
  *
  * With no weapon equipped the caller is unarmed: DDO's unarmed profile is a
