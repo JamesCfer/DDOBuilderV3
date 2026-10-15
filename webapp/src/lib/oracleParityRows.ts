@@ -10,7 +10,7 @@
 
 import { absorptionTotal, resolveBonus } from './bonus'
 import { hasMixedMagics } from './mixedMagics'
-import { critProfile, isOffhandSlotWeapon } from './combat/critProfile'
+import { critProfile, isOffhandSlotWeapon, offhandEnchantKey } from './combat/critProfile'
 import type { BuildStats } from './buildStats'
 import type { CharacterBuild, Item } from '../types/ddo'
 
@@ -291,6 +291,9 @@ export function buildParityRows(
     // BAB is now a line INSIDE the melee.toHit pool (V2 puts it in the attack
     // pool so percent effects scale over it). melee.* IS the unified
     // main-hand weapon line — ranged weapons' effects route there too.
+    if (wm.enchantment !== undefined) {
+      push('weaponMain.enchantment', wm.enchantment, stats.total('weapon.enchantMain'))
+    }
     if (wm.attackBonus !== undefined) {
       push('weaponMain.attackBonus', wm.attackBonus, stats.total('melee.toHit'))
     }
@@ -352,6 +355,9 @@ export function buildParityRows(
     }
     if (wo.critMultiplier19To20 !== undefined) {
       push('weaponOffhand.critMultiplier19To20', wo.critMultiplier19To20, oc.multiplier19to20)
+    }
+    if (wo.enchantment !== undefined) {
+      push('weaponOffhand.enchantment', wo.enchantment, stats.total(offhandEnchantKey(stats.offhandWeapon)))
     }
     if (wo.attackSpeed !== undefined) {
       push('weaponOffhand.attackSpeed', wo.attackSpeed,
