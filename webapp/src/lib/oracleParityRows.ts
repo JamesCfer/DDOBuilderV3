@@ -116,6 +116,18 @@ export function buildParityRows(
     if (oracle.breakdowns?.[ok] === undefined) continue
     push(ok, oracle.breakdowns[ok], stats.total(v3k))
   }
+  // Damage Reduction: V2 shows every effect as "amount/kind", but its numeric
+  // total stacks ALL kinds in one pool (Highest-Only across kinds). V3 keeps
+  // one dr.<kind> pool per kind, so re-resolve their (already merged)
+  // entries together to compare that total.
+  if (oracle.breakdowns?.dr !== undefined) {
+    const all = stats.keys().filter(k => k.startsWith('dr.')).flatMap(k =>
+      // The kind is part of V2's effect identity: two 15/kind effects from
+      // one item stay separate effects rather than merging into one stack.
+      stats.resolve(k).bonuses.map(({ active: _a, simpleStacks: _s, v2Name: _n, stackGroup: _g, ...b }) =>
+        ({ ...b, source: `${k}: ${b.source}` })))
+    push('dr', oracle.breakdowns.dr, resolveBonus(all).total)
+  }
   // Sub-saves: V2's BreakdownItemSave sub-breakdowns are BASE SAVE + the
   // sub-type bonuses; V3 models the sub bonus separately (UI subSave()).
   for (const [ok, base, sub] of SUBSAVE_MAP) {

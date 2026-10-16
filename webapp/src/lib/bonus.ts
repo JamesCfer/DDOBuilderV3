@@ -40,6 +40,10 @@ export interface RawBonus {
   // counting contributors (V2 Effect.cpp Amount_Stacks: m_stacks is a running
   // total across every source sharing the effect signature).
   stackRank?: number
+  // An AType=Simple effect applied `simpleStacks` times at once (a feat taken
+  // N times): its value is Amount × N, but in V2 it is N stacks of the same
+  // Amount, so it merges with single copies of that effect from elsewhere.
+  simpleStacks?: number
   // V2 Effect identity (DisplayName / owner's stamped name) — when present,
   // the gear-pool identical-effect merge keys on this instead of `source`,
   // matching Effect::operator== (cross-source merges like the four
@@ -227,15 +231,19 @@ export function resolveBonus(bonuses: RawBonus[]): ResolvedStat {
       {
         const seen = new Map<string, { merged: RawBonus; stacks: number; unit: number }>()
         for (const b of rawGearBonuses) {
-          const key = `${b.v2Name ?? b.source}|${b.value}|${b.percent === true}`
+          // A Simple effect applied N times at once is N stacks of its unit
+          // Amount (V2 Effect::operator== compares the Amount, not the total).
+          const n = b.simpleStacks ?? 1
+          const unit = b.value / n
+          const key = `${b.v2Name ?? b.source}|${unit}|${b.percent === true}`
           const prev = seen.get(key)
           if (prev) {
-            prev.stacks++
+            prev.stacks += n
             prev.merged.value = prev.unit * prev.stacks
             prev.merged.source = `${b.source} (×${prev.stacks} identical)`
           } else {
             const merged = { ...b }
-            seen.set(key, { merged, stacks: 1, unit: b.value })
+            seen.set(key, { merged, stacks: n, unit })
             gearBonuses.push(merged)
           }
         }

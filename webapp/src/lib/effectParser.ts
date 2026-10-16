@@ -323,6 +323,8 @@ export interface ParsedBonus {
   stackGroup?: string
   stackAmounts?: number[]
   stackRank?: number
+  // AType=Simple applied `rank` times at once (see RawBonus.simpleStacks).
+  simpleStacks?: number
   // V2 Effect identity: the effect's own DisplayName or the owner's stamped
   // name (Feat/EnhancementTreeItem load-time stamp). Identical-effect merges
   // in the gear pool key on THIS (Effect::operator== compares DisplayName),
@@ -1043,6 +1045,7 @@ export function parseEffect(
       percent: flagSet(effect.Percent),
       asItemEffect: flagSet(effect.ApplyAsItemEffect),
       ...(identityName !== '' ? { v2Name: identityName } : {}),
+      ...(effect.AType === 'Simple' && rank > 1 ? { simpleStacks: rank } : {}),
       // statKey-scoped so Item=All fan-out to different stats doesn't merge.
       ...(stackGroupBase
         ? { stackGroup: `${statKey}::${stackGroupBase}`, stackAmounts, stackRank: Math.max(1, rank) }

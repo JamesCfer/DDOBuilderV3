@@ -179,7 +179,7 @@ function addParsed(map: StatMap, bonuses: ReturnType<typeof parseEffect>, fromGe
     // pool where RemoveNonStacking ("Highest Only" per bonus type) applies
     // (BreakdownItem.cpp:623-698, :205-221).
     const asGear = fromGear || pb.asItemEffect === true
-    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank, v2Name: pb.v2Name })
+    add(map, pb.statKey, { value: pb.value, type: pb.bonusType, source: pb.source, fromGear: asGear, percent: pb.percent, stackGroup: pb.stackGroup, stackAmounts: pb.stackAmounts, stackRank: pb.stackRank, simpleStacks: pb.simpleStacks, v2Name: pb.v2Name })
   }
 }
 
