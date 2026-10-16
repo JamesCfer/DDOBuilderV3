@@ -40,7 +40,9 @@ export default function DdoIcon({ category, name, size = 32, className, alt }: D
           overflow: 'hidden',
           userSelect: 'none',
         }}
-        title={alt ?? name}
+        // No title here: a placeholder with its own title hijacks the hover
+        // tooltip of whatever it sits in (enhancement cells, pickers), so
+        // icons with no image showed the icon key instead of the tooltip.
         aria-label={alt ?? name}
       >
         {name.slice(0, 2).toUpperCase()}
