@@ -67,6 +67,23 @@ export function offhandEnchantKey(weapon?: WeaponInfo | null): string {
 }
 
 /**
+ * The [W] multiplier a weapon rolls its dice with: V2's Base Damage line
+ * (BreakdownItemWeapon m_baseDamage, the X of X[1d6]), which buildStats
+ * composes from the item's own WeaponDamage and that hand's Weapon_BaseDamage
+ * effects. An item that defines no WeaponDamage rolls its dice once plus any
+ * bonus [W].
+ */
+export function weaponMultiplier(
+  total: Total,
+  weapon?: WeaponInfo | null,
+  opts: { offhand?: boolean } = {},
+): number {
+  const hand = opts.offhand ? 'offhand' : 'weapon'
+  if (weapon?.weaponDamage == null) return 1 + total(`${hand}.bonusW`)
+  return total(`${hand}.baseDamage`)
+}
+
+/**
  * Resolve the effective critical profile of the wielded weapon.
  *
  * With no weapon equipped the caller is unarmed: DDO's unarmed profile is a

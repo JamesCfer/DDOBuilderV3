@@ -18,6 +18,7 @@ import {
   emptyLists, type CoreParams, type SimLists,
   type ProcSpec, type DotSpec, type DebuffSpec,
 } from './damageSim'
+import { weaponMultiplier } from './critProfile'
 import { parseEffectText } from './procText'
 import { catalogLookup, isIgnored } from './procCatalog'
 
@@ -153,7 +154,8 @@ export function extractCore(
     weapon.critThreatRange + stats.total('melee.crit.range') + stats.total('weapon.threatRange'),
   )
 
-  const bonusW = stats.total('weapon.bonusW')
+  // X[ndS]: the simulator rolls wCount dice wMult times (fraction included).
+  const wMultiplier = weaponMultiplier(k => stats.total(k), weapon)
 
   const proficient = weapon.weaponType ? stats.isWeaponProficient(weapon.weaponType) : true
 
@@ -169,8 +171,8 @@ export function extractCore(
     confPrec: true,
 
     // Critable bucket
-    wMult: 1,
-    wCount: weapon.diceNum + bonusW,
+    wMult: wMultiplier,
+    wCount: weapon.diceNum,
     wSides: weapon.diceSides,
     wFlat: 0,
     deadly: flatDamage,

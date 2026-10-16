@@ -7,7 +7,7 @@
 // tested independently of React.
 
 import type { BuildStats, WeaponInfo } from '../../hooks/useBuildStats'
-import { critProfile, isOffhandSlotWeapon } from './critProfile'
+import { critProfile, isOffhandSlotWeapon, weaponMultiplier } from './critProfile'
 import { PROC_CAP } from './expectedDamage'
 import { isUnarmedWeapon } from '../buildStats'
 
@@ -45,6 +45,8 @@ export interface AttackEntryBreakdown {
   weaponDie: number
   /** Extra [W] dice from effects. */
   bonusW: number
+  /** The [W] multiplier X of X[ndS] the dice are rolled with. */
+  wMultiplier: number
   diceNum: number
   diceSides: number
   /** Flat melee damage bonuses off the stat map. */
@@ -191,10 +193,11 @@ export function buildAttackEntry(
   const sneakDice = stats.total('melee.sneakDice') + stats.total('melee.sneakAttack')
 
   const abilityMod = modifier(abilityScore)
-  // Effect_Weapon_BaseDamage: extra base damage dice (+W) for the wielded
-  // weapon type (gated in effectParser against ctx.weaponTypes).
+  // X[ndS]: V2's Base Damage line is the [W] multiplier X (the item's own
+  // WeaponDamage plus Effect_Weapon_BaseDamage), rolling the dice X times.
   const bonusW = stats.total('weapon.bonusW')
-  const weaponDie = avgDie(weapon.diceNum + bonusW, weapon.diceSides)
+  const wMultiplier = weaponMultiplier(k => stats.total(k), weapon)
+  const weaponDie = wMultiplier * avgDie(weapon.diceNum, weapon.diceSides)
   const baseDamage = weaponDie + meleeDamage
   const sneakBonus = sneakDice * 3.5 // 1d6 = 3.5
   const hitDmgRaw = (baseDamage + sneakBonus) * meleePowerMult
@@ -332,6 +335,7 @@ export function buildAttackEntry(
     breakdown: {
       weaponDie,
       bonusW,
+      wMultiplier,
       diceNum: weapon.diceNum,
       diceSides: weapon.diceSides,
       meleeDamage,

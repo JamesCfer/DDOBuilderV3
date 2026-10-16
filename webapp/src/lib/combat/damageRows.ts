@@ -32,8 +32,8 @@ function compact(rows: TipRow[]): TipRow[] {
 
 /** The dice-and-flat rows shared by hit damage and crit damage. */
 function baseRows(b: AttackEntryResult['breakdown']): TipRow[] {
-  const diceLabel = b.bonusW > 0
-    ? `Weapon dice ${b.diceNum}d${b.diceSides} +${b.bonusW}[W]`
+  const diceLabel = b.wMultiplier !== 1
+    ? `Weapon dice ${Math.round(b.wMultiplier * 100) / 100}[${b.diceNum}d${b.diceSides}]`
     : `Weapon dice ${b.diceNum}d${b.diceSides}`
   return [
     { kind: 'add', label: diceLabel, value: b.weaponDie, note: 'average roll' },
