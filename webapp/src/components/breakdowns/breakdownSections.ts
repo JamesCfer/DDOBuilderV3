@@ -241,6 +241,7 @@ export function buildBreakdownSections(
   const offhandVorpal = stats.resolve(offSlot ? 'offhand.vorpalRange' : 'weapon.vorpalRange')
   const offhandToHit = offSlot ? stats.resolve('offhand.toHit') : null
   const offhandDamageLine = offSlot ? stats.resolve('offhand.damage') : null
+  const offhandBaseW = stats.resolve('offhand.baseDamage')
   // V2's critical lines: the standard line plus the off-hand crit-only pool.
   const critLine = (std: { total: number, bonuses: ResolvedBonus[] } | null, key: string) => {
     const extra = stats.resolve(key)
@@ -267,6 +268,7 @@ export function buildBreakdownSections(
       stats.resolve('melee.toHit').bonuses),
     statRow('Damage Bonus',   'melee.damage',       sign),
     fixedRow('W Dice',        0, weaponDiceDisplay, [], !weapon),
+    statRow('Base Damage [W]', 'weapon.baseDamage', v => String(Math.round(v * 100) / 100)),
     fixedRow('Threat Range',  crit.threatFaces, crit.threatDisplay, threatBonuses,
       false, 'crit.threatFaces'),
     fixedRow('Crit Chance',   crit.critChance * 100, pct(crit.critChance * 100), threatBonuses,
@@ -330,6 +332,8 @@ export function buildBreakdownSections(
     fixedRow('W Dice', 0, offhand ? `${offhand.diceNum}d${offhand.diceSides}` : '—', [], !offhand),
     fixedRow('To-Hit', offhandToHit?.total ?? 0,
       offhandToHit ? sign(offhandToHit.total) : '-', offhandToHit?.bonuses ?? [], !offhandToHit),
+    fixedRow('Base Damage [W]', offhandBaseW.total,
+      offhand ? String(Math.round(offhandBaseW.total * 100) / 100) : '-', offhandBaseW.bonuses, !offhand),
     fixedRow('Damage', offhandDamageLine?.total ?? 0,
       offhandDamageLine ? sign(offhandDamageLine.total) : '-', offhandDamageLine?.bonuses ?? [], !offhandDamageLine),
     fixedRow('Crit Attack', offhandCritAttack.total,

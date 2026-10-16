@@ -3058,6 +3058,21 @@ function buildStatMapOnce(
         }
       }
 
+      // V2's Base Damage line (BreakdownItemWeapon m_baseDamage, "the X of
+      // X[2d6]"): the wielded item's own WeaponDamage as a Base line
+      // (Build::ApplyWeaponEffects, only when the item defines one) pooled
+      // with that hand's Weapon_BaseDamage effects, so a Base-typed
+      // Thunderforged [W] augment competes with the item's own value.
+      const composeW = (key: string, poolKey: string, item: Item | undefined) => {
+        if (!item?.Weapon) return
+        if (item.WeaponDamage != null) {
+          add(map, key, { value: item.WeaponDamage, type: 'Base', source: 'Base Weapon Damage', fromGear: true })
+        }
+        for (const b of map.get(poolKey) ?? []) add(map, key, b)
+      }
+      composeW('weapon.baseDamage', 'weapon.bonusW', mainItem)
+      composeW('offhand.baseDamage', 'offhand.bonusW', offItem)
+
       // Keen/Impact & Improved Critical — V2 BreakdownItemWeaponCriticalThreat
       // Range::HandleAddSpecialEffects IGNORES the effect's own amount and
       // synthesizes ONE "Keen"-typed ITEM effect worth the weapon TYPE's
