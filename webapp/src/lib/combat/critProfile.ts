@@ -87,7 +87,7 @@ export function critProfile(
     const multiplier = total('offhand.crit.multiplier')
     const bonus19to20 = total('offhand.crit.multiplier19to20')
     return finishProfile(0, bonusThreatFaces, threatFaces, 0, multiplier, bonus19to20,
-      total('melee.crit.damage'))
+      total('offhand.crit.damage'))
   }
 
   const baseThreatFaces = Math.max(1, weapon?.critThreatRange ?? 1)
