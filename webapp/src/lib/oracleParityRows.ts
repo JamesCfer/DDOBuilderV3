@@ -297,6 +297,11 @@ export function buildParityRows(
     if (wm.attackBonus !== undefined) {
       push('weaponMain.attackBonus', wm.attackBonus, stats.total('melee.toHit'))
     }
+    // A fractional [W] multiplier (5.85): compared in hundredths, since the
+    // diff truncates V3's side to V2's integer display.
+    if (wm.baseDamage !== undefined) {
+      push('weaponMain.baseDamage', Math.round(wm.baseDamage * 100), Math.round(stats.total('weapon.baseDamage') * 100))
+    }
     if (wm.damageBonus !== undefined) {
       push('weaponMain.damageBonus', wm.damageBonus, stats.total('melee.damage'))
     }
@@ -358,6 +363,9 @@ export function buildParityRows(
     }
     if (wo.attackBonus !== undefined) {
       push('weaponOffhand.attackBonus', wo.attackBonus, stats.total('offhand.toHit'))
+    }
+    if (wo.baseDamage !== undefined) {
+      push('weaponOffhand.baseDamage', Math.round(wo.baseDamage * 100), Math.round(stats.total('offhand.baseDamage') * 100))
     }
     if (wo.damageBonus !== undefined) {
       push('weaponOffhand.damageBonus', wo.damageBonus, stats.total('offhand.damage'))

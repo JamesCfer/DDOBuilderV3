@@ -1919,10 +1919,11 @@ export function parseEffect(
     case 'Weapon_EnchantmentClass':
       return perHand(make, mainClassMatches(items, ctx), 'weapon.enchantMain',
         offhandClassMatches(items, ctx), 'offhand.enchant', ctx)
-    // Extra base damage dice (+W) for the listed weapon TYPES.
+    // Extra base damage dice (+W) for the listed weapon types (or All), per
+    // hand as V2 BreakdownItemWeaponEffects::AffectsThisWeapon routes them.
     case 'Weapon_BaseDamage':
-      return ctx && items.some(i => ctx.weaponTypes.has(i))
-        ? [make('weapon.bonusW')] : []
+      return perHand(make, weaponScopeMatches(items, ctx), 'weapon.bonusW',
+        offhandTypeMatches(items, ctx), 'offhand.bonusW', ctx)
     // Crit-confirm bonuses for the wielded weapon type.
     case 'Weapon_AttackCritical':
       return perHand(make, ctx?.weaponOnlyHand !== 'off'
