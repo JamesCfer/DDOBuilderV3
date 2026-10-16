@@ -116,6 +116,12 @@ export function buildParityRows(
     if (oracle.breakdowns?.[ok] === undefined) continue
     push(ok, oracle.breakdowns[ok], stats.total(v3k))
   }
+  // Damage Reduction: V2 shows each effect as "amount/kind" but its numeric
+  // total sums them all; V3 keeps one dr.<kind> pool per kind.
+  if (oracle.breakdowns?.dr !== undefined) {
+    push('dr', oracle.breakdowns.dr,
+      stats.keys().filter(k => k.startsWith('dr.')).reduce((s, k) => s + stats.total(k), 0))
+  }
   // Sub-saves: V2's BreakdownItemSave sub-breakdowns are BASE SAVE + the
   // sub-type bonuses; V3 models the sub bonus separately (UI subSave()).
   for (const [ok, base, sub] of SUBSAVE_MAP) {
