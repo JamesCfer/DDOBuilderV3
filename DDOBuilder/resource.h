@@ -279,6 +279,8 @@
 #define IDB_BITMAP_REMOVE               424
 #define IDD_BONUSES_PANE                425
 #define IDB_BITMAP_MOVEUP               426
+#define IDD_DIALOG_SETITEMIMAGES1       426
+#define IDD_DIALOG_FEATIMAGES           426
 #define IDB_BITMAP_MOVEDOWN             427
 #define IDC_STATIC_RACECOUNT            428
 #define IDC_STATIC_CLASSCOUNT           429
@@ -391,6 +393,7 @@
 #define IDC_MFCLINK1                    1065
 #define IDC_GITHUB_MFCLINK              1065
 #define IDC_CONTENT_LIST                1066
+#define IDC_BUTTON_MAKETRANSPARENT      1066
 #define IDC_BUTTON_MOVEDOWN             1067
 #define IDC_BONUSES_LIST                1068
 #define IDC_BUTTON_REMOVE               1069
@@ -669,14 +672,15 @@
 #define ID_SETFAVOR_5_STAR              32871
 #define ID_SETFAVOR_6_STAR              32872
 #define ID_SETTINGS_ALLOWDPISCALING     32873
+#define ID_DEVELOPMENT_UPDATEFEATTRANSPARENCY 32874
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        356
-#define _APS_NEXT_COMMAND_VALUE         32874
-#define _APS_NEXT_CONTROL_VALUE         1066
+#define _APS_NEXT_COMMAND_VALUE         32875
+#define _APS_NEXT_CONTROL_VALUE         1067
 #define _APS_NEXT_SYMED_VALUE           315
 #endif
 #endif
