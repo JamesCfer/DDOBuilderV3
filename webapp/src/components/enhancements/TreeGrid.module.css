@@ -281,7 +281,12 @@
   text-align: center;
 }
 
-.selectorOption:hover {
+.selectorOption:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.selectorOption:not(:disabled):hover {
   background: var(--color-bg-hover);
   border-color: var(--color-gold-dark);
   box-shadow: 0 0 8px var(--tint-accent-strong);

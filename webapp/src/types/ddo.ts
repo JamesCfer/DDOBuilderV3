@@ -190,6 +190,10 @@ export interface EnhancementSelection {
   Description?: string
   Icon?: string
   Cost?: number
+  /** V2 EnhancementSelection::RequirementsToTrain — gates this option in the picker. */
+  Requirements?: Requirements
+  /** V2 EnhancementSelection::MinSpent — AP the tree needs before this option opens. */
+  MinSpent?: number
   Effect?: Effect | Effect[]
   /** Selection-scoped DCs (V2 Selector::EffectDCs) — see `DC` above. */
   DC?: DC | DC[]
@@ -211,7 +215,9 @@ export interface EnhancementTreeItem {
   /** Tier-5 enhancement: only one selected destiny tree may train Tier-5s. */
   Tier5?: boolean
   Requirements?: Requirements
-  Selector?: { EnhancementSelection: EnhancementSelection[] }[]
+  /** V2 Selector: `Exclusions` names earlier items whose trained selection
+   *  can't be picked again here (Elemental Arrows I/II/III and the like). */
+  Selector?: { Exclusions?: string | string[]; EnhancementSelection: EnhancementSelection[] }[]
   Effect?: Effect | Effect[]
   /** Always-active DCs (V2 EnhancementTreeItem::m_EffectDC) — combined with
    *  the chosen selection's own DCs, if any. See `DC` above. */

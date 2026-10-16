@@ -73,6 +73,11 @@ function getSelectorOptions(item: EnhancementTreeItem): EnhancementSelection[] {
   return Array.isArray(raw) ? raw : raw ? [raw] : []
 }
 
+function getSelectorExclusions(item: EnhancementTreeItem): string[] {
+  const raw = item.Selector?.[0]?.Exclusions
+  return (Array.isArray(raw) ? raw : raw ? [raw] : []).map(String)
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -157,21 +162,28 @@ function itemPos(item: EnhancementTreeItem, layout: CanvasLayout): { left: numbe
 
 interface SelectorPickerProps {
   options: EnhancementSelection[]
+  /** Options the build can pick now (V2 CSelectionSelectDialog enables only
+   *  these); the rest are shown greyed out. */
+  isSelectable: (opt: EnhancementSelection) => boolean
   onSelect: (name: string) => void
   onClose: () => void
 }
 
-function SelectorPicker({ options, onSelect, onClose }: SelectorPickerProps) {
+function SelectorPicker({ options, isSelectable, onSelect, onClose }: SelectorPickerProps) {
   return (
     <div className={styles.selectorOverlay} onClick={onClose}>
       <div className={styles.selectorModal} onClick={e => e.stopPropagation()}>
         <div className={styles.selectorHeader}>Choose an option</div>
         <div className={styles.selectorGrid}>
-          {options.map(opt => (
+          {options.map(opt => {
+            const selectable = isSelectable(opt)
+            return (
             <button
               key={opt.Name}
               className={styles.selectorOption}
-              title={opt.Name + (opt.Description ? '\n\n' + opt.Description : '')}
+              disabled={!selectable}
+              title={opt.Name + (opt.Description ? '\n\n' + opt.Description : '')
+                + (selectable ? '' : '\n\nRequirements not met')}
               onClick={() => { onSelect(opt.Name); onClose() }}
             >
               <DdoIcon
@@ -182,7 +194,8 @@ function SelectorPicker({ options, onSelect, onClose }: SelectorPickerProps) {
               />
               <span className={styles.selectorName}>{opt.Name}</span>
             </button>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -391,6 +404,42 @@ export default function TreeGrid({
     return next
   }
 
+  /**
+   * V2 CSelectionSelectDialog / EnhancementTreeDialog::GetAutoSelection: an
+   * option can be picked only when its own requirements and MinSpent are met,
+   * the AP is there, and no item named in the Selector's Exclusions already
+   * trained that same option. Kensei Weapon Group Specialization is the
+   * common case: only the weapon group chosen in the first core qualifies.
+   */
+  function optionSelectable(item: EnhancementTreeItem, opt: EnhancementSelection): boolean {
+    if ((opt.MinSpent ?? 0) > treeSpent) return false
+    if ((totalAP - totalSpentAllTrees) < nextRankCost(item, getChoiceRank(choices, item))) return false
+    if (build) {
+      const pools = [build.enhancementSelections, build.destinySelections, build.reaperSelections]
+      for (const ex of getSelectorExclusions(item)) {
+        for (const pool of pools) {
+          for (const sels of Object.values(pool ?? {})) {
+            if (sels[ex] === opt.Name) return false
+          }
+        }
+      }
+      if (allClasses && !meetsRequirements(opt.Requirements, { build, allClasses, race })) return false
+    }
+    return true
+  }
+
+  function openSelector(item: EnhancementTreeItem) {
+    // V2 "Auto Select Single Option Enhancements" (EnhancementTreeDialog
+    // ::GetAutoSelection): when exactly one option is selectable, pick it
+    // without showing the dialog.
+    const selectable = getSelectorOptions(item).filter(o => optionSelectable(item, o))
+    if (autoSelectSingleOption && selectable.length === 1) {
+      handleSelection(item.Name, selectable[0].Name)
+      return
+    }
+    setSelectorTarget(item.Name)
+  }
+
   function handleIncrement(item: EnhancementTreeItem) {
     const rank = getChoiceRank(choices, item)
     const maxRanks = item.Ranks ?? 1
@@ -404,17 +453,7 @@ export default function TreeGrid({
 
     const options = getSelectorOptions(item)
     if (options.length > 0 && !getSelection(selections, item)) {
-      // V2 "Auto Select Single Option Enhancements" (EnhancementTreeDialog
-      // ::GetAutoSelection): when exactly one option is selectable, pick it
-      // without showing the dialog. (V2 additionally drops options failing
-      // their per-option requirements before counting; V3's picker does not
-      // model per-option gating, so only the unambiguous one-option case is
-      // automated.)
-      if (autoSelectSingleOption && options.length === 1) {
-        handleSelection(item.Name, options[0].Name)
-        return
-      }
-      setSelectorTarget(item.Name)
+      openSelector(item)
       return
     }
 
@@ -522,7 +561,7 @@ export default function TreeGrid({
             pos={pos}
             onIncrement={() => handleIncrement(item)}
             onDecrement={() => handleDecrement(item)}
-            onShowSelector={() => setSelectorTarget(item.Name)}
+            onShowSelector={() => openSelector(item)}
           />
         )
       })}
@@ -530,6 +569,7 @@ export default function TreeGrid({
       {selectorTarget && selectorOptions.length > 0 && (
         <SelectorPicker
           options={selectorOptions}
+          isSelectable={opt => optionSelectable(selectorItem!, opt)}
           onSelect={name => handleSelection(selectorTarget, name)}
           onClose={() => setSelectorTarget(null)}
         />

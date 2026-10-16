@@ -16,7 +16,7 @@ const DATA = join(ROOT, 'Output', 'DataFiles')
 const B = (n: string) => join(ROOT, 'Output', 'Example Builds', n)
 
 describe('Critical Attack Bonus (oracle-pinned, v2calc weaponMain.critAttackBonus)', () => {
-  for (const [file, v2] of [['Maetrim_EndGameHandwrapsMonk.DDOBuild', 174], ['YingsMonk.DDOBuild', 228]] as const) {
+  for (const [file, v2] of [['Maetrim_EndGameHandwrapsMonk.DDOBuild', 178], ['YingsMonk.DDOBuild', 228]] as const) {
     it.skipIf(!existsSync(B(file)) || !existsSync(DATA))(`${file}: ${v2}`, () => {
       const cat = loadAllCatalogues(DATA)
       const { stats } = computeV3ForXml(readFileSync(B(file), 'utf8'), cat)

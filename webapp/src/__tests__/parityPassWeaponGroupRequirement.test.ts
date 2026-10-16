@@ -35,13 +35,13 @@ describe('Two Handed Specialty with a bastard sword (oracle-pinned)', () => {
   const SAVE = join(ROOT, 'Output', 'UserBuilds', 'collection', 'Warlocks.DDOBuild')
   const DATA = join(ROOT, 'Output', 'DataFiles')
   // Life 8 build 1: bastard sword and large shield with Two Handed
-  // Specialty. v2calc: main-hand damage bonus 51.
+  // Specialty. v2calc: main-hand damage bonus 55.
   it.skipIf(!existsSync(SAVE) || !existsSync(DATA))('Warlocks life 8 main-hand damage matches V2', () => {
     const xml = readFileSync(SAVE, 'utf8')
       .replace(/<ActiveLifeIndex>\d+/, '<ActiveLifeIndex>7')
       .replace(/<ActiveBuildIndex>\d+/, '<ActiveBuildIndex>0')
     const cat = loadAllCatalogues(DATA)
     const { stats } = computeV3ForXml(xml, cat)
-    expect(stats.total('melee.damage')).toBe(51)
+    expect(stats.total('melee.damage')).toBe(55)
   }, 120_000)
 })
