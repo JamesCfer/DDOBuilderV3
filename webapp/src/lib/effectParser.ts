@@ -1853,13 +1853,22 @@ export function parseEffect(
     // Crit-only damage bonuses (V2 BreakdownItemWeaponDamageBonus.cpp:184-202):
     // extra damage that lands only on a confirmed crit. Surfaced as
     // `melee.crit.damage` so the DPR estimator can add it on crits.
+    // V2 keeps these per hand: the off-hand weapon's critical lines take only
+    // the effects that reach it (offhand.crit.toHit / offhand.crit.damage).
     case 'Weapon_DamageCritical':
+      return perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.damage',
+        offhandTypeMatches(items, ctx), 'offhand.crit.damage', ctx)
     case 'WeaponOtherDamageBonusCritical':
       return weaponScopeMatches(items, ctx) ? [make('melee.crit.damage')] : []
     // V2 counts it in BOTH critical lines: BreakdownItemWeaponAttackBonus
     // (critical-effects mode, .cpp:262-269) and ...DamageBonus (.cpp:190).
     case 'Weapon_AttackAndDamageCritical':
-      return weaponScopeMatches(items, ctx) ? [make('melee.crit.toHit'), make('melee.crit.damage')] : []
+      return [
+        ...perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.toHit',
+          offhandTypeMatches(items, ctx), 'offhand.crit.toHit', ctx),
+        ...perHand(make, weaponScopeMatches(items, ctx), 'melee.crit.damage',
+          offhandTypeMatches(items, ctx), 'offhand.crit.damage', ctx),
+      ]
     // -----------------------------------------------------------------------
     // Per-weapon-class effects (V2 BreakdownItemWeaponAttackBonus.cpp:233-279,
     // BreakdownItemWeaponDamageBonus.cpp:157-205, ...CriticalThreatRange /
@@ -1876,11 +1885,11 @@ export function parseEffect(
       return perHand(make, mainClassMatches(items, ctx), 'melee.damage',
         offhandClassMatches(items, ctx), 'offhand.damage', ctx)
     case 'WeaponAttackBonusCriticalClass':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.crit.toHit')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.crit.toHit',
+        offhandClassMatches(items, ctx), 'offhand.crit.toHit', ctx)
     case 'WeaponDamageBonusCriticalClass':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.crit.damage')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.crit.damage',
+        offhandClassMatches(items, ctx), 'offhand.crit.damage', ctx)
     case 'WeaponCriticalMultiplierClass':
       return perHand(make, mainClassMatches(items, ctx), 'melee.crit.multiplier',
         offhandClassMatches(items, ctx), 'offhand.crit.multiplier', ctx)
@@ -1916,8 +1925,9 @@ export function parseEffect(
         ? [make('weapon.bonusW')] : []
     // Crit-confirm bonuses for the wielded weapon type.
     case 'Weapon_AttackCritical':
-      return items.includes('All') || (ctx && items.some(i => ctx.weaponTypes.has(i)))
-        ? [make('melee.crit.toHit')] : []
+      return perHand(make, ctx?.weaponOnlyHand !== 'off'
+        && (items.includes('All') || !!(ctx && items.some(i => ctx.weaponTypes.has(i)))),
+        'melee.crit.toHit', offhandTypeMatches(items, ctx), 'offhand.crit.toHit', ctx)
     // Ability substitution for attack/damage rolls (e.g. Pact weapons:
     // CHA-to-hit). Item = [Ability, ...weaponTypes] (or weapon classes for
     // the *Class variants). Emit a marker; CombatPanel picks the LARGEST
@@ -1941,14 +1951,14 @@ export function parseEffect(
       return perHand(make, mainClassMatches(items, ctx), 'melee.toHit',
         offhandClassMatches(items, ctx), 'offhand.toHit', ctx)
     case 'WeaponAttackBonusCriticalDamageType':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.crit.toHit')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.crit.toHit',
+        offhandClassMatches(items, ctx), 'offhand.crit.toHit', ctx)
     case 'WeaponDamageBonusDamageType':
       return perHand(make, mainClassMatches(items, ctx), 'melee.damage',
         offhandClassMatches(items, ctx), 'offhand.damage', ctx)
     case 'WeaponDamageBonusCriticalDamageType':
-      return ctx?.weaponClassMain && items.some(i => ctx.weaponClassMain!.has(i))
-        ? [make('melee.crit.damage')] : []
+      return perHand(make, mainClassMatches(items, ctx), 'melee.crit.damage',
+        offhandClassMatches(items, ctx), 'offhand.crit.damage', ctx)
     case 'WeaponKeenDamageType':
       // Amount=0 in data — V2 computes the doubling from the weapon's base crit
       // range at runtime (BreakdownItemWeaponCriticalThreatRange.cpp:152-168).

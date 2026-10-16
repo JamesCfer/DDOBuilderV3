@@ -362,6 +362,14 @@ export function buildParityRows(
     if (wo.damageBonus !== undefined) {
       push('weaponOffhand.damageBonus', wo.damageBonus, stats.total('offhand.damage'))
     }
+    if (wo.critAttackBonus !== undefined) {
+      push('weaponOffhand.critAttackBonus', wo.critAttackBonus,
+        stats.total('offhand.toHit') + stats.total('offhand.crit.toHit'))
+    }
+    if (wo.critDamageBonus !== undefined) {
+      push('weaponOffhand.critDamageBonus', wo.critDamageBonus,
+        stats.total('offhand.damage') + stats.total('offhand.crit.damage'))
+    }
     if (wo.enchantment !== undefined) {
       push('weaponOffhand.enchantment', wo.enchantment, stats.total(offhandEnchantKey(stats.offhandWeapon)))
     }
