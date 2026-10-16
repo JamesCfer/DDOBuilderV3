@@ -73,10 +73,10 @@ describe('extractCore', () => {
     expect(core.crit19).toBe(2)
   })
 
-  it('folds bonus [W] dice into the weapon dice count', () => {
-    expect(core.wCount).toBe(3)     // 2 base + 1 bonusW
+  it('rolls the weapon dice [W] times, bonus [W] included', () => {
+    expect(core.wCount).toBe(2)     // 2d4
     expect(core.wSides).toBe(4)
-    expect(core.wMult).toBe(1)
+    expect(core.wMult).toBe(2)      // 1 + 1 bonusW (no item WeaponDamage)
   })
 
   it('puts flat damage in the critable bucket and crit-only damage on top', () => {

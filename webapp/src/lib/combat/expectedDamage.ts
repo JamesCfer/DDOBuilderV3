@@ -20,7 +20,7 @@
 // remains the place for a full DPS estimate against a specific foe.
 
 import type { BuildStats, WeaponInfo } from '../buildStats'
-import { critProfile, isOffhandSlotWeapon, type CritProfile } from './critProfile'
+import { critProfile, isOffhandSlotWeapon, weaponMultiplier, type CritProfile } from './critProfile'
 
 export interface ExpectedDamage {
   /** Average of the weapon's damage dice, including bonus W. */
@@ -135,10 +135,11 @@ export function expectedDamage(
 ): ExpectedDamage {
   const crit = critProfile(total, weapon, { offhand: opts.offhand && isOffhandSlotWeapon(weapon) })
 
-  const bonusW = total('weapon.bonusW')
-  const diceNum = (weapon?.diceNum ?? 1) + bonusW
+  // X[ndS]: the [W] multiplier rolls the weapon's dice X times.
+  const wMultiplier = weaponMultiplier(total, weapon,
+    { offhand: opts.offhand && isOffhandSlotWeapon(weapon) })
   const diceSides = weapon?.diceSides ?? 2
-  const weaponDice = avgDie(diceNum, diceSides)
+  const weaponDice = wMultiplier * avgDie(weapon?.diceNum ?? 1, diceSides)
 
   // Weapon effects are modelled on the wielded weapon, so the damage bonus
   // and ability keys are shared; only the power stat and the off-hand's

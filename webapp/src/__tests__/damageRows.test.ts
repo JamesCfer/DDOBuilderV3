@@ -71,7 +71,7 @@ describe('percent and count helpers', () => {
 /** An AttackEntryResult with a breakdown whose numbers are easy to follow. */
 function entry(over: Partial<AttackEntryResult['breakdown']> = {}): AttackEntryResult {
   const breakdown: AttackEntryResult['breakdown'] = {
-    weaponDie: 10, bonusW: 0, diceNum: 2, diceSides: 6,
+    weaponDie: 10, bonusW: 0, wMultiplier: 1, diceNum: 2, diceSides: 6,
     meleeDamage: 40, abilityMod: 15, damageAbilMult: 1, abilityDamage: 15,
     sneakDice: 0, sneakBonus: 0,
     meleePower: 100, meleePowerMult: 2,
@@ -118,8 +118,10 @@ describe('hitDamageRows', () => {
   it('names the weapon dice, including bonus [W]', () => {
     const plain = hitDamageRows(entry())
     expect(plain[0].label).toBe('Weapon dice 2d6')
-    const bonus = hitDamageRows(entry({ bonusW: 1 }))
-    expect(bonus[0].label).toBe('Weapon dice 2d6 +1[W]')
+    const bonus = hitDamageRows(entry({ bonusW: 1, wMultiplier: 2 }))
+    expect(bonus[0].label).toBe('Weapon dice 2[2d6]')
+    const item = hitDamageRows(entry({ wMultiplier: 5.85 }))
+    expect(item[0].label).toBe('Weapon dice 5.85[2d6]')
   })
 
   it('omits contributions that are zero', () => {

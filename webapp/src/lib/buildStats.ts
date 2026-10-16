@@ -99,6 +99,8 @@ export interface WeaponInfo {
   critMultiplier: number
   attackModifier: string    // 'Strength' | 'Dexterity'
   weaponType?: string       // base weapon type, e.g. 'Longsword' (for group lookup)
+  /** The item's own [W] multiplier (the X of X[1d6]), when it defines one. */
+  weaponDamage?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -1271,6 +1273,7 @@ export function weaponInfoFromItem(item: Item | undefined, slot: string): Weapon
     critMultiplier: item.CriticalMultiplier ?? 2,
     attackModifier: am.length > 0 ? am[0] : 'Strength',
     weaponType: typeof item.Weapon === 'string' ? item.Weapon : undefined,
+    weaponDamage: item.WeaponDamage,
   }
 }
 
