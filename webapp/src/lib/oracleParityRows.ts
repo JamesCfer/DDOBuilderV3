@@ -400,6 +400,14 @@ export function buildParityRows(
     if (wo.vorpalRange !== undefined) {
       push('weaponOffhand.vorpalRange', wo.vorpalRange, 1 + stats.total('offhand.vorpalRange'))
     }
+    // V2 BreakdownItemWeaponEffects::AffectsUs routes every GhostTouch and
+    // TrueSeeing effect to both hands, so the off-hand lines equal the build's.
+    if (wo.ghostTouch !== undefined) {
+      push('weaponOffhand.ghostTouch', wo.ghostTouch, stats.total('ghostTouch'))
+    }
+    if (wo.trueSeeing !== undefined) {
+      push('weaponOffhand.trueSeeing', wo.trueSeeing, stats.total('trueSeeing'))
+    }
   }
 
   // V2 BreakdownItemEnergyAbsorption::Total is MULTIPLICATIVE:
