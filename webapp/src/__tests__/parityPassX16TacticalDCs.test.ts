@@ -62,10 +62,10 @@ describe('parity pass X16 — tacticalDCs forum-export section', () => {
     const dc = { Name: 'Trip', DCVersus: 'Balance', Amount: 10, ModAbility: 'Strength' as const, Tactical: 'Trip' }
     const stats = mockStats({ 'ability.Strength': 16, 'tacticalDC.All': 1, 'tacticalDC.Trip': 2 })
     const ctx = { build: build0(), stats, allClasses: [] }
-    // Str 16 -> mod +3; tacticalDC = All(1) + Trip(2) = 3; total = 10 + 3 + 3 = 16.
-    expect(calculateDCValue(dc, 1, ctx)).toBe(16)
-    expect(dcVersusText(dc, 1, ctx)).toBe('Balance vs 16')
-    expect(dcEvaluationText(dc, 1, ctx)).toBe('10 + Str Mod(3) + Trip(3)')
+    // Str 16 -> mod +3; Trip tactical 2 (V2 ignores tacticalDC.All); total = 10 + 3 + 2 = 15.
+    expect(calculateDCValue(dc, 1, ctx)).toBe(15)
+    expect(dcVersusText(dc, 1, ctx)).toBe('Balance vs 15')
+    expect(dcEvaluationText(dc, 1, ctx)).toBe('10 + Str Mod(3) + Trip(2)')
   })
 
   it('includes the literal Other text in both the Value and Evaluation columns (Intimidate)', () => {
