@@ -7,6 +7,7 @@
 #include "afxdialogex.h"
 #include "InventorySlotTypes.h"
 #include "GlobalSupportFunctions.h"
+#include "ScreenFit.h"
 
 // CItemImageDialog dialog
 
@@ -75,6 +76,8 @@ BOOL CItemImageDialog::OnInitDialog()
     GetDlgItem(IDC_BUTTON_SETITEMIMAGE)->EnableWindow(FALSE);
     GetDlgItem(IDC_BUTTON_SKIP)->EnableWindow(FALSE);
     GetDlgItem(IDC_BUTTON_START)->EnableWindow(TRUE);
+
+    FitDialogToScreen(this);
 
     return TRUE;  // return TRUE unless you set the focus to a control
                   // EXCEPTION: OCX Property Pages should return FALSE

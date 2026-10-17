@@ -9,6 +9,7 @@
 #include "GlobalSupportFunctions.h"
 #include "MouseHook.h"
 #include "EnableBuddyButton.h"
+#include "ScreenFit.h"
 
 // CFindGearDialog dialog
 
@@ -191,6 +192,8 @@ BOOL CFindGearDialog::OnInitDialog()
 
     LoadColumnWidthsByName(&m_availableItemsCtrl, "FindGearDialog_%s");
     m_bInitialising = false;
+    FitDialogToScreen(this);
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }

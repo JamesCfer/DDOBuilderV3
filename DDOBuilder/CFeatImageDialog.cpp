@@ -6,6 +6,7 @@
 #include "CFeatImageDialog.h"
 #include "afxdialogex.h"
 #include "GlobalSupportFunctions.h"
+#include "ScreenFit.h"
 
 // CFeatImageDialog dialog
 
@@ -41,6 +42,8 @@ BOOL CFeatImageDialog::OnInitDialog()
 
     PopulateAvailableIcons();
     GetDlgItem(IDC_BUTTON_MAKETRANSPARENT)->EnableWindow(FALSE);
+
+    FitDialogToScreen(this);
 
     return TRUE;  // return TRUE unless you set the focus to a control
                   // EXCEPTION: OCX Property Pages should return FALSE

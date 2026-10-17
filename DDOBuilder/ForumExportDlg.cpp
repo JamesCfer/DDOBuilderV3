@@ -17,6 +17,7 @@
 #include "SpellsPane.h"
 #include "SpellLikeAbilityPage.h"
 #include "StancesPane.h"
+#include "ScreenFit.h"
 #include <numeric>
 
 namespace
@@ -114,6 +115,8 @@ BOOL CForumExportDlg::OnInitDialog()
             m_listConfigureExport.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES | LVS_EX_LABELTIP);
     PopulateConfigureExportList();
     PopulateExport();
+
+    FitDialogToScreen(this);
 
     return TRUE;  // return TRUE unless you set the focus to a control
                   // EXCEPTION: OCX Property Pages should return FALSE
