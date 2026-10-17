@@ -2,6 +2,8 @@
 // it. Read at a glance; the Feats tab is where they are picked.
 
 import { useStaticBundle } from '../../hooks/useStaticBundle'
+import { tipProps } from '../common/HoverTip'
+import { featTip } from '../../lib/featTip'
 import { useCharacter } from '../../context/CharacterContext'
 import DdoIcon from '../DdoIcon'
 import { buildSlots } from '../../lib/levelTraining'
@@ -27,7 +29,7 @@ export default function FeatsTile() {
               const feat = chosen ? byName.get(chosen) : undefined
               const type = slot.featType.replace(' Feat', '')
               return (
-                <div key={slot.key} className={styles.featRow} title={feat?.Description ?? `${type} slot at level ${slot.level}`}>
+                <div key={slot.key} className={styles.featRow} {...tipProps(chosen ? featTip(chosen, feat, { subtitle: `${type} feat, level ${slot.level}` }) : { title: `${type} slot`, subtitle: `Level ${slot.level}, not chosen yet` })}>
                   <span className={styles.featLevel}>Lv {slot.level}</span>
                   <span className={styles.iconBox} style={{ width: 22, height: 22 }}>
                     {chosen && <DdoIcon category="FeatImages" name={feat?.Icon ?? chosen} size={18} />}

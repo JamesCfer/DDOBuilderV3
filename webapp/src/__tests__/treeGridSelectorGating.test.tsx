@@ -15,6 +15,7 @@ import { act } from 'react-dom/test-utils'
 
 import TreeGrid from '../components/enhancements/TreeGrid'
 import DdoIcon from '../components/DdoIcon'
+import { TipLayer } from '../components/common/HoverTip'
 import { SettingsProvider } from '../context/SettingsContext'
 import { emptyBuild } from '../types/ddo'
 import type { EnhancementSelection, EnhancementTree } from '../types/ddo'
@@ -46,7 +47,7 @@ afterEach(() => { act(() => root?.unmount()); host?.remove(); root = null; host 
 function render(el: React.ReactElement) {
   host = document.createElement('div'); document.body.appendChild(host)
   root = createRoot(host)
-  act(() => root!.render(<SettingsProvider>{el}</SettingsProvider>))
+  act(() => root!.render(<SettingsProvider>{el}<TipLayer /></SettingsProvider>))
   return host
 }
 
@@ -70,11 +71,33 @@ describe('enhancement selector gating', () => {
         allClasses={[]}
       />,
     )
-    const cell = el.querySelector('[title^="Kensei: Weapon Group Specialization I"]') as HTMLElement
+    const cell = el.querySelector('[data-tip^="Kensei: Weapon Group Specialization I"]') as HTMLElement
     act(() => cell.click())
     const buttons = [...el.querySelectorAll('button')].filter(b => b.textContent?.startsWith('Kensei Focus'))
-    const state = Object.fromEntries(buttons.map(b => [b.textContent, b.disabled]))
+    const state = Object.fromEntries(buttons.map(b => [b.textContent, b.getAttribute('aria-disabled') === 'true']))
     expect(state).toEqual({ 'Kensei Focus: Axes': false, 'Kensei Focus: Archery': true })
+  })
+})
+
+describe('tree cell tooltip', () => {
+  it('shows the item tooltip as soon as the pointer enters', () => {
+    const el = render(
+      <TreeGrid
+        tree={tree}
+        choices={{}}
+        selections={{}}
+        totalSpentAllTrees={0}
+        onChoicesChange={() => {}}
+        onSelectionsChange={() => {}}
+      />,
+    )
+    const cell = el.querySelector('[data-tip^="Kensei: Kensei Focus"]') as HTMLElement
+    act(() => { cell.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, clientX: 10, clientY: 10 })) })
+    const box = document.body.querySelector('[role="tooltip"]')
+    expect(box?.textContent).toContain('Kensei: Kensei Focus')
+    expect(box?.textContent).toContain('1 AP')
+    act(() => { cell.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })) })
+    expect(document.body.querySelector('[role="tooltip"]')).toBeNull()
   })
 })
 

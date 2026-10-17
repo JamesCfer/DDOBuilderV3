@@ -4,6 +4,8 @@
 // Skills panel; this panel unifies them into the same per-level view.
 
 import { useEffect, useMemo, useState } from 'react'
+import { tipProps } from '../common/HoverTip'
+import { featTip } from '../../lib/featTip'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import type { DDOClass, Feat, Race } from '../../types/ddo'
@@ -80,7 +82,7 @@ function LevelCard({ entry, allFeats, collapsed, onToggle }: LevelCardProps) {
                   <div key={key} className={styles.slotRow}>
                     <span className={styles.slotType} title={key}>{label}</span>
                     {chosen ? (
-                      <span className={styles.featName} title={feat?.Description ?? chosen}>{chosen}</span>
+                      <span className={styles.featName} {...tipProps(featTip(chosen, feat))}>{chosen}</span>
                     ) : (
                       <span className={styles.emptySlot}>— empty —</span>
                     )}
@@ -120,7 +122,7 @@ function LevelCard({ entry, allFeats, collapsed, onToggle }: LevelCardProps) {
                 return (
                   <div key={name} className={styles.slotRow}>
                     <span className={styles.slotType}>Granted</span>
-                    <span className={styles.featName} title={feat?.Description ?? name}>{name}</span>
+                    <span className={styles.featName} {...tipProps(featTip(name, feat, { subtitle: 'Granted automatically' }))}>{name}</span>
                   </div>
                 )
               })}

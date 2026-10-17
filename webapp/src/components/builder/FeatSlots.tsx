@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { tipProps } from '../common/HoverTip'
+import { featTip } from '../../lib/featTip'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
@@ -107,11 +109,9 @@ function IconPicker({ options, current, onSelect, onClose }: IconPickerProps) {
         <div className={styles.pickerGrid}>
           {visible.map(({ feat: f, prereqsMet }) => {
             const prereqLine = formatPrerequisites(f)
-            const tooltip = [
-              f.Name,
-              f.Description ?? '',
-              prereqLine,
-            ].filter(Boolean).join('\n\n')
+            const tooltip = featTip(f.Name, f, {
+              notes: prereqLine ? [{ text: prereqLine, tone: prereqsMet ? 'info' : 'warn' }] : [],
+            })
             return (
               <button
                 key={f.Name}
@@ -120,7 +120,7 @@ function IconPicker({ options, current, onSelect, onClose }: IconPickerProps) {
                   f.Name === current ? styles.pickerItemActive : '',
                   !prereqsMet ? styles.pickerItemLocked : '',
                 ].join(' ')}
-                title={tooltip}
+                {...tipProps(tooltip)}
                 onClick={prereqsMet ? () => { onSelect(f.Name); onClose() } : undefined}
                 style={!prereqsMet ? { cursor: 'default' } : undefined}
               >
@@ -191,9 +191,12 @@ export default function FeatSlots() {
               // stays on the build but renders red.
               const invalid = chosen !== '' && feats.length > 0
                 && !isChosenFeatValid(slot, slots, chosen, feats, build, allClasses, currentRace, specialFeats)
-              const hoverTitle = chosen
-                ? `${chosen}${invalid ? '\n\n⚠ Requirements not met (V2 shows this in red)' : ''}${chosenFeat?.Description ? '\n\n' + chosenFeat.Description : ''}`
-                : 'Click to choose a feat'
+              const hoverTip = chosen
+                ? featTip(chosen, chosenFeat, {
+                  subtitle: slot.featType,
+                  notes: invalid ? [{ text: 'Requirements not met', tone: 'warn' }] : [],
+                })
+                : { title: 'Click to choose a feat', subtitle: slot.featType }
               return (
                 <div key={slot.key} className={styles.slot}>
                   <span className={styles.slotLevel}>Lv {slot.level}</span>
@@ -206,7 +209,7 @@ export default function FeatSlots() {
                   <button
                     className={`${styles.featPickerBtn} ${chosen ? styles.featPickerBtnChosen : ''}`}
                     onClick={() => setOpenSlotKey(slot.key)}
-                    title={hoverTitle}
+                    {...tipProps(hoverTip)}
                   >
                     {chosen ? (
                       <>

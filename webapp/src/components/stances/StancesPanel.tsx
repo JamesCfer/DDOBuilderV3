@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { tipProps, type TipContent } from '../common/HoverTip'
 import type { Stance } from '../../types/ddo'
 import { useCharacter } from '../../context/CharacterContext'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
@@ -113,15 +114,17 @@ export default function StancesPanel() {
     })
   }
 
-  function autoTitle(name: string, description?: string): string {
+  function autoTip(name: string, description?: string): TipContent {
     const isOn = active.has(name)
     const isOverridden = overrides[name] !== undefined
-    return [
-      description ?? name,
-      isOverridden
-        ? `Manually forced ${isOn ? 'on' : 'off'} — click to go back to automatic`
-        : `Automatic: ${isOn ? 'active' : 'not active'} — click to force it ${isOn ? 'off' : 'on'}`,
-    ].join('\n')
+    return {
+      title: name,
+      subtitle: isOverridden ? `Manually forced ${isOn ? 'on' : 'off'}` : `Automatic: ${isOn ? 'active' : 'not active'}`,
+      description,
+      notes: [{ text: isOverridden
+        ? 'Click to go back to automatic'
+        : `Click to force it ${isOn ? 'off' : 'on'}` }],
+    }
   }
 
   function renderAuto(name: string, description?: string) {
@@ -135,7 +138,7 @@ export default function StancesPanel() {
           isOn ? styles.stanceOn : styles.stanceOff,
           isOverridden ? styles.stanceManual : '',
         ].filter(Boolean).join(' ')}
-        title={autoTitle(name, description)}
+        {...tipProps(autoTip(name, description))}
         onClick={() => toggleAuto(name)}
         type="button"
       >
@@ -228,11 +231,12 @@ export default function StancesPanel() {
                   // so it contributes nothing — say so instead of showing it
                   // as if it were live.
                   const revoked = isOn && !active.has(e.name)
-                  const tip = [
-                    e.description ?? e.name.trim(),
-                    e.source ? `From: ${e.source}` : '',
-                    revoked ? 'Inactive: this build does not meet its requirements' : '',
-                  ].filter(Boolean).join('\n')
+                  const tip = {
+                    title: e.name.trim(),
+                    subtitle: e.source ? `From ${e.source}` : undefined,
+                    description: e.description,
+                    notes: revoked ? [{ text: 'Inactive: this build does not meet its requirements', tone: 'warn' as const }] : [],
+                  }
                   return (
                     <button
                       key={e.name}
@@ -241,7 +245,7 @@ export default function StancesPanel() {
                         isOn && !revoked ? styles.stanceOn : '',
                         revoked ? styles.stanceRevoked : '',
                       ].filter(Boolean).join(' ')}
-                      title={tip}
+                      {...tipProps(tip)}
                       onClick={() => toggleEntry(e)}
                       type="button"
                     >

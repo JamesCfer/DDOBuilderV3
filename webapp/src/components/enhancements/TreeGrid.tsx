@@ -4,6 +4,8 @@ import type {
   EnhancementTreeItem, Race,
 } from '../../types/ddo'
 import DdoIcon from '../DdoIcon'
+import { tipProps, hideTip, type TipContent } from '../common/HoverTip'
+import { summarizeEffects } from '../../lib/effectSummary'
 import { meetsRequirements } from '../../lib/requirements'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './TreeGrid.module.css'
@@ -181,10 +183,16 @@ function SelectorPicker({ options, isSelectable, onSelect, onClose }: SelectorPi
             <button
               key={opt.Name}
               className={styles.selectorOption}
-              disabled={!selectable}
-              title={opt.Name + (opt.Description ? '\n\n' + opt.Description : '')
-                + (selectable ? '' : '\n\nRequirements not met')}
-              onClick={() => { onSelect(opt.Name); onClose() }}
+              // aria-disabled, not disabled: a disabled button gets no mouse
+              // events, so its tooltip (why it can't be picked) never shows.
+              aria-disabled={!selectable}
+              {...tipProps({
+                title: opt.Name,
+                description: opt.Description,
+                effects: summarizeEffects(opt.Effect),
+                notes: selectable ? [] : [{ text: 'Requirements not met', tone: 'warn' }],
+              })}
+              onClick={() => { if (!selectable) return; onSelect(opt.Name); onClose() }}
             >
               <DdoIcon
                 category="EnhancementImages"
@@ -251,16 +259,28 @@ function EnhancementCell({
   const displayName = activeOption?.Name ?? item.Name
 
   const totalCost = costUpToRank(item, rank)
-  const tooltip = [
-    displayName,
-    item.Description ?? '',
-    `Cost: ${cost} AP${maxRanks > 1 ? ` per rank (${totalCost} total)` : ''}`,
-    minSpent > 0 ? `Requires ${minSpent} AP spent in tree` : '',
-    isCore && !coreUnlocked ? 'Requires previous core enhancement' : '',
-    !reqsMet ? 'Build does not meet item prerequisites' : '',
-    tier5Blocked && rank === 0 ? 'Tier-5 is locked to another destiny tree' : '',
-    hasSelector && !selectedOption ? 'Click to choose an option' : '',
-  ].filter(Boolean).join('\n')
+  const warn = (text: string) => ({ text, tone: 'warn' as const })
+  const tooltip: TipContent = {
+    title: displayName,
+    subtitle: [
+      maxRanks > 1 ? `Rank ${rank}/${maxRanks}` : rank > 0 ? 'Trained' : '',
+      atMax ? `${totalCost} AP spent` : `${cost} AP${maxRanks > 1 ? ' per rank' : ''}`,
+      minSpent > 0 ? `needs ${minSpent} AP in tree` : '',
+    ].filter(Boolean).join(' · '),
+    description: activeOption?.Description ?? item.Description,
+    effects: [
+      ...summarizeEffects(item.Effect, rank),
+      ...summarizeEffects(activeOption?.Effect, rank),
+    ],
+    notes: [
+      ...(treeSpent < minSpent ? [warn(`Requires ${minSpent} AP spent in this tree (${treeSpent} so far)`)] : []),
+      ...(isCore && !coreUnlocked ? [warn('Requires the previous core enhancement')] : []),
+      ...(!reqsMet ? [warn('Build does not meet this enhancement\'s prerequisites')] : []),
+      ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another destiny tree')] : []),
+      ...(!atMax && !canAfford && !locked ? [warn('Not enough action points')] : []),
+      ...(hasSelector && !selectedOption ? [{ text: 'Click to choose an option' }] : []),
+    ],
+  }
 
   const w = isCore ? C_W : T_W
   const h = isCore ? C_H : T_H
@@ -290,7 +310,7 @@ function EnhancementCell({
     <div
       className={cellClass}
       style={{ left: pos.left, top: pos.top, width: w, height: h }}
-      title={tooltip}
+      {...tipProps(tooltip)}
       onClick={handleClick}
       onContextMenu={canSell ? (e) => { e.preventDefault(); onDecrement() } : undefined}
     >
@@ -571,7 +591,7 @@ export default function TreeGrid({
           options={selectorOptions}
           isSelectable={opt => optionSelectable(selectorItem!, opt)}
           onSelect={name => handleSelection(selectorTarget, name)}
-          onClose={() => setSelectorTarget(null)}
+          onClose={() => { hideTip(); setSelectorTarget(null) }}
         />
       )}
     </div>
