@@ -76,6 +76,7 @@ private:
     size_t DrawLevelLine(CDC* pDC, size_t top, size_t level);
     void DrawFeat(CDC* pDC, CRect rctItem, size_t featIndex, size_t level);
     HitCheckItem HitCheck(CPoint mouse) const;
+    void PositionFeatSelector(const CRect& itemRect);
     void DoClass1();
     void DoClass2();
     void DoClass3();

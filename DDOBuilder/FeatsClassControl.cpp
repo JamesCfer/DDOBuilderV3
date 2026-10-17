@@ -1095,27 +1095,7 @@ void CFeatsClassControl::OnLButtonUp(UINT nFlags, CPoint point)
             m_featSelector.UnlockWindowUpdate();
             m_featSelector.SetCanRemoveItems();
             // position the drop list combo over the feat selection position
-            CRect comboRect(ht.Rect());
-            comboRect.bottom = ht.Rect().bottom + (32 * c_NumComboItems) + ::GetSystemMetrics(SM_CYBORDER) * 4;   // 20 items visible in drop list (32 pixels each)
-            HMONITOR hMonitor = MonitorFromPoint(comboRect.TopLeft(), MONITOR_DEFAULTTONEAREST);
-            MONITORINFOEX monitorInfo;
-            memset(&monitorInfo, 0, sizeof(MONITORINFOEX));
-            monitorInfo.cbSize = sizeof(MONITORINFOEX);
-            GetMonitorInfo(hMonitor, &monitorInfo);
-            CRect monitorSize(monitorInfo.rcWork);
-            if (monitorSize.bottom - comboRect.bottom < 0)
-            {
-                // combo drop list will be placed above the main control
-                // make sure that the drop list size will fit above us
-                int multipleAbove = (comboRect.top - ::GetSystemMetrics(SM_CYBORDER) * 2) / 32 - 2;
-                int multipleBelow = (monitorSize.bottom - ht.Rect().bottom - ::GetSystemMetrics(SM_CYBORDER) * 4) / 32 - 2;
-                int multipleMax = max(multipleAbove, multipleBelow);
-                if (multipleMax < c_NumComboItems)
-                {
-                    comboRect.bottom = ht.Rect().bottom + (32 * multipleMax) + ::GetSystemMetrics(SM_CYBORDER) * 4;
-                }
-            }
-            m_featSelector.MoveWindow(comboRect);
+            PositionFeatSelector(ht.Rect());
             m_featSelector.SetCurSel(sel);
             m_featSelector.SetDroppedWidth(350); // wider to show extra text
             // set control visible to the user
@@ -1125,6 +1105,51 @@ void CFeatsClassControl::OnLButtonUp(UINT nFlags, CPoint point)
         }
         break;
     }
+}
+
+void CFeatsClassControl::PositionFeatSelector(const CRect& itemRect)
+{
+    // Size the feat drop list so that it always fits on the monitor the
+    // control is on. If it is taller than the space available, the bottom
+    // of the list ends up off screen and those feats cannot be reached,
+    // which happens on small screens or with large display scaling.
+    int itemHeight = 32;
+    int itemCount = m_featSelector.GetCount();
+    if (itemCount > 0)
+    {
+        int height = m_featSelector.GetItemHeight(0);
+        if (height != CB_ERR && height > 0)
+        {
+            itemHeight = height;
+        }
+    }
+    int border = ::GetSystemMetrics(SM_CYBORDER) * 4;
+
+    // the hit check rectangle is in client coordinates, the monitor work
+    // area is in screen coordinates
+    CRect screenRect(itemRect);
+    ClientToScreen(&screenRect);
+    HMONITOR hMonitor = MonitorFromRect(&screenRect, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO monitorInfo;
+    memset(&monitorInfo, 0, sizeof(MONITORINFO));
+    monitorInfo.cbSize = sizeof(MONITORINFO);
+    GetMonitorInfo(hMonitor, &monitorInfo);
+    CRect workArea(monitorInfo.rcWork);
+
+    int wanted = min(c_NumComboItems, max(itemCount, 1));
+    int fitsBelow = (workArea.bottom - screenRect.bottom - border) / itemHeight;
+    int visible = wanted;
+    if (fitsBelow < wanted)
+    {
+        // Windows shows the list above the control when it will not fit
+        // below, so use whichever side has more room, keeping one row spare
+        int fitsAbove = (screenRect.top - workArea.top - border) / itemHeight;
+        visible = min(wanted, max(fitsBelow, fitsAbove) - 1);
+        visible = max(visible, 1);
+    }
+    CRect comboRect(itemRect);
+    comboRect.bottom = itemRect.bottom + (itemHeight * visible) + border;
+    m_featSelector.MoveWindow(comboRect);
 }
 
 void CFeatsClassControl::OnMButtonUp(UINT nFlags, CPoint point)
@@ -1186,9 +1211,7 @@ void CFeatsClassControl::OnMButtonUp(UINT nFlags, CPoint point)
             m_featSelector.SetCurSel(sel);
             m_featSelector.UnlockWindowUpdate();
             // position the drop list combo over the feat selection position
-            CRect comboRect(ht.Rect());
-            comboRect.bottom = comboRect.top + 960;   // 20 items visible in drop list
-            m_featSelector.MoveWindow(comboRect);
+            PositionFeatSelector(ht.Rect());
             m_featSelector.SetCurSel(sel);
             m_featSelector.SetDroppedWidth(350); // wider to show extra text
             // set control visible to the user
