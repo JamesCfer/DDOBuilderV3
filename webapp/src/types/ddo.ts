@@ -813,6 +813,9 @@ export interface CharacterDocument {
   lives: Life[]
   activeLifeId: string
   activeBuildId: string
+  /** The account copy of this character (server build id), set once it has
+   *  been saved while signed in, so later saves update that same copy. */
+  accountBuildId?: string
   /** Storage version. */
   _v?: 2
 }

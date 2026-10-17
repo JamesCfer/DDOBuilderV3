@@ -7,6 +7,7 @@
 // the Ctrl+O / drop fallback chooser.
 
 import { useEffect, useRef } from 'react'
+import { useSave } from '../../hooks/useSave'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { useSettings } from '../../context/SettingsContext'
@@ -32,11 +33,11 @@ export default function AppShortcuts({ onLoad }: AppShortcutsProps) {
   const state = useRef({ build, doc })
   state.current = { build, doc }
 
-  function save() {
-    const synced = syncBuildIntoDocument(state.current.doc, state.current.build)
-    setDoc(synced)
-    saveDocument(synced)
-  }
+  // Ctrl+S is File > Save: this browser, plus the account when signed in.
+  const saveNow = useSave()
+  const saveRef = useRef(saveNow)
+  saveRef.current = saveNow
+  function save() { void saveRef.current() }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
