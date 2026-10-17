@@ -87,6 +87,22 @@ const SCALAR2_MAP: Record<string, string> = {
   kiMax: 'ki.max', kiPassive: 'ki.passive', kiHit: 'ki.hit', kiCritical: 'ki.critical',
   turnUndeadLevel: 'turnUndead.levelBonus',
   songCount: 'song.count', tumbleCharges: 'tumbleCharge',
+  // Charges, offensive extras and metamagic costs (all V2 BreakdownItemSimple
+  // pools except Turn Undead Hit Dice, which BreakdownItemTurnUndeadHitDice
+  // composes like V3's turnUndead.diceBonus).
+  layOnHands: 'lohExtra', lohRegen: 'lohRegen', rages: 'rageExtra',
+  sneakAttackRange: 'melee.sneakRange', turnUndeadHitDice: 'turnUndead.diceBonus',
+  eldritchBlastD6: 'eldritchBlast.d6', eldritchBlastD8: 'eldritchBlast.d8',
+  runeArmChargeRate: 'runeArm.chargeRate', runeArmStableCharge: 'runeArm.stableCharge',
+  wildsurge: 'wildsurgeChance', secondaryShieldBash: 'secondaryShieldBash',
+  missileDeflectionBypass: 'missileDeflectionBypass', spellCritUniversal: 'spCrit.Universal',
+  hitpointsPercent: 'hp.percent',
+  mmAccelerate: 'metamagic.cost.Accelerate', mmEmbolden: 'metamagic.cost.Embolden',
+  mmEmpower: 'metamagic.cost.Empower', mmEmpowerHealing: 'metamagic.cost.EmpowerHealing',
+  mmEnlarge: 'metamagic.cost.Enlarge', mmEschew: 'metamagic.cost.EschewMaterials',
+  mmExtend: 'metamagic.cost.Extend', mmHeighten: 'metamagic.cost.Heighten',
+  mmIntensify: 'metamagic.cost.Intensify', mmMaximize: 'metamagic.cost.Maximize',
+  mmQuicken: 'metamagic.cost.Quicken',
 }
 const HIRELING_MAP: Record<string, string> = {
   hitpoints: 'hireling.hp', fortification: 'hireling.fort',
