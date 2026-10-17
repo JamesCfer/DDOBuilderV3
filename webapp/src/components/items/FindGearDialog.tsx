@@ -13,6 +13,7 @@ import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent } from './GearHoverCards'
 import ItemTypeSelect from './ItemTypeSelect'
 import styles from './FindGearDialog.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 function toArray<T>(val: T | T[] | undefined): T[] {
   if (val == null) return []
@@ -174,6 +175,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const isDirty = hasFilter
 
   return (
+    <ModalPortal>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.dialog} onClick={e => e.stopPropagation()}>
         {/* Header */}
@@ -366,5 +368,6 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
         </HoverCard>
       )}
     </div>
+    </ModalPortal>
   )
 }

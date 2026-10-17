@@ -16,6 +16,7 @@ import type { DDOClass, EnhancementTree, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
 import styles from './EnhancementTreePanel.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -106,6 +107,7 @@ function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: Tree
   }
 
   return (
+    <ModalPortal>
     <div className={styles.pickerOverlay} onClick={onClose}>
       <div className={styles.pickerModal} onClick={e => e.stopPropagation()}>
         <div className={styles.pickerModalHeader}>
@@ -124,6 +126,7 @@ function TreePicker({ allTrees, selected, unlockGated, onToggle, onClose }: Tree
         </div>
       </div>
     </div>
+    </ModalPortal>
   )
 }
 

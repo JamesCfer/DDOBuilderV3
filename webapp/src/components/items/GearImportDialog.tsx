@@ -18,6 +18,7 @@ import {
   type GearImportParse,
 } from '../../lib/gearPlannerImport'
 import styles from './GearPanel.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 interface ResolvedEntry {
   slot: string
@@ -101,6 +102,7 @@ export default function GearImportDialog({ onClose }: GearImportDialogProps) {
   }
 
   return (
+    <ModalPortal>
     <div className={styles.dialogOverlay ?? ''} style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
@@ -168,5 +170,6 @@ export default function GearImportDialog({ onClose }: GearImportDialogProps) {
         </div>
       </div>
     </div>
+    </ModalPortal>
   )
 }

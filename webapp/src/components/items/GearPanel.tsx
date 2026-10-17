@@ -22,6 +22,7 @@ import HoverCard, { useHoverCard } from '../common/HoverCard'
 import { ItemCardContent, AugmentCardContent, type AugmentFill } from './GearHoverCards'
 import ItemTypeSelect from './ItemTypeSelect'
 import styles from './GearPanel.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 // ---------------------------------------------------------------------------
 // Slot definitions
@@ -133,6 +134,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
   }
 
   return (
+    <ModalPortal>
     <div className={styles.pickerOverlay} onClick={onClose}>
       <div className={styles.pickerModal} onClick={e => e.stopPropagation()}>
         <div className={styles.pickerModalHeader}>
@@ -266,6 +268,7 @@ function ItemPickerModal({ slot, items, current, maxLevel, onSelect, onClose }: 
         </HoverCard>
       )}
     </div>
+    </ModalPortal>
   )
 }
 
@@ -824,6 +827,7 @@ export default function GearPanel() {
         />
       )}
       {isPickerLoading && (
+        <ModalPortal>
         <div className={styles.pickerOverlay} onClick={() => setOpenSlot(null)}>
           <div className={styles.pickerModal} onClick={e => e.stopPropagation()}>
             <div className={styles.pickerModalHeader}>
@@ -833,6 +837,7 @@ export default function GearPanel() {
             <div className={styles.pickerLoading}>Loading {slotLabel(openSlot)} items…</div>
           </div>
         </div>
+        </ModalPortal>
       )}
       {itemHover.hover && (
         <HoverCard x={itemHover.hover.x} y={itemHover.hover.y} openLeft={itemHover.hover.openLeft}>
