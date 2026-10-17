@@ -9,6 +9,7 @@ import { summarizeEffects } from '../../lib/effectSummary'
 import { meetsRequirements } from '../../lib/requirements'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './TreeGrid.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -173,6 +174,7 @@ interface SelectorPickerProps {
 
 function SelectorPicker({ options, isSelectable, onSelect, onClose }: SelectorPickerProps) {
   return (
+    <ModalPortal>
     <div className={styles.selectorOverlay} onClick={onClose}>
       <div className={styles.selectorModal} onClick={e => e.stopPropagation()}>
         <div className={styles.selectorHeader}>Choose an option</div>
@@ -207,6 +209,7 @@ function SelectorPicker({ options, isSelectable, onSelect, onClose }: SelectorPi
         </div>
       </div>
     </div>
+    </ModalPortal>
   )
 }
 

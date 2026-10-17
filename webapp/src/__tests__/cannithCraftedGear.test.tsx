@@ -210,7 +210,7 @@ describe.runIf(haveData)('gear picker offers the crafted item', () => {
     await act(async () => { (ringSlot.querySelector('button[class*="slotBtn"]') as HTMLButtonElement).click() })
     await settle()
 
-    const tile = Array.from(container.querySelectorAll('button[class*="pickerItem"]'))
+    const tile = Array.from(document.body.querySelectorAll('button[class*="pickerItem"]'))
       .find(b => b.textContent?.includes('Cannith Crafted Ring')) as HTMLButtonElement | undefined
     expect(tile).toBeTruthy()
     await act(async () => { tile!.click() })

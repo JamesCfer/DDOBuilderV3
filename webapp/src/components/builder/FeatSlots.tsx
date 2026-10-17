@@ -13,6 +13,7 @@ import { featOptionsForSlot, isChosenFeatValid } from '../../lib/featEligibility
 import type { FeatOption, OptionSettings } from '../../lib/featEligibility'
 import DdoIcon from '../DdoIcon'
 import styles from './FeatSlots.module.css'
+import ModalPortal from '../common/ModalPortal'
 
 function toArray<T>(v: T | T[] | undefined): T[] {
   if (v == null) return []
@@ -85,6 +86,7 @@ function IconPicker({ options, current, onSelect, onClose }: IconPickerProps) {
   const visible = showLocked ? [...available, ...locked] : available
 
   return (
+    <ModalPortal>
     <div className={styles.pickerOverlay} onClick={onClose}>
       <div className={styles.pickerModal} onClick={e => e.stopPropagation()}>
         <div className={styles.pickerHeader}>
@@ -141,6 +143,7 @@ function IconPicker({ options, current, onSelect, onClose }: IconPickerProps) {
         </div>
       </div>
     </div>
+    </ModalPortal>
   )
 }
 

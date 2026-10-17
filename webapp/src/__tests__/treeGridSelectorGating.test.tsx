@@ -73,7 +73,7 @@ describe('enhancement selector gating', () => {
     )
     const cell = el.querySelector('[data-tip^="Kensei: Weapon Group Specialization I"]') as HTMLElement
     act(() => cell.click())
-    const buttons = [...el.querySelectorAll('button')].filter(b => b.textContent?.startsWith('Kensei Focus'))
+    const buttons = [...document.body.querySelectorAll('button')].filter(b => b.textContent?.startsWith('Kensei Focus'))
     const state = Object.fromEntries(buttons.map(b => [b.textContent, b.getAttribute('aria-disabled') === 'true']))
     expect(state).toEqual({ 'Kensei Focus: Axes': false, 'Kensei Focus: Archery': true })
   })
