@@ -11,6 +11,7 @@
 #include "Race.h"
 #include "Augment.h"
 #include "EnableBuddyButton.h"
+#include "ScreenFit.h"
 
 // CItemSelectDialog dialog
 
@@ -242,6 +243,8 @@ BOOL CItemSelectDialog::OnInitDialog()
 
     LoadColumnWidthsByName(&m_availableItemsCtrl, "ItemSelectDialog_%s");
     m_bInitialising = false;
+    FitDialogToScreen(this);
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }

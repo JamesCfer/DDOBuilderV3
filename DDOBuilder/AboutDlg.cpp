@@ -4,6 +4,7 @@
 #include "AboutDlg.h"
 #include "BuildInfo.h"
 #include "GlobalSupportFunctions.h"
+#include "ScreenFit.h"
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
 {
@@ -251,6 +252,8 @@ BOOL CAboutDlg::OnInitDialog()
     CDialogEx::OnInitDialog();
 
     GetDlgItem(IDOK)->SetFocus();
+
+    FitDialogToScreen(this);
 
     return FALSE;
 }

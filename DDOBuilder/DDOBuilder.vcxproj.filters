@@ -28000,6 +28000,9 @@
     <ClInclude Include="FindGearDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenFit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="EnableBuddyButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -28684,6 +28687,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FindGearDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenFit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnableBuddyButton.cpp">
