@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { tipProps } from '../common/HoverTip'
+import { featTip } from '../../lib/featTip'
 import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import {
@@ -148,7 +150,7 @@ function PatronRow({
           build claim a rank regardless, so neither button is gated on favor. */}
       {favorFeat && (
         <div className={styles.rewardRow}>
-          <span className={styles.rewardLabel} title={favorFeat.Description ?? favorFeat.Name}>
+          <span className={styles.rewardLabel} {...tipProps(featTip(favorFeat.Name, favorFeat))}>
             Reward ranks
           </span>
           <div className={styles.rewardControls}>
@@ -338,7 +340,7 @@ export default function FavorPanel() {
                   const claimed = favorFeatTrainedCount(build, feat.Name)
                   return (
                     <div key={feat.Name} className={styles.rewardRow}>
-                      <span className={styles.rewardLabel} title={feat.Description ?? feat.Name}>
+                      <span className={styles.rewardLabel} {...tipProps(featTip(feat.Name, feat, { subtitle: `${claimed} of ${max} claimed` }))}>
                         {feat.Name}
                       </span>
                       <div className={styles.rewardControls}>

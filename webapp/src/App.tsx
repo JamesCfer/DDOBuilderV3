@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { TipLayer } from './components/common/HoverTip'
 import { preloadStaticBundle } from './hooks/useStaticBundle'
 import { CharacterProvider, useCharacter } from './context/CharacterContext'
 import { BuildLogProvider } from './context/BuildLogContext'
@@ -172,6 +173,7 @@ function AppInner() {
   return (
     <WorkspaceHostContext.Provider value={host}>
       <AppShortcuts onLoad={handleLoad} />
+      <TipLayer />
       <GearVerifier />
       <CollabBar />
       {joinError && <div className={styles.joinError} role="alert">{joinError}</div>}

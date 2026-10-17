@@ -281,12 +281,12 @@
   text-align: center;
 }
 
-.selectorOption:disabled {
+.selectorOption[aria-disabled='true'] {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.selectorOption:not(:disabled):hover {
+.selectorOption:not([aria-disabled='true']):hover {
   background: var(--color-bg-hover);
   border-color: var(--color-gold-dark);
   box-shadow: 0 0 8px var(--tint-accent-strong);

@@ -99,8 +99,8 @@ describe('StancesPanel — iconic past lives', () => {
     expect(buttonFor(container, 'Bladeforged')).toBeDefined()
     // The stance name's trailing space is V2 data, not something to show.
     expect(buttonFor(container, 'Bladeforged').textContent).toBe('Bladeforged')
-    expect(buttonFor(container, 'Bladeforged').title).toContain('Iconic past life: Bladeforged')
-    expect(buttonFor(container, 'Aasimar Scourge').title).toContain('Aasimar Scourge ×3')
+    expect(buttonFor(container, 'Bladeforged').dataset.tip).toContain('Iconic past life: Bladeforged')
+    expect(buttonFor(container, 'Aasimar Scourge').dataset.tip).toContain('Aasimar Scourge ×3')
   })
 
   it('lighting a second iconic stance puts the first out', async () => {

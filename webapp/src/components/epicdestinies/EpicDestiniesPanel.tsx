@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { tipProps } from '../common/HoverTip'
+import { featTip } from '../../lib/featTip'
 import { useCharacter } from '../../context/CharacterContext'
 import type { EnhancementTree } from '../../types/ddo'
 import TreeGrid, { type TreeChoices } from '../enhancements/TreeGrid'
@@ -284,7 +286,7 @@ export default function EpicDestiniesPanel() {
             </div>
             <div className={styles.claimGrid}>
               {destinyClaimFeats.map(f => (
-                <label key={f.Name} className={styles.claimItem} title={f.Description}>
+                <label key={f.Name} className={styles.claimItem} {...tipProps(featTip(f.Name, f, { subtitle: isClaimed(f.Name) ? 'Claimed' : 'Not claimed' }))}>
                   <input
                     type="checkbox"
                     checked={isClaimed(f.Name)}

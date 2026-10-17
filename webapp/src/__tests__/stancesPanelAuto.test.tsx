@@ -96,7 +96,7 @@ describe('StancesPanel — automatic stances', () => {
     const btn = buttonFor(container, 'Cloth Armor')
     expect(btn).toBeDefined()
     expect(btn!.textContent).toContain('✓')
-    expect(btn!.title).toContain('Automatic: active')
+    expect(btn!.dataset.tip).toContain('Automatic: active')
   })
 
   it('one click forces it off, the next hands it back to the build', async () => {
@@ -105,14 +105,14 @@ describe('StancesPanel — automatic stances', () => {
 
     const forced = buttonFor(container, 'Cloth Armor')!
     expect(forced.textContent).not.toContain('✓')
-    expect(forced.title).toContain('Manually forced off')
+    expect(forced.dataset.tip).toContain('Manually forced off')
     // The reset affordance appears while any override is held.
     expect(container.textContent).toContain('reset 1 override')
 
     await click(buttonFor(container, 'Cloth Armor')!)
     const restored = buttonFor(container, 'Cloth Armor')!
     expect(restored.textContent).toContain('✓')
-    expect(restored.title).toContain('Automatic: active')
+    expect(restored.dataset.tip).toContain('Automatic: active')
     expect(container.textContent).not.toContain('reset 1 override')
   })
 
