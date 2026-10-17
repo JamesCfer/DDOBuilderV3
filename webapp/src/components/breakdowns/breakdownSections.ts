@@ -403,21 +403,12 @@ export function buildBreakdownSections(
     statRow('Off-hand Atk', 'offhand.attack', pct),
     statRow('Helpless Dmg', 'helpless',        pct),
     statRow('Tactical DC (All)', 'tacticalDC.All', sign),
+    // V2 TacticalTypes.h names: effects land under tacticalDC.<Item> with
+    // the same spelling (spaces included).
     ...[
-      ['Assassinate',    'Assassinate'],
-      ['Trap',           'Trap'],
-      ['Trip',           'Trip'],
-      ['Stun',           'Stun'],
-      ['Sunder',         'Sunder'],
-      ['StunningShield', 'Stunning Shield'],
-      ['General',        'General'],
-      ['Wands',          'Wands'],
-      ['Fear',           'Fear'],
-      ['InnateAttack',   'Innate Attack'],
-      ['BreathWeapon',   'Breath Weapon'],
-      ['Poison',         'Poison'],
-      ['RuneArm',        'Rune Arm'],
-    ].map(([key, label]) => statRow(`  vs ${label}`, `tacticalDC.${key}`, sign)),
+      'Assassinate', 'Trap', 'Trip', 'Stun', 'Sunder', 'Stunning Shield', 'General',
+      'Wands', 'Fear', 'Innate Attack', 'Breath Weapon', 'Poison', 'Rune Arm',
+    ].map(name => statRow(`  vs ${name}`, `tacticalDC.${name}`, sign)),
   ]
 
   // Weapon-effect breakdowns (Stream-audit additions)

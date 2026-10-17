@@ -261,6 +261,10 @@ int main(int argc, char** argv)
         { Breakdown_TacticalWands,        "Wands" },
         { Breakdown_TacticalBreathWeapon, "Breath Weapon" },
         { Breakdown_TacticalRuneArm,      "Rune Arm" },
+        { Breakdown_TacticalStunningShield, "Stunning Shield" },
+        { Breakdown_TacticalFear,         "Fear" },
+        { Breakdown_TacticalInnateAttack, "Innate Attack" },
+        { Breakdown_TacticalPoison,       "Poison" },
     };
     printf("  \"tacticalDC\": {");
     size_t ntac = sizeof(tacticals) / sizeof(tacticals[0]);
