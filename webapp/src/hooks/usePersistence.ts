@@ -1,14 +1,10 @@
-import { useState, useCallback, useRef, createElement as h } from 'react'
-import type { ReactElement, ChangeEvent } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { CharacterBuild, CharacterDocument, Item } from '../types/ddo'
-import { useCharacter, migrateLoad } from '../context/CharacterContext'
-import { useDocument } from '../context/DocumentContext'
+import { migrateLoad } from '../context/CharacterContext'
 import {
   isCharacterDocument,
   flattenDocument,
   emptyDocument,
-  syncBuildIntoDocument,
-  findActiveBuild,
   characterFileName,
   repairCharacterNames,
 } from '../lib/multiLife'
@@ -46,9 +42,14 @@ function readLegacySaves(): CharacterBuild[] {
   }
 }
 
+/** Fired after the saved list changes, so every usePersistence copy (File
+ *  menu, Ctrl+S, account page) shows the same list. */
+const DOCS_CHANGED = 'ddo-builder-docs-changed'
+
 function writeDocs(docs: CharacterDocument[]): void {
   try {
     localStorage.setItem(DOCS_KEY, JSON.stringify(docs))
+    queueMicrotask(() => window.dispatchEvent(new Event(DOCS_CHANGED)))
   } catch {
     console.warn('usePersistence: could not write to localStorage')
   }
@@ -87,7 +88,7 @@ function readDocs(): CharacterDocument[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
-        return (parsed as unknown[]).filter(isCharacterDocument).map(migrateDocument)
+        return (parsed as unknown[]).filter(isCharacterDocument).map(d => migrateDocument(d))
       }
       return []
     }
@@ -146,6 +147,11 @@ export function takeLastImportWarnings(): string[] {
 
 export function usePersistence(): PersistenceAPI {
   const [docs, setDocs] = useState<CharacterDocument[]>(() => readDocs())
+  useEffect(() => {
+    const reload = () => setDocs(readDocs())
+    window.addEventListener(DOCS_CHANGED, reload)
+    return () => window.removeEventListener(DOCS_CHANGED, reload)
+  }, [])
   // Tree catalogue for the V2 tree-version gate on import (SpendInTree
   // parity: spends in out-of-version trees are revoked at load).
   const { allTrees } = useStaticBundle()
@@ -155,7 +161,11 @@ export function usePersistence(): PersistenceAPI {
   /** Upsert document by id and flush to localStorage. The overwritten version
    *  becomes the document's backup (V2 writes a .bak before saving). */
   const saveDocument = useCallback((doc: CharacterDocument) => {
-    setDocs(prev => {
+    setDocs(() => {
+      // Read the stored list fresh: the File menu, Ctrl+S and the account
+      // page each hold their own copy, and writing back a stale one would
+      // drop characters another of them saved.
+      const prev = readDocs()
       const idx = prev.findIndex(d => d.id === doc.id)
       if (idx >= 0) {
         try {
@@ -186,8 +196,8 @@ export function usePersistence(): PersistenceAPI {
 
   /** Remove a document from the saves list and from localStorage */
   const deleteDocument = useCallback((id: string) => {
-    setDocs(prev => {
-      const next = prev.filter(d => d.id !== id)
+    setDocs(() => {
+      const next = readDocs().filter(d => d.id !== id)
       writeDocs(next)
       return next
     })
@@ -344,184 +354,4 @@ export function usePersistence(): PersistenceAPI {
   }, [allTrees])
 
   return { docs, saves, saveDocument, deleteDocument, loadBackup, exportJSON, exportDDOBuild, importFile }
-}
-
-// ---------------------------------------------------------------------------
-// SaveLoadBar component
-//
-// Uses React.createElement (aliased as `h`) so this .ts file stays JSX-free
-// while still rendering a real React component tree.
-// ---------------------------------------------------------------------------
-
-/** Props for SaveLoadBar */
-export interface SaveLoadBarProps {
-  /** Called when the user selects a saved character document to load */
-  onLoad: (doc: CharacterDocument) => void
-}
-
-/**
- * A toolbar that lets the user save, load, export, and import characters.
- * Operates on the whole Character document (every life/build): the
- * live-edited active build is synced into the document before each save or
- * export, and loading hands the full document to `onLoad`.
- */
-export function SaveLoadBar({ onLoad }: SaveLoadBarProps): ReactElement {
-  const { build, dispatch } = useCharacter()
-  const { doc, setDoc } = useDocument()
-  const { docs, saveDocument, loadBackup, importFile, exportJSON, exportDDOBuild } = usePersistence()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [importError, setImportError] = useState<string | null>(null)
-  const [savedMsg, setSavedMsg] = useState(false)
-
-  /** The current document with the live build written back in. */
-  function syncedDoc(): CharacterDocument {
-    const synced = syncBuildIntoDocument(doc, build)
-    if (synced !== doc) setDoc(synced)
-    return synced
-  }
-
-  function handleNew() {
-    if (window.confirm('Start a new character? Unsaved changes will be lost.')) {
-      const fresh = emptyDocument()
-      setDoc(fresh)
-      const target = findActiveBuild(fresh)
-      if (target) dispatch({ type: 'LOAD_BUILD', build: target })
-    }
-  }
-
-  function handleSave() {
-    saveDocument(syncedDoc())
-    setSavedMsg(true)
-    setTimeout(() => setSavedMsg(false), 1500)
-  }
-
-  function handleLoadChange(e: ChangeEvent<HTMLSelectElement>) {
-    const id = e.target.value
-    if (!id) return
-    const found = docs.find(d => d.id === id)
-    if (found) {
-      onLoad(found)
-    }
-    // Reset select back to placeholder
-    e.target.value = ''
-  }
-
-  function handleImportClick() {
-    setImportError(null)
-    fileInputRef.current?.click()
-  }
-
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    // Reset the input so the same file can be re-selected
-    e.target.value = ''
-    importFile(file)
-      .then(imported => {
-        saveDocument(imported)
-        onLoad(imported)
-      })
-      .catch((err: unknown) => {
-        setImportError(err instanceof Error ? err.message : 'Import failed')
-      })
-  }
-
-  // ---- render via createElement ----
-
-  const newBtn = h(
-    'button',
-    { type: 'button', onClick: handleNew, title: 'Start a new character' },
-    'New',
-  )
-
-  const saveBtn = h(
-    'button',
-    { type: 'button', onClick: handleSave, title: 'Save current character (all lives and builds)' },
-    savedMsg ? '✓ Saved' : 'Save',
-  )
-
-  const loadSelect = h(
-    'select',
-    { defaultValue: '', onChange: handleLoadChange, title: 'Load a saved character' },
-    h('option', { value: '', disabled: true }, docs.length === 0 ? 'No saves' : 'Load…'),
-    ...docs.map(d =>
-      h('option', { key: d.id, value: d.id }, d.name),
-    ),
-  )
-
-  const exportBtn = h(
-    'button',
-    {
-      type: 'button',
-      onClick: () => exportJSON(syncedDoc()),
-      title: 'Export current character (all lives and builds) as JSON',
-    },
-    'Export JSON',
-  )
-
-  const exportV2Btn = h(
-    'button',
-    {
-      type: 'button',
-      onClick: () => exportDDOBuild(syncedDoc()),
-      title: 'Export current character as a V2-compatible .DDOBuild file (all lives and builds)',
-    },
-    'Export .DDOBuild',
-  )
-
-  const hiddenInput = h('input', {
-    ref: fileInputRef,
-    type: 'file',
-    accept: '.json,application/json,.ddobuild,.DDOBuild,.ddocp,application/xml,text/xml',
-    style: { display: 'none' },
-    onChange: handleFileChange,
-  })
-
-  const importBtn = h(
-    'button',
-    { type: 'button', onClick: handleImportClick, title: 'Import a character from a V3 JSON file or a V2 .DDOBuild XML file (all lives and builds are kept)' },
-    'Import',
-  )
-
-  const revertBtn = h(
-    'button',
-    {
-      type: 'button',
-      title: 'Revert to the version before the last save (V2 "Revert to Backup")',
-      onClick: () => {
-        const backup = loadBackup(doc.id)
-        if (!backup) { window.alert('No backup exists for this character yet.') }
-        else if (window.confirm('Revert to the previous saved version? Current changes will be lost.')) {
-          onLoad(backup)
-        }
-      },
-    },
-    'Revert',
-  )
-
-  const errorSpan = importError
-    ? h('span', { style: { color: 'var(--color-red)', fontSize: '11px' } }, importError)
-    : null
-
-  return h(
-    'div',
-    {
-      style: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        flexWrap: 'wrap',
-        padding: '6px 0',
-      },
-    },
-    newBtn,
-    saveBtn,
-    loadSelect,
-    exportBtn,
-    exportV2Btn,
-    hiddenInput,
-    importBtn,
-    revertBtn,
-    errorSpan,
-  )
 }

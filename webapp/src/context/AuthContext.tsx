@@ -64,6 +64,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** Signed-in user, or null — also outside AuthProvider (tests, embeds). */
+export function useOptionalUser(): CommunityUser | null {
+  return useContext(AuthContext)?.user ?? null
+}
+
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider')

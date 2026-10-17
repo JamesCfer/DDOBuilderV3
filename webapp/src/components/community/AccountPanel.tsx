@@ -10,9 +10,9 @@ import type { MyBuildSummary } from '../../lib/community/api'
 import { useCharacter } from '../../context/CharacterContext'
 import { useCollab } from '../../context/CollabContext'
 import { copyToClipboard } from '../../lib/clipboard'
-import { useDocument } from '../../context/DocumentContext'
-import { migrateDocument } from '../../hooks/usePersistence'
-import { isCharacterDocument, syncBuildIntoDocument, repairCharacterNames } from '../../lib/multiLife'
+import { migrateDocument, usePersistence } from '../../hooks/usePersistence'
+import { useSave } from '../../hooks/useSave'
+import { isCharacterDocument } from '../../lib/multiLife'
 import type { CharacterDocument } from '../../types/ddo'
 
 // ---------------------------------------------------------------------------
@@ -174,10 +174,11 @@ interface AccountPanelProps {
 export default function AccountPanel({ onLoad }: AccountPanelProps) {
   const { user, checking, logout } = useAuth()
   const { build } = useCharacter()
-  const { doc, setDoc } = useDocument()
   const collab = useCollab()
   const [builds, setBuilds] = useState<MyBuildSummary[]>([])
   const [saveName, setSaveName] = useState('')
+  const save = useSave()
+  const { saveDocument } = usePersistence()
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -193,28 +194,20 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
   if (checking) return <div className={styles.notice}>Checking your session…</div>
   if (!user) return <AuthForms />
 
-  /** Current document with live edits synced in. */
-  function currentDoc(): CharacterDocument {
-    const synced = syncBuildIntoDocument(doc, build)
-    if (synced !== doc) setDoc(synced)
-    return synced
-  }
-
   async function handleSaveCurrent(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setNotice(null)
-    const name = (saveName || build.name || 'Unnamed build').trim()
-    try {
-      // Save under the same name the character is known by, so re-opening
-      // the build shows that name rather than a placeholder.
-      await communityApi.saveBuild({ name, document: repairCharacterNames(currentDoc(), name) })
+    // The same Save as File > Save and Ctrl+S: this browser and the
+    // account, updating the account copy this character already has.
+    const r = await save(saveName.trim() || undefined)
+    if (r.accountError) {
+      setError(`Saved in this browser, but the account save failed: ${r.accountError}`)
+    } else {
       setSaveName('')
-      setNotice(`Saved "${name}" to your account.`)
-      refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      setNotice(`Saved "${r.name}" in this browser and your account.`)
     }
+    refresh()
   }
 
   async function handleStarToggle(b: MyBuildSummary) {
@@ -242,7 +235,9 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
       // The name the build is saved under is the character's name: a document
       // saved before builds were named from their file carries "Life 1" in
       // every build, which is what the Character page would otherwise show.
-      onLoad(migrateDocument(rec.document, rec.name || b.name))
+      const loaded = { ...migrateDocument(rec.document, rec.name || b.name), accountBuildId: b.id }
+      saveDocument(loaded)
+      onLoad(loaded)
       setNotice(`Loaded "${b.name}" — it is now your working character.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Load failed')
@@ -319,13 +314,13 @@ export default function AccountPanel({ onLoad }: AccountPanelProps) {
       </div>
 
       <form className={styles.saveRow} onSubmit={handleSaveCurrent}>
-        <span className={styles.sectionTitle}>Save current character</span>
+        <span className={styles.sectionTitle} title="Same as File > Save: keeps it in this browser and your account">Save current character</span>
         <input
           placeholder={build.name || 'Build name'}
           value={saveName}
           onChange={e => setSaveName(e.target.value)}
         />
-        <button type="submit">Save to my account</button>
+        <button type="submit">Save</button>
       </form>
 
       {notice && <div className={styles.notice}>{notice}</div>}
