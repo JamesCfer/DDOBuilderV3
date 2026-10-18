@@ -112,6 +112,8 @@ const SCALAR2_MAP: Record<string, string> = {
   songSpellPen: 'song.spellPen', songCasterLevel: 'song.cl', songSkill: 'song.skill', songPRR: 'song.prr',
   songMRR: 'song.mrr', songHealAmp: 'song.healAmp', songNegHealAmp: 'song.negHealAmp', songRepairAmp: 'song.repairAmp',
 }
+const SPELL_SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment',
+  'Evocation', 'Illusion', 'Necromancy', 'Transmutation'] as const
 const HIRELING_MAP: Record<string, string> = {
   hitpoints: 'hireling.hp', fortification: 'hireling.fort',
   prr: 'hireling.prr', mrr: 'hireling.mrr', dodge: 'hireling.dodge',
@@ -209,6 +211,14 @@ export function buildParityRows(
     let v3cl = lv + stats.total(`cl.${cls}`) + stats.total('cl.All')
     if (lv > 0 && mixedMagics) v3cl += Math.min(20, charLevel) - lv
     push(`cl.${cls}`, v2cl, v3cl)
+  }
+  // Per-school caster levels. V2 BreakdownItemSchoolCasterLevel pools
+  // CasterLevel / MaxCasterLevel effects whose Item is the school or "All".
+  for (const school of SPELL_SCHOOLS) {
+    const cl = oracle.breakdowns?.[`clSchool${school}`]
+    if (cl !== undefined) push(`clSchool${school}`, cl, stats.total(`cl.${school}`) + stats.total('cl.All'))
+    const mcl = oracle.breakdowns?.[`maxClSchool${school}`]
+    if (mcl !== undefined) push(`maxClSchool${school}`, mcl, stats.total(`maxCl.${school}`) + stats.total('maxCl.All'))
   }
   // Full-analytics expansion
   for (const [ok, v3k] of Object.entries(SCALAR2_MAP)) {
