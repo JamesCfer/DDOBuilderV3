@@ -8,6 +8,14 @@
   text-transform: none;
 }
 
+.apBonus {
+  text-transform: none;
+  font-variant: normal;
+  color: var(--color-text-muted, var(--color-text-secondary));
+  cursor: help;
+}
+
+
 /* ── Tabs ────────────────────────────────────────────────────────────── */
 .tabs {
   display: flex;

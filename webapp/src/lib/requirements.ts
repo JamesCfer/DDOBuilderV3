@@ -95,6 +95,12 @@ export interface RequirementContext {
    * lib/treeAvailability.ts.
    */
   featCounts?: Record<string, number>
+  /**
+   * V2 Requirement.cpp:917-938 EvaluateFeatAnySource falls back to
+   * Build::IsGrantedFeat: feats handed out by GrantFeat effects (trained
+   * enhancements, destinies, gear). Only FeatAnySource reads this set.
+   */
+  grantedFeats?: Set<string>
 }
 
 function getFeatSet(ctx: RequirementContext): Set<string> {
@@ -135,12 +141,15 @@ export function meetsSingleRequirement(req: Requirement, ctx: RequirementContext
       return totalBAB(build, allClasses) >= value
     case 'Feat':
     case 'FeatAnySource': {
-      // V2 Requirement.cpp:870-911: both check the trained-feat set; FeatAnySource
-      // additionally accepts granted feats, which getFeatSet already folds in.
+      // V2 Requirement.cpp:870-938: both check the current-feat set; FeatAnySource
+      // additionally accepts feats granted by GrantFeat effects (ctx.grantedFeats).
       // With Value set, V2 requires that many acquisitions (trained + special);
       // honored when the caller supplies featCounts, else set membership.
-      if (ctx.featCounts) return (ctx.featCounts[item] ?? 0) >= (req.Value ?? 1)
-      return getFeatSet(ctx).has(item)
+      const met = ctx.featCounts
+        ? (ctx.featCounts[item] ?? 0) >= (req.Value ?? 1)
+        : getFeatSet(ctx).has(item)
+      if (met || req.Type === 'Feat') return met
+      return ctx.grantedFeats?.has(item) ?? false
     }
     case 'FeatTrained':
       // V2 2.0.0.85 Requirement.cpp EvaluateFeatTrained: counts only feats the
