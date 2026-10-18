@@ -106,6 +106,7 @@ const SCALAR2_MAP: Record<string, string> = {
   // V2 "Tower Shield MDB" and "Dodge Cap (Tower Shield)" are both simple
   // pools of Effect_MaxDexBonusTowerShield (V3 mdbShields).
   maxDexBonusShields: 'mdbShields', dodgeCapTowerShield: 'mdbShields',
+  armorACPercent: 'armorACPercent', shieldACPercent: 'shieldACPercent',
   totalACPercent: 'ac.percent', songAC: 'song.ac', songAttack: 'song.attack', songDamage: 'song.damage',
   songDoublestrike: 'song.doublestrike', songDoubleshot: 'song.doubleshot', songSpellPower: 'song.sp',
   songSpellPen: 'song.spellPen', songCasterLevel: 'song.cl', songSkill: 'song.skill', songPRR: 'song.prr',
