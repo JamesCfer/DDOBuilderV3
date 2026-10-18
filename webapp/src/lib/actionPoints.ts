@@ -95,3 +95,37 @@ export function enhancementAPBudget(build: CharacterBuild, allFeats: Feat[], spe
   const bonus = computeBonusActionPoints(build, allFeats, specialFeats)
   return heroic * 4 + bonus.racial + bonus.universal
 }
+
+/** Which AP pool a tree spends from (V2 TreeType for the enhancement pane). */
+export type EnhancementPool = 'racial' | 'universal' | 'class'
+
+export interface PoolSpend {
+  racial: number
+  universal: number
+  class: number
+}
+
+/**
+ * V2 Build::AvailableActionPoints (Build.cpp:1760-1795) for one tree type.
+ * Bonus racial AP can only be spent in the racial tree and bonus universal AP
+ * only in universal trees; any spend in those trees beyond their bonus comes
+ * out of the shared level-based pool.
+ */
+export function availableActionPoints(
+  heroicLevel: number,
+  bonus: BonusActionPoints,
+  spend: PoolSpend,
+  pool: EnhancementPool,
+): number {
+  const levelAps = Math.min(20, Math.max(0, heroicLevel)) * 4
+  const racialOver = Math.max(spend.racial - bonus.racial, 0)
+  const universalOver = Math.max(spend.universal - bonus.universal, 0)
+  switch (pool) {
+    case 'racial':
+      return levelAps + bonus.racial - spend.racial - universalOver - spend.class
+    case 'universal':
+      return levelAps - racialOver + bonus.universal - spend.universal - spend.class
+    default:
+      return levelAps - racialOver - universalOver - spend.class
+  }
+}

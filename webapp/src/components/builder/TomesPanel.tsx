@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
+import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
-import type { Ability } from '../../types/ddo'
+import type { Ability, CharacterBuild, Feat } from '../../types/ddo'
+import { specialFeatTrainedCount } from '../../lib/specialFeats'
 import { SKILL_NAMES } from '../../lib/gamedata'
 import CollapsibleCard from '../common/CollapsibleCard'
 import styles from './TomesPanel.module.css'
@@ -19,7 +22,7 @@ export default function TomesPanel({ collapsible = false }: Props = {}) {
 
   if (collapsible) {
     return (
-      <CollapsibleCard title="Tomes" summary={tomeSummary(build.abilityTomes, build.skillTomes)}>
+      <CollapsibleCard title="Tomes" summary={tomeSummary(build.abilityTomes, build.skillTomes, build)}>
         <TomesBody />
       </CollapsibleCard>
     )
@@ -39,19 +42,62 @@ export default function TomesPanel({ collapsible = false }: Props = {}) {
 function tomeSummary(
   abilityTomes: Record<string, number>,
   skillTomes: Record<string, number>,
+  build?: Pick<CharacterBuild, 'pastLives' | 'pastLifeTypes'>,
 ): string {
   const abilities = ABILITIES.filter(ab => (abilityTomes[ab] ?? 0) > 0).length
   const skills = SKILL_NAMES.filter(sk => (skillTomes[sk] ?? 0) > 0).length
-  if (abilities === 0 && skills === 0) return 'none set'
+  const special = build ? specialTomeCount(build) : 0
+  if (abilities === 0 && skills === 0 && special === 0) return 'none set'
   const parts: string[] = []
   if (abilities > 0) parts.push(`${abilities} ability`)
   if (skills > 0) parts.push(`${skills} skill`)
+  if (special > 0) parts.push(`${special} other`)
   return parts.join(' · ')
+}
+
+/** Special-feat tomes (Chrisms, Tome of Destiny) with at least one copy. */
+function specialTomeCount(build: Pick<CharacterBuild, 'pastLives' | 'pastLifeTypes'>): number {
+  return Object.entries(build.pastLives ?? {}).filter(([name, n]) =>
+    n > 0 && (build.pastLifeTypes?.[name] === 'Special' || /^(Inherent |Tome of )/.test(name)),
+  ).length
+}
+
+/** Action point and destiny tomes first: those are the ones players hunt for. */
+function tomeRank(name: string): number {
+  if (/Action Point/.test(name)) return 0
+  if (/Destiny|Fate Point/.test(name)) return 1
+  return 2
+}
+
+/** "Chrism Of Racial Knowledge" from "Chrism Of Racial Knowledge - Entwined …". */
+function tomeItemName(feat: Feat): string {
+  const desc = typeof feat.Description === 'string' ? feat.Description : ''
+  const m = /^([^\n]{3,60}?)\s+-\s/.exec(desc)
+  return m ? m[1] : ''
 }
 
 function TomesBody() {
   const { build, dispatch } = useCharacter()
   const { abilityTomes, skillTomes } = build
+  // V2 "Special" feats (SpecialFeatsPane): Chrisms of Racial / Universal
+  // Knowledge (bonus racial and universal AP), Tome of Destiny, Chrism of
+  // Future Fate and the other inherent bonuses. The same counts are editable
+  // under Past Lives › Special Feats; they are listed here too because these
+  // are tomes in game and this is where players look for them.
+  const [specialTomes, setSpecialTomes] = useState<Feat[]>([])
+  useEffect(() => {
+    let live = true
+    api.feats({ acquire: 'Special' })
+      .then(f => { if (live) setSpecialTomes([...f].sort((a, b) => tomeRank(a.Name) - tomeRank(b.Name))) })
+      .catch(() => { if (live) setSpecialTomes([]) })
+    return () => { live = false }
+  }, [])
+
+  function setSpecialCount(name: string, target: number) {
+    const current = specialFeatTrainedCount(build, name)
+    for (let i = current; i < target; i++) dispatch({ type: 'TRAIN_SPECIAL_FEAT', featName: name })
+    for (let i = current; i > target; i--) dispatch({ type: 'REVOKE_SPECIAL_FEAT', featName: name })
+  }
 
   return (
     <>
@@ -116,6 +162,37 @@ function TomesBody() {
             ))}
           </div>
         </section>
+
+        {specialTomes.length > 0 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Action Point, Destiny &amp; Chrism Tomes</h3>
+            <div className={styles.skillGrid}>
+              {specialTomes.map(feat => {
+                const max = feat.MaxTimesAcquire ?? 1
+                const count = specialFeatTrainedCount(build, feat.Name)
+                const item = tomeItemName(feat)
+                return (
+                  <div key={feat.Name} className={styles.skillRow} title={typeof feat.Description === 'string' ? feat.Description : undefined}>
+                    <span className={styles.skillLabel}>
+                      {feat.Name}
+                      {item && <span className={styles.tomeItem}>{item}</span>}
+                    </span>
+                    <select
+                      className={styles.select}
+                      aria-label={feat.Name}
+                      value={Math.min(count, max)}
+                      onChange={e => setSpecialCount(feat.Name, Number(e.target.value))}
+                    >
+                      {Array.from({ length: max + 1 }, (_, n) => (
+                        <option key={n} value={n}>{n === 0 ? 'None' : `×${n}`}</option>
+                      ))}
+                    </select>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
     </>
   )
 }

@@ -3,7 +3,8 @@ import { api } from '../../api'
 import { useCharacter } from '../../context/CharacterContext'
 import { useDocument } from '../../context/DocumentContext'
 import { findActiveLife } from '../../lib/multiLife'
-import { enhancementAPBudget } from '../../lib/actionPoints'
+import { enhancementAPBudget, computeBonusActionPoints, availableActionPoints, type EnhancementPool, type PoolSpend } from '../../lib/actionPoints'
+import { treeItemFeatContext } from '../../lib/enhancementFeats'
 import {
   availableEnhancementTrees, isEnhancementTree, isLegacyTreeVisible, isUnlockGatedTree,
   orphanedEnhancementTrees,
@@ -31,6 +32,11 @@ const MAX_VISIBLE = MAX_ENHANCEMENT_TREES
 
 function isUniversalTree(tree: EnhancementTree): boolean {
   return tree.IsUniversalTree === true || (!tree.IsRacialTree && !tree.Requirements)
+}
+
+function treePool(tree: EnhancementTree): EnhancementPool {
+  if (tree.IsRacialTree) return 'racial'
+  return isUniversalTree(tree) ? 'universal' : 'class'
 }
 
 // Re-exported from lib/treeAvailability (V2 DetermineTrees parity) — kept
@@ -227,6 +233,14 @@ export default function EnhancementTreePanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableTrees])
 
+  // Feat context for item requirements: V2 checks Build::CurrentFeats
+  // (trained + automatic + special) and, for FeatAnySource, granted feats.
+  // Without it a Wizard's automatic Magical Training never unlocked the
+  // Feydark Illusionist cores.
+  const featContext = useMemo(
+    () => treeItemFeatContext(build, allClasses, currentRace, allTrees, specialFeats, allFeats),
+    [build, allClasses, currentRace, allTrees, specialFeats, allFeats])
+
   const totalSpent = useMemo(() =>
     enhTrees.reduce((s, t) => s + computeTreeSpent(t, enhChoices[t.Name] ?? {}), 0),
     [enhTrees, enhChoices])
@@ -238,6 +252,23 @@ export default function EnhancementTreePanel() {
   const apBudget = useMemo(
     () => (allFeats.length > 0 ? enhancementAPBudget(build, allFeats, specialFeats) : Math.min(20, build.totalLevel || 0) * 4),
     [build, allFeats, specialFeats])
+  const bonusAP = useMemo(
+    () => computeBonusActionPoints(build, allFeats, specialFeats),
+    [build, allFeats, specialFeats])
+
+  // V2 Build::AvailableActionPoints per tree type: bonus racial AP (racial
+  // past lives, Tomes of Racial Knowledge) only buys racial-tree ranks and
+  // bonus universal AP only universal-tree ranks.
+  const poolSpend = useMemo<PoolSpend>(() => {
+    const out: PoolSpend = { racial: 0, universal: 0, class: 0 }
+    for (const t of enhTrees) {
+      const spent = computeTreeSpent(t, enhChoices[t.Name] ?? {})
+      if (spent > 0) out[treePool(t)] += spent
+    }
+    return out
+  }, [enhTrees, enhChoices])
+  const availableFor = (tree: EnhancementTree) =>
+    availableActionPoints(build.totalLevel || 0, bonusAP, poolSpend, treePool(tree))
 
   // V2 Build::RevokeEnhancementEffects (Build.cpp:3748-3822) runs VerifyGear
   // whenever a revoked enhancement carried a GrantFeat effect.
@@ -321,7 +352,19 @@ export default function EnhancementTreePanel() {
     <div className="panel">
       <div className="panel-header">
         <span>Enhancements</span>
-        <span className={styles.apTotal}>{totalSpent} / {apBudget} AP</span>
+        <span className={styles.apTotal}>
+          {totalSpent} / {apBudget} AP
+          {(bonusAP.racial > 0 || bonusAP.universal > 0) && (
+            <span
+              className={styles.apBonus}
+              title="Bonus racial AP can only be spent in the racial tree, bonus universal AP only in universal trees."
+            >
+              {' '}(incl.{bonusAP.racial > 0 ? ` ${bonusAP.racial} racial` : ''}
+              {bonusAP.racial > 0 && bonusAP.universal > 0 ? ',' : ''}
+              {bonusAP.universal > 0 ? ` ${bonusAP.universal} universal` : ''})
+            </span>
+          )}
+        </span>
       </div>
 
       <div className="panel-body" style={{ padding: 0 }}>
@@ -411,12 +454,13 @@ export default function EnhancementTreePanel() {
                           choices={treeChoices}
                           selections={treeSelections}
                           totalSpentAllTrees={totalSpent}
-                          totalAP={apBudget}
+                          totalAP={totalSpent + availableFor(tree)}
                           onChoicesChange={u => handleChoicesChange(tree.Name, u)}
                           onSelectionsChange={u => handleSelectionsChange(tree.Name, u)}
                           build={build}
                           allClasses={allClasses}
                           race={currentRace}
+                          featContext={featContext}
                         />
                       </div>
                     )

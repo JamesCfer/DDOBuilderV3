@@ -4,6 +4,8 @@
 
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useCharacter } from '../../context/CharacterContext'
+import { useDocument } from '../../context/DocumentContext'
+import { findActiveLife } from '../../lib/multiLife'
 import DdoIcon from '../DdoIcon'
 import { computeTreeSpent } from '../../lib/enhancementSpend'
 import { enhancementAPBudget } from '../../lib/actionPoints'
@@ -32,6 +34,8 @@ function Bar({ tree, spent, max }: { tree: EnhancementTree | undefined; name?: s
 export default function ProgressionTile() {
   const { build } = useCharacter()
   const { allTrees, allFeats } = useStaticBundle()
+  const { doc } = useDocument()
+  const specialFeats = findActiveLife(doc)?.specialFeats ?? []
   const treeByName = new Map(allTrees.map(t => [t.Name, t]))
 
   // Enhancements: every tree with points in it, biggest first.
@@ -40,7 +44,7 @@ export default function ProgressionTile() {
     .filter(e => e.spent > 0)
     .sort((a, b) => b.spent - a.spent)
   const enhSpent = enh.reduce((s, e) => s + e.spent, 0)
-  const enhBudget = allFeats.length > 0 ? enhancementAPBudget(build, allFeats) : Math.min(20, build.totalLevel || 0) * 4
+  const enhBudget = allFeats.length > 0 ? enhancementAPBudget(build, allFeats, specialFeats) : Math.min(20, build.totalLevel || 0) * 4
 
   // Destinies: the selected trees, the active one first.
   const destinies = (build.selectedDestinyTrees ?? []).filter(Boolean)

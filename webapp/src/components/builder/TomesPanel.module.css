@@ -81,3 +81,10 @@
   border-color: var(--color-gold-dark);
   color: var(--color-gold);
 }
+
+/* Source item under a special-feat tome's name ("Chrism Of Racial Knowledge"). */
+.tomeItem {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}

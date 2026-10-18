@@ -7,6 +7,7 @@ import DdoIcon from '../DdoIcon'
 import { tipProps, hideTip, type TipContent } from '../common/HoverTip'
 import { summarizeEffects } from '../../lib/effectSummary'
 import { meetsRequirements } from '../../lib/requirements'
+import type { TreeItemFeatContext } from '../../lib/enhancementFeats'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './TreeGrid.module.css'
 import ModalPortal from '../common/ModalPortal'
@@ -382,12 +383,18 @@ interface TreeGridProps {
   build?: CharacterBuild
   allClasses?: DDOClass[]
   race?: Race
+  /**
+   * The build's full feat context (trained, automatic, special and granted
+   * feats; lib/enhancementFeats). Without it, Feat requirements see only the
+   * slot-trained feats.
+   */
+  featContext?: TreeItemFeatContext
 }
 
 export default function TreeGrid({
   tree, choices, selections, totalSpentAllTrees, totalAP = 80, tier5Locked = false,
   onChoicesChange, onSelectionsChange,
-  build, allClasses, race,
+  build, allClasses, race, featContext,
 }: TreeGridProps) {
   const { settings: { autoSelectSingleOption } } = useSettings()
   const [selectorTarget, setSelectorTarget] = useState<string | null>(null)
@@ -446,7 +453,7 @@ export default function TreeGrid({
           }
         }
       }
-      if (allClasses && !meetsRequirements(opt.Requirements, { build, allClasses, race })) return false
+      if (allClasses && !meetsRequirements(opt.Requirements, { build, allClasses, race, ...featContext })) return false
     }
     return true
   }
@@ -566,7 +573,7 @@ export default function TreeGrid({
         // V2 parity: evaluate per-item Requirements when build is provided.
         // Items without a Requirements block are always met.
         const reqsMet = build && allClasses
-          ? meetsRequirements(item.Requirements, { build, allClasses, race })
+          ? meetsRequirements(item.Requirements, { build, allClasses, race, ...featContext })
           : true
         return (
           <EnhancementCell

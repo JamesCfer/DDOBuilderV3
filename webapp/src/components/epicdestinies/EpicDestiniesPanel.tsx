@@ -11,6 +11,9 @@ import { tier5LockedTree, availableDestinyTrees, destinyPoolForBuild } from '../
 import { computeTreeSpent } from '../../lib/enhancementSpend'
 import { exportDestinyTreeFile, parseTreeFile } from '../../lib/treeFileIO'
 import { downloadTextFile } from '../../lib/browserDownload'
+import { treeItemFeatContext } from '../../lib/enhancementFeats'
+import { useDocument } from '../../context/DocumentContext'
+import { findActiveLife } from '../../lib/multiLife'
 import styles from './EpicDestiniesPanel.module.css'
 
 // ---------------------------------------------------------------------------
@@ -53,6 +56,15 @@ export default function EpicDestiniesPanel() {
     () => bundle.allRaces.find(r => r.Name === build.race),
     [bundle.allRaces, build.race],
   )
+  // Full feat context for item requirements (V2 Build::CurrentFeats plus
+  // granted feats), with gear grants from the stats engine folded in.
+  const { doc } = useDocument()
+  const specialFeats = findActiveLife(doc)?.specialFeats
+  const featContext = useMemo(() => {
+    const ctx = treeItemFeatContext(build, bundle.allClasses, race, bundle.allTrees, specialFeats ?? [], bundle.allFeats)
+    for (const f of stats.grantedFeatsList) ctx.grantedFeats.add(f)
+    return ctx
+  }, [build, bundle.allClasses, race, bundle.allTrees, specialFeats, bundle.allFeats, stats.grantedFeatsList])
   const availableForSelect = useMemo(
     () => availableDestinyTrees(allTrees, build, bundle.allClasses, race),
     [allTrees, build, bundle.allClasses, race],
@@ -347,6 +359,7 @@ export default function EpicDestiniesPanel() {
                         build={build}
                         allClasses={bundle.allClasses}
                         race={race}
+                        featContext={featContext}
                         onChoicesChange={(updated) => handleChoicesChange(name, updated)}
                         onSelectionsChange={(updated) => handleSelectionsChange(name, updated)}
                       />
