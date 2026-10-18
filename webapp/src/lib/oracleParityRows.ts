@@ -103,6 +103,9 @@ const SCALAR2_MAP: Record<string, string> = {
   mmExtend: 'metamagic.cost.Extend', mmHeighten: 'metamagic.cost.Heighten',
   mmIntensify: 'metamagic.cost.Intensify', mmMaximize: 'metamagic.cost.Maximize',
   mmQuicken: 'metamagic.cost.Quicken',
+  // V2 "Tower Shield MDB" and "Dodge Cap (Tower Shield)" are both simple
+  // pools of Effect_MaxDexBonusTowerShield (V3 mdbShields).
+  maxDexBonusShields: 'mdbShields', dodgeCapTowerShield: 'mdbShields',
 }
 const HIRELING_MAP: Record<string, string> = {
   hitpoints: 'hireling.hp', fortification: 'hireling.fort',
