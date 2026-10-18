@@ -242,6 +242,8 @@ int main(int argc, char** argv)
         { Breakdown_Maximize, "mmMaximize", false },
         { Breakdown_Quicken, "mmQuicken", false },
         { Breakdown_TotalACPercent, "totalACPercent", false },
+        { Breakdown_BonusArmorAC, "armorACPercent", false },
+        { Breakdown_BonusShieldAC, "shieldACPercent", false },
         { Breakdown_SongACBonus, "songAC", false },
         { Breakdown_SongAttackBonus, "songAttack", false },
         { Breakdown_SongDamageBonus, "songDamage", false },
