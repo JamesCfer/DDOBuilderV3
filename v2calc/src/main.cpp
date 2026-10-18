@@ -241,6 +241,21 @@ int main(int argc, char** argv)
         { Breakdown_Intensify, "mmIntensify", false },
         { Breakdown_Maximize, "mmMaximize", false },
         { Breakdown_Quicken, "mmQuicken", false },
+        { Breakdown_TotalACPercent, "totalACPercent", false },
+        { Breakdown_SongACBonus, "songAC", false },
+        { Breakdown_SongAttackBonus, "songAttack", false },
+        { Breakdown_SongDamageBonus, "songDamage", false },
+        { Breakdown_SongDoublestrike, "songDoublestrike", false },
+        { Breakdown_SongDoubleshot, "songDoubleshot", false },
+        { Breakdown_SongUniversalSpellPower, "songSpellPower", false },
+        { Breakdown_SongSpellPenetration, "songSpellPen", false },
+        { Breakdown_SongCasterLevel, "songCasterLevel", false },
+        { Breakdown_SongSkillBonus, "songSkill", false },
+        { Breakdown_SongPRR, "songPRR", false },
+        { Breakdown_SongMRR, "songMRR", false },
+        { Breakdown_SongHealingAmp, "songHealAmp", false },
+        { Breakdown_SongNegativeHealingAmp, "songNegHealAmp", false },
+        { Breakdown_SongRepairAmp, "songRepairAmp", false },
     };
     printf("  \"breakdowns\": {\n");
     size_t n = sizeof(scalars) / sizeof(scalars[0]);
