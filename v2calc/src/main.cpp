@@ -489,6 +489,9 @@ int main(int argc, char** argv)
         v2calc::DumpEffects(Breakdown_AC, "ac");
     }
     printf("  \"songDuration\": %d,\n", (int)v2calc::Total(Breakdown_SongDuration));
+    printf("  \"abilityMultiplier\": { \"main\": %.2f, \"offhand\": %.2f },\n",
+            v2calc::Total(Breakdown_DamageAbilityMultiplier),
+            v2calc::Total(Breakdown_DamageAbilityMultiplierOffhand));
     {
         // JSON-escape the immunities display string (quotes/backslashes/newlines)
         std::string imm = v2calc::DisplayValue(Breakdown_Immunities);
