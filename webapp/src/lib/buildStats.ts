@@ -2116,11 +2116,18 @@ function buildStatMapOnce(
       weaponTypeOffhand: offWeaponType,
       charLevelTotal: (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0),
       // Wild Mage / Arcane Trickster / Archmage "Mixed Magics" (see EffectContext)
-      ...(MIXED_MAGICS_SELECTORS.some(n =>
-        ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics')
-        || MIXED_MAGICS_ENHANCEMENTS.some(n => ctxEnhancements.has(n))
-        ? { mixedMagicsCapLevel: Math.min(20, (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)) }
-        : {}),
+      // V2 adds the bonus once per trained source, so count them.
+      ...((() => {
+        const sources = MIXED_MAGICS_SELECTORS.filter(n =>
+          ctxEnhancements.has(n) && ctxEnhancementSelections[n] === 'Mixed Magics').length
+          + MIXED_MAGICS_ENHANCEMENTS.filter(n => ctxEnhancements.has(n)).length
+        return sources > 0
+          ? {
+              mixedMagicsCapLevel: Math.min(20, (build.totalLevel ?? 0) + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)),
+              mixedMagicsSources: sources,
+            }
+          : {}
+      })()),
       skillTotals: skillTotalsOverride,
       skillRanks: ctxSkillRanks,
       casterLevels: casterLevelsOverride,
