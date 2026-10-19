@@ -4,6 +4,7 @@
 // keyed identically ("Section/Label") for the shared favorites list.
 
 import type { BuildStats } from '../../lib/buildStats'
+import { drBypassList } from '../../lib/combat/drBypass'
 import { absorptionTotal } from '../../lib/bonus'
 import { deriveWeaponClasses, type WeaponGroupSpec } from '../../lib/weapons/groups'
 import { critProfile, isOffhandSlotWeapon, offhandEnchantKey } from '../../lib/combat/critProfile'
@@ -80,6 +81,15 @@ export function buildBreakdownSections(
     dim = false, statKey?: string,
   ): StatRowData {
     return { label, total: value, display, bonuses, dim, statKey }
+  }
+
+  // One hand's "DR Bypass" line: the list as text, its sources as bonuses.
+  function drBypassRow(hand: 'main' | 'off', dim: boolean): StatRowData {
+    const kinds = drBypassList(stats, hand)
+    const prefix = hand === 'main' ? 'weapon.drBypass.' : 'offhand.drBypass.'
+    const bonuses = kinds.flatMap(k => stats.resolve(prefix + k).bonuses
+      .map(b => ({ ...b, source: `${k}: ${b.source}` })))
+    return fixedRow('DR Bypass', kinds.length, kinds.length > 0 ? kinds.join(', ') : '-', bonuses, dim || kinds.length === 0)
   }
 
   // ── Sections ─────────────────────────────────────────────────────────────
@@ -374,6 +384,7 @@ export function buildBreakdownSections(
     fixedRow('Vorpal Range', 1 + offhandVorpal.total,
       offhand ? (offhandVorpal.total > 0 ? `${20 - offhandVorpal.total}-20` : '20') : '-',
       [{ value: 1, type: 'Base', source: 'Natural 20', active: true }, ...offhandVorpal.bonuses], !offhand),
+    drBypassRow(offSlot ? 'off' : 'main', !offhand),
   ]
 
   const spellStats: StatRowData[] = [
@@ -424,6 +435,12 @@ export function buildBreakdownSections(
     const vorpal = 1 + wVorpal.total
     weaponEffectStats.push(fixedRow('Vorpal Range', vorpal, vorpal > 1 ? `${21 - vorpal}-20` : '20',
       [{ value: 1, type: 'Base', source: 'Natural 20', active: true }, ...wVorpal.bonuses]))
+  }
+
+  // V2 BreakdownItemWeaponDRBypass: the kinds of DR the main-hand weapon
+  // bypasses, shown as a sorted list.
+  if (weapon || drBypassList(stats, 'main').length > 0) {
+    weaponEffectStats.push(drBypassRow('main', false))
   }
 
   // Immunities — list every immunity.<name> key set anywhere in the build

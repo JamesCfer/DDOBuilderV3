@@ -984,9 +984,13 @@ export function parseEffect(
           : [{ statKey: 'immunity.All', value: 1, bonusType: mbt, source }]
       case 'DRBypass': {
         // Item = weapon scope (usually "All"); Value = the DR kind bypassed
-        // (e.g. Adamantine).
+        // (e.g. Adamantine). V2 lists it on each hand's "DR Bypass" weapon
+        // line whose weapon the Item names (BreakdownItemWeaponEffects::
+        // AffectsThisWeapon), so it pools per hand like the other weapon lines.
         const kind = (effect as { Value?: string }).Value ?? mits[0] ?? 'Untyped'
-        return [{ statKey: `drBypass.${kind}`, value: 1, bonusType: mbt, source }]
+        const mk = (key: string): ParsedBonus => ({ statKey: key, value: 1, bonusType: mbt, source })
+        return perHand(mk, weaponScopeMatches(mits, ctx), `weapon.drBypass.${kind}`,
+          offhandTypeMatches(mits, ctx), `offhand.drBypass.${kind}`, ctx)
       }
       case 'GrantSpell':
       case 'SpellListAddition': {

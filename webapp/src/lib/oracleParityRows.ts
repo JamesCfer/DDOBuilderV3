@@ -10,6 +10,7 @@
 
 import { absorptionTotal, resolveBonus } from './bonus'
 import { mixedMagicsSourceCount } from './mixedMagics'
+import { drBypassList } from './combat/drBypass'
 import { critProfile, isOffhandSlotWeapon, offhandEnchantKey } from './combat/critProfile'
 import type { BuildStats } from './buildStats'
 import type { CharacterBuild, Item } from '../types/ddo'
@@ -35,6 +36,7 @@ export interface OracleJson {
   hireling?: Record<string, number>
   weaponMain?: Record<string, number>
   weaponOffhand?: Record<string, number>
+  drBypassText?: { main: string, offhand: string }
 }
 
 export interface ParityRow {
@@ -455,6 +457,26 @@ export function buildParityRows(
     }
     if (wo.trueSeeing !== undefined) {
       push('weaponOffhand.trueSeeing', wo.trueSeeing, stats.total('trueSeeing'))
+    }
+  }
+
+  // DR Bypass: V2's weapon line is display text (sorted, de-duplicated DR
+  // kinds; its numeric total is always 0). Compare as SETS of kinds per hand:
+  // v2 = kinds V2 lists, v3 = that minus every kind only one side has.
+  if (oracle.drBypassText !== undefined) {
+    const hands: Array<['main' | 'off', string, string | undefined]> = [
+      ['main', 'drBypass.main', oracle.weaponMain !== undefined ? oracle.drBypassText.main : undefined],
+      ['off', 'drBypass.offhand', oracle.weaponOffhand !== undefined && isOffhandSlotWeapon(stats.offhandWeapon)
+        ? oracle.drBypassText.offhand : undefined],
+    ]
+    for (const [hand, key, text] of hands) {
+      if (text === undefined) continue
+      const v2Set = new Set(text.split(',').map(x => x.trim()).filter(Boolean))
+      const v3Set = new Set(drBypassList(stats, hand))
+      let diff = 0
+      for (const n of v2Set) if (!v3Set.has(n)) diff++
+      for (const n of v3Set) if (!v2Set.has(n)) diff++
+      push(key, v2Set.size, v2Set.size - diff)
     }
   }
 

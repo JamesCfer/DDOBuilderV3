@@ -791,6 +791,14 @@ namespace v2calc
         BreakdownItem* p = g_pWeaponEffects->GetWeaponBreakdown(bMainhand, bt);
         if (p != nullptr) p->V2CalcDumpEffects(label);
     }
+    const char* WeaponDisplayValue(bool bMainhand, BreakdownType bt)
+    {
+        static std::string s_value;
+        BreakdownItem* p = (g_pWeaponEffects != nullptr)
+                ? g_pWeaponEffects->GetWeaponBreakdown(bMainhand, bt) : nullptr;
+        s_value = (p != nullptr) ? (LPCTSTR)p->Value() : "";
+        return s_value.c_str();
+    }
     const char* DisplayValue(BreakdownType bt)
     {
         static std::string s_value;

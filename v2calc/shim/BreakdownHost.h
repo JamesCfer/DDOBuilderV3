@@ -46,4 +46,5 @@ namespace v2calc
     // A breakdown's DISPLAY value (BreakdownItem::Value()) - used for the
     // Immunities list, which is a text concatenation not a number.
     const char* DisplayValue(BreakdownType bt);
+    const char* WeaponDisplayValue(bool bMainhand, BreakdownType bt);
 }

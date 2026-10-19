@@ -20,7 +20,7 @@ describe('NotNeeded/SpellInfo marker effects survive the null-Amount guard', () 
 
   it('DRBypass uses the Value field for the DR kind', () => {
     const out = parseEffect(mk({ Type: 'DRBypass', Bonus: 'Feat', Item: ['All'], Value: 'Adamantine', AType: 'NotNeeded' }), 1, 't')
-    expect(out).toEqual([{ statKey: 'drBypass.Adamantine', value: 1, bonusType: 'Feat', source: 't' }])
+    expect(out).toEqual([{ statKey: 'weapon.drBypass.Adamantine', value: 1, bonusType: 'Feat', source: 't' }])
   })
 
   it('GrantSpell emits grantSpell.<Class>.<Spell> with the spell level', () => {
