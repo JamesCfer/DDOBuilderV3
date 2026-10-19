@@ -29,6 +29,7 @@ export interface OracleJson {
   energyAbsorption?: Record<string, number>
   ac?: number
   songDuration?: number
+  abilityMultiplier?: { main: number, offhand: number }
   immunities?: string
   hireling?: Record<string, number>
   weaponMain?: Record<string, number>
@@ -284,6 +285,13 @@ export function buildParityRows(
   if (oracle.ac !== undefined) push('ac', oracle.ac, stats.total('ac'))
   if (oracle.songDuration !== undefined) {
     push('songDuration', oracle.songDuration, stats.total('song.duration'))
+  }
+  // Damage ability multipliers are fractional (1.5 for THF), so compare x100.
+  if (oracle.abilityMultiplier !== undefined) {
+    push('abilityMultiplier.main', Math.round(oracle.abilityMultiplier.main * 100),
+      Math.round(stats.total('melee.damageAbilityMult') * 100))
+    push('abilityMultiplier.offhand', Math.round(oracle.abilityMultiplier.offhand * 100),
+      Math.round(stats.total('offhand.damageAbilityMult') * 100))
   }
   // Immunities: V2 emits the display string (comma-joined effect names, with
   // duplicates); V3 pools immunity.<name> keys. Compare as SETS of names.
