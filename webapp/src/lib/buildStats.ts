@@ -687,6 +687,14 @@ function accumulateGear(
         add(map, 'offhand.crit.multiplier', { value: item.CriticalMultiplier, type: 'Base', source: 'Base Weapon Multiplier', fromGear: true })
       }
     }
+    // V2 Build::ApplyWeaponEffects: each <DRBypass> entry of a wielded
+    // weapon (or shield) feeds that hand's "DR Bypass" weapon line.
+    if (hand !== undefined && item.Weapon) {
+      for (const kind of toArray(item.DRBypass)) {
+        add(map, `${hand === 'main' ? 'weapon' : 'offhand'}.drBypass.${kind}`,
+          { value: 1, type: 'Weapon DR', source: item.Name, fromGear: true })
+      }
+    }
     // Armor bonus from armor/shield items — treated as Armor bonus type.
     // DOCENTS (items with a <MithralBody> field): V2 Build::ApplyArmorEffects
     // gates the base ArmorBonus on "Composite Plating" (Warforged racial),

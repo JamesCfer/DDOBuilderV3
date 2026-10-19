@@ -577,6 +577,23 @@ int main(int argc, char** argv)
         }
         printf(" },\n");
     }
+    // The DR Bypass weapon line is display text (its numeric total is always
+    // 0): the sorted, de-duplicated list of bypassed DR kinds per hand.
+    printf("  \"drBypassText\": {");
+    for (size_t h = 0; h < 2; ++h)
+    {
+        std::string txt = v2calc::HasWeaponBreakdown(hands[h].main)
+                ? v2calc::WeaponDisplayValue(hands[h].main, Breakdown_DRBypass) : "";
+        std::string esc;
+        for (char c : txt)
+        {
+            if (c == '"' || c == '\\') { esc += '\\'; esc += c; }
+            else if (c == '\n' || c == '\r') { esc += ' '; }
+            else esc += c;
+        }
+        printf("%s\"%s\": \"%s\"", (h ? ", " : " "), hands[h].main ? "main" : "offhand", esc.c_str());
+    }
+    printf(" },\n");
     printf("  \"v2calcPass\": 134\n");
     printf("}\n");
     return 0;
