@@ -20,6 +20,7 @@ export interface OracleJson {
   breakdowns?: Record<string, number>
   spellDC?: Record<string, number>
   casterLevel?: Record<string, number>
+  maxCasterLevel?: Record<string, number>
   skills?: Record<string, number>
   tacticalDC?: Record<string, number>
   spellPower?: Record<string, number>
@@ -212,6 +213,11 @@ export function buildParityRows(
     let v3cl = lv + stats.total(`cl.${cls}`) + stats.total('cl.All')
     if (lv > 0 && mixedMagics) v3cl += Math.min(20, charLevel) - lv
     push(`cl.${cls}`, v2cl, v3cl)
+  }
+  // Per-class bonus max caster levels: MaxCasterLevel effects whose Item is
+  // the class or "All" (BreakdownItemClassCasterLevel, no class levels added).
+  for (const [cls, v2mcl] of Object.entries(oracle.maxCasterLevel ?? {})) {
+    push(`maxCl.${cls}`, v2mcl, stats.total(`maxCl.${cls}`) + stats.total('maxCl.All'))
   }
   // Per-school caster levels. V2 BreakdownItemSchoolCasterLevel pools
   // CasterLevel / MaxCasterLevel effects whose Item is the school or "All".

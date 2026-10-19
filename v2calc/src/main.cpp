@@ -473,6 +473,20 @@ int main(int argc, char** argv)
         }
     }
     printf(" },\n");
+    // bonus max caster levels per caster class (MaxCasterLevel effects, Item = class or All)
+    printf("  \"maxCasterLevel\": {");
+    firstCl = true;
+    for (auto&& c : Classes())
+    {
+        BreakdownType bt = (BreakdownType)(Breakdown_MaxCasterLevel_First + c.Index());
+        if (v2calc::HasBreakdown(bt))
+        {
+            printf("%s\"%s\": %d", (firstCl ? " " : ", "),
+                    c.Name().c_str(), (int)v2calc::Total(bt));
+            firstCl = false;
+        }
+    }
+    printf(" },\n");
 
     // pass 134: AC, hirelings, immunities, song duration, weapon lines
     printf("  \"ac\": %d,\n", (int)v2calc::Total(Breakdown_AC));
