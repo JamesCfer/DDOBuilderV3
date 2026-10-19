@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useCharacter } from '../../context/CharacterContext'
-import { hasMixedMagics } from '../../lib/mixedMagics'
+import { mixedMagicsSourceCount } from '../../lib/mixedMagics'
 import type { Spell, DDOClass } from '../../types/ddo'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
@@ -80,7 +80,7 @@ export default function SpellsPanel() {
   // Mage / Arcane Trickster selection, or Archmage AMMixedMagics) raises EVERY
   // class's caster level to min(20, character level) — V2 adds the delta in
   // each class's caster-level breakdown, not only the owning class's.
-  const mixedMagics = useMemo(() => hasMixedMagics(build), [build])
+  const mixedMagics = useMemo(() => mixedMagicsSourceCount(build), [build])
   const characterLevel = Math.min(20, build.totalLevel ?? 0)
 
   function isTrained(className: string, lvl: number, name: string): boolean {
@@ -148,8 +148,8 @@ export default function SpellsPanel() {
                             const dcValues = dcs.map(d => computeSpellDC(spell, d, activeTabData.cls, activeTabData.classLevel, stats, { heightenActive }))
                             const cl = computeCasterLevel(
                               spell, activeTabData.cls, activeTabData.classLevel, stats,
-                              mixedMagics
-                                ? { mixedMagicsCharacterLevel: characterLevel }
+                              mixedMagics > 0
+                                ? { mixedMagicsCharacterLevel: characterLevel, mixedMagicsSources: mixedMagics }
                                 : {},
                             )
                             const mcl = computeMaxCasterLevel(spell, activeTabData.cls, activeTabData.classLevel, stats)

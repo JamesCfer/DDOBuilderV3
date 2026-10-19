@@ -85,6 +85,9 @@ export interface EffectContext {
   // CasterLevel bonuses (BreakdownItemCasterLevel.cpp:77-100). Set to that
   // cap when the enhancement is trained; ClassCasterLevel amounts read it.
   mixedMagicsCapLevel?: number
+  // How many Mixed Magics sources are trained: V2 adds (cap - class levels)
+  // once per source (three separate blocks in BreakdownItemCasterLevel).
+  mixedMagicsSources?: number
   // FULL character level (heroic+epic+legendary) for AType=TotalLevel — V2
   // Amount_TotalLevel always indexes by Build::Level(). The per-call level
   // param carries CLASS levels on the enhancement path, which under-indexed
@@ -657,7 +660,7 @@ function resolveValue(
           // Mixed Magics raises the class-levels part to min(20, char level)
           // BEFORE bonuses (oracle-verified: dragon breath's Bless at CL 27).
           if (ctx.mixedMagicsCapLevel !== undefined && ctx.mixedMagicsCapLevel > level) {
-            level = ctx.mixedMagicsCapLevel
+            level += (ctx.mixedMagicsSources ?? 1) * (ctx.mixedMagicsCapLevel - level)
           }
           if (ctx.casterLevels) {
             level += (ctx.casterLevels[effect.StackSource] ?? 0) + (ctx.casterLevels['All'] ?? 0)

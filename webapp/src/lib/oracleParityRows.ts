@@ -9,7 +9,7 @@
 // derive from character level, …) is encoded here exactly once.
 
 import { absorptionTotal, resolveBonus } from './bonus'
-import { hasMixedMagics } from './mixedMagics'
+import { mixedMagicsSourceCount } from './mixedMagics'
 import { critProfile, isOffhandSlotWeapon, offhandEnchantKey } from './combat/critProfile'
 import type { BuildStats } from './buildStats'
 import type { CharacterBuild, Item } from '../types/ddo'
@@ -205,13 +205,13 @@ export function buildParityRows(
   // class levels + Wild Mage/Arcane Trickster/Archmage "Mixed Magics"
   // (min(20, level) − classLevels, only when classLevels > 0) + CasterLevel
   // effects (per-class and Item=All pools).
-  const mixedMagics = hasMixedMagics(build)
+  const mixedMagics = mixedMagicsSourceCount(build)
   const charLevel = (build.totalLevel ?? 0)
     + (build.epicLevels ?? 0) + (build.legendaryLevels ?? 0)
   for (const [cls, v2cl] of Object.entries(oracle.casterLevel ?? {})) {
     const lv = build.classes.find(c => c.name === cls)?.levels ?? 0
     let v3cl = lv + stats.total(`cl.${cls}`) + stats.total('cl.All')
-    if (lv > 0 && mixedMagics) v3cl += Math.min(20, charLevel) - lv
+    if (lv > 0) v3cl += mixedMagics * (Math.min(20, charLevel) - lv)
     push(`cl.${cls}`, v2cl, v3cl)
   }
   // Per-class bonus max caster levels: MaxCasterLevel effects whose Item is

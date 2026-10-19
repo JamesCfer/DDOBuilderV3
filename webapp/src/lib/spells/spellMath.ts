@@ -178,13 +178,14 @@ export function computeCasterLevel(
   cls: DDOClass | undefined,
   classLevel: number,
   stats: BuildStats,
-  options: { mixedMagicsCharacterLevel?: number } = {},
+  options: { mixedMagicsCharacterLevel?: number, mixedMagicsSources?: number } = {},
 ): number {
   let cl = classLevel
   // V2 BreakdownItemCasterLevel.cpp:77-100: Mixed Magics adds (min(20,charLvl)
   // - classLevels) so effective class CL becomes the character level.
   if (options.mixedMagicsCharacterLevel != null) {
-    cl += Math.max(0, options.mixedMagicsCharacterLevel - classLevel)
+    // V2 adds it once per trained source (see mixedMagicsSourceCount)
+    cl += (options.mixedMagicsSources ?? 1) * Math.max(0, options.mixedMagicsCharacterLevel - classLevel)
   }
   if (cls) cl += stats.total(`cl.${cls.Name}`)
   for (const sch of toArray(spell.School)) {
