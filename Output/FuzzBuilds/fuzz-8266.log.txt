@@ -1,0 +1,32 @@
+seed 8266, level 20
+race Eladrin
+classes Cleric 20
+abilities Str 11, Dex 12, Con 15, Int 12, Wis 12, Cha 13 (28/28 pts)
+slot Cleric-1-Follower Of-0: Follower of Olladra
+slot heroic-1: Force of Personality
+slot Cleric-2-Domain-0: Domain of Destruction
+slot heroic-3: Luck Of Heroes
+slot alterDarkGift-4: Mist Walker
+slot Cleric-5-Domain Feat-0: Improved Domain of Destruction
+slot Cleric-6-Deity-0: Search the Soul
+slot heroic-6: Great Fortitude
+slot Cleric-9-Domain Feat-0: Greater Domain of Destruction
+slot heroic-9: Shield Mastery
+slot heroic-12: Spell Penetration
+slot Cleric-14-Domain Feat-0: Master of the Domain of Destruction
+slot heroic-15: Weapon Focus: Piercing Weapons
+slot heroic-18: Weapon Focus: Ranged Weapons
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Home Renovation Hat
+gear Necklace: Sage's Locket (Level 15)
+gear Trinket: Scarlet and Blue Ioun Stone
+gear Armor: +5 Cormyrian Engraved Breastplate
+gear Cloak: Slave Master's Cloak
+gear Belt: Belt of the Sun Soul
+gear Ring: Ring of the Dread Seas
+gear Ring2: Phiarlan's Ring
+gear Gloves: Grick-skin Gauntlets
+gear Bracers: Guardian's Bracers (Level 15)
+gear Boots: Sludge Fin Boots
+gear Goggles: Paramnesial Lenses
+gear Main Hand: Ferrocrystal Rapier
