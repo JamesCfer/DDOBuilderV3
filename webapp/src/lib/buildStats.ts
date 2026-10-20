@@ -3462,7 +3462,10 @@ function buildStatMapOnce(
           dodgeCap:    resolveBonus(map.get('dodgeCap') ?? []).total,
           hasDodgeCap: (map.get('dodgeCap') ?? []).length > 0,
           mdb:         resolveBonus(map.get('mdb') ?? []).total + (printedMdb ?? 0),
-          hasMdb:      (map.get('mdb') ?? []).length > 0 || printedMdb !== undefined,
+          // Any armor item feeds V2's MDB breakdown, even one with no
+          // printed MaximumDexterityBonus (it contributes 0), so it caps
+          // dodge outside the Cloth Armor stance (fuzz-8260/-8266).
+          hasMdb:      (map.get('mdb') ?? []).length > 0 || armorItem !== undefined,
           mdbShields:  resolveBonus(map.get('mdbShields') ?? []).total,
           isClothArmor: armorStances.has('Cloth Armor'),
           isTowerShield: armorStances.has('Tower Shield'),

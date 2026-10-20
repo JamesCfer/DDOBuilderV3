@@ -1,0 +1,32 @@
+seed 8260, level 20
+race Halfling
+classes Rogue 4 / Dark Apostate 5 / Wizard 11
+abilities Str 11, Dex 12, Con 16, Int 13, Wis 13, Cha 9 (28/28 pts)
+slot heroic-1: Martial Weapon Proficiency: Great Sword
+slot Dark Apostate-1-Follower Of-0: Favored by Amaunator
+slot heroic-3: Iron Will
+slot Wizard-1-Metamagic Feat-0: Extend Spell
+slot alterDarkGift-4: Webtouched Wretch
+slot heroic-6: Alertness
+slot Dark Apostate-2-Domain-0: Domain of Luck
+slot heroic-9: Martial Weapon Proficiency: Falchion
+slot Wizard-5-Metamagic Feat-0: Mental Toughness
+slot heroic-12: Improved Mental Toughness
+slot heroic-15: Skill Focus: Diplomacy
+slot heroic-18: Martial Weapon Proficiency: Hand Axe
+slot Wizard-10-Metamagic Feat-0: Heighten Spell
+slot Dark Apostate-5-Domain Feat-0: Improved Domain of Luck
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Swabby's Kerchief
+gear Necklace: Epic Lizardfolk Tooth Necklace
+gear Trinket: Pearl of Power VI
+gear Armor: +5 Cormyrian Engraved Breastplate
+gear Cloak: Duergarcraft Cloak
+gear Belt: Chains
+gear Ring: Spinneret
+gear Ring2: Ring of the Buccaneer (legacy) (level 8)
+gear Gloves: Epic Spectral Gloves
+gear Bracers: Blademaster Bracers
+gear Boots: Windriders
+gear Goggles: Eyes of Charming
+gear Main Hand: +3 Combustion Scorched Greatclub
