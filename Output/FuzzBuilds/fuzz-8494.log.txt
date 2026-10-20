@@ -1,0 +1,31 @@
+seed 8494, level 20
+race Drow
+classes Stormsinger 10 / Dark Apostate 4 / Acolyte of the Skin 6
+abilities Str 13, Dex 15, Con 10, Int 14, Wis 13, Cha 10 (28/28 pts)
+slot heroic-1: Skill Focus: Spot
+slot Acolyte of the Skin-1-True Patron-0: True Patron: Fiend
+slot heroic-3: Point Blank Shot
+slot alterDarkGift-4: Echoing Soul
+slot heroic-6: Maximize Spell
+slot Dark Apostate-1-Follower Of-0: Follower of the Sovereign Host
+slot heroic-9: Augment Summoning
+slot heroic-12: Martial Weapon Proficiency: Maul
+slot Acolyte of the Skin-4-Pact Save Bonus-0: Fiendish Resilience
+slot heroic-15: Pact Attunement
+slot Dark Apostate-2-Domain-0: Domain of Magic
+slot Acolyte of the Skin-6-Pact Ability-0: Fiendskin
+slot heroic-18: Brutal Throw
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Helm of the Blue Dragon (historic)
+gear Necklace: Sage's Locket (Level 15)
+gear Trinket: Blasting Chime (Level 11)
+gear Armor: Gorgon Armor
+gear Cloak: Cape of the Roc
+gear Belt: Belt of the Mroranon
+gear Ring: Draconic Ring
+gear Ring2: Diabolist's Ring
+gear Gloves: Burrowing Claws
+gear Bracers: Saltiron Bracer
+gear Boots: Goatskin Boots (level 17)
+gear Goggles: Guardian's Glasses (Level 19)
+gear Main Hand: Defiled Reliquary Greatsword

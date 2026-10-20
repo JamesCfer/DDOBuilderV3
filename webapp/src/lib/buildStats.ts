@@ -38,6 +38,7 @@ import {
   divineGraceCap, halfElfLesserDivineGraceCap,
 } from './v2Formulas'
 import { getLevelClasses, tomeCapAtLevel } from './levelProgression'
+import { buildSlots } from './levelTraining'
 import { buildFeatCountMap, orphanedEnhancementTrees } from './treeAvailability'
 import { displaySlotsForItemKey } from './gearSlots'
 import { hasSavedAugmentList } from './gearSlotUpgrades'
@@ -2212,6 +2213,29 @@ function buildStatMapOnce(
     // Disciple) is granted once, not once per class; multi-grant feats
     // (Epic Power ×10, Eldritch Blast Damage ×5) carry explicit values.
     const grantedAutoFeatTotals = new Map<string, number>()
+    // V2 counts feats the player trained at that character level or earlier
+    // too (CurrentFeats), so a class grant of a feat already trained in an
+    // earlier slot is skipped (fuzz-8443: Greater Pact Attunement trained at
+    // 18, then granted by Acolyte of the Skin 12, applies once).
+    const autoLevelClasses = getLevelClasses(build)
+    const slotLevelByKey = new Map(buildSlots(build, allClasses, allRaces).map(sl => [sl.key, sl.level]))
+    const chosenFeatLevels = new Map<string, number[]>()
+    for (const [slotKey, featName] of Object.entries(build.featChoices)) {
+      const lvl = featName ? slotLevelByKey.get(slotKey) : undefined
+      if (lvl === undefined) continue
+      chosenFeatLevels.set(featName, [...(chosenFeatLevels.get(featName) ?? []), lvl])
+    }
+    // Character level at which a class reaches a class level (Epic and
+    // Legendary levels sit after the 20 heroic levels).
+    const charLevelOfClassLevel = (className: string, classLevel: number): number | undefined => {
+      if (className === 'Epic') return 20 + classLevel
+      if (className === 'Legendary') return 30 + classLevel
+      let seen = 0
+      for (let i = 0; i < autoLevelClasses.length; i++) {
+        if (autoLevelClasses[i] === className && ++seen === classLevel) return i + 1
+      }
+      return undefined
+    }
     for (const bc of classesWithEpicPseudo(build)) {
       const cls = allClasses.find(c => c.Name === bc.name)
       if (!cls) continue
@@ -2222,24 +2246,32 @@ function buildStatMapOnce(
       // to accumulateFeat, which uses Amount*rank for AType=Simple effects.
       // This lets repeated grants (e.g. "Warlock: Eldritch Blast Damage" ×5)
       // stack correctly even when their bonus type is "Highest Only".
-      const autoFeatCounts = new Map<string, number>()
+      const autoFeatLevels = new Map<string, Array<number | undefined>>()
       for (const autoFeat of toArray(cls.AutomaticFeats)) {
         if ((autoFeat.Level ?? 1) > bc.levels) continue
         const names = toArray(
           typeof autoFeat.Feats === 'string' ? autoFeat.Feats :
           Array.isArray(autoFeat.Feats) ? autoFeat.Feats : undefined
         )
+        const at = charLevelOfClassLevel(bc.name, autoFeat.Level ?? 1)
         for (const featName of names) {
-          autoFeatCounts.set(featName, (autoFeatCounts.get(featName) ?? 0) + 1)
+          autoFeatLevels.set(featName, [...(autoFeatLevels.get(featName) ?? []), at])
         }
       }
-      for (const [featName, rawCount] of autoFeatCounts) {
+      for (const [featName, grantLevels] of autoFeatLevels) {
         const feat = allFeats.find(f => f.Name === featName)
         if (!feat) continue
         // V2 stops granting once MaxTimesAcquire (default 1) is reached,
-        // counting across every class that grants the feat.
+        // counting across every class that grants the feat and every copy
+        // trained at or before the grant's character level.
+        const max = feat.MaxTimesAcquire ?? 1
         const already = grantedAutoFeatTotals.get(featName) ?? 0
-        const count = Math.min(rawCount, Math.max(0, (feat.MaxTimesAcquire ?? 1) - already))
+        let count = 0
+        for (const at of grantLevels) {
+          const trainedBefore = at === undefined ? 0
+            : (chosenFeatLevels.get(featName) ?? []).filter(l => l <= at).length
+          if (already + count + trainedBefore < max) count++
+        }
         if (count <= 0) continue
         grantedAutoFeatTotals.set(featName, already + count)
         accumulateFeat(map, feat, count, `${bc.name}: ${featName}${count > 1 ? ` ×${count}` : ''}`, charLevelTotal, ctx)
