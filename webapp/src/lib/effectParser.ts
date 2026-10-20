@@ -1716,7 +1716,14 @@ export function parseEffect(
       return [make('spellCostPct')]
 
     case 'SpellCriticalDamage':
-      if (items.length > 0) return items.map(item => make(`spCritDmg.${normalizeSpellElement(item)}`))
+      // V2 Effect::HasSpellPower reads Item through spellPowerTypeMap, where a
+      // bare "Light" or "Alignment" is SpellPower_Unknown: such an item feeds
+      // no crit multiplier line (Harper Spell Training lists "Light").
+      if (items.length > 0) {
+        return [...new Set(items.map(spellPowerElement))]
+          .filter((e): e is string => e !== null)
+          .map(el => make(`spCritDmg.${el}`))
+      }
       return []
 
     case 'UniversalSpellCriticalDamage':
@@ -2602,7 +2609,14 @@ export function parseItemBuff(
       return [make('spCrit.Universal')]
 
     case 'SpellCriticalDamage':
-      if (items.length > 0) return items.map(item => make(`spCritDmg.${normalizeSpellElement(item)}`))
+      // V2 Effect::HasSpellPower reads Item through spellPowerTypeMap, where a
+      // bare "Light" or "Alignment" is SpellPower_Unknown: such an item feeds
+      // no crit multiplier line (Harper Spell Training lists "Light").
+      if (items.length > 0) {
+        return [...new Set(items.map(spellPowerElement))]
+          .filter((e): e is string => e !== null)
+          .map(el => make(`spCritDmg.${el}`))
+      }
       return []
 
     case 'UniversalSpellCriticalDamage':

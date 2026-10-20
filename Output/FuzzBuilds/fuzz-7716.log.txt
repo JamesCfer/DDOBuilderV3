@@ -1,0 +1,33 @@
+seed 7716, level 20
+race Dragonborn
+classes Druid 20
+abilities Str 13, Dex 10, Con 12, Int 13, Wis 16, Cha 10 (28/28 pts)
+slot race-1-Dragonborn Racial-0: Draconic Ancestry: White
+slot heroic-1: Discipline
+slot Druid-2-Wild Shape-0: Wild Shape: Water Elemental
+slot heroic-3: Martial Weapon Proficiency: Hand Axe
+slot alterDarkGift-4: Mist Walker
+slot Druid-5-Wild Shape-0: Wild Shape: Dire Bear
+slot heroic-6: Spell Focus: Evocation
+slot Druid-8-Wild Shape-0: Wild Shape: Bear
+slot heroic-9: Martial Weapon Proficiency: Falchion
+slot Druid-11-Wild Shape-0: Wild Shape: Fire Elemental
+slot heroic-12: Exotic Weapon Proficiency: Dwarven Axe
+slot Druid-13-Wild Shape-0: Wild Shape: Wolf
+slot heroic-15: Spell Focus: Enchantment
+slot Druid-17-Wild Shape-0: Wild Shape: Winter Wolf
+slot heroic-18: Martial Weapon Proficiency: Scimitar
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Shaped Great Forge Cowl
+gear Necklace: Creation Forge Gorget
+gear Trinket: Mysterious Bauble
+gear Armor: Shadowmail (Level 16)
+gear Cloak: Cloak of Summer's End (level 16)
+gear Belt: Coin Belt
+gear Ring: Signet of the Shining Sun
+gear Ring2: Rulebreaker
+gear Gloves: Protective Gloves
+gear Bracers: Bracers of Twisting Shade (Level 17)
+gear Boots: Boots of Corrosion
+gear Goggles: Glasses of the Meditative Mind
+gear Main Hand: Greatclub of the Fallen Age

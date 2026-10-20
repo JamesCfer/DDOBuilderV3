@@ -1,0 +1,37 @@
+seed 7709, level 20
+race Eladrin
+classes Dragon Lord 20
+abilities Str 16, Dex 10, Con 13, Int 12, Wis 12, Cha 11 (28/28 pts)
+slot Dragon Lord-1-Minor Draconic Aura-0: Aussircaex's Defiance
+slot heroic-1: Skill Focus: Concentration
+slot Dragon Lord-2-Fighter Bonus Feat-0: Stunning Blow
+slot heroic-3: Weapon Focus: Ranged Weapons
+slot Dragon Lord-4-Fighter Bonus Feat-0: Exotic Weapon Proficiency: Great Crossbow
+slot alterDarkGift-4: Echoing Soul
+slot Dragon Lord-6-Fighter Bonus Feat-0: Exotic Weapon Proficiency: Dwarven Axe
+slot heroic-6: Swords to Plowshares
+slot Dragon Lord-8-Major Draconic Aura-0: Sinvala's Toughness
+slot heroic-9: Brutal Throw
+slot Dragon Lord-10-Fighter Bonus Feat-0: Quick Draw
+slot Dragon Lord-12-Fighter Bonus Feat-0: Improved Critical: Thrown Weapons
+slot heroic-12: Improved Critical: Slashing Weapons
+slot Dragon Lord-14-Fighter Bonus Feat-0: Shield Proficiency (General)
+slot heroic-15: Improved Critical: Bludgeoning Weapons
+slot Dragon Lord-16-Superior Draconic Aura-0: The Truthful One's Might
+slot Dragon Lord-18-Fighter Bonus Feat-0: Zen Archery
+slot heroic-18: Point Blank Shot
+slot Dragon Lord-20-Fighter Bonus Feat-0: Tower Shield Proficiency
+enhancements: 80/80 AP across 8 trees
+gear Helmet: The Admiral of Bling
+gear Necklace: Raptor Teeth Necklace
+gear Trinket: Lesser Nimble Trinket
+gear Armor: Breastplate of the Shining Sun
+gear Cloak: Downcast Nimble Cloak
+gear Belt: The Baron's Bandolier
+gear Ring: Sparkring
+gear Ring2: Band of Light
+gear Gloves: Attunement Gauntlets
+gear Bracers: Hallowed Castigators
+gear Boots: Severlin's Leaden Boots (level 10)
+gear Goggles: Goggles of Unbroken Sight
+gear Main Hand: Booming Longsword of the Fallen Age
