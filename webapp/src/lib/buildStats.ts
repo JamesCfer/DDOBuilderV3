@@ -3185,7 +3185,13 @@ function buildStatMapOnce(
       .filter(({ bc, cls }) => cls && spellPointsAtLevel(cls.SpellPointsPerLevel, bc.levels) > 0)
     const earlyPicks = spCastingClasses.map(({ cls }) =>
       pickCastingStat(cls!.CastingStat as string | string[] | undefined, earlyTotalMap))
-    const observedChanged = earlyPicks.some(st =>
+    // At level 20+ V2 also observes the Fate Points breakdown
+    // (BreakdownItemSpellPoints.cpp:55-60), so fate points arriving later
+    // re-run the pick too (fuzz-7739: FvS's early Cha/Wis tie keeps
+    // Charisma until 39 fate points re-pick the final, higher Wisdom).
+    const fateObserved = build.totalLevel >= 20
+      && Math.round(resolveBonus(map.get('fatePoint') ?? []).total) !== 0
+    const observedChanged = fateObserved || earlyPicks.some(st =>
       st && (finalTotalMap[st] ?? 0) !== (earlyTotalMap[st] ?? 0))
     for (let ci = 0; ci < spCastingClasses.length; ci++) {
       const { bc, cls } = spCastingClasses[ci]
