@@ -280,7 +280,7 @@ function EnhancementCell({
       ...(treeSpent < minSpent ? [warn(`Requires ${minSpent} AP spent in this tree (${treeSpent} so far)`)] : []),
       ...(isCore && !coreUnlocked ? [warn('Requires the previous core enhancement')] : []),
       ...(!reqsMet ? [warn('Build does not meet this enhancement\'s prerequisites')] : []),
-      ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another destiny tree')] : []),
+      ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another tree')] : []),
       ...(!atMax && !canAfford && !locked ? [warn('Not enough action points')] : []),
       ...(hasSelector && !selectedOption ? [{ text: 'Click to choose an option' }] : []),
     ],
