@@ -775,8 +775,12 @@ function accumulateGear(
         add(map, 'arcaneSpellFailureShield', { value: item.ArcaneSpellFailure, type: 'Shield', source: `${item.Name} (Shield Arcane Spell Failure)`, fromGear: true })
       }
     }
-    // V2 armor check penalty: armor and shield clamped to ≤0, accumulated separately.
-    if (item.ArmorCheckPenalty != null && item.ArmorCheckPenalty < 0) {
+    // V2 armor check penalty: armor and shield accumulated separately.
+    // Build::ApplyArmorEffects / ApplyWeaponEffects add the printed value
+    // whatever its sign (HasArmorCheckPenalty): a few items print a positive
+    // ACP (Scales of Demogorgon 5), which the attack line's max(0, total)
+    // then subtracts (fuzz seeds 8405, 8469).
+    if (item.ArmorCheckPenalty != null && item.ArmorCheckPenalty !== 0) {
       const slotLower = slot.toLowerCase()
       // Shields are WEAPON-typed items ("<Weapon>Large Shield</Weapon>") in
       // an off-hand slot — uBER TANK's shield ACP was landing in the ARMOR
