@@ -660,13 +660,34 @@ function accumulateEnhancementTree(
   }
 }
 
+// V2 InventorySlotType order (InventorySlotTypes.h), the order
+// Build::ApplyGearEffects applies items in. RemoveNonStacking keeps the LATER
+// of two equal-magnitude Highest-Only item effects, so ties resolve by it.
+const V2_SLOT_ORDER = [
+  'Arrows', 'Armor', 'Belt', 'Boots', 'Bracers', 'Cloak', 'Gloves', 'Goggles',
+  'Helmet', 'Necklace', 'Quiver', 'Ring1', 'Ring2', 'Trinket', 'Weapon1', 'Weapon2',
+]
+const V2_SLOT_ALIAS: Record<string, string> = {
+  Arrow: 'Arrows', Body: 'Armor', Ring: 'Ring1',
+  'Main Hand': 'Weapon1', MainHand: 'Weapon1', Weapon: 'Weapon1',
+  'Off Hand': 'Weapon2', OffHand: 'Weapon2',
+}
+function v2SlotRank(slot: string): number {
+  const i = V2_SLOT_ORDER.indexOf(V2_SLOT_ALIAS[slot] ?? slot)
+  return i < 0 ? V2_SLOT_ORDER.length : i
+}
+
 function accumulateGear(
   map: StatMap,
   gearItems: Record<string, Item>,
   buffCatalogue?: Map<string, ItemBuffTemplate>,
   ctx?: EffectContext,
 ): void {
-  for (const [slot, item] of Object.entries(gearItems)) {
+  const ordered = Object.entries(gearItems)
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => (v2SlotRank(a.e[0]) - v2SlotRank(b.e[0])) || (a.i - b.i))
+    .map(x => x.e)
+  for (const [slot, item] of ordered) {
     const source = `${item.Name} (${slot})`
     // V2 Build::ApplyItem: an ApplyToWeaponOnly buff on a wielded weapon
     // reaches that hand's weapon lines only.

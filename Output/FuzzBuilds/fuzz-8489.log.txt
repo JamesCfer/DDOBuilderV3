@@ -1,0 +1,28 @@
+seed 8489, level 20
+race Halfling
+classes Sacred Fist 11 / Alchemist 9
+abilities Str 10, Dex 13, Con 12, Int 14, Wis 11, Cha 15 (28/28 pts)
+slot heroic-1: Weapon Focus: Ranged Weapons
+slot heroic-3: Martial Weapon Proficiency: Shortbow
+slot alterDarkGift-4: Minion of the Eldritch
+slot Alchemist-4-Alchemist Bonus Feat-0: Insightful Fortitude
+slot heroic-6: Heighten Spell
+slot heroic-9: Knight's Training
+slot heroic-12: Luck Of Heroes
+slot heroic-15: Child of Faith
+slot Alchemist-8-Alchemist Bonus Feat-0: Alchemical Studies: Verudite
+slot heroic-18: Martial Weapon Proficiency: Light Pick
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Malicia's Crown (level 8)
+gear Necklace: Epic Necklace of Venom
+gear Trinket: Experienced Evil
+gear Armor: Illusionist's Garb
+gear Cloak: Iron Cloak of the Wolf
+gear Belt: Strap of Savviness
+gear Ring: Diabolist's Ring
+gear Ring2: Ring of Mystic Dexterity
+gear Gloves: Seven Fingered Gloves
+gear Bracers: Prisoner's Manacles (Level 15)
+gear Boots: Winter Boots
+gear Goggles: Sage's Spectacles (Level 15)
+gear Main Hand: Epic Sceptre of Glaciation
