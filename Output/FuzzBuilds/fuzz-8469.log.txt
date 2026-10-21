@@ -1,0 +1,32 @@
+seed 8469, level 20
+race Dhampir
+classes Blight Caster 8 / Dark Hunter 7 / Stormsinger 5
+abilities Str 14, Dex 12, Con 11, Int 13, Wis 13, Cha 13 (28/28 pts)
+slot heroic-1: Skill Focus: Intimidate
+slot Dark Hunter-1-Favored Enemy-0: Favored Enemy: Human
+slot heroic-3: Insightful Reflexes
+slot alterDarkGift-4: Minion of the Eldritch
+slot Blight Caster-2-Wild Shape-0: Wild Shape: Plague Wolf
+slot Blight Caster-2-Toggle Imbue-0: Biting Acid Imbue
+slot heroic-6: Augment Summoning
+slot Blight Caster-4-Kin Form-0: Wild Shape: Thorn-Kin
+slot heroic-9: Exotic Weapon Proficiency: Repeating Heavy Crossbow
+slot heroic-12: Slicing Blow
+slot Dark Hunter-5-Favored Enemy-0: Favored Enemy: Orc
+slot heroic-15: Exotic Weapon Proficiency: Bastard Sword
+slot heroic-18: Negotiator
+slot Blight Caster-8-Kin Form-0: Wild Shape: Hive Keeper
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Creation Forge Bassinet
+gear Necklace: Finger Necklace
+gear Trinket: Piece of Shattered Horn
+gear Armor: Baphomet's Brutality
+gear Cloak: Packrat's Rat Pack
+gear Belt: Bloodknuckle's Loincloth Waistband
+gear Ring: Ring of Troll's Regeneration
+gear Ring2: Glorious Dawn (Level 16)
+gear Gloves: Jetscale Gauntlets
+gear Bracers: Epic Saltiron Bracer
+gear Boots: Coldlight Runners
+gear Goggles: Eyes of the Lady of Rot and Decay
+gear Main Hand: Planar Spike
