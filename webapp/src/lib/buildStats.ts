@@ -699,6 +699,13 @@ function accumulateGear(
       addParsed(map, parseItemBuff(buff, source, buffCatalogue,
         weaponOnly ? { ...ctx, weaponOnlyHand: hand } : ctx), true)
     }
+    // V2 Build::ApplyItem then applies the item's own top-level <Effect>
+    // list to the item pool (ApplyItemEffect -> NotifyItemEffect): the
+    // Cannith Crafted Robe's MaxDexBonus 999 (fuzz-8450), item clickies and
+    // spell-like abilities.
+    for (const eff of toArray(item.Effect)) {
+      addParsed(map, parseEffect(eff, 1, source, 0, 0, ctx), true)
+    }
     // V2 Build::ApplyWeaponEffects: the off-hand item's own threat range and
     // multiplier are Base lines of the off-hand weapon (absent on rune arms).
     if (hand === 'off' && item.Weapon) {
