@@ -53,6 +53,11 @@ export interface EffectContext {
   sliderValues?: Record<string, number>     // slider name → current value
   weaponClassMain?: Set<string>             // main-hand weapon class memberships
   weaponClassOffhand?: Set<string>          // off-hand weapon class memberships
+  // Group memberships of V2's Weapon_Empty ("Empty" is listed in the
+  // Centered, Crossbow and SwashbucklingOffhand groups). V2's
+  // MainHandWeapon/OffhandWeapon report Weapon_Empty for an empty hand, so
+  // the weapon-group requirements read these when a hand is empty.
+  emptyHandClasses?: Set<string>
   materialBySlot?: Record<string, string>   // V2 slot name (Weapon1, …) → equipped item Material
   skillTotals?: Record<string, number>      // skill → resolved total (fixed-point pass 2+)
   casterLevels?: Record<string, number>     // class → bonus caster levels from cl.* effects (fixed-point pass 2+)
@@ -100,6 +105,14 @@ export interface EffectContext {
 // ---------------------------------------------------------------------------
 // Requirements evaluator
 // ---------------------------------------------------------------------------
+
+/** The weapon-group memberships a hand's requirement checks read: the wielded
+ *  weapon's, or V2's Weapon_Empty groups when the hand is empty. */
+function handClasses(ctx: EffectContext, hand: 'main' | 'off'): Set<string> {
+  const cls = (hand === 'main' ? ctx.weaponClassMain : ctx.weaponClassOffhand) ?? new Set<string>()
+  const wt = hand === 'main' ? ctx.weaponTypeMain : ctx.weaponTypeOffhand
+  return wt === '' && ctx.emptyHandClasses ? ctx.emptyHandClasses : cls
+}
 
 function reqList(r: Requirement | Requirement[] | undefined): Requirement[] {
   if (!r) return []
@@ -198,10 +211,10 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
     case 'WeaponClassMainHand':
       // Conservative pass when caller hasn't populated weaponClassMain.
       if (!ctx.weaponClassMain) return true
-      return its.some(i => ctx.weaponClassMain!.has(i))
+      return its.some(i => handClasses(ctx, 'main').has(i))
     case 'WeaponClassOffHand':
       if (!ctx.weaponClassOffhand) return true
-      return its.some(i => ctx.weaponClassOffhand!.has(i))
+      return its.some(i => handClasses(ctx, 'off').has(i))
     case 'Skill':
       // V2 Requirement::EvaluateSkill (Requirement.cpp:1040-1048) gates on
       // Build::SkillAtLevel = TRAINED ranks + capped tome — NOT the resolved
@@ -234,11 +247,11 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       // the MAIN hand: the equipped main-hand weapon belongs to the named
       // runtime group ("Favored Weapon", "Centered", …). NOT a slot check.
       if (!ctx.weaponClassMain) return true
-      return its.some(i => ctx.weaponClassMain!.has(i))
+      return its.some(i => handClasses(ctx, 'main').has(i))
     case 'GroupMember2':
       // …and GroupMember2 the OFF hand (Requirement.cpp:473).
       if (!ctx.weaponClassOffhand) return true
-      return its.some(i => ctx.weaponClassOffhand!.has(i))
+      return its.some(i => handClasses(ctx, 'off').has(i))
     case 'ItemTypeInSlot': {
       // V2 Requirement::EvaluateItemInSlot (Requirement.cpp:958-990):
       // Item[0] = V2 slot name, Item[last] = weapon/armor type. Met when the

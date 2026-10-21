@@ -1814,6 +1814,7 @@ function buildStatMapOnce(
     const { adds: runtimeGroupAdds, merges: runtimeGroupMerges } = buildRuntimeGroupAdds(input, build)
     const ctxWeaponClassMain = deriveWeaponClasses(mainWeaponType, groups, runtimeGroupAdds, runtimeGroupMerges)
     const ctxWeaponClassOff = deriveWeaponClasses(offWeaponType, groups, runtimeGroupAdds, runtimeGroupMerges)
+    const ctxEmptyHandClasses = deriveWeaponClasses('Empty', groups, runtimeGroupAdds, runtimeGroupMerges)
 
     // V2 parity: the StancesPane auto-activates weapon-type and fighting-style
     // stances from the equipped weapons (they default ON when the weapon is
@@ -1949,6 +1950,7 @@ function buildStatMapOnce(
         sliderValues: {},
         weaponClassMain: ctxWeaponClassMain,
         weaponClassOffhand: ctxWeaponClassOff,
+        emptyHandClasses: ctxEmptyHandClasses,
         materialBySlot: {},
         // Lets the Stances.xml pass below evaluate ItemTypeInSlot honestly
         // ("Staff", "Sword and Board") instead of skipping those stances.
@@ -2151,6 +2153,7 @@ function buildStatMapOnce(
       sliderValues: ctxSliderValues,
       weaponClassMain: ctxWeaponClassMain,
       weaponClassOffhand: ctxWeaponClassOff,
+      emptyHandClasses: ctxEmptyHandClasses,
       materialBySlot: ctxMaterialBySlot,
       itemTypeBySlot: ctxItemTypeBySlot,
       weaponTypeMain: mainWeaponType,
