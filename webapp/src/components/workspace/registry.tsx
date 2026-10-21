@@ -2,11 +2,13 @@
 // the title the user sees. The default layouts in lib/workspace.ts refer to
 // these keys, and the "+ Add window" menu lists them by group.
 //
-// Panels load lazily so a tab only pays for what it shows. A few need an
+// Panels load lazily so a tab only pays for what it shows (lazyPanel reloads
+// the page when a deploy has replaced a panel's file under an open tab). A few need an
 // app-level action (load a build, start the tour); those get a thin wrapper
 // that reads it from WorkspaceHostContext.
 
-import React, { lazy } from 'react'
+import React from 'react'
+import { lazyPanel as lazy } from '../../lib/staleBundle'
 import { useWorkspaceHost } from './WorkspaceHostContext'
 import StancesPanel from '../stances/StancesPanel'
 import SelfBuffsPanel from '../buffs/SelfBuffsPanel'
