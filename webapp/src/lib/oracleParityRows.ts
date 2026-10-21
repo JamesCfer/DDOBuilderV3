@@ -170,24 +170,15 @@ export function buildParityRows(
   // the same effects in the 'mdb' pool.
   if (oracle.breakdowns?.maxDexBonus !== undefined) {
     const v2mdb = oracle.breakdowns.maxDexBonus
-    // stats.armorMaxDex is the armor's PRINTED cap only; Effect_MaxDexBonus
-    // contributions (armor mastery, Horizon Walker cores, …) pool under
-    // 'mdb' in both the armored and unarmored cases. V2's "No limit" 999
-    // effect fires whenever the CLOTH ARMOR stance is on (robes/outfits,
-    // even with a printed 0) and no tower shield is equipped.
-    const armorItem = gearItems['Armor'] as { Armor?: string } | undefined
-    const towerShield = Object.values(gearItems)
-      .some(i => (i as { Weapon?: string }).Weapon === 'Tower Shield')
-    const featsChosen = new Set(Object.values(build.featChoices ?? {}))
-    const docentAsCloth = armorItem?.Armor === 'Docent'
-      && !featsChosen.has('Mithral Body') && !featsChosen.has('Adamantine Body')
-    const clothNoLimit = (!armorItem || armorItem.Armor === 'Cloth' || docentAsCloth) && !towerShield
-    // Typeless embedded armor (no <Armor> field): NOT cloth in V2, and with
-    // no printed MDB the armored total is just the mdb effect pool.
-    const typelessArmor = armorItem !== undefined && armorItem.Armor === undefined
-    const v3mdb = (clothNoLimit && !typelessArmor
-      ? 999
-      : (stats.armorMaxDex ?? 0)) + stats.total('mdb')
+    // V2 totals three parts: the "No limit" 999 effect, present only while
+    // the Cloth Armor stance is on and no tower shield is equipped (cloth,
+    // docent or no armor, and neither Mithral Body nor Adamantine Body); the
+    // armor's printed MaximumDexterityBonus as an item effect (a robe can
+    // print 999 too, fuzz-8450); and the Effect_MaxDexBonus pool ('mdb').
+    // V3's activeStances carries the same auto-derived armor stances.
+    const stances = new Set(stats.activeStances ?? [])
+    const noLimit = stances.has('Cloth Armor') && !stances.has('Tower Shield')
+    const v3mdb = (noLimit ? 999 : 0) + (stats.armorMaxDex ?? 0) + stats.total('mdb')
     push('maxDexBonus', v2mdb, v3mdb)
   }
   // Spell school DCs. V2 BreakdownItemSpellSchool holds Item=All AND

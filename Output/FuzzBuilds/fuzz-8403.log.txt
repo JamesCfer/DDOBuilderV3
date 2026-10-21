@@ -1,0 +1,32 @@
+seed 8403, level 20
+race Warforged
+classes Cleric 20
+abilities Str 10, Dex 12, Con 11, Int 15, Wis 15, Cha 11 (28/28 pts)
+slot Cleric-1-Follower Of-0: Follower of Olladra
+slot heroic-1: Martial Weapon Proficiency: Shortsword
+slot Cleric-2-Domain-0: Domain of Strength
+slot heroic-3: Skill Focus: Swim
+slot alterDarkGift-4: Echoing Soul
+slot Cleric-5-Domain Feat-0: Improved Domain of Strength
+slot Cleric-6-Deity-0: Search the Soul
+slot heroic-6: Mithral Body
+slot Cleric-9-Domain Feat-0: Greater Domain of Strength
+slot heroic-9: Athletic
+slot heroic-12: Weapon Focus: Piercing Weapons
+slot Cleric-14-Domain Feat-0: Master of the Domain of Strength
+slot heroic-15: Extra Turning
+slot heroic-18: Piercing Poison
+enhancements: 80/80 AP across 9 trees
+gear Helmet: Shaagh's Helm
+gear Necklace: Pendant of Crippling Strikes
+gear Trinket: Urthullz Petrified Stalk
+gear Armor: Disciple's Robe
+gear Cloak: Mantle of the Dragonfriend (Level 14)
+gear Belt: Eerie Belt
+gear Ring: Warchanter's Band
+gear Ring2: Ring of the Buccaneer (legacy) (level 16)
+gear Gloves: Hands of House Jorasco
+gear Bracers: Hidden Armlets
+gear Boots: Shadow's Footsteps
+gear Goggles: Mystic Monocle
+gear Main Hand: Elyd Edge

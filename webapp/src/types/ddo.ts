@@ -302,6 +302,9 @@ export interface Item {
   EquipmentSlot?: Record<string, boolean>
   Material?: string
   Buff?: ItemBuff | ItemBuff[]
+  /** Top-level item effects (V2 Item::Effects): clickies, SLAs, the Cannith
+   *  crafted armor bases' MaxDexBonus / ArmorCheckPenalty. */
+  Effect?: Effect | Effect[]
   ItemAugment?: ItemAugment | ItemAugment[]
   SlotUpgrade?: SlotUpgrade | SlotUpgrade[]
   SetBonus?: string | string[]
