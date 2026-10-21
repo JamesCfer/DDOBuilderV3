@@ -13,6 +13,7 @@ import {
 import { computeTreeSpent, revokedSpendGrantsFeat } from '../../lib/enhancementSpend'
 import { exportEnhancementTreeFile, parseTreeFile } from '../../lib/treeFileIO'
 import { downloadTextFile } from '../../lib/browserDownload'
+import { tier5LockedTree } from '../../lib/destiny'
 import type { DDOClass, EnhancementTree, Race, Feat } from '../../types/ddo'
 import TreeGrid, { type TreeChoices, type TreeSelections } from './TreeGrid'
 import DdoIcon from '../DdoIcon'
@@ -245,6 +246,15 @@ export default function EnhancementTreePanel() {
     enhTrees.reduce((s, t) => s + computeTreeSpent(t, enhChoices[t.Name] ?? {}), 0),
     [enhTrees, enhChoices])
 
+  // V2 Build::Enhancement_TrainEnhancement: training a Tier-5 sets the
+  // enhancement Tier5Tree, and only that tree may train Tier-5 items until its
+  // last Tier-5 is revoked. Without this you could take the top line of
+  // several trees at once (e.g. Eldritch Knight and Air Savant).
+  const lockedTier5Tree = useMemo(
+    // Visible trees first, then any other tree still holding spend.
+    () => tier5LockedTree([...new Set([...pinned, ...Object.keys(enhChoices)])], enhChoices, enhTrees),
+    [pinned, enhChoices, enhTrees])
+
   // V2 Build::AvailableActionPoints(TT_allEnhancement): min(20, level)·4 plus
   // bonus racial/universal APs from past-life / favor feats (Effect_RAPBonus
   // / Effect_UAPBonus). The previous hardcoded 80 mis-reported imported
@@ -455,6 +465,7 @@ export default function EnhancementTreePanel() {
                           selections={treeSelections}
                           totalSpentAllTrees={totalSpent}
                           totalAP={totalSpent + availableFor(tree)}
+                          tier5Locked={lockedTier5Tree !== '' && lockedTier5Tree !== tree.Name}
                           onChoicesChange={u => handleChoicesChange(tree.Name, u)}
                           onSelectionsChange={u => handleSelectionsChange(tree.Name, u)}
                           build={build}

@@ -284,7 +284,7 @@ function EnhancementCell({
       ...(isCore && !coreUnlocked ? [warn('Requires the previous core enhancement')] : []),
       ...(!reqsMet ? [warn('Build does not meet this enhancement\'s prerequisites')] : []),
       ...(!locked && !atMax && !rankGateMet ? [warn(`Rank ${rank + 1} needs rank ${rank + 1} of its prerequisite`)] : []),
-      ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another destiny tree')] : []),
+      ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another tree')] : []),
       ...(!atMax && !canAfford && !locked ? [warn('Not enough action points')] : []),
       ...(hasSelector && !selectedOption ? [{ text: 'Click to choose an option' }] : []),
     ],
