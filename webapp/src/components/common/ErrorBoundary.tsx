@@ -11,6 +11,7 @@
 
 import React from 'react'
 import styles from './ErrorBoundary.module.css'
+import { isChunkLoadError } from '../../lib/staleBundle'
 
 interface Props {
   /** Named in the message, e.g. "Spells". */
@@ -38,6 +39,23 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   render() {
     const { error } = this.state
     if (!error) return this.props.children
+
+    // DDO Builder was updated while this tab was open and the panel's file is
+    // gone (see lib/staleBundle). "Try again" cannot fix that; a reload can.
+    if (isChunkLoadError(error)) {
+      return (
+        <div className={styles.wrap} role="alert">
+          <div className={styles.title}>DDO Builder was updated</div>
+          <p className={styles.body}>
+            A new version went live while this page was open. Reload to get it;
+            your character is kept in this browser.
+          </p>
+          <button type="button" className={styles.retry} onClick={() => window.location.reload()}>
+            Reload
+          </button>
+        </div>
+      )
+    }
 
     const what = this.props.label ? `The ${this.props.label} panel` : 'This panel'
     return (
