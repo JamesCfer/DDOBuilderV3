@@ -7,6 +7,7 @@ import DdoIcon from '../DdoIcon'
 import { tipProps, hideTip, type TipContent } from '../common/HoverTip'
 import { summarizeEffects } from '../../lib/effectSummary'
 import { meetsRequirements } from '../../lib/requirements'
+import { enhancementRanksAllowNext, requiresEnhancement } from '../../lib/enhancementRankGate'
 import type { TreeItemFeatContext } from '../../lib/enhancementFeats'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './TreeGrid.module.css'
@@ -221,6 +222,8 @@ function SelectorPicker({ options, isSelectable, onSelect, onClose }: SelectorPi
 interface CellProps {
   /** V2 parity: the item's <Requirements> are met against the current build. */
   reqsMet?: boolean
+  /** V2 MetEnhancements: prerequisite enhancements have enough ranks for the next rank. */
+  rankGateMet?: boolean
   item: EnhancementTreeItem
   rank: number
   selectedOption: string | undefined
@@ -239,7 +242,7 @@ interface CellProps {
 
 function EnhancementCell({
   item, rank, selectedOption, treeSpent, totalSpent, totalAP,
-  isCore, coreUnlocked = true, reqsMet = true, tier5Blocked = false, pos,
+  isCore, coreUnlocked = true, reqsMet = true, rankGateMet = true, tier5Blocked = false, pos,
   onIncrement, onDecrement, onShowSelector,
 }: CellProps) {
   const maxRanks = item.Ranks ?? 1
@@ -250,7 +253,7 @@ function EnhancementCell({
   const atMax = rank >= maxRanks
   const cost = nextRankCost(item, rank)
   const canAfford = (totalAP - totalSpent) >= cost
-  const canBuy = !locked && !atMax && canAfford
+  const canBuy = !locked && !atMax && canAfford && rankGateMet
   const canSell = rank > 0
 
   const options = getSelectorOptions(item)
@@ -280,6 +283,7 @@ function EnhancementCell({
       ...(treeSpent < minSpent ? [warn(`Requires ${minSpent} AP spent in this tree (${treeSpent} so far)`)] : []),
       ...(isCore && !coreUnlocked ? [warn('Requires the previous core enhancement')] : []),
       ...(!reqsMet ? [warn('Build does not meet this enhancement\'s prerequisites')] : []),
+      ...(!locked && !atMax && !rankGateMet ? [warn(`Rank ${rank + 1} needs rank ${rank + 1} of its prerequisite`)] : []),
       ...(tier5Blocked && rank === 0 ? [warn('Tier 5 is locked to another destiny tree')] : []),
       ...(!atMax && !canAfford && !locked ? [warn('Not enough action points')] : []),
       ...(hasSelector && !selectedOption ? [{ text: 'Click to choose an option' }] : []),
@@ -421,6 +425,44 @@ export default function TreeGrid({
     return getChoiceRank(choices, prev) >= (prev.Ranks ?? 1)
   }
 
+  // V2 Build::IsTrained walks every trained tree; this tree's live choices win.
+  function ranksOf(internalName: string): number {
+    const local = choices[internalName]
+    if (local != null) return local
+    if (!build) return 0
+    for (const pool of [build.enhancementChoices, build.destinyChoices, build.reaperChoices]) {
+      for (const tc of Object.values(pool ?? {})) {
+        const r = tc[internalName]
+        if (r) return r
+      }
+    }
+    return 0
+  }
+
+  function maxRanksOf(internalName: string): number | undefined {
+    const it = items.find(i => itemKey(i) === internalName)
+    return it ? (it.Ranks ?? 1) : undefined
+  }
+
+  function rankGateMet(item: EnhancementTreeItem): boolean {
+    return enhancementRanksAllowNext(item.Requirements, getChoiceRank(choices, item), ranksOf, maxRanksOf)
+  }
+
+  // V2 SpendInTree::HasTrainedDependants: a trained item here that requires
+  // this one and holds equal or more ranks blocks removing a rank.
+  function hasTrainedDependants(item: EnhancementTreeItem, ranks: number): boolean {
+    const key = itemKey(item)
+    return items.some(other => {
+      if (other === item) return false
+      const r = getChoiceRank(choices, other)
+      if (r <= 0) return false
+      const sel = getSelection(selections, other)
+      const opt = sel ? getSelectorOptions(other).find(o => o.Name === sel) : undefined
+      const needs = requiresEnhancement(other.Requirements, key) || requiresEnhancement(opt?.Requirements, key)
+      return needs && r >= ranks
+    })
+  }
+
   function writeChoices(item: EnhancementTreeItem, rank: number): TreeChoices {
     const key = itemKey(item)
     const next = { ...choices }
@@ -480,6 +522,7 @@ export default function TreeGrid({
     if ((totalAP - totalSpentAllTrees) < cost) return
     const isCore = (item.YPosition ?? 0) === CORE_Y
     if (isCore && !coreIsUnlocked(item)) return
+    if (!rankGateMet(item)) return
 
     const options = getSelectorOptions(item)
     if (options.length > 0 && !getSelection(selections, item)) {
@@ -498,6 +541,7 @@ export default function TreeGrid({
       const idx = coreItems.findIndex(c => c.Name === item.Name)
       if (coreItems.slice(idx + 1).some(c => getChoiceRank(choices, c) > 0)) return
     }
+    if (hasTrainedDependants(item, rank)) return
     const newRank = rank - 1
     onChoicesChange(writeChoices(item, newRank))
     if (newRank === 0 && getSelection(selections, item)) {
@@ -518,7 +562,7 @@ export default function TreeGrid({
     onSelectionsChange(nextSel)
     const rank = getChoiceRank(choices, item)
     const cost = nextRankCost(item, rank)
-    if ((totalAP - totalSpentAllTrees) >= cost) {
+    if ((totalAP - totalSpentAllTrees) >= cost && rankGateMet(item)) {
       onChoicesChange(writeChoices(item, rank + 1))
     }
   }
@@ -587,6 +631,7 @@ export default function TreeGrid({
             isCore={isCore}
             coreUnlocked={isCore ? coreIsUnlocked(item) : true}
             reqsMet={reqsMet}
+            rankGateMet={rankGateMet(item)}
             tier5Blocked={tier5Locked && item.Tier5 === true}
             pos={pos}
             onIncrement={() => handleIncrement(item)}
