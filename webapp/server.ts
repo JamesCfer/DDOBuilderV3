@@ -1065,9 +1065,26 @@ if (fs.existsSync(itemImagesDir)) {
 
 // Serve React build in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '..', 'dist')))
+  const DIST_DIR = path.join(__dirname, '..', 'dist')
+  // Built script and style files carry a content hash in their names, so they
+  // can be cached for good. A missing one must 404: answering with index.html
+  // made an open tab that outlived a rebuild fail every window with a MIME
+  // error, and the client only knows to reload when the file is truly gone.
+  app.use('/assets', express.static(path.join(DIST_DIR, 'assets'), {
+    immutable: true,
+    maxAge: '1y',
+    fallthrough: false,
+  }))
+  // index.html names the current hashed files, so always revalidate it; a
+  // cached copy would point at files the last rebuild removed.
+  app.use(express.static(DIST_DIR, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache')
+    },
+  }))
   app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'))
+    res.setHeader('Cache-Control', 'no-cache')
+    res.sendFile(path.join(DIST_DIR, 'index.html'))
   })
 }
 
