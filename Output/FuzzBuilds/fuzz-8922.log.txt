@@ -1,0 +1,32 @@
+seed 8922, level 20
+race Half-Elf
+classes Alchemist 12 / Paladin 8
+abilities Str 14, Dex 10, Con 12, Int 15, Wis 10, Cha 14 (28/28 pts)
+slot race-1-Dilettante Feat-0: Half-Elf Dilettante: Paladin
+slot heroic-1: Quicken Spell
+slot Paladin-1-Follower Of-0: Favored by Helm
+slot heroic-3: Toughness
+slot alterDarkGift-4: Form of Pain
+slot Alchemist-4-Alchemist Bonus Feat-0: Alchemical Studies: Verudite
+slot heroic-6: Heighten Spell
+slot heroic-9: Stunning Blow
+slot heroic-12: Skill Focus: Diplomacy
+slot Paladin-6-Deity-0: Ever Watchful
+slot Alchemist-8-Alchemist Bonus Feat-0: Insightful Fortitude
+slot heroic-15: Piercing Fire
+slot heroic-18: Exotic Weapon Proficiency: Dwarven Axe
+slot Alchemist-12-Alchemist Bonus Feat-0: Empower Spell
+enhancements: 80/80 AP across 11 trees
+gear Helmet: Crisis Helm
+gear Necklace: Epic Vulkoorim Pendant
+gear Trinket: Scarlet and Blue Ioun Stone (unsuppressed)
+gear Armor: Enforcer's Plate
+gear Cloak: Great Forge Shroud
+gear Belt: Morgana's Belt
+gear Ring: Skirmisher's Ring (Level 19)
+gear Ring2: Argonnessen Eye Band
+gear Gloves: Baron Aubrecker's Monogrammed Gloves
+gear Bracers: Bracers of Wind (level 3)
+gear Boots: Asbestos Booties
+gear Goggles: Black Lace Blindfold
+gear Main Hand: Green Steel Throwing Hammer
