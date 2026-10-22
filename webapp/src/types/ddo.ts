@@ -251,6 +251,8 @@ export interface ItemBuff {
   BonusType?: string
   Description1?: string
   Item?: string
+  /** V2 Buff::UpdatedEffects appends Item2 to every template effect's Item list. */
+  Item2?: string
   Percent?: boolean | string    // V2 <Percent/> parses as "" — check with flagSet()
 }
 

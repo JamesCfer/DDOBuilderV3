@@ -384,6 +384,28 @@ export function buildRuntimeGroupAdds(
     }))
   }
 
+  // Item buffs. V2 Build::ApplyItem resolves each <Buff> through
+  // Buff::UpdatedEffects, which replaces the template effects' Item list with
+  // the buff's <Item> and appends its <Item2>; NotifyItemEffect then feeds
+  // AddGroupWeapon effects to AddWeaponToGroup. The "Favored Weapon" buff
+  // (ItemBuffs.xml AddGroupWeapon [Favored Weapon]) names the weapon's own
+  // type in Item2 (Epic Dynastic Falcata: Khopesh), putting it in the
+  // Favored Weapon group (fuzz-8836).
+  const buffTemplates = new Map<string, ItemBuffTemplate>()
+  for (const b of input.allItemBuffs ?? []) if (!buffTemplates.has(b.Type)) buffTemplates.set(b.Type, b)
+  for (const item of Object.values(gearItems ?? {})) {
+    for (const buff of toArray(item?.Buff)) {
+      const tpl = buffTemplates.get(buff.Type)
+      if (!tpl) continue
+      extractFromEffects(toArray(tpl.Effect).filter(e => e.Type === 'AddGroupWeapon').map(eff => {
+        let its = toArray(eff.Item) as string[]
+        if (buff.Item) its = [buff.Item]
+        if (buff.Item2) its = [...its, buff.Item2]
+        return { ...eff, Item: its }
+      }))
+    }
+  }
+
   return { adds, merges }
 }
 
