@@ -61,7 +61,7 @@ export function useBuildStats(input: BuildStatsInput, buildOverride?: CharacterB
   const armorMaxDex = useMemo(() => extractArmorMaxDex(input.gearItems), [input.gearItems])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const groupAddsResult = useMemo(() => buildRuntimeGroupAdds(input, build), [build, input.allFeats, input.allTrees, input.allClasses, input.allRaces])
+  const groupAddsResult = useMemo(() => buildRuntimeGroupAdds(input, build), [build, input.allFeats, input.allTrees, input.allClasses, input.allRaces, input.gearItems, input.allItemBuffs])
 
   return useMemo<BuildStats>(() => {
     const statMapKeys = Array.from(statMap.keys())

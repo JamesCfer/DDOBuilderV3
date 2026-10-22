@@ -1,0 +1,34 @@
+seed 8836, level 20
+race Dwarf
+classes Cleric 6 / Sacred Fist 8 / Fighter 6
+abilities Str 12, Dex 15, Con 14, Int 14, Wis 9, Cha 11 (28/28 pts)
+slot Cleric-1-Follower Of-0: Follower of Onatar
+slot heroic-1: Augment Summoning
+slot Fighter-1-Fighter Bonus Feat-0: Exotic Weapon Proficiency: Kama
+slot heroic-3: Skill Focus: Intimidate
+slot alterDarkGift-4: Minion of the Eldritch
+slot Cleric-2-Domain-0: Domain of Fire
+slot heroic-6: Dodge
+slot Fighter-2-Fighter Bonus Feat-0: Weapon Focus: Bludgeoning Weapons
+slot heroic-9: Piercing Fire
+slot heroic-12: Negotiator
+slot Fighter-4-Fighter Bonus Feat-0: Shield Deflection
+slot heroic-15: Skill Focus: Bluff
+slot Fighter-6-Fighter Bonus Feat-0: Weapon Finesse
+slot Cleric-5-Domain Feat-0: Improved Domain of Fire
+slot heroic-18: Weapon Focus: Slashing Weapons
+slot Cleric-6-Deity-0: Search the Soul
+enhancements: 80/80 AP across 13 trees
+gear Helmet: Cowl of the Drow Devotee
+gear Necklace: Siren's Charm
+gear Trinket: Heirloom Map Case
+gear Armor: Splinterskull Docent
+gear Cloak: Cloak of Faith
+gear Belt: Girdle of Giants' Brawn (Level 14)
+gear Ring: Ring of Mystic Strength
+gear Ring2: Ring of Fall's Decay
+gear Gloves: Green Steel Weave Gloves
+gear Bracers: Bracers of the Hunter
+gear Boots: Bugkickers
+gear Goggles: Lenses of Doom
+gear Main Hand: Epic Dynastic Falcata
