@@ -3377,8 +3377,11 @@ function buildStatMapOnce(
     // Trigger feat: "Half-Elf Dilettante: Paladin". Cap = 2 + count of
     // "Improved Dilettante: Paladin" selections trained across the three
     // Half-Elf "Improved Dilettante I/II/III" enhancements (each +1).
+    // V2 only adds it when the full Divine Grace feat is not trained
+    // (BreakdownItemSave.cpp:112-115 `if (!AddDivineGrace())`), so the two
+    // never stack.
     {
-      const hasFeat = ctxFeats.has('Half-Elf Dilettante: Paladin')
+      const hasFeat = ctxFeats.has('Half-Elf Dilettante: Paladin') && !ctxFeats.has('Divine Grace')
       if (hasFeat && chaMod > 0) {
         let improvedCount = 0
         const halfElfTreeNames = ['Half-Elf', 'Half Elf']
