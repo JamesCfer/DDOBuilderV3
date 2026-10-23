@@ -1,0 +1,38 @@
+seed 9024, level 20
+race Half-Orc
+classes Warlock 13 / Monk 7
+abilities Str 14, Dex 12, Con 12, Int 15, Wis 11, Cha 11 (28/28 pts)
+slot heroic-1: Alertness
+slot Warlock-1-Warlock Pact-0: Pact: Celestial
+slot heroic-3: Martial Weapon Proficiency: Shortsword
+slot alterDarkGift-4: Living Shadow
+slot Warlock-4-Pact Save Bonus-0: Celestial Awareness
+slot Warlock-5-Pact Spell-0: Pact Magic: Soundburst
+slot heroic-6: Athletic
+slot Warlock-6-Pact Ability-0: Warlock: Ameliorate
+slot Monk-1-Monk Bonus-0: Lightning Reflexes
+slot heroic-9: Augment Summoning
+slot Warlock-8-Pact Save Bonus-0: Celestial Awareness
+slot Monk-2-Monk Bonus-0: Stunning Fist
+slot Warlock-9-Pact Spell-0: Pact Magic: Freedom of Movement
+slot heroic-12: Skill Focus: Search
+slot Warlock-10-Warlock Resistance-0: Celestial Resistance
+slot Monk-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot heroic-15: Martial Weapon Proficiency: Rapier
+slot Warlock-12-Pact Save Bonus-0: Celestial Awareness
+slot Monk-6-Monk Bonus-0: Toughness
+slot heroic-18: Single Weapon Fighting
+enhancements: 80/80 AP across 12 trees
+gear Helmet: University Investigator's Hat
+gear Necklace: Death's Locket (historic)
+gear Trinket: Lesser Cunning Trinket
+gear Armor: Docent of Shadow (level 8)
+gear Cloak: Epic Marshreed Cloak
+gear Belt: Guardian's Girdle (Level 15)
+gear Ring: Spontaneity
+gear Ring2: Yaaryar's Magnificent Band
+gear Gloves: Sly Gloves
+gear Bracers: Saltiron Bracer
+gear Boots: Epic Boots of Corrosion
+gear Goggles: Ornate Goggles
+gear Main Hand: Fintan's Bite

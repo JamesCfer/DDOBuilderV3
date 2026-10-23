@@ -1506,9 +1506,9 @@ export function parseEffect(
     case 'FalseLife':
       // Use the effect's declared/stamped Bonus — an item's <BonusType>
       // (e.g. Enhancement) is stamped onto template effects and competes
-      // Highest-Only with other Enhancement HP items in V2; hardcoding
-      // 'False Life' wrongly let them stack.
-      return [make('hp')]
+      // Highest-Only with other False Life effects inside V2's own False Life
+      // breakdown (Breakdown_FalseLife); its total then joins hit points.
+      return [make('falseLife')]
 
     // -----------------------------------------------------------------------
     // Sneak attack: V2 splits Dice / Damage / Range / Attack and main-vs-ranged.
@@ -2568,7 +2568,8 @@ export function parseItemBuff(
       // Insightful / Quality — three DIFFERENT bonus types that all stack
       // (Indomitable Wrappings 12+5+2 → 19 in V2). Hardcoding 'False Life'
       // collapsed them into one Highest-Only pool.
-      return [make('hp', buff.BonusType ?? 'False Life')]
+      // Pooled in V2's separate False Life breakdown, added to HP later.
+      return [make('falseLife', buff.BonusType ?? 'False Life')]
 
     // -----------------------------------------------------------------------
     // Sneak attack
