@@ -3361,6 +3361,17 @@ function buildStatMapOnce(
       })
     }
 
+    // V2 BreakdownItemHitpoints.cpp:153-165: every FalseLife effect is pooled
+    // in its own False Life breakdown, whose total joins hit points as one
+    // "False Life" bonus (so an Enhancement False Life item stacks with an
+    // Enhancement HP item; fuzz-9024).
+    {
+      const falseLife = resolveBonus(map.get('falseLife') ?? []).total
+      if (falseLife !== 0) {
+        add(map, 'hp', { value: falseLife, type: 'False Life', source: 'False Life' })
+      }
+    }
+
     // V2 fate points (BreakdownItemHitpoints.cpp:88-105 +2 HP each;
     // BreakdownItemSpellPoints.cpp:55-72 +1 SP each) — only at level 20+.
     if (build.totalLevel >= 20) {

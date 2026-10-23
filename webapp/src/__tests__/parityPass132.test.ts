@@ -63,7 +63,7 @@ describe('off-hand removal when the main hand forbids one (V2 CanEquipTo2ndWeapo
       input({ gearItems: { 'Main Hand': crossbow, 'Off Hand': runeArm } }),
       build({}),
     )
-    expect(stats.resolve('hp').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(false)
+    expect(stats.resolve('falseLife').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(false)
   })
 
   it('crossbow main hand WITH the feat → off-hand applies', () => {
@@ -75,7 +75,7 @@ describe('off-hand removal when the main hand forbids one (V2 CanEquipTo2ndWeapo
       }),
       build({ featChoices: { '1': 'Artificer Rune Arm Use' } }),
     )
-    expect(stats.resolve('hp').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(true)
+    expect(stats.resolve('falseLife').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(true)
   })
 
   it('two-handed main hand always drops the off-hand', () => {
@@ -84,7 +84,7 @@ describe('off-hand removal when the main hand forbids one (V2 CanEquipTo2ndWeapo
       input({ gearItems: { 'Main Hand': maul, 'Off Hand': runeArm } }),
       build({}),
     )
-    expect(stats.resolve('hp').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(false)
+    expect(stats.resolve('falseLife').bonuses.some(b => b.source.includes('Test Rune Arm'))).toBe(false)
   })
 })
 

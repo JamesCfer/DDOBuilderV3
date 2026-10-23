@@ -342,6 +342,9 @@ export const DERIVED_STAT_CONTRIBUTORS: Readonly<Record<string, readonly string[
   'crit.offhand.chance': CRIT_RANGE_KEYS,
   'crit.offhand.multiplier': CRIT_MULT_KEYS,
   'crit.offhand.multiplier19to20': CRIT_MULT_19_KEYS,
+  // False Life pools on its own key and joins HP as one bonus (V2
+  // BreakdownItemHitpoints), so an HP objective must also try False Life gear.
+  'hp': ['falseLife'],
 }
 
 /**
