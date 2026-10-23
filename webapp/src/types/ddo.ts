@@ -253,6 +253,8 @@ export interface ItemBuff {
   Item?: string
   /** V2 Buff::UpdatedEffects appends Item2 to every template effect's Item list. */
   Item2?: string
+  /** V2 Buff RequirementsToUse: stamped onto the effects when Value1 is set. */
+  Requirements?: Requirements
   Percent?: boolean | string    // V2 <Percent/> parses as "" — check with flagSet()
 }
 
