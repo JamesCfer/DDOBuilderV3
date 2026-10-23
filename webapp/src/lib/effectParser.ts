@@ -2148,6 +2148,11 @@ export function parseItemBuff(
   if (buff.Value1 == null && catalogue?.has(buff.Type)) {
     return parseItemBuffViaTemplate(buff, source, catalogue, ctx)
   }
+  // V2 Buff::UpdatedEffects (Buff.cpp:240-262) stamps the buff's own
+  // <Requirements> onto every effect, but only when the buff carries a Value1:
+  // Divine Vengeance's Spell Resistance 30 / 35 needs Paladin 19 / 20
+  // (fuzz-8961).
+  if (buff.Requirements && ctx && !requirementsMet(buff.Requirements, ctx)) return []
   const value = buff.Value1 ?? 0
   const items = [...new Set(toStringArray(buff.Item as string | string[] | undefined))]
 
