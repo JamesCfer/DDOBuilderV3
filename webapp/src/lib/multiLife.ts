@@ -344,6 +344,16 @@ export function renameLife(doc: CharacterDocument, lifeId: string, name: string)
   }
 }
 
+/** Replaces the active life's Bonuses watch list (V2 Life::MonitoredBonuses). */
+export function setMonitoredBonuses(doc: CharacterDocument, names: string[]): CharacterDocument {
+  const target = findActiveLife(doc)
+  if (!target) return doc
+  return {
+    ...doc,
+    lives: doc.lives.map(l => (l.id === target.id ? { ...l, monitoredBonuses: [...names] } : l)),
+  }
+}
+
 /**
  * Promotes a build into a brand-new Life within the same Character. Returns
  * the new Life. Race/tomes/special-feats copy over; the build itself is
