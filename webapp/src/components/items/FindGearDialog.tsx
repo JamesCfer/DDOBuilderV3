@@ -67,11 +67,13 @@ function EquipCell({ item, apiSlot, currentGear, onEquip }: EquipCellProps) {
 
 interface FindGearDialogProps {
   onClose: () => void
+  /** Pre-fills the effect search (the Bonuses pane opens it on a gap). */
+  initialBuffSearch?: string
 }
 
 const MAX_RESULTS = 400
 
-export default function FindGearDialog({ onClose }: FindGearDialogProps) {
+export default function FindGearDialog({ onClose, initialBuffSearch }: FindGearDialogProps) {
   const { build, dispatch } = useCharacter()
   const { doc } = useDocument()
   const { allWeaponGroups } = useStaticBundle()
@@ -88,7 +90,7 @@ export default function FindGearDialog({ onClose }: FindGearDialogProps) {
   const [loading, setLoading] = useState(true)
 
   const [nameSearch, setNameSearch] = useState('')
-  const [buffSearch, setBuffSearch] = useState('')
+  const [buffSearch, setBuffSearch] = useState(initialBuffSearch ?? '')
   const [itemType, setItemType] = useState('')
   const [minLv, setMinLv] = useState(1)
   const [maxLv, setMaxLv] = useState(maxCharLevel)

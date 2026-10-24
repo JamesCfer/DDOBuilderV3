@@ -154,6 +154,12 @@ export const MONITORED_BONUS_KEYS: Record<string, string> = {
   'Sonic Absorption': 'absorb.Sonic',
   'Melee Power': 'melee.power',
   'Ranged Power': 'ranged.power',
+  // V3 additions, not in V2's breakdownNameMap: the weapon and survivability
+  // lines players most often check for missing bonus types.
+  'Weapon Attack': 'melee.toHit',
+  'Weapon Damage': 'melee.damage',
+  'Hit Points': 'hp',
+  'Armor Class': 'ac',
 }
 
 /** V2 GetEffectValue(bonusType, true) — sum of active, gear-sourced (item)
@@ -163,4 +169,85 @@ export function monitoredBonusValue(stats: BuildStats, statKey: string, bonusTyp
     .filter(b => b.active && b.fromGear && b.type === bonusType)
     .reduce((sum, b) => sum + b.value, 0)
   return Math.trunc(total)
+}
+
+// ---------------------------------------------------------------------------
+// Bonuses pane (V2 BonusesPane.cpp): the same grid shown live, used to spot
+// which bonus types a build has no source for.
+// ---------------------------------------------------------------------------
+
+/** BonusesPane.cpp:80-91 columns: the forum-export ten plus Legendary. */
+export const BONUSES_PANE_COLUMNS = [...BONUS_TYPE_COLUMNS, 'Legendary'] as const
+
+/** Rows shown while the life's watch list is still empty (V2 starts empty). */
+export const DEFAULT_BONUS_WATCH_LIST = [
+  'Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma',
+  'Weapon Damage', 'Melee Power', 'Ranged Power', 'Doublestrike',
+  'Universal Spell Power', 'Spell Points',
+  'PRR', 'MRR', 'Dodge', 'Fortification', 'Healing Amplification',
+]
+
+export interface BonusTypeCell {
+  /** Summed active value of this bonus type on the stat. */
+  value: number
+  /** Where each active contribution comes from. */
+  sources: { source: string; value: number }[]
+}
+
+/**
+ * Active contributions of one bonus type to a stat. `gearOnly` reproduces
+ * V2's GetEffectValue(type, true) (items only); otherwise every source counts,
+ * since a feat or set bonus fills a gap just as well as an item.
+ * Types compare trimmed, so "Competence " (the Highest-Only variant) counts
+ * under Competence.
+ */
+export function bonusTypeCell(
+  stats: BuildStats, statKey: string, bonusType: string, gearOnly: boolean,
+): BonusTypeCell {
+  const hits = stats.resolve(statKey).bonuses.filter(b =>
+    b.active && b.value !== 0 && (!gearOnly || b.fromGear) && b.type.trim() === bonusType)
+  const value = Math.trunc(hits.reduce((sum, b) => sum + b.value, 0))
+  return { value, sources: hits.map(b => ({ source: b.source, value: b.value })) }
+}
+
+/** Item effect names that differ from the stat's display name. */
+const GEAR_SEARCH_WORDS: Record<string, string> = {
+  'Weapon Attack': 'accuracy',
+  'Weapon Damage': 'deadly',
+  PRR: 'physical resistance rating',
+  MRR: 'magical resistance rating',
+  'Spell Points': 'wizardry',
+  'Fortitude Save': 'fortitude',
+  'Reflex Save': 'reflex',
+  'Will Save': 'will',
+  'Acid Spell Power': 'corrosion',
+  'Cold Spell Power': 'glaciation',
+  'Electric Spell Power': 'magnetism',
+  'Fire Spell Power': 'combustion',
+  'Force Spell Power': 'impulse',
+  'Light and Alignment Spell Power': 'radiance',
+  'Negative Spell Power': 'nullification',
+  'Positive Spell Power': 'devotion',
+  'Repair Spell Power': 'reconstruction',
+  'Sonic Spell Power': 'resonance',
+  'Universal Spell Power': 'potency',
+}
+
+/** Find Gear effect search for items giving `bonusType` to the named stat. */
+export function gearSearchPhrase(statName: string, bonusType: string): string {
+  const words = GEAR_SEARCH_WORDS[statName] ?? statName.toLowerCase()
+  return `${bonusType.toLowerCase()} ${words}`
+}
+
+/** Menu group for a stat name, for the "add a stat" picker. */
+export function bonusStatGroup(name: string): string {
+  if (['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'].includes(name)) return 'Abilities'
+  if (name.endsWith(' Save')) return 'Saves'
+  if (name.endsWith('Spell Power')) return 'Spell Power'
+  if (name.endsWith('Spell Critical Chance')) return 'Spell Critical Chance'
+  if (name.endsWith(' DC') || ['Assassinate', 'Stun', 'Sunder', 'Trip'].includes(name)) return 'DCs'
+  if (name.endsWith(' Resistance') && name !== 'Spell Resistance') return 'Resistances'
+  if (name.endsWith(' Absorption')) return 'Absorption'
+  if (MONITORED_BONUS_KEYS[name]?.startsWith('skill.')) return 'Skills'
+  return 'Other'
 }

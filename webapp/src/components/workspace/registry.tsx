@@ -107,7 +107,7 @@ export const WINDOW_REGISTRY: Record<string, WindowDefinition> = {
   // Analysis
   'Breakdowns':        { group: 'Analysis', component: lazy(() => import('../breakdowns/BreakdownsPanel')), size: S(440, 760) },
   'DCs':               { group: 'Analysis', component: lazy(() => import('../dc/DCPanel')), size: S(560, 480) },
-  'Bonuses':           { group: 'Analysis', component: lazy(() => import('../bonuses/BonusesPanel')), size: S(620, 480) },
+  'Bonuses':           { group: 'Analysis', component: lazy(() => import('../bonuses/BonusesPanel')), size: S(960, 540) },
   'Compare':           { group: 'Analysis', component: lazy(() => import('../layout/BuildCompare')), size: S(720, 700) },
 
   // Stances & Buffs
