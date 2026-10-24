@@ -187,13 +187,16 @@ export function Tooltip({ tip, onHide, openLeft = false }: {
 // Collapsible section
 // ---------------------------------------------------------------------------
 
-export function Section({ title, children, defaultOpen = true }: {
+export function Section({ title, children, defaultOpen = true, forceOpen = false }: {
   title: string; children: React.ReactNode; defaultOpen?: boolean
+  /** Shown open regardless of the toggle (a search is narrowing the rows). */
+  forceOpen?: boolean
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [userOpen, setOpen] = useState(defaultOpen)
+  const open = forceOpen || userOpen
   return (
     <div className={styles.section}>
-      <button className={styles.sectionHeader} onClick={() => setOpen(v => !v)}>
+      <button className={styles.sectionHeader} onClick={() => setOpen(!open)}>
         <span className={styles.sectionCaret}>{open ? '▾' : '▸'}</span>
         {title}
       </button>

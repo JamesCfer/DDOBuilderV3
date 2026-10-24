@@ -7,7 +7,10 @@ import type { ResolvedBonus } from '../../lib/bonus'
 import { SPELL_POWER_TYPES, SPELL_POWER_LABELS } from '../../lib/gamedata'
 import { spellPowerRowValues } from '../../lib/spellPowerRow'
 import { useFavorites } from '../../lib/favoritesStore'
-import { buildBreakdownSections, indexSectionRows } from './breakdownSections'
+import {
+  buildBreakdownSections, indexSectionRows, filterBreakdownSections,
+  breakdownSearchTerms, matchesBreakdownTerms, rowSearchTexts,
+} from './breakdownSections'
 import { Tooltip, Section, StatRow, sign, type TipState, type StatRowData } from './statRows'
 import styles from './BreakdownsPanel.module.css'
 
@@ -91,6 +94,9 @@ export default function BreakdownsPanel() {
   // in this panel's own ★ Favorites section. Keys are "Section/Label"; shared store,
   // persisted per-browser (not per-build) in localStorage.
   const [favorites, toggleFavorite] = useFavorites()
+  const [query, setQuery] = useState('')
+  const terms = breakdownSearchTerms(query)
+  const searching = terms.length > 0
 
   const hideTip = useCallback(() => setTip(null), [])
 
@@ -101,6 +107,21 @@ export default function BreakdownsPanel() {
   // ── Sections (shared builder) ────────────────────────────────────────────
   const sections = buildBreakdownSections(stats, build, bundle.allClasses, bundle.allWeaponGroups)
   const rowIndex = indexSectionRows(sections)
+  const shownSections = filterBreakdownSections(sections, query)
+
+  const shownAbilities = ABILITIES.filter(ab => matchesBreakdownTerms(
+    ['Ability Scores', ab, AB3[ab], ...stats.resolve(`ability.${ab}`).bonuses.flatMap(b => [b.source, b.type])],
+    terms,
+  ))
+  const shownSpellPowers = SPELL_POWER_TYPES.filter(spKey => matchesBreakdownTerms(
+    ['Spell Powers', SPELL_POWER_LABELS[spKey] ?? spKey], terms,
+  ))
+  const shownFavorites = favorites.filter(key => {
+    const found = rowIndex.get(key)
+    return found && matchesBreakdownTerms(rowSearchTexts(found[0], found[1]), terms)
+  })
+  const nothingFound = searching && shownSections.length === 0 && shownAbilities.length === 0
+    && shownSpellPowers.length === 0 && shownFavorites.length === 0
 
   const hasCharacter = build.race || build.classes.some(c => c.name)
 
@@ -121,7 +142,7 @@ export default function BreakdownsPanel() {
   }
 
   const spellPowerSection = (
-    <Section title="Spell Powers">
+    <Section title="Spell Powers" forceOpen={searching}>
       <div className={styles.spNote}>Hover any value to see sources.</div>
       <table className={styles.spTable}>
         <thead>
@@ -133,7 +154,7 @@ export default function BreakdownsPanel() {
           </tr>
         </thead>
         <tbody>
-          {SPELL_POWER_TYPES.map(spKey => (
+          {shownSpellPowers.map(spKey => (
             <SpellPowerRow
               key={spKey}
               name={SPELL_POWER_LABELS[spKey] ?? spKey}
@@ -154,14 +175,32 @@ export default function BreakdownsPanel() {
       {tip && <Tooltip tip={tip} onHide={hideTip} />}
 
       <div className="panel-body" style={{ padding: '8px 0' }}>
+        {hasCharacter && (
+          <div className={styles.searchBar}>
+            <input
+              type="text"
+              className={styles.searchInput}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search stats, bonus types or sources"
+              aria-label="Search breakdowns"
+            />
+            {query && (
+              <button type="button" className={styles.searchClear} onClick={() => setQuery('')} aria-label="Clear search">
+                ✕
+              </button>
+            )}
+          </div>
+        )}
+        {nothingFound && <p className={styles.empty}>Nothing matches "{query.trim()}".</p>}
         {!hasCharacter ? (
           <p className={styles.empty}>Select a race and classes to see stats.</p>
         ) : (
           <div className={styles.sections}>
 
-            {favorites.length > 0 && (
-              <Section title="★ Favorites">
-                {favorites.map(key => {
+            {shownFavorites.length > 0 && (
+              <Section title="★ Favorites" forceOpen={searching}>
+                {shownFavorites.map(key => {
                   const found = rowIndex.get(key)
                   if (!found) return null
                   const [section, stat] = found
@@ -179,9 +218,9 @@ export default function BreakdownsPanel() {
               </Section>
             )}
 
-            <Section title="Ability Scores">
+            {shownAbilities.length > 0 && <Section title="Ability Scores" forceOpen={searching}>
               <div className={styles.abilityGrid}>
-                {ABILITIES.map(ab => {
+                {shownAbilities.map(ab => {
                   const resolved = stats.resolve(`ability.${ab}`)
                   const score = resolved.total
                   const mod   = abMod(score)
@@ -203,12 +242,12 @@ export default function BreakdownsPanel() {
                   )
                 })}
               </div>
-            </Section>
+            </Section>}
 
-            {sections.map(sec => {
+            {shownSections.map(sec => {
               if (sec.hideWhenEmpty && sec.rows.length === 0) return null
               const sectionEl = (
-                <Section title={sec.title} defaultOpen={sec.defaultOpen}>
+                <Section title={sec.title} defaultOpen={sec.defaultOpen} forceOpen={searching}>
                   {renderRows(sec.title, sec.rows)}
                 </Section>
               )
@@ -217,13 +256,16 @@ export default function BreakdownsPanel() {
               if (sec.title === 'Spellcasting') {
                 return (
                   <Fragment key={sec.title}>
-                    {spellPowerSection}
+                    {shownSpellPowers.length > 0 && spellPowerSection}
                     {sectionEl}
                   </Fragment>
                 )
               }
               return <Fragment key={sec.title}>{sectionEl}</Fragment>
             })}
+
+            {searching && shownSpellPowers.length > 0 && !shownSections.some(sec => sec.title === 'Spellcasting')
+              && spellPowerSection}
 
           </div>
         )}

@@ -572,3 +572,38 @@ export function indexSectionRows(sections: BreakdownSection[]): Map<string, [str
   }
   return rowIndex
 }
+
+// ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
+
+/** Lower-cased search terms; empty when the query is blank. */
+export function breakdownSearchTerms(query: string): string[] {
+  return query.toLowerCase().split(/\s+/).filter(Boolean)
+}
+
+/** True when every term appears somewhere in the given texts. */
+export function matchesBreakdownTerms(texts: string[], terms: string[]): boolean {
+  if (terms.length === 0) return true
+  const hay = texts.join(' ').toLowerCase()
+  return terms.every(t => hay.includes(t))
+}
+
+/** What a row can be found by: its label, section, and each bonus's source and type. */
+export function rowSearchTexts(section: string, row: StatRowData): string[] {
+  return [section, row.label, ...row.bonuses.flatMap(b => [b.source, b.type])]
+}
+
+/**
+ * Narrows the sections to the rows matching every term. A term can match the
+ * section title, the row label, or a bonus behind the row, so "insightful"
+ * lists every stat with an Insightful bonus and an item name lists every stat
+ * that item touches. Sections left with no rows are dropped.
+ */
+export function filterBreakdownSections(sections: BreakdownSection[], query: string): BreakdownSection[] {
+  const terms = breakdownSearchTerms(query)
+  if (terms.length === 0) return sections
+  return sections
+    .map(sec => ({ ...sec, rows: sec.rows.filter(r => matchesBreakdownTerms(rowSearchTexts(sec.title, r), terms)) }))
+    .filter(sec => sec.rows.length > 0)
+}
