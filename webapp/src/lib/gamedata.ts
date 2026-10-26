@@ -170,3 +170,27 @@ export function classShortName(name: string): string {
   }
   return name.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()
 }
+
+// V2 weaponTypeMap (WeaponTypes.h) also accepts these wiki spellings and
+// maps them onto the canonical weapon type, so data such as Weapon Finesse's
+// <Item>Handaxe</Item> reaches a Hand Axe.
+const WEAPON_TYPE_ALIASES: Record<string, string> = {
+  'Dwarven War Axe': 'Dwarven Axe',
+  'Dwarven Waraxe': 'Dwarven Axe',
+  'Greataxe': 'Great Axe',
+  'Greatclub': 'Great Club',
+  'Greatsword': 'Great Sword',
+  'Handaxe': 'Hand Axe',
+  'Handwrap': 'Handwraps',
+  'Long Bow': 'Longbow',
+  'Short Bow': 'Shortbow',
+  'Long Sword': 'Longsword',
+  'Short Sword': 'Shortsword',
+  'War Hammer': 'Warhammer',
+  'RuneArm': 'Rune Arm',
+}
+
+/** A weapon type name as V2 reads it (wiki spellings mapped to canonical). */
+export function canonicalWeaponType(name: string): string {
+  return WEAPON_TYPE_ALIASES[name] ?? name
+}
