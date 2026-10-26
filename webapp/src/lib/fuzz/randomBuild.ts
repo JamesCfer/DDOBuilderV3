@@ -329,12 +329,6 @@ export function generateRandomBuild(cat: FuzzCatalogues, opts: FuzzOptions): Fuz
   log.push(`enhancements: ${spentTotal}/${budget} AP across ${Object.keys(build.enhancementChoices).length} trees`)
 
   // ── Gear: random item per slot (MinLevel ≤ character level) ─────────────
-  const SLOT_TO_EQUIP: Record<string, string> = {
-    Helmet: 'Helmet', Necklace: 'Necklace', Trinket: 'Trinket', Armor: 'Armor',
-    Cloak: 'Cloak', Belt: 'Belt', Ring: 'Ring', Ring2: 'Ring',
-    Gloves: 'Gloves', Bracers: 'Bracers', Boots: 'Boots', Goggles: 'Goggles',
-    'Main Hand': 'Weapon1',
-  }
   build.gear = {}
   for (const [slot, equipKey] of Object.entries(SLOT_TO_EQUIP)) {
     const candidates = cat.allItems.filter(i =>
@@ -346,6 +340,18 @@ export function generateRandomBuild(cat: FuzzCatalogues, opts: FuzzOptions): Fuz
     build.gear[slot] = item.Name
     log.push(`gear ${slot}: ${item.Name}`)
   }
+  // V2 Build::SetGear clears an item's RestrictedSlots as it is equipped
+  // (Platinum Knuckles take the Gloves slot), so a V2-saved file never holds
+  // both. Equip in slot order, letting each item clear what it restricts.
+  for (const slot of Object.keys(SLOT_TO_EQUIP)) {
+    const item = build.gear[slot] ? cat.allItems.find(i => i.Name === build.gear[slot]) : undefined
+    for (const blocked of restrictedGearSlots(item)) {
+      if (blocked !== slot && build.gear[blocked]) {
+        log.push(`gear ${blocked}: ${build.gear[blocked]} removed (restricted by ${item!.Name})`)
+        delete build.gear[blocked]
+      }
+    }
+  }
 
   build.name = `Fuzz ${opts.seed} (${chosen.map((c, i) => `${c.Name.slice(0, 3)}${splits[i]}`).join('/')})`
   build.id = `fuzz-${opts.seed}`   // deterministic: same seed → identical build object
@@ -356,6 +362,20 @@ export function generateRandomBuild(cat: FuzzCatalogues, opts: FuzzOptions): Fuz
 // Validator — replays every rule independently; returns human-readable
 // violations (empty array = legal build). Used by tests and `compare`.
 // ---------------------------------------------------------------------------
+
+// Fuzzer gear slot -> V2 EquipmentSlot / RestrictedSlots key.
+const SLOT_TO_EQUIP: Record<string, string> = {
+  Helmet: 'Helmet', Necklace: 'Necklace', Trinket: 'Trinket', Armor: 'Armor',
+  Cloak: 'Cloak', Belt: 'Belt', Ring: 'Ring', Ring2: 'Ring',
+  Gloves: 'Gloves', Bracers: 'Bracers', Boots: 'Boots', Goggles: 'Goggles',
+  'Main Hand': 'Weapon1',
+}
+
+/** Fuzzer gear slots an item's <RestrictedSlots> keeps empty while it is worn. */
+function restrictedGearSlots(item: { RestrictedSlots?: Record<string, boolean> } | undefined): string[] {
+  const keys = Object.keys(item?.RestrictedSlots ?? {})
+  return Object.entries(SLOT_TO_EQUIP).filter(([, k]) => keys.includes(k)).map(([slot]) => slot)
+}
 
 export function validateBuild(cat: FuzzCatalogues, build: CharacterBuild): string[] {
   const problems: string[] = []
@@ -440,6 +460,11 @@ export function validateBuild(cat: FuzzCatalogues, build: CharacterBuild): strin
     if (!item) { problems.push(`gear ${slot}: unknown item "${name}"`); continue }
     if (Number(item.MinLevel ?? 0) > build.totalLevel) {
       problems.push(`gear ${slot}: "${name}" MinLevel ${item.MinLevel} > level ${build.totalLevel}`)
+    }
+    for (const blocked of restrictedGearSlots(item)) {
+      if (blocked !== slot && build.gear[blocked]) {
+        problems.push(`gear ${blocked}: "${build.gear[blocked]}" is in a slot restricted by "${name}"`)
+      }
     }
   }
 
