@@ -67,6 +67,20 @@ describe.skipIf(!haveData)('random-build parity fuzzer (real catalogues)', () =>
     expect(problems, problems.join('\n')).toEqual([])
   }, 60_000)
 
+  // V2 Build::SetGear clears an item's RestrictedSlots the moment it is
+  // equipped, so V2's UI can never save Platinum Knuckles with gloves on.
+  // Seed 10175 once rolled exactly that; V3 drops the gloves (as V2's UI
+  // would) while V2 loaded the impossible file as-is, a fuzzer artifact.
+  it('seed 10175 never keeps gear in a slot its main hand restricts', () => {
+    const { build } = generateRandomBuild(cat, { seed: 10175 })
+    expect(build.gear['Main Hand']).toBe('Platinum Knuckles')
+    expect(build.gear['Gloves']).toBeUndefined()
+    const problems = validateBuild(cat, build)
+    expect(problems, problems.join('\n')).toEqual([])
+    const withGloves = { ...build, gear: { ...build.gear, Gloves: "Liar's Fingers" } }
+    expect(validateBuild(cat, withGloves).join('\n')).toMatch(/restricted by "Platinum Knuckles"/)
+  }, 60_000)
+
   it('is deterministic — same seed, identical build', () => {
     const a = generateRandomBuild(cat, { seed: 777 }).build
     const b = generateRandomBuild(cat, { seed: 777 }).build
