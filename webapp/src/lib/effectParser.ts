@@ -5,7 +5,7 @@
 // (e.g. "ability.Strength", "save.Fort", "skill.Heal", "sp.Fire", …).
 
 import type { Effect, ItemBuff, Requirements, Requirement } from '../types/ddo'
-import { SKILLS, normalizeSkillName } from './gamedata'
+import { SKILLS, normalizeSkillName, canonicalWeaponType } from './gamedata'
 
 // The six ability scores — used to expand Item="All" ability effects (V2 applies
 // an AbilityBonus with ability "All" to every ability, e.g. Completionist +2).
@@ -200,11 +200,11 @@ function checkRequirement(req: Requirement, ctx: EffectContext): boolean {
       // satisfies a single-Item requirement (Machrotechnic "Forcefield
       // Generator I + Rune Arm", oracle-verified on Bardbox). Legacy callers
       // without hand context keep the either-hand approximation.
-      if (ctx.weaponTypeMain === undefined) return its.some(i => ctx.weaponTypes.has(i))
-      let met = its[0] === ctx.weaponTypeMain || its[0] === 'All'
+      if (ctx.weaponTypeMain === undefined) return its.some(i => ctx.weaponTypes.has(canonicalWeaponType(i)))
+      let met = canonicalWeaponType(its[0]) === ctx.weaponTypeMain || its[0] === 'All'
       if (its.length > 1) {
         const off = ctx.weaponTypeOffhand ?? ''
-        met = met && (its[its.length - 1] === off || its[its.length - 1] === 'All')
+        met = met && (canonicalWeaponType(its[its.length - 1]) === off || its[its.length - 1] === 'All')
       }
       return met
     }
@@ -438,8 +438,9 @@ const ENERGY_ALL_TYPES = [
  * <Item> list names the weapon TYPES it applies to ('All' = every weapon).
  * V3's flat weapon keys model the MAIN hand, so gate on the main-hand type.
  */
-function weaponScopeMatches(items: string[], ctx?: EffectContext): boolean {
+function weaponScopeMatches(rawItems: string[], ctx?: EffectContext): boolean {
   if (!ctx) return true
+  const items = rawItems.map(canonicalWeaponType)
   if (ctx.weaponOnlyHand === 'off') return false
   if (ctx.weaponTypeMain === undefined || ctx.weaponTypeMain === '') {
     return items.includes('All') || items.some(i => ctx.weaponTypes.has(i))
@@ -455,7 +456,7 @@ function offhandTypeMatches(items: string[], ctx?: EffectContext): boolean {
   if (!ctx || ctx.weaponOnlyHand === 'main') return false
   if (ctx.weaponOnlyHand === 'off') return true
   const off = ctx.weaponTypeOffhand
-  return !!off && items.some(i => i === 'All' || i === off)
+  return !!off && items.some(i => i === 'All' || canonicalWeaponType(i) === off)
 }
 
 function offhandClassMatches(items: string[], ctx?: EffectContext): boolean {
@@ -1957,7 +1958,7 @@ export function parseEffect(
     // Crit-confirm bonuses for the wielded weapon type.
     case 'Weapon_AttackCritical':
       return perHand(make, ctx?.weaponOnlyHand !== 'off'
-        && (items.includes('All') || !!(ctx && items.some(i => ctx.weaponTypes.has(i)))),
+        && (items.includes('All') || !!(ctx && items.some(i => ctx.weaponTypes.has(canonicalWeaponType(i))))),
         'melee.crit.toHit', offhandTypeMatches(items, ctx), 'offhand.crit.toHit', ctx)
     // Ability substitution for attack/damage rolls (e.g. Pact weapons:
     // CHA-to-hit). Item = [Ability, ...weaponTypes] (or weapon classes for

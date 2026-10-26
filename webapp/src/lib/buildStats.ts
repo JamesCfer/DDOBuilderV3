@@ -18,7 +18,7 @@ import { craftedAugmentLevelIndex, effectiveItemLevel } from './craftedItems'
 import type { CharacterBuild } from '../types/ddo'
 import { costUpToRank, revokedSpendGrantsFeat } from './enhancementSpend'
 import { MIXED_MAGICS_ENHANCEMENTS, MIXED_MAGICS_SELECTORS, hasMixedMagics } from './mixedMagics'
-import { SKILLS } from './gamedata'
+import { SKILLS, canonicalWeaponType } from './gamedata'
 import type {
   Race, DDOClass, Feat, EnhancementTree, EnhancementTreeItem, Item,
   Effect, EnhancementSelection, Augment, SetBonus, FiligreeSetBonus, Filigree,
@@ -304,7 +304,7 @@ export function buildRuntimeGroupAdds(
       if (eff.Type === 'AddGroupWeapon' && its.length >= 2) {
         const group = its[0]
         for (let i = 1; i < its.length; i++) {
-          if (its[i]) adds.push({ group, weaponType: its[i] })
+          if (its[i]) adds.push({ group, weaponType: canonicalWeaponType(its[i]) })
         }
       } else if (eff.Type === 'MergeGroups' && its.length >= 2) {
         merges.push({ baseGroup: its[0], mergedGroup: its[1] })
