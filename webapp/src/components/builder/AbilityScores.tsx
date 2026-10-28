@@ -25,6 +25,18 @@ function parseBuildPoints(raw: unknown): number[] {
   return [28, 32, 34, 36]
 }
 
+const TIER_NAMES = ['Adventurer', 'Champion', 'Hero', 'Legend']
+
+/**
+ * V2 Build::DetermineBuildPoints. With no past lives the player chooses tier
+ * [0] or [1] (the Champion flag). One past life gives tier [2], two or more
+ * give tier [3]. Returns the tier index in use.
+ */
+export function buildPointTier(totalPastLives: number, champion: boolean): number {
+  if (totalPastLives === 0) return champion ? 1 : 0
+  return totalPastLives === 1 ? 2 : 3
+}
+
 export default function AbilityScores() {
   const { build, dispatch } = useCharacter()
   const { baseAbilities } = build
@@ -36,11 +48,10 @@ export default function AbilityScores() {
 
   const race = races.find(r => r.Name === build.race)
   const points = race ? parseBuildPoints(race.BuildPoints) : [28, 32, 34, 36]
-  // V2 Build::DetermineBuildPoints: 0 PLs → idx 0, 1 PL → idx 2, 2+ PLs → idx 3.
   // Counts heroic + racial past lives, not just the current race.
   const totalPLs = pastLifeCount(build.pastLives)
-  const budgetIdx = totalPLs === 0 ? 0 : totalPLs === 1 ? 2 : 3
-  const POINT_BUY_BUDGET = points[Math.min(budgetIdx, points.length - 1)] ?? 32
+  const budgetIdx = Math.min(buildPointTier(totalPLs, !!build.championBuildPoints), points.length - 1)
+  const POINT_BUY_BUDGET = points[budgetIdx] ?? 32
 
   const spent = totalPointsSpent(baseAbilities)
   const remaining = POINT_BUY_BUDGET - spent
@@ -63,6 +74,35 @@ export default function AbilityScores() {
         </span>
       </div>
       <div className="panel-body">
+        <div className={styles.buildPoints} role="radiogroup" aria-label="Build points">
+          <span className={styles.buildPointsLabel}>Build points</span>
+          {points.slice(0, 4).map((pts, idx) => {
+            // V2 DDOBuilderView::UpdateRadioPoints: tiers [0]/[1] are a free
+            // choice with no past lives; [2]/[3] only follow past lives.
+            const selectable = totalPLs === 0 && idx <= 1
+            const why = idx <= 1
+              ? (selectable ? `${TIER_NAMES[idx]}: ${pts} points` : `Past lives set the build points (${totalPLs} past life${totalPLs === 1 ? '' : 's'})`)
+              : `${TIER_NAMES[idx]}: needs ${idx === 2 ? '1 past life' : '2 or more past lives'} (Past Lives window)`
+            return (
+              <button
+                key={idx}
+                type="button"
+                role="radio"
+                aria-checked={idx === budgetIdx}
+                className={styles.buildPointsOption}
+                data-active={idx === budgetIdx}
+                disabled={!selectable}
+                title={why}
+                onClick={() => dispatch({ type: 'SET_CHAMPION_BUILD_POINTS', champion: idx === 1 })}
+              >{pts}</button>
+            )
+          })}
+        </div>
+        <div className={styles.buildPointsHint}>
+          {points.length < 4 ? null : totalPLs === 0
+            ? `Pick ${points[0]} or ${points[1]}. ${points[2]} and ${points[3]} unlock with 1 and 2+ past lives.`
+            : `${points[budgetIdx]} points from ${totalPLs} past life${totalPLs === 1 ? '' : 's'}.`}
+        </div>
         <div className={styles.grid}>
           {ABILITIES.map(ab => {
             const score = baseAbilities[ab]

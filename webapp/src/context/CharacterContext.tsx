@@ -18,6 +18,7 @@ type Action =
   | { type: 'SET_EPIC_LEVELS'; levels: number }
   | { type: 'SET_LEGENDARY_LEVELS'; levels: number }
   | { type: 'SET_ABILITY'; ability: Ability; score: number }
+  | { type: 'SET_CHAMPION_BUILD_POINTS'; champion: boolean }
   | { type: 'SET_ABILITY_LEVELUP'; level: 4 | 8 | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40; ability: Ability }
   | { type: 'SET_FEAT'; slotKey: string; featName: string }
   | { type: 'SET_SKILL_RANK'; skill: string; rank: number }
@@ -290,6 +291,8 @@ export function reducer(state: CharacterBuild, action: Action): CharacterBuild {
       return { ...state, legendaryLevels: Math.max(0, Math.min(LEGENDARY_MAX_LEVELS, action.levels)) }
     case 'SET_ABILITY':
       return { ...state, baseAbilities: { ...state.baseAbilities, [action.ability]: action.score } }
+    case 'SET_CHAMPION_BUILD_POINTS':
+      return { ...state, championBuildPoints: action.champion }
     case 'SET_ABILITY_LEVELUP':
       return { ...state, abilityLevelUps: { ...state.abilityLevelUps, [action.level]: action.ability } }
     case 'SET_FEAT':
