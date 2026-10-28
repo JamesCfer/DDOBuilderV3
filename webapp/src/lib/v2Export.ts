@@ -292,6 +292,7 @@ function emitAbilitySpend(xml: Xml, build: CharacterBuild): void {
   xml.open('AbilitySpend')
   xml.leaf('AvailableSpend', pointBudget)
   for (const ab of ABILITIES) xml.leaf(SPEND_KEY[ab], spends[ab])
+  if (build.championBuildPoints) xml.empty('Champion')
   xml.close('AbilitySpend')
 }
 

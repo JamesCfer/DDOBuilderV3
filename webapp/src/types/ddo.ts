@@ -608,6 +608,13 @@ export interface CharacterBuild {
   /** Legendary progression levels 31–34 (0–4) */
   legendaryLevels: number
   baseAbilities: AbilityScores
+  /**
+   * V2 AbilitySpend Champion flag: with no past lives the player picks between
+   * the race's first two build point tiers (28 or 32 for most races). Past
+   * lives override it (1 PL = tier 3, 2+ PLs = tier 4), as in V2
+   * Build::DetermineBuildPoints.
+   */
+  championBuildPoints?: boolean
   abilityLevelUps: Partial<Record<4 | 8 | 12 | 16 | 20 | 24 | 28 | 32 | 36 | 40, Ability>>
   purchasedPoints: number
   featChoices: Record<string, string>

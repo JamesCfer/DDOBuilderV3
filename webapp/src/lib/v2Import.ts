@@ -754,7 +754,11 @@ function parseBuildNode(
   ] as [BuildClass, BuildClass, BuildClass]
 
   // ── Ability scores (point-buy spend) ─────────────────────────────────────
-  out.baseAbilities = parseAbilities(getRec(buildNode, 'AbilitySpend'))
+  const abilitySpend = getRec(buildNode, 'AbilitySpend')
+  out.baseAbilities = parseAbilities(abilitySpend)
+  // V2 DL_FLAG(Champion): present as an empty <Champion/> element when the
+  // player picked the second (32 point) tier with no past lives.
+  if (abilitySpend && 'Champion' in abilitySpend) out.championBuildPoints = true
 
   // ── Ability level-ups: V2 stores <Level4>, <Level8>, … at Build level ────
   // (NOT inside LevelTraining as AbilityLevelUp). All ten elements are always
