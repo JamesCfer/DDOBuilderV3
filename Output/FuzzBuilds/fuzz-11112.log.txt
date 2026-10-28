@@ -1,0 +1,37 @@
+seed 11112, level 20
+race Drow
+classes Fighter 4 / Monk 8 / Cleric 8
+abilities Str 12, Dex 15, Con 11, Int 11, Wis 12, Cha 14 (28/28 pts)
+slot Fighter-1-Fighter Bonus Feat-0: Sap
+slot heroic-1: Acrobatic
+slot Fighter-2-Fighter Bonus Feat-0: Slicing Blow
+slot Cleric-1-Follower Of-0: Follower of Onatar
+slot heroic-3: Piercing Fire
+slot Monk-1-Monk Bonus-0: Precision
+slot alterDarkGift-4: Webtouched Wretch
+slot Cleric-2-Domain-0: Domain of Earth
+slot Monk-2-Monk Bonus-0: Great Fortitude
+slot heroic-6: Discipline
+slot heroic-9: Mental Toughness
+slot Cleric-5-Domain Feat-0: Improved Domain of Earth
+slot Monk-3-Monk Philosophy-0: Path of Inevitable Dominion: Fists of Darkness
+slot Fighter-4-Fighter Bonus Feat-0: Heavy Armor Training
+slot heroic-12: Stealthy
+slot Cleric-6-Deity-0: Onatar's Forge
+slot heroic-15: Maximize Spell
+slot Monk-6-Monk Bonus-0: Swords to Plowshares
+slot heroic-18: Extra Turning
+enhancements: 80/80 AP across 14 trees
+gear Helmet: Helm of Clarity
+gear Necklace: Pendant of the Blue Abishai
+gear Trinket: The Magic Conch
+gear Armor: Dragoncrafted Docent
+gear Cloak: Nightsinger's Mantle (Level 13)
+gear Belt: Skirmisher's Belt (Level 15)
+gear Ring: Band of Seasons' Warding
+gear Ring2: Ring of the Buccaneer (level 8)
+gear Gloves: Cesti
+gear Bracers: Jidz-Tet'ka
+gear Boots: Boots of Speed
+gear Goggles: Precision Lenses
+gear Main Hand: Midnight Greetings

@@ -404,6 +404,10 @@ export function buildRuntimeGroupAdds(
         return { ...eff, Item: its }
       }))
     }
+    // The item's own top-level <Effect> list goes through the same
+    // NotifyItemEffect path: Midnight Greetings adds Kukri to Centered
+    // (fuzz-11112).
+    extractFromEffects(toArray(item?.Effect).filter(e => e.Type === 'AddGroupWeapon'))
   }
 
   return { adds, merges }
