@@ -1,10 +1,12 @@
 /**
- * Parity pass N6 — WeaponProficiencyClass grants class-based weapon proficiency.
+ * Parity pass N6: WeaponProficiencyClass does NOT grant weapon proficiency.
  *
- * V2 source: BreakdownItemWeaponEffects.cpp / Build.cpp
- *   Effect_WeaponProficiencyClass is registered in the system and routes
- *   through AffectsThisWeapon to check group membership; the INTENDED meaning
- *   is "this feat grants proficiency with all weapons in the named class."
+ * V2 source: BreakdownItemWeaponEffects.cpp:329 only uses
+ *   Effect_WeaponProficiencyClass to decide whether an effect applies to a
+ *   weapon (AffectsThisWeapon); it never adds anything to the "Proficiency"
+ *   weapon group. Build.cpp changes groups only for AddGroupWeapon and
+ *   MergeGroups, and BreakdownItemWeaponAttackBonus.cpp:71 applies the -4
+ *   "Non proficient penalty" from IsWeaponInGroup("Proficiency", weapon).
  *
  * Real data examples:
  *   - HalfElf.race.xml "Half-Elf Dilettante: Ranger":
@@ -13,11 +15,9 @@
  *       <Type>WeaponProficiencyClass</Type> <Item>Simple</Item>
  *       <Type>WeaponProficiencyClass</Type> <Item>Martial</Item>
  *
- * Fix: extractFromEffects() in buildRuntimeGroupAdds() now handles
- *   WeaponProficiencyClass by pushing a RuntimeGroupMerge
- *   { baseGroup: 'Proficiency', mergedGroup: <className> },
- *   so deriveWeaponClasses for any weapon in that class gains 'Proficiency'
- *   membership via the existing transitive-merge logic.
+ * V3 once merged these classes into "Proficiency", so a Half-Elf with the
+ * Ranger dilettante skipped V2's -4 on an exotic Repeating Heavy Crossbow
+ * (fuzz seed 14965: V2 22 to hit, V3 26).
  */
 
 import { describe, it, expect } from 'vitest'
@@ -91,81 +91,47 @@ function buildWithFeat(featChoices: Record<string, string>, feats: Feat[]) {
 }
 
 // ---------------------------------------------------------------------------
-// buildRuntimeGroupAdds — WeaponProficiencyClass emits a RuntimeGroupMerge
+// buildRuntimeGroupAdds: WeaponProficiencyClass emits no group merge (V2)
 // ---------------------------------------------------------------------------
 
-describe('buildRuntimeGroupAdds — WeaponProficiencyClass', () => {
-  it('emits merge Ranged→Proficiency when Half-Elf Dilettante: Ranger is trained', () => {
+describe('buildRuntimeGroupAdds: WeaponProficiencyClass', () => {
+  it('emits no Proficiency merge for Half-Elf Dilettante: Ranger', () => {
     const build = buildWithFeat(
       { 'Hero 1': 'Half-Elf Dilettante: Ranger' },
       [halfElfDilettanteRanger],
     )
-    const inp = input([halfElfDilettanteRanger])
-    const { merges } = buildRuntimeGroupAdds(inp, build)
-    expect(merges.some(m => m.baseGroup === 'Proficiency' && m.mergedGroup === 'Ranged')).toBe(true)
+    const { merges } = buildRuntimeGroupAdds(input([halfElfDilettanteRanger]), build)
+    expect(merges.some(m => m.baseGroup === 'Proficiency')).toBe(false)
   })
 
-  it('emits merge Simple→Proficiency when Simple proficiency-class feat is trained', () => {
+  it("emits no Proficiency merge for Master's Touch", () => {
     const build = buildWithFeat({ 'Hero 1': "Master's Touch: Simple" }, [mastersTouchSimple])
-    const inp = input([mastersTouchSimple])
-    const { merges } = buildRuntimeGroupAdds(inp, build)
-    expect(merges.some(m => m.baseGroup === 'Proficiency' && m.mergedGroup === 'Simple')).toBe(true)
-  })
-
-  it('does NOT emit a Ranged→Proficiency merge when no proficiency-class feat is trained', () => {
-    const build = buildWithFeat({}, [])
-    const inp = input([halfElfDilettanteRanger])
-    const { merges } = buildRuntimeGroupAdds(inp, build)
-    expect(merges.some(m => m.mergedGroup === 'Ranged')).toBe(false)
+    const { merges } = buildRuntimeGroupAdds(input([mastersTouchSimple]), build)
+    expect(merges.some(m => m.baseGroup === 'Proficiency')).toBe(false)
   })
 })
 
 // ---------------------------------------------------------------------------
-// BuildStats.isWeaponProficient — integration via WeaponProficiencyClass
+// BuildStats.isWeaponProficient ignores WeaponProficiencyClass (V2)
 // ---------------------------------------------------------------------------
 
-describe('BuildStats.isWeaponProficient via WeaponProficiencyClass', () => {
-  it('returns true for Longbow when Half-Elf Dilettante: Ranger is trained', () => {
+describe('BuildStats.isWeaponProficient ignores WeaponProficiencyClass', () => {
+  it('Half-Elf Dilettante: Ranger does not make a Longbow proficient', () => {
     const build = buildWithFeat(
       { 'Hero 1': 'Half-Elf Dilettante: Ranger' },
       [halfElfDilettanteRanger],
     )
-    const stats = computeBuildStats(input([halfElfDilettanteRanger]), build)
-    expect(stats.isWeaponProficient('Longbow')).toBe(true)
-  })
-
-  it('returns true for Shortbow when Half-Elf Dilettante: Ranger is trained', () => {
-    const build = buildWithFeat(
-      { 'Hero 1': 'Half-Elf Dilettante: Ranger' },
-      [halfElfDilettanteRanger],
-    )
-    const stats = computeBuildStats(input([halfElfDilettanteRanger]), build)
-    expect(stats.isWeaponProficient('Shortbow')).toBe(true)
-  })
-
-  it('returns false for Longsword when only Ranged proficiency-class is trained', () => {
-    const build = buildWithFeat(
-      { 'Hero 1': 'Half-Elf Dilettante: Ranger' },
-      [halfElfDilettanteRanger],
-    )
-    const stats = computeBuildStats(input([halfElfDilettanteRanger]), build)
-    expect(stats.isWeaponProficient('Longsword')).toBe(false)
-  })
-
-  it('returns false for Longbow when no feat grants ranged proficiency', () => {
-    const build = buildWithFeat({}, [])
     const stats = computeBuildStats(input([halfElfDilettanteRanger]), build)
     expect(stats.isWeaponProficient('Longbow')).toBe(false)
   })
 
-  it('returns true for both Simple and Martial weapons when both class-proficiency feats are trained', () => {
+  it("Master's Touch does not make Simple or Martial weapons proficient", () => {
     const build = buildWithFeat(
       { 'Hero 1': "Master's Touch: Simple", 'Hero 2': "Master's Touch: Martial" },
       [mastersTouchSimple, mastersTouchMartial],
     )
     const stats = computeBuildStats(input([mastersTouchSimple, mastersTouchMartial]), build)
-    expect(stats.isWeaponProficient('Club')).toBe(true)
-    expect(stats.isWeaponProficient('Longsword')).toBe(true)
-    expect(stats.isWeaponProficient('Longbow')).toBe(false)
+    expect(stats.isWeaponProficient('Club')).toBe(false)
+    expect(stats.isWeaponProficient('Longsword')).toBe(false)
   })
 })
