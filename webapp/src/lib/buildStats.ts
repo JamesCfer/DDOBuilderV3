@@ -291,6 +291,7 @@ export function buildRuntimeGroupAdds(
     }
   }
 
+  const effReqCtx: RequirementContext = { ...reqCtx, activeBuffs: build.activeBuffs ?? [] }
   function extractFromEffects(effects: Effect[]): void {
     for (const eff of effects) {
       // V2 AddWeaponToGroup stores requirement-carrying adds as weapons-
@@ -299,7 +300,11 @@ export function buildRuntimeGroupAdds(
       // the exotics matching the TRAINED Weapon Group Specialization
       // selection (oracle-verified on fuzz-5025: a crossbow is NOT a focus
       // weapon when the Axes focus is selected).
-      if (eff.Requirements && !meetsFeatRequirements(eff.Requirements as never, reqCtx)) continue
+      // Stance requirements are checked against the user-toggled stances
+      // (only Bladesworn Transformation and Holy Mantle gate group adds in
+      // the data): V2 grants Bladesworn's proficiency only while it is on
+      // (oracle-verified on fuzz-15664).
+      if (eff.Requirements && !meetsFeatRequirements(eff.Requirements as never, effReqCtx)) continue
       const its = toArray(eff.Item) as string[]
       if (eff.Type === 'AddGroupWeapon' && its.length >= 2) {
         const group = its[0]
