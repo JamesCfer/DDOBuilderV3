@@ -28,6 +28,7 @@ import type {
   Ability, CharacterBuild, CharacterDocument, FiligreeSlot, Item, ItemAugment, ItemBuff,
 } from '../types/ddo'
 import { POINT_BUY_COSTS, EPIC_DESTINY_CLAIMS } from '../types/ddo'
+import { v2SelectionName } from './v2SelectionNames'
 
 /**
  * Optional item catalogue passed to the exporter for F2 (gear-effect
@@ -345,7 +346,7 @@ function emitSpendInTree(
       if (!ranks) continue
       xml.open('TrainedEnhancement')
       xml.leaf('EnhancementName', name)
-      if (sels[name]) xml.leaf('Selection', sels[name])
+      if (sels[name]) xml.leaf('Selection', v2SelectionName(name, sels[name]))
       xml.leaf('Ranks', ranks)
       xml.close('TrainedEnhancement')
     }

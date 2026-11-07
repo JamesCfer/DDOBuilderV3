@@ -24,6 +24,7 @@
 // — so that gate is not reproduced here.
 
 import { XMLParser } from 'fast-xml-parser'
+import { v2SelectionName } from './v2SelectionNames'
 
 type AnyRec = Record<string, unknown>
 
@@ -83,7 +84,7 @@ function exportTreeFile(kind: TreeFileKind, spend: TreeSpend): string {
     lines.push('    <TrainedEnhancement>')
     lines.push(`      <EnhancementName>${esc(name)}</EnhancementName>`)
     if (spend.selections[name]) {
-      lines.push(`      <Selection>${esc(spend.selections[name])}</Selection>`)
+      lines.push(`      <Selection>${esc(v2SelectionName(name, spend.selections[name]))}</Selection>`)
     }
     lines.push(`      <Ranks>${ranks}</Ranks>`)
     lines.push('    </TrainedEnhancement>')
