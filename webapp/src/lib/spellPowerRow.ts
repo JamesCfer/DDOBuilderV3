@@ -5,10 +5,10 @@
 //   - BreakdownItemSpellPower::CreateOtherEffects folds the three Universal
 //     breakdowns (power, lore, critical multiplier) into every concrete spell
 //     power type rather than showing a "Universal" row of its own.
-//   - `spCritDmg.All` is the Item=All form of SpellCriticalDamage, which V2
-//     matches against every spell power type (Effect::HasSpellPower), so it
-//     is universal in effect — the forum export folds it in the same way
-//     (lib/export/sections.ts spellPowers).
+//   - An Item=All SpellCriticalDamage effect is fanned out into every
+//     per-type key by effectParser (V2 Effect::HasSpellPower), so it stacks
+//     by bonus type with that type's own effects. `spCritDmg.All` is still
+//     read here for older stat maps but is no longer produced.
 //   - Critical chance has no base: V2's SpellDamage.cpp:59 starts it at 0 and
 //     takes the breakdown total verbatim (truncated to an int at display).
 //   - Critical multiplier starts at ×2 and each point of SpellCriticalDamage

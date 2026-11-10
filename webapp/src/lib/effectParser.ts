@@ -1733,10 +1733,14 @@ export function parseEffect(
       // V2 Effect::HasSpellPower reads Item through spellPowerTypeMap, where a
       // bare "Light" or "Alignment" is SpellPower_Unknown: such an item feeds
       // no crit multiplier line (Harper Spell Training lists "Light").
+      // Item=All fans out per type like SpellPower: V2 matches it against
+      // every type's pool, where it stacks by bonus type with that type's
+      // own effects (fuzz-17089: Equipment All +0.25 loses to Equipment
+      // Force +12).
       if (items.length > 0) {
-        return [...new Set(items.map(spellPowerElement))]
-          .filter((e): e is string => e !== null)
-          .map(el => make(`spCritDmg.${el}`))
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`spCritDmg.${t}`)) : [make(`spCritDmg.${el}`)])
       }
       return []
 
@@ -2632,10 +2636,14 @@ export function parseItemBuff(
       // V2 Effect::HasSpellPower reads Item through spellPowerTypeMap, where a
       // bare "Light" or "Alignment" is SpellPower_Unknown: such an item feeds
       // no crit multiplier line (Harper Spell Training lists "Light").
+      // Item=All fans out per type like SpellPower: V2 matches it against
+      // every type's pool, where it stacks by bonus type with that type's
+      // own effects (fuzz-17089: Equipment All +0.25 loses to Equipment
+      // Force +12).
       if (items.length > 0) {
-        return [...new Set(items.map(spellPowerElement))]
-          .filter((e): e is string => e !== null)
-          .map(el => make(`spCritDmg.${el}`))
+        const els = [...new Set(items.map(spellPowerElement))].filter((e): e is string => e !== null)
+        return els.flatMap(el =>
+          el === 'All' ? SP_ALL_TYPES.map(t => make(`spCritDmg.${t}`)) : [make(`spCritDmg.${el}`)])
       }
       return []
 
