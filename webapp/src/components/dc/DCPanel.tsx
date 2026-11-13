@@ -4,6 +4,7 @@ import type { Ability, DDOClass } from '../../types/ddo'
 import { useStaticBundle } from '../../hooks/useStaticBundle'
 import { useGearItems } from '../../hooks/useGearItems'
 import { SPELL_SCHOOLS } from '../../lib/gamedata'
+import { computeMaxSpellLevel } from '../../lib/spells/spellMath'
 import { useBuildStats } from '../../hooks/useBuildStats'
 import type { BuildStats } from '../../hooks/useBuildStats'
 import styles from './DCPanel.module.css'
@@ -15,27 +16,13 @@ import styles from './DCPanel.module.css'
 type SpellSchool = typeof SPELL_SCHOOLS[number]
 
 /**
- * V2-style spell level cap: count how many non-zero columns the class has at
- * the given class level. Falls back to formulas when the data isn't loaded.
+ * V2 Class::MaxSpellLevel. The loader keeps each `<LevelN size="…">` row as
+ * `{ '#text', size }`, so the shared helper must read it; a string-only check
+ * here dropped every class to a name-based fallback that only knew the base
+ * classes, hiding archetypes (Stormsinger, Wild Mage, Blight Caster, …).
  */
-function spellLevelCap(cls: DDOClass | null | undefined, classLevel: number): number {
-  if (!cls) return 0
-  const lvlIdx = Math.min(Math.max(classLevel, 0), 20)
-  const row = (cls as unknown as Record<string, unknown>)[`Level${lvlIdx}`]
-  if (typeof row === 'string') {
-    const slots = row.trim().split(/\s+/).map(Number)
-    let cap = 0
-    for (let i = 0; i < slots.length; i++) if (slots[i] > 0) cap = i + 1
-    if (cap > 0) return cap
-  }
-  // Fallback formulas if XML didn't expose LevelN rows
-  const FULL = new Set(['Cleric', 'Wizard', 'Sorcerer', 'Druid', 'FavoredSoul', 'Favored Soul', 'Warlock', 'Alchemist'])
-  const HALF = new Set(['Bard', 'Paladin', 'Ranger', 'Artificer'])
-  const name = cls.Name
-  if (FULL.has(name)) return Math.max(0, Math.floor((classLevel + 1) / 2))
-  if (HALF.has(name)) return Math.min(4, Math.max(0, Math.floor(classLevel / 3) + 1))
-  return 0
-}
+const spellLevelCap = (cls: DDOClass | null | undefined, classLevel: number): number =>
+  computeMaxSpellLevel(cls ?? undefined, classLevel)
 
 /** Pick the best casting stat from a single ability or array (highest mod). */
 function pickCastingStat(
