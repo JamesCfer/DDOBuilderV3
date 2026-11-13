@@ -105,7 +105,10 @@ export function collectSliders(
       if (!tree) continue
       for (const [itemName, rank] of Object.entries(items)) {
         if (!rank) continue
-        const ti = (tree.EnhancementTreeItem ?? []).find(i => i.Name === itemName)
+        // Choices are keyed by InternalName (display names can repeat in a tree,
+        // e.g. Feydark Illusionist's core and tier-3 "Ability I").
+        const tItems = tree.EnhancementTreeItem ?? []
+        const ti = tItems.find(i => i.InternalName === itemName) ?? tItems.find(i => i.Name === itemName)
         if (!ti) continue
         const tiEffects = (ti as { Effects?: Effect | Effect[]; Effect?: Effect | Effect[] })
         for (const eff of [...eachEffect(tiEffects.Effect), ...eachEffect(tiEffects.Effects)]) {
