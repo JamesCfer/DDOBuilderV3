@@ -419,7 +419,7 @@ export default function TreeGrid({
     .sort((a, b) => (a.XPosition ?? 0) - (b.XPosition ?? 0))
 
   function coreIsUnlocked(item: EnhancementTreeItem): boolean {
-    const idx = coreItems.findIndex(c => c.Name === item.Name)
+    const idx = coreItems.findIndex(c => itemKey(c) === itemKey(item))
     if (idx <= 0) return true
     const prev = coreItems[idx - 1]
     return getChoiceRank(choices, prev) >= (prev.Ranks ?? 1)
@@ -506,10 +506,10 @@ export default function TreeGrid({
     // without showing the dialog.
     const selectable = getSelectorOptions(item).filter(o => optionSelectable(item, o))
     if (autoSelectSingleOption && selectable.length === 1) {
-      handleSelection(item.Name, selectable[0].Name)
+      handleSelection(itemKey(item), selectable[0].Name)
       return
     }
-    setSelectorTarget(item.Name)
+    setSelectorTarget(itemKey(item))
   }
 
   function handleIncrement(item: EnhancementTreeItem) {
@@ -538,7 +538,7 @@ export default function TreeGrid({
     if (rank <= 0) return
     const isCore = (item.YPosition ?? 0) === CORE_Y
     if (isCore) {
-      const idx = coreItems.findIndex(c => c.Name === item.Name)
+      const idx = coreItems.findIndex(c => itemKey(c) === itemKey(item))
       if (coreItems.slice(idx + 1).some(c => getChoiceRank(choices, c) > 0)) return
     }
     if (hasTrainedDependants(item, rank)) return
@@ -552,8 +552,8 @@ export default function TreeGrid({
     }
   }
 
-  function handleSelection(itemName: string, optionName: string) {
-    const item = items.find(it => it.Name === itemName)
+  function handleSelection(targetKey: string, optionName: string) {
+    const item = items.find(it => itemKey(it) === targetKey)
     if (!item) return
     const key = itemKey(item)
     // Write under InternalName key; remove any stale display-name entry.
@@ -567,7 +567,7 @@ export default function TreeGrid({
     }
   }
 
-  const selectorItem = selectorTarget ? items.find(it => it.Name === selectorTarget) : null
+  const selectorItem = selectorTarget ? items.find(it => itemKey(it) === selectorTarget) : null
   const selectorOptions = selectorItem ? getSelectorOptions(selectorItem) : []
 
   const bgName = tree.Background
@@ -621,7 +621,7 @@ export default function TreeGrid({
           : true
         return (
           <EnhancementCell
-            key={item.Name}
+            key={itemKey(item)}
             item={item}
             rank={getChoiceRank(choices, item)}
             selectedOption={getSelection(selections, item)}
