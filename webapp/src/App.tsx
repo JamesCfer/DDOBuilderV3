@@ -41,6 +41,9 @@ import styles from './App.module.css'
 /** Utility panels that open over the page rather than living on it. */
 const TOOL_WINDOWS = ['Settings', 'Content I Own', 'Help & About', 'Build Log'] as const
 type ToolWindowName = (typeof TOOL_WINDOWS)[number]
+/** The account window the header Sign in button opens over the page. */
+const ACCOUNT_WINDOW = 'My Builds'
+type FloatingWindowName = ToolWindowName | typeof ACCOUNT_WINDOW
 
 const PAGE_KEY = 'ddo-builder-page'
 
@@ -102,7 +105,7 @@ function AppInner() {
   // First visit in this browser gets the tutorial; afterwards it only opens
   // from Help. Read once on mount so a re-render never re-triggers it.
   const [tourOpen, setTourOpen] = useState(() => shouldShowTour())
-  const [tool, setTool] = useState<ToolWindowName | null>(null)
+  const [tool, setTool] = useState<FloatingWindowName | null>(null)
 
   const layoutApi = useWorkspaceLayout(user?.id ?? null)
 
@@ -183,7 +186,10 @@ function AppInner() {
         onNavigate={p => setPage(p as PageId)}
         fileMenu={<SaveLoadBar onLoad={handleLoad} />}
         toolsMenu={toolsMenu}
-        account={<AccountButton onGoToAccount={() => setPage('Community')} />}
+        // Opens the account window over whatever page is showing. Sending the
+        // user to the Community page instead left the sign-in below the fold
+        // on a phone, where the stacked layout puts Browse Builds first.
+        account={<AccountButton onGoToAccount={() => setTool(ACCOUNT_WINDOW)} />}
         livesBar={<LifeBuildBar />}
       >
         {/* One window throwing is caught inside that window; this boundary
@@ -193,7 +199,13 @@ function AppInner() {
           <Workspace page={page} api={layoutApi} />
         </ErrorBoundary>
       </Layout>
-      {tool && <ToolWindow panel={tool} onClose={() => setTool(null)} />}
+      {tool && (
+        <ToolWindow
+          panel={tool}
+          title={tool === ACCOUNT_WINDOW && !user ? 'Sign in' : undefined}
+          onClose={() => setTool(null)}
+        />
+      )}
       <FeedbackWidget page={page} />
       {tourOpen && <WelcomeTour onClose={() => setTourOpen(false)} />}
     </WorkspaceHostContext.Provider>

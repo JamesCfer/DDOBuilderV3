@@ -57,7 +57,7 @@ export default function CommunityPanel({ onLoad }: CommunityPanelProps) {
 
   async function handleVote(l: CommunityListing, dir: 1 | -1) {
     if (!user) {
-      setNotice('Sign in (My Builds tab) to vote on community builds.')
+      setNotice('Sign in (the Sign in button at the top right) to vote on community builds.')
       return
     }
     setNotice(null)
@@ -116,7 +116,7 @@ export default function CommunityPanel({ onLoad }: CommunityPanelProps) {
       {!loading && !error && listings.length === 0 && (
         <div className={styles.notice}>
           No community builds yet{cls || race ? ' matching these filters' : ''}.
-          Star one of your own builds from the My Builds tab to share it!
+          Star one of your own builds from the My Builds window to share it!
         </div>
       )}
 
