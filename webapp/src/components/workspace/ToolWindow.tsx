@@ -11,10 +11,12 @@ import styles from './ToolWindow.module.css'
 
 interface Props {
   panel: string
+  /** Title bar text; the panel name when left out. */
+  title?: string
   onClose: () => void
 }
 
-export default function ToolWindow({ panel, onClose }: Props) {
+export default function ToolWindow({ panel, title, onClose }: Props) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
@@ -30,11 +32,11 @@ export default function ToolWindow({ panel, onClose }: Props) {
         className={styles.window}
         role="dialog"
         aria-modal="true"
-        aria-label={panel}
+        aria-label={title ?? panel}
         onClick={e => e.stopPropagation()}
       >
         <header className={styles.titleBar}>
-          <span className={styles.titleText}>{panel}</span>
+          <span className={styles.titleText}>{title ?? panel}</span>
           <button type="button" className={styles.titleBtn} title="Close" aria-label="Close" onClick={onClose}>×</button>
         </header>
         <div className={styles.body}>
