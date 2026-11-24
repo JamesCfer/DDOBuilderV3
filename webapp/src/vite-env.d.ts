@@ -6,3 +6,5 @@ declare module '*.module.css' {
 }
 
 declare const __BUILDER_VERSION__: string
+declare const __BUILDER_RELEASE__: string
+declare const __BUILDER_UPDATED__: string

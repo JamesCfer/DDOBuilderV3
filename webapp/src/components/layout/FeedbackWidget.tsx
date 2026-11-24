@@ -56,7 +56,7 @@ export default function FeedbackWidget({ page }: FeedbackWidgetProps) {
   const [text, setText] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
-  const [version, setVersion] = useState<string | undefined>()
+  const [build, setBuild] = useState<{ version?: string; release?: string; updated?: string }>({})
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const active = KINDS.find(k => k.kind === kind) ?? KINDS[0]
@@ -65,7 +65,8 @@ export default function FeedbackWidget({ page }: FeedbackWidgetProps) {
     api.bugReportConfig()
       .then(cfg => setEnabled(cfg.enabled))
       .catch(() => setEnabled(false))
-    api.version().then(v => setVersion(v.version)).catch(() => { /* optional context */ })
+    api.version().then(v => setBuild({ version: v.version, release: v.release, updated: v.updated }))
+      .catch(() => { /* optional context */ })
   }, [])
 
   useEffect(() => {
@@ -92,7 +93,7 @@ export default function FeedbackWidget({ page }: FeedbackWidgetProps) {
     setStatus('sending')
     setError('')
     try {
-      await api.sendBugReport({ text: body, page, version, kind })
+      await api.sendBugReport({ text: body, page, ...build, kind })
       setStatus('sent')
       setText('')
       // Leave the confirmation up briefly, then get out of the way.

@@ -9,6 +9,10 @@ import styles from './TopNav.module.css'
 import { useCharacter } from '../../context/CharacterContext'
 import { api } from '../../api'
 import ParityBadge from './ParityBadge'
+import {
+  bakedBuildInfo, mergeBuildInfo, buildBadgeText, buildBadgeTitle, formatUpdatedLocal,
+  type BuildLabelInfo,
+} from '../../lib/buildLabel'
 
 // ---------------------------------------------------------------------------
 // Update button
@@ -148,11 +152,9 @@ export default function TopNav({
   fileMenu, toolsMenu, account, livesBar,
 }: TopNavProps) {
   const { build } = useCharacter()
-  // Never display the literal 'unknown' sentinel — hide the badge instead.
-  const [version, setVersion] = useState<string>(
-    typeof __BUILDER_VERSION__ !== 'undefined' && __BUILDER_VERSION__ !== 'unknown'
-      ? __BUILDER_VERSION__ : ''
-  )
+  // Baked in at build time; the server's answer replaces it (it knows what
+  // is deployed now, an open tab may be older). 'unknown' is never shown.
+  const [buildInfo, setBuildInfo] = useState<BuildLabelInfo>(bakedBuildInfo)
   const [livesOpen, setLivesOpen] = useState<boolean>(() => {
     try { return localStorage.getItem(LIVES_OPEN_KEY) === '1' } catch { return false }
   })
@@ -161,7 +163,7 @@ export default function TopNav({
     let cancelled = false
     api.version()
       .then(v => {
-        if (!cancelled && v?.version && v.version !== 'unknown') setVersion(v.version)
+        if (!cancelled && v) setBuildInfo(b => mergeBuildInfo(b, v))
       })
       .catch(() => { /* keep build-time version */ })
     return () => { cancelled = true }
@@ -180,7 +182,14 @@ export default function TopNav({
         <div className={styles.brand}>
           <span className={styles.brandName}>DDO Builder</span>
           <span className={styles.brandBadge}>v3</span>
-          {version && <span className={styles.brandVersion}>{version}</span>}
+          {buildBadgeText(buildInfo) && (
+            <span className={styles.brandVersion} title={buildBadgeTitle(buildInfo)} data-testid="build-badge">
+              {buildBadgeText(buildInfo)}
+              {buildInfo.updated && (
+                <span className={styles.brandUpdated}> · updated {formatUpdatedLocal(buildInfo.updated)}</span>
+              )}
+            </span>
+          )}
         </div>
 
         <nav className={styles.pageTabs} aria-label="Main pages">

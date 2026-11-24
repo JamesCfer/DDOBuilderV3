@@ -14,7 +14,12 @@ export const REPORT_RATE_WINDOW_MS = 60 * 60 * 1000
 export type FeedbackKind = 'bug' | 'idea' | 'other'
 
 export interface BugReportContext {
+  /** V3 build, e.g. "#346". */
   version?: string
+  /** DDO Builder V2 release the data is synced to, e.g. "2.0.0.86". */
+  release?: string
+  /** ISO time the deployed build was committed. */
+  updated?: string
   page?: string
   kind?: FeedbackKind
 }
@@ -24,6 +29,18 @@ const KIND_HEADERS: Record<FeedbackKind, string> = {
   bug: '🐞 **Bug report**',
   idea: '💡 **Idea**',
   other: '💬 **Feedback**',
+}
+
+function oneLine(v: string): string {
+  return v.replace(/[\r\n`*_~|<>@]/g, '').trim()
+}
+
+/** "updated: 2026-11-24 16:46 UTC", or '' when the time is missing or junk. */
+function updatedUtc(iso: string | undefined): string {
+  if (!iso) return ''
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return ''
+  return `updated: ${new Date(t).toISOString().slice(0, 16).replace('T', ' ')} UTC`
 }
 
 /**
@@ -37,7 +54,9 @@ export function formatBugReport(text: string, context?: BugReportContext): strin
   const safe = text.replace(/```/g, "'''").trim()
   const bits = [
     context?.page ? `page: ${context.page}` : '',
+    context?.release ? `release: ${oneLine(context.release)}` : '',
     context?.version ? `build: ${context.version}` : '',
+    updatedUtc(context?.updated),
   ].filter(Boolean)
   const lead = KIND_HEADERS[context?.kind ?? 'bug'] ?? KIND_HEADERS.bug
   const header = bits.length > 0 ? `${lead} (${bits.join(', ')})` : lead

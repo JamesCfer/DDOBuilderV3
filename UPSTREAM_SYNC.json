@@ -1,6 +1,7 @@
 {
   "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
   "lastSyncedCommit": "d1350a0c6ec396a65dc02680fa9801a14a79ebf3",
+  "upstreamRelease": "2.0.0.86",
   "lastChecked": "2026-10-16T20:45:00.000Z",
   "dataPathUpstream": "Output/DataFiles",
   "notes": "Full tree synced @ d1350a0 (2.0.0.86, 2026-10-14): 81 changed + 9 new files (Night Revels' Gifts filigree, Bombardier fixes, Ravager/Stalwart/Berserker/Arcanotechnician/Reaper AP costs, Exalted Angel metamagics, Battle Guard DisplayName, Master of X feats, new feat image dialog). DDOBuilder/resource.h is UTF-8 here, upstream UTF-16: merged as text. 5 feat images V3 never had were added. Shintao: Quick Strike is set back to 2 AP over upstream's 1 (tester in-game report). Previous: 2.0.0.85 ba7e18e (#264)."

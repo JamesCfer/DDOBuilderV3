@@ -105,7 +105,7 @@ export const api = {
   augments: (params?: { type?: string }) => get<Augment[]>('/augments', params as Record<string, string> | undefined),
   stances: () => get<Stance[]>('/stances'),
   health: () => get<{ status: string; dataDir: string }>('/health'),
-  version: () => get<{ version: string }>('/version'),
+  version: () => get<{ version: string; release?: string; updated?: string }>('/version'),
   itemSetBonuses: (names: string[]) =>
     names.length === 0
       ? Promise.resolve([] as Array<{ type: string; count: number }>)
@@ -135,7 +135,7 @@ export const api = {
   plugins: () => get<PluginCatalogue>('/plugins'),
   /** Whether this server can deliver bug reports (Discord bot configured). */
   bugReportConfig: () => get<{ enabled: boolean }>('/bug-report/config'),
-  sendBugReport: (report: { text: string; page?: string; version?: string; kind?: 'bug' | 'idea' | 'other' }) =>
+  sendBugReport: (report: { text: string; page?: string; version?: string; release?: string; updated?: string; kind?: 'bug' | 'idea' | 'other' }) =>
     post<{ ok: true }>('/bug-report', report),
 }
 
