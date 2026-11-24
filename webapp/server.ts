@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
-import { exec, execSync } from 'child_process'
+import { exec } from 'child_process'
 import dotenv from 'dotenv'
 import {
   loadRaces, loadClasses, loadFeats, loadEnhancementTrees, loadSpells,
@@ -22,6 +22,7 @@ import {
   formatBugReport, sendDiscordDm, ReportRateLimiter, MAX_REPORT_LENGTH, DISCORD_API_BASE,
 } from './src/server/bugReport'
 import { loadOptionalCompression } from './src/server/optionalCompression'
+import { readBuildInfo } from './src/server/buildInfo'
 import type { CharacterDocument } from './src/types/ddo'
 
 dotenv.config()
@@ -102,41 +103,11 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', dataDir: DATA_DIR })
 })
 
+const SERVER_STARTED = new Date()
+
 app.get('/api/version', (_req, res) => {
-  // V3's version is the most recently MERGED PR number — every merge to main
-  // is a squash commit whose subject ends in "(#NNN)". Scan recent history so
-  // work-in-progress commits on a feature branch don't hide it. Falls back to
-  // the repo-root VERSION file (V2's data version) for non-git deployments.
-  let version = 'unknown'
-  try {
-    const subjects = execSync('git log -50 --pretty=%s', {
-      cwd: __dirname,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).toString()
-    const m = subjects.match(/\(#(\d+)\)/)
-    if (m) version = `#${m[1]}`
-  } catch { /* not a git checkout — fall through */ }
-  if (version === 'unknown') {
-    // webapp/VERSION is COMMITTED and updated with each PR (works without
-    // git); the repo-root VERSION (V2's data version) is the last resort.
-    // __dirname differs between dev (ts-node from webapp/) and prod
-    // (compiled to webapp/dist-server/), and the process cwd may also vary,
-    // so try the candidate locations in order.
-    const candidates = [
-      path.resolve(__dirname, 'VERSION'),              // dev: webapp/VERSION
-      path.resolve(__dirname, '..', 'VERSION'),        // prod: webapp/dist-server/../VERSION; dev repo root
-      path.resolve(process.cwd(), 'VERSION'),          // launched from webapp/ or repo root
-      path.resolve(__dirname, '..', '..', 'VERSION'),  // prod: repo root
-      path.resolve(process.cwd(), '..', 'VERSION'),    // launched from webapp/ (repo root)
-    ]
-    for (const file of candidates) {
-      try {
-        const v = fs.readFileSync(file, 'utf-8').trim()
-        if (v) { version = v; break }
-      } catch { /* try next candidate */ }
-    }
-  }
-  res.json({ version })
+  // Merged PR number, synced V2 release and commit time (see buildInfo.ts).
+  res.json(readBuildInfo(__dirname, SERVER_STARTED))
 })
 
 app.get('/api/races', (_req, res) => {
@@ -828,7 +799,7 @@ app.post('/api/bug-report', async (req, res) => {
     res.status(501).json({ error: 'Bug reporting is not configured on this server' })
     return
   }
-  const { text, page, version, kind } = req.body ?? {}
+  const { text, page, version, release, updated, kind } = req.body ?? {}
   if (typeof text !== 'string' || text.trim().length === 0) {
     res.status(400).json({ error: 'Please write your feedback first' })
     return
@@ -846,6 +817,8 @@ app.post('/api/bug-report', async (req, res) => {
     await sendDiscordDm(DISCORD_BOT_TOKEN, DISCORD_REPORT_USER_ID, formatBugReport(text, {
       page: typeof page === 'string' ? page.slice(0, 40) : undefined,
       version: typeof version === 'string' ? version.slice(0, 20) : undefined,
+      release: typeof release === 'string' ? release.slice(0, 20) : undefined,
+      updated: typeof updated === 'string' ? updated.slice(0, 40) : undefined,
       kind: kind === 'idea' || kind === 'other' ? kind : 'bug',
     }), DISCORD_API)
     res.json({ ok: true })

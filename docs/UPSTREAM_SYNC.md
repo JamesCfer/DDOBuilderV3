@@ -16,11 +16,16 @@ in `UPSTREAM_SYNC.json` at the repo root:
 {
   "upstream": "https://github.com/Maetrim/DDOBuilderV2.git",
   "lastSyncedCommit": "<sha or null>",
+  "upstreamRelease": "<V2 release of that commit, e.g. 2.0.0.86>",
   "lastChecked": "<ISO timestamp>",
   "dataPathUpstream": "Output/DataFiles",
   "notes": "..."
 }
 ```
+
+`upstreamRelease` is what the web app shows testers as the DDO Builder
+release next to the V3 build number (TopNav badge and feedback reports).
+The script cannot know it, so update it by hand in every sync PR.
 
 **Scope:** only `.xml` and `.item` files under `Output/DataFiles` are compared and
 copied (both are XML; DDO items use the `.item` extension). Images (`*.png`) are

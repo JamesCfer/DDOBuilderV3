@@ -49,6 +49,13 @@
 .brandVersion {
   font-size: 10px;
   color: var(--color-text-muted);
+  cursor: help;
+}
+
+/* The update time is the first thing to go when the top row gets tight;
+   the badge's hover text still carries it. */
+@media (max-width: 1100px) {
+  .brandUpdated { display: none; }
 }
 
 /* Page tabs */

@@ -41,6 +41,9 @@ const GIT_MAX_BUFFER = 256 * 1024 * 1024
 interface SyncState {
   upstream: string
   lastSyncedCommit: string | null
+  /** V2 release the synced commit belongs to (e.g. "2.0.0.86"). Set by hand
+   *  on each sync; the web app shows it next to the build number. */
+  upstreamRelease?: string
   lastChecked: string
   dataPathUpstream: string
   notes?: string
@@ -77,6 +80,7 @@ function loadState(): SyncState {
   return {
     upstream: raw.upstream ?? DEFAULT_UPSTREAM,
     lastSyncedCommit: raw.lastSyncedCommit ?? null,
+    ...(raw.upstreamRelease !== undefined ? { upstreamRelease: raw.upstreamRelease } : {}),
     lastChecked: raw.lastChecked ?? '',
     dataPathUpstream: raw.dataPathUpstream ?? DEFAULT_DATA_PATH_UPSTREAM,
     ...(raw.notes !== undefined ? { notes: raw.notes } : {}),

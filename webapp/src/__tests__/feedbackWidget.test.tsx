@@ -25,7 +25,7 @@ function stubApi(opts: { enabled: boolean; postFails?: string }) {
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ enabled: opts.enabled }) } as Response)
     }
     if (href.includes('/api/version')) {
-      return Promise.resolve({ ok: true, json: () => Promise.resolve({ version: '#221' }) } as Response)
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ version: '#221', release: '2.0.0.86', updated: '2026-11-24T16:46:00.000Z' }) } as Response)
     }
     if (href.includes('/api/bug-report')) {
       posted.push({ url: href, body: JSON.parse(String(init?.body ?? '{}')) })
@@ -113,6 +113,8 @@ describe('FeedbackWidget', () => {
     expect(posted[0].body.text).toBe('Gear picker forgets my filigrees')
     expect(posted[0].body.page).toBe('Equipment · Gear')
     expect(posted[0].body.version).toBe('#221')
+    expect(posted[0].body.release).toBe('2.0.0.86')
+    expect(posted[0].body.updated).toBe('2026-11-24T16:46:00.000Z')
     expect(posted[0].body.kind).toBe('bug')
     expect(document.body.textContent).toContain('your feedback was sent')
   })
@@ -184,6 +186,18 @@ describe('ReportRateLimiter', () => {
 })
 
 describe('formatBugReport', () => {
+  it('names the V2 release and update time next to the build number', () => {
+    const msg = formatBugReport('love it', {
+      kind: 'idea', page: 'Character', version: '#346', release: '2.0.0.86', updated: '2026-11-24T16:46:12.000Z',
+    })
+    expect(msg).toContain('💡 **Idea** (page: Character, release: 2.0.0.86, build: #346, updated: 2026-11-24 16:46 UTC)')
+  })
+
+  it('drops an unreadable update time instead of printing junk', () => {
+    const msg = formatBugReport('x', { version: '#346', updated: 'not a date' })
+    expect(msg).toContain('(build: #346)')
+  })
+
   it('labels each kind so ideas are not triaged as bugs', () => {
     expect(formatBugReport('nice to have', { kind: 'idea' })).toContain('💡 **Idea**')
     expect(formatBugReport('a question', { kind: 'other' })).toContain('💬 **Feedback**')
