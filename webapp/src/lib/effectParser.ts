@@ -1195,7 +1195,11 @@ export function parseEffect(
 
     case 'DodgeBonus':
     case 'Dodge':
-      return [make('dodge', 'Dodge')]
+      // V2 BreakdownItemDodge keeps each effect's own bonus type. Augments
+      // (Sapphire of Dodge) and most gear say Enhancement, so they are
+      // Highest-Only against an item's Enhancement Dodge. Forcing 'Dodge'
+      // here made the augment stack on top of the ring (tester, build #347).
+      return [make('dodge')]
 
     case 'DodgeCap':
     case 'DodgeCapBonus':

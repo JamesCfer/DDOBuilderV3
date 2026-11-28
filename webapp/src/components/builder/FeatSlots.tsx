@@ -44,7 +44,7 @@ function formatReq(req: Requirement): string {
   }
 }
 
-function formatPrerequisites(feat: Feat): string {
+export function formatPrerequisites(feat: Feat): string {
   const reqs = feat.Requirements
   if (!reqs) return ''
   const parts: string[] = []
@@ -60,7 +60,21 @@ function formatPrerequisites(feat: Feat): string {
       if (sub.length) parts.push(sub.join(' or '))
     })
   }
-  return parts.length ? `Requires: ${parts.join(', ')}` : ''
+  // V2 FeatSelectionDialog lists RequiresNoneOf too. Without it, feats such
+  // as Spell Specialty (Level 31, and NOT Spell Focus of that school) read as
+  // having no feat rules at all.
+  const excluded: string[] = []
+  if (reqs.RequiresNoneOf) {
+    const groups = Array.isArray(reqs.RequiresNoneOf) ? reqs.RequiresNoneOf : [reqs.RequiresNoneOf]
+    groups.forEach(g => {
+      (Array.isArray(g.Requirement) ? g.Requirement : [g.Requirement])
+        .map(formatReq).filter(Boolean).forEach(x => excluded.push(x))
+    })
+  }
+  const lines: string[] = []
+  if (parts.length) lines.push(`Requires: ${parts.join(', ')}`)
+  if (excluded.length) lines.push(`Cannot have: ${excluded.join(', ')}`)
+  return lines.join('. ')
 }
 
 // ---------------------------------------------------------------------------
